@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>HangMan</title>
+<style>
+  :root{
+    --bg:#0b0c10; --panel:#141824; --text:#e9eef6; --muted:#a7b2c2;
+    --accent:#6aa2ff; --accent2:#7dffa2; --danger:#ff6a6a; --warn:#ffd36a; --ok:#5cffc0;
+    --key:#1d2232; --border:#293248; --shadow:rgba(0,0,0,.35);
+    --btn:#1d2232; --btnhi:#2a3045;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:linear-gradient(180deg,#0b0c10,#0f1220 60%,#0b0c10);
+    color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Inter,Segoe UI,Roboto,Arial;
+    -webkit-tap-highlight-color:transparent;
+  }
+  header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,rgba(11,12,16,.96),rgba(11,12,16,.6));backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  .bar{display:flex;flex-direction:column;gap:8px;padding:12px}
+  h1{margin:0;font-size:22px;letter-spacing:.6px;text-align:center}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+  select,button{
+    background:var(--btn);color:var(--text);border:1px solid var(--border);
+    border-radius:12px;padding:10px 12px;font-size:14px;cursor:pointer;
+  }
+  select{appearance:none;padding-right:28px;background-image:
+    linear-gradient(45deg,transparent 50%,var(--muted) 50%),
+    linear-gradient(135deg,var(--muted) 50%,transparent 50%),
+    linear-gradient(to right,transparent,transparent);
+    background-position: calc(100% - 16px) 50%, calc(100% - 10px) 50%, 0 0;
+    background-size:6px 6px,6px 6px,100% 100%;background-repeat:no-repeat}
+  button.primary{background:var(--accent);color:#0d1323;border-color:transparent;font-weight:700}
+  button.warn{background:var(--warn);color:#10131f;border-color:transparent;font-weight:700}
+  button.danger{background:var(--danger);color:#fff;border-color:transparent;font-weight:700}
+  button:active{transform:translateY(1px)}
+  .btn {position:relative;transition:transform .02s}
+  .btn:focus-visible{outline:2px solid var(--accent)}
+  .pressed, .btn:active{box-shadow:0 0 0 3px rgba(106,162,255,.25) inset;background:var(--btnhi)}
+  .app{max-width:900px;margin:0 auto;padding:14px}
+  .boards{display:grid;grid-template-columns:1fr;gap:12px}
+  @media (min-width:860px){.boards{grid-template-columns:1.1fr .9fr}}
+  .card{background:linear-gradient(180deg,#121726 40%,#0f1422);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 30px var(--shadow)}
+  .pad{padding:14px}
+  .hangman{display:grid; grid-template-rows:auto auto auto; gap:12px; min-height:420px}
+  .svgwrap{display:flex;justify-content:center;align-items:center;background:#101626;border-radius:14px;border:1px solid var(--border)}
+  svg{max-width:100%;height:auto}
+  .word{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; font-size:28px; letter-spacing:2px}
+  .slot{min-width:28px; border-bottom:2px solid var(--border); text-align:center; padding:6px 4px; border-radius:6px}
+  .slot.revealed{color:var(--accent2); border-bottom-color:var(--accent2)}
+  .status{display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; color:var(--muted); font-size:14px}
+  .life{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px rgba(92,255,192,.4)}
+  .life.off{background:#2f374c;box-shadow:none}
+  .kbd{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+  .key{background:var(--key);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;font-weight:700;user-select:none;-webkit-user-select:none;cursor:pointer}
+  .key.hit{background:#173225;border-color:#2e6241;color:#9dffb7}
+  .key.miss{background:#341d22;border-color:#6b313f;color:#ff98a8}
+  .muted{color:var(--muted)} .tiny{font-size:12px} .sep{height:1px;background:var(--border);margin:10px 0}
+  .statgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .stat{background:#0e1321;border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center}
+  .stat b{display:block;font-size:20px;margin-bottom:6px}
+  .notice{background:#0e1a2e;border:1px dashed var(--border);padding:10px;border-radius:10px;color:var(--muted)}
+  .win{color:#9dffb7}.lose{color:#ff9da9}
+  .modal{position:fixed;inset:0;background:rgba(6,8,12,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+  .modal.show{display:flex}
+  .dialog{background:#11162a;border:1px solid var(--border);border-radius:16px;max-width:680px;width:100%;box-shadow:0 20px 50px var(--shadow)}
+  .dialog .hd{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .dialog .bd{padding:14px 16px}
+  input[type="text"]{width:100%;background:#0c1222;color:#e9eef6;border:1px solid var(--border);border-radius:12px;padding:10px}
+  .handoff{padding:18px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1>HangMan</h1>
+    <div class="controls">
+      <select id="mode" class="btn">
+        <option value="classic">Classic (6 lives)</option>
+        <option value="sudden">Sudden Death (1 life)</option>
+        <option value="zen">Zen (∞ lives)</option>
+        <option value="blitz">Blitz (60s)</option>
+        <option value="daily">Daily Challenge</option>
+      </select>
+      <select id="lenSel" class="btn">
+        <option value="custom">Custom word (Friend)…</option>
+        <option value="any">Any (3–6 letters)</option>
+        <option value="3">3 letters</option>
+        <option value="4">4 letters</option>
+        <option value="5">5 letters</option>
+        <option value="6">6 letters</option>
+      </select>
+      <button id="newBtn" class="btn primary">New Game</button>
+      <button id="statsBtn" class="btn">Stats</button>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+  <div class="boards">
+    <!-- Game -->
+    <div class="card pad">
+      <div class="hangman">
+        <div class="svgwrap">
+          <svg id="svg" viewBox="0 0 240 200" width="320" height="260" aria-label="Hangman gallows">
+            <line x1="15" y1="180" x2="200" y2="180" stroke="#2c3750" stroke-width="6"/>
+            <line x1="45" y1="180" x2="45" y2="20" stroke="#2c3750" stroke-width="6"/>
+            <line x1="45" y1="20" x2="145" y2="20" stroke="#2c3750" stroke-width="6"/>
+            <line x1="145" y1="20" x2="145" y2="40" stroke="#2c3750" stroke-width="6"/>
+            <circle id="p1" cx="145" cy="58" r="18" fill="none" stroke="#ff6a6a" stroke-width="5" opacity="0"/>
+            <line id="p2" x1="145" y1="76" x2="145" y2="120" stroke="#ff6a6a" stroke-width="5" opacity="0"/>
+            <line id="p3" x1="145" y1="88" x2="125" y2="110" stroke="#ff6a6a" stroke-width="5" opacity="0"/>
+            <line id="p4" x1="145" y1="88" x2="165" y2="110" stroke="#ff6a6a" stroke-width="5" opacity="0"/>
+            <line id="p5" x1="145" y1="120" x2="130" y2="150" stroke="#ff6a6a" stroke-width="5" opacity="0"/>
+            <line id="p6" x1="145" y1="120" x2="160" y2="150" stroke="#ff6a6a" stroke-width="5" opacity="0"/>
+          </svg>
+        </div>
+
+        <div id="handoff" class="handoff" style="display:none"></div>
+        <div id="word" class="word" aria-live="polite"></div>
+
+        <div class="status" id="statusBar">
+          <div id="livesWrap"></div>
+          <span id="modeLabel"></span>
+          <span id="timer" style="display:none"></span>
+          <span class="muted tiny" id="misses"></span>
+        </div>
+
+        <div class="controls" style="gap:10px">
+          <button id="hintBtn" class="btn">Hint</button>
+          <button id="skipBtn" class="btn">Skip</button>
+          <button id="revealBtn" class="btn warn">Give Up</button>
+        </div>
+
+        <div id="keyboard" class="kbd" aria-label="Keyboard"></div>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="card pad">
+      <div class="muted">How to play</div>
+      <p class="tiny muted">
+        Pick a <strong>mode</strong> and a <strong>length</strong> (Any 3–6, or 3/4/5/6), or choose
+        <strong>Custom word (Friend)</strong> to enter a secret word + optional hint, then pass the phone.
+      </p>
+      <div class="sep"></div>
+      <div class="statgrid">
+        <div class="stat"><b id="stWins">0</b><span class="muted tiny">Wins</span></div>
+        <div class="stat"><b id="stStreak">0</b><span class="muted tiny">Current streak</span></div>
+        <div class="stat"><b id="stBest">0</b><span class="muted tiny">Best streak</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Word Modal -->
+<div class="modal" id="customModal" aria-hidden="true">
+  <div class="dialog">
+    <div class="hd"><div>Custom Word (Friend)</div><button class="btn" id="closeCustom">✕</button></div>
+    <div class="bd">
+      <div class="notice tiny">Player A: enter a single word (A–Z only, 2–10 letters). Optionally add a hint.</div>
+      <input id="customWord" type="text" placeholder="SECRETWORD">
+      <div style="height:8px"></div>
+      <input id="customHint" type="text" placeholder="Optional hint (shown when Hint is tapped)">
+    </div>
+    <div class="foot" style="display:flex;justify-content:flex-end;gap:8px;padding:0 16px 14px">
+      <button id="useCustomBtn" class="btn primary">Use Word</button>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Modal -->
+<div class="modal" id="statsModal" aria-hidden="true">
+  <div class="dialog">
+    <div class="hd"><div>Stats</div><button class="btn" id="closeStats">✕</button></div>
+    <div class="bd">
+      <div class="statgrid">
+        <div class="stat"><b id="mWins">0</b><span class="muted tiny">Wins</span></div>
+        <div class="stat"><b id="mLosses">0</b><span class="muted tiny">Losses</span></div>
+        <div class="stat"><b id="mAccuracy">0%</b><span class="muted tiny">Guess accuracy</span></div>
+      </div>
+      <div class="sep"></div>
+      <div class="tiny muted">Stored locally on your device.</div>
+    </div>
+    <div class="foot" style="display:flex;justify-content:flex-end;gap:8px;padding:0 16px 14px">
+      <button class="btn" id="resetStatsBtn">Reset Stats</button>
+      <button class="btn" id="closeStats2">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{'use strict';
+  // ------- Utilities -------
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
+  const sample = a => a[Math.floor(Math.random()*a.length)];
+  const seeded = (seed)=>{let x=seed|0;return()=> (x^=x<<13,x^=x>>>17,x^=x<<5,(x>>>0)/4294967296);};
+  const daySeed = ()=>{const d=new Date();return (d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate())>>>0;};
+  const clean = (arr)=>{
+    const out=[],seen=new Set();
+    for(const w of arr){
+      const z=(w||'').toUpperCase().replace(/[^A-Z]/g,'');
+      if(z.length>=2 && z.length<=10 && !seen.has(z)){seen.add(z);out.push(z);}
+    }
+    return out;
+  };
+
+  // ------- Storage -------
+  const SK='hang_len356_v1';
+  const read=()=>{try{return JSON.parse(localStorage.getItem(SK)||'{}')}catch{return{}}};
+  const write=(d)=>localStorage.setItem(SK,JSON.stringify(d));
+  const setS=(k,v)=>{const d=read();d[k]=v;write(d);};
+  const getS=(k,def)=>{const d=read();return (k in d)?d[k]:def;};
+
+  // ------- State -------
+  const state={
+    word:'',hintText:'',letters:new Set(),hits:new Set(),misses:new Set(),
+    lives:6,maxLives:6,mode:'classic',
+    timer:null,timeLeft:60,allowHint:true,active:false,
+    stats:{wins:0,losses:0,streak:0,best:0,guesses:0,hits:0},
+    dict3:clean(getS('dict3', ['CAT','SUN','RUN','BOX','ANT','BAT','HAT','RED','CAR','DOG'])),
+    dict4:clean(getS('dict4', ['TREE','BOOK','GAME','CODE','LOVE','FISH','BIRD','WIND','MOON','SHIP'])),
+    dict5:clean(getS('dict5', ['APPLE','WATER','MONEY','HOUSE','TRAIN','LIGHT','SUGAR','PLANT','STONE','MUSIC'])),
+    dict6:clean(getS('dict6', ['TIGER','PLANET','ROCKET','CAMERA','ENERGY','FOREST','SILVER','BATTLE','BUTTER','CASTLE']))
+  };
+
+  // ------- DOM -------
+  const modeSel   = $('#mode');
+  const lenSel    = $('#lenSel');
+  const wordEl    = $('#word');
+  const livesWrap = $('#livesWrap');
+  const missEl    = $('#misses');
+  const modeLabel = $('#modeLabel');
+  const timerEl   = $('#timer');
+  const kbd       = $('#keyboard');
+  const handoff   = $('#handoff');
+
+  const parts = ['#p1','#p2','#p3','#p4','#p5','#p6'].map(s=>$(s));
+
+  const newBtn     = $('#newBtn');
+  const hintBtn    = $('#hintBtn');
+  const skipBtn    = $('#skipBtn');
+  const giveUpBtn  = $('#revealBtn');
+
+  const statsBtn   = $('#statsBtn');
+  const statsModal = $('#statsModal');
+  const closeStats = $('#closeStats');
+  const closeStats2= $('#closeStats2');
+  const resetStatsBtn = $('#resetStatsBtn');
+
+  const stWins   = $('#stWins');
+  const stStreak = $('#stStreak');
+  const stBest   = $('#stBest');
+  const mWins    = $('#mWins');
+  const mLosses  = $('#mLosses');
+  const mAccuracy= $('#mAccuracy');
+
+  const customModal = $('#customModal');
+  const closeCustom = $('#closeCustom');
+  const useCustomBtn= $('#useCustomBtn');
+  const customWord  = $('#customWord');
+  const customHint  = $('#customHint');
+
+  // ------- Button feedback -------
+  function flash(btn){
+    btn.classList.add('pressed');
+    setTimeout(()=>btn.classList.remove('pressed'),150);
+  }
+  document.addEventListener('click',(e)=>{
+    const t=e.target.closest('.btn');
+    if(t && !t.classList.contains('key')) flash(t);
+  },true);
+
+  // ------- Dictionary helpers (3–6 only, strict lengths) -------
+  const poolForLen = (L)=>{
+    const src = (L===3?state.dict3:L===4?state.dict4:L===5?state.dict5:L===6?state.dict6:[]);
+    return src.filter(w=>w.length===L);
+  };
+
+  function pickWord(){
+    const sel = lenSel.value;
+    if(sel==='custom') return null;
+
+    if(sel==='any'){
+      let pool=[];
+      for(let L=3;L<=6;L++){ pool = pool.concat(poolForLen(L)); }
+      if(!pool.length) pool=['CAT','TREE','APPLE','TIGER']; // fallback
+      if(state.mode==='daily'){
+        const rng=seeded(daySeed());
+        return pool[Math.floor(rng()*pool.length)];
+      }
+      return sample(pool);
+    }
+
+    const L=parseInt(sel,10);
+    let pool=poolForLen(L);
+    if(!pool.length){
+      alert(`No words of length ${L}. Using fallback.`);
+      pool=(L===3?['CAT','DOG','SUN']:L===4?['TREE','GAME','MOON']:L===5?['APPLE','LIGHT','TRAIN']:['TIGER','PLANET','ROCKET']);
+      pool = pool.filter(w=>w.length===L);
+    }
+    if(state.mode==='daily'){
+      const rng=seeded(daySeed()+L*977);
+      return pool[Math.floor(rng()*pool.length)];
+    }
+    return sample(pool);
+  }
+
+  // ------- Rendering -------
+  function drawLives(){
+    livesWrap.innerHTML='';
+    const max = (state.maxLives===Infinity?10:state.maxLives);
+    for(let i=0;i<max;i++){
+      const d=document.createElement('div');
+      d.className='life'+(i<state.lives?'':' off');
+      livesWrap.appendChild(d);
+    }
+  }
+
+  function drawGallow(){
+    const wrong=state.misses.size;
+    parts.forEach((p,i)=>p.style.opacity=(wrong>i?1:0));
+  }
+
+  function drawWord(){
+    wordEl.innerHTML='';
+    for(const ch of state.word){
+      const s=document.createElement('div');
+      const revealed = state.hits.has(ch);
+      s.className='slot'+(revealed?' revealed':'');
+      s.textContent=revealed?ch:' ';
+      wordEl.appendChild(s);
+    }
+  }
+
+  function drawMisses(){
+    missEl.textContent = state.misses.size ? `Misses: ${[...state.misses].join(' ')}` : '';
+  }
+
+  function labelMode(){
+    modeLabel.textContent = ({
+      classic:'Classic',
+      sudden:'Sudden Death',
+      zen:'Zen',
+      blitz:'Blitz',
+      daily:'Daily'
+    })[state.mode] || '';
+  }
+
+  function drawKb(){
+    kbd.innerHTML='';
+    for(const ch of LETTERS){
+      const b=document.createElement('div');
+      b.className='key btn';
+      if(state.hits.has(ch)) b.classList.add('hit');
+      if(state.misses.has(ch)) b.classList.add('miss');
+      b.textContent=ch;
+      b.onclick=()=>onGuess(ch);
+      kbd.appendChild(b);
+    }
+  }
+
+  function updateHeaderStats(){
+    stWins.textContent   = state.stats.wins;
+    stStreak.textContent = state.stats.streak;
+    stBest.textContent   = state.stats.best;
+  }
+
+  // ------- Round setup helpers -------
+  function resetTimer(){
+    if(state.timer){
+      clearInterval(state.timer);
+      state.timer=null;
+    }
+  }
+
+  function setupModeAndLives(){
+    state.mode = modeSel.value;
+    resetTimer();
+    state.active=false;
+
+    if(state.mode==='classic'){ state.maxLives=6; state.lives=6; }
+    else if(state.mode==='sudden'){ state.maxLives=1; state.lives=1; }
+    else if(state.mode==='zen'){ state.maxLives=Infinity; state.lives=Infinity; }
+    else if(state.mode==='blitz'){ state.maxLives=6; state.lives=6; state.timeLeft=60; }
+    else if(state.mode==='daily'){ state.maxLives=6; state.lives=6; }
+
+    timerEl.style.display = (state.mode==='blitz') ? 'inline-block' : 'none';
+    timerEl.textContent = state.mode==='blitz' ? `⏱ ${state.timeLeft}s` : '';
+  }
+
+  function setupRoundUI(){
+    state.letters = new Set(LETTERS);
+    state.hits    = new Set();
+    state.misses  = new Set();
+    state.allowHint = true;
+
+    parts.forEach(p=>p.style.opacity=0);
+    drawGallow();
+    drawLives();
+    drawWord();
+    drawMisses();
+    drawKb();
+    labelMode();
+  }
+
+  function startBlitzTimer(){
+    resetTimer();
+    timerEl.style.display='inline-block';
+    timerEl.textContent=`⏱ ${state.timeLeft}s`;
+    state.timer = setInterval(()=>{
+      if(!state.active) return;
+      state.timeLeft = Math.max(0,state.timeLeft-1);
+      timerEl.textContent=`⏱ ${state.timeLeft}s`;
+      if(state.timeLeft<=0){
+        resetTimer();
+        endRound(false,true);
+      }
+    },1000);
+  }
+
+  // ------- Core flow -------
+  function startGame(){
+    // If daily is active and custom is selected, force any
+    if(modeSel.value==='daily' && lenSel.value==='custom'){
+      lenSel.value='any';
+    }
+
+    setupModeAndLives();
+
+    if(lenSel.value==='custom'){
+      openCustomModal();
+      return;
+    }
+
+    state.word = pickWord();
+    state.hintText = '';
+    setupRoundUI();
+    handoff.style.display='none';
+    wordEl.style.display='flex';
+    state.active = true;
+    if(state.mode==='blitz') startBlitzTimer();
+  }
+
+  function onGuess(ch){
+    if(!state.active) return;
+    if(!state.letters.has(ch)) return;
+
+    state.letters.delete(ch);
+    state.stats.guesses++;
+
+    if(state.word.includes(ch)){
+      state.hits.add(ch);
+      state.stats.hits++;
+      drawKb();
+      drawWord();
+
+      // small reward in blitz
+      if(state.mode==='blitz' && state.timer){
+        state.timeLeft = Math.min(180,state.timeLeft+3);
+        timerEl.textContent=`⏱ ${state.timeLeft}s`;
+      }
+
+      const all=[...new Set(state.word)].every(c=>state.hits.has(c));
+      if(all) endRound(true);
+    }else{
+      state.misses.add(ch);
+      if(state.mode==='blitz'){
+        state.timeLeft = Math.max(0,state.timeLeft-5);
+        timerEl.textContent=`⏱ ${state.timeLeft}s`;
+      }
+      drawKb();
+      drawMisses();
+
+      if(state.mode!=='zen'){
+        state.lives = (state.mode==='sudden') ? 0 : clamp(state.lives-1,0,state.maxLives);
+      }
+      drawLives();
+      drawGallow();
+
+      let timedOut=false;
+      let shouldEnd=false;
+
+      if(state.mode!=='zen' && state.lives<=0){
+        shouldEnd=true;
+      }
+      if(state.mode==='blitz' && state.timeLeft<=0){
+        shouldEnd=true;
+        timedOut=true;
+      }
+
+      if(shouldEnd){
+        endRound(false,timedOut);
+      }
+    }
+  }
+
+  function endRound(win,timedOut=false){
+    if(!state.active && !win && !timedOut && state.lives<=0 && !state.word){
+      // extremely defensive, but keep it simple
+    }
+    if(!state.active && state.word){
+      // already ended; avoid double-count
+      return;
+    }
+
+    state.active=false;
+    resetTimer();
+
+    state.hits = new Set(state.word.split(''));
+    drawWord();
+    drawKb();
+
+    if(win){
+      state.stats.wins++;
+      state.stats.streak++;
+      state.stats.best = Math.max(state.stats.best,state.stats.streak);
+    }else{
+      state.stats.losses = (state.stats.losses||0)+1;
+      state.stats.streak = 0;
+    }
+
+    setS('stats',state.stats);
+    updateHeaderStats();
+    updateStatsModal();
+
+    const msg = win ? '✅ You won!' : (timedOut ? '⏲️ Time’s up!' : '💀 You lost!');
+    const once=document.createElement('div');
+    once.className='notice '+(win?'win':'lose');
+    once.style.marginTop='10px';
+    once.innerHTML=`${msg} <b>${state.word}</b>`;
+    wordEl.parentElement.appendChild(once);
+    setTimeout(()=>once.remove(),2400);
+  }
+
+  function giveHint(){
+    if(!state.active && !state.hintText) return;
+
+    if(state.hintText){
+      alert('Hint: '+state.hintText);
+      return;
+    }
+    if(!state.allowHint || !state.active) return;
+
+    const yet=[...new Set(state.word)].filter(c=>!state.hits.has(c));
+    if(!yet.length) return;
+    state.allowHint=false;
+    onGuess(sample(yet));
+  }
+
+  function skipWord(){
+    startGame();
+  }
+
+  function giveUp(){
+    if(!state.active) return;
+    if(!confirm('Reveal the word and count as a loss?')) return;
+    state.lives=0;
+    endRound(false);
+  }
+
+  // ------- Custom Word Modal -------
+  function openCustomModal(){
+    customWord.value='';
+    customHint.value='';
+    customModal.classList.add('show');
+  }
+
+  function closeCustomModal(){
+    customModal.classList.remove('show');
+  }
+
+  function applyCustomWord(){
+    const w=(customWord.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,10);
+    if(w.length<2){
+      alert('Please enter 2–10 letters (A–Z).');
+      return;
+    }
+    state.word = w;
+    state.hintText = (customHint.value||'').trim();
+    closeCustomModal();
+
+    setupRoundUI();
+    state.active=false; // wait for Player B
+
+    wordEl.style.display='none';
+    handoff.style.display='block';
+    handoff.innerHTML = `
+      <div class="notice" style="margin-bottom:10px">
+        <b>Pass to Player B</b><br>Keep the secret word hidden.
+      </div>
+      <button id="beginB" class="btn primary">Begin</button>
+    `;
+    const beginBtn = $('#beginB');
+    if(beginBtn){
+      beginBtn.onclick = ()=>{
+        handoff.style.display='none';
+        wordEl.style.display='flex';
+        state.active=true;
+        if(state.mode==='blitz'){
+          startBlitzTimer();
+        }
+      };
+    }
+  }
+
+  // ------- Stats -------
+  function updateStatsModal(){
+    mWins.textContent = state.stats.wins;
+    mLosses.textContent = state.stats.losses || 0;
+    mAccuracy.textContent = (state.stats.guesses
+      ? Math.round(100*state.stats.hits/state.stats.guesses)
+      : 0) + '%';
+  }
+
+  function resetStats(){
+    if(!confirm('Reset all stats?')) return;
+    state.stats={wins:0,losses:0,streak:0,best:0,guesses:0,hits:0};
+    setS('stats',state.stats);
+    updateHeaderStats();
+    updateStatsModal();
+  }
+
+  // ------- Wiring -------
+  hintBtn.onclick   = giveHint;
+  skipBtn.onclick   = skipWord;
+  giveUpBtn.onclick = giveUp;
+  newBtn.onclick    = startGame;
+
+  statsBtn.onclick  = ()=>{ statsModal.classList.add('show'); updateStatsModal(); };
+  closeStats.onclick= ()=>statsModal.classList.remove('show');
+  closeStats2.onclick=()=>statsModal.classList.remove('show');
+  resetStatsBtn.onclick=resetStats;
+
+  closeCustom.onclick = ()=>{
+    closeCustomModal();
+    if(!state.word){
+      lenSel.value='any';
+      startGame();
+    }
+  };
+  useCustomBtn.onclick = applyCustomWord;
+
+  modeSel.onchange = ()=>{
+    if(modeSel.value==='daily' && lenSel.value==='custom'){
+      lenSel.value='any';
+    }
+    startGame();
+  };
+
+  lenSel.onchange = ()=>{
+    if(lenSel.value==='custom' && modeSel.value==='daily'){
+      modeSel.value='classic';
+    }
+    startGame();
+  };
+
+  window.addEventListener('keydown',(e)=>{
+    if(e.target && ['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+    if(/^[a-z]$/i.test(e.key)){
+      onGuess(e.key.toUpperCase());
+    }else if(e.key==='Enter'){
+      startGame();
+    }
+  });
+
+  // ------- Init -------
+  const s=getS('stats',null);
+  if(s) state.stats=Object.assign(state.stats,s);
+  updateHeaderStats();
+  startGame();
+})();
+</script>
+</body>
+</html>
