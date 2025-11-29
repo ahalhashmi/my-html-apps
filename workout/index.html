@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>RepSet Web</title>
+<style>
+  :root{
+    --bg:#0a0d18;--panel:#0b1024;--ink:#eaf0f6;--ink2:#b9c7d7;--accent:#1fb154;--danger:#cc4040;--ghost:#1c223a;--border:#ffffff22;
+    --pad:16px;--radius:14px;--tapH:110px;--tapW:92vw;
+  }
+  /* Themes */
+  [data-theme="classic"]{--bg:#0a0d18;--panel:#0b1024;--ink:#eaf0f6;--ink2:#b9c7d7;--accent:#1fb154;--danger:#cc4040;--ghost:#1c223a;--border:#ffffff22;}
+  [data-theme="oled"]   {--bg:#000;--panel:#080a12;--ink:#f5f7fb;--ink2:#aeb8c9;--accent:#26c76f;--danger:#ff4d4d;--ghost:#111828;--border:#ffffff22;}
+  [data-theme="hi"]     {--bg:#0b0b0b;--panel:#111;--ink:#ffffff;--ink2:#eeeeee;--accent:#ffd400;--danger:#ff4a4a;--ghost:#1a1a1a;--border:#ffffff40;}
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial}
+  #app{min-height:100%;display:flex;flex-direction:column;padding-bottom:calc(var(--tapH) + env(safe-area-inset-bottom) + 10px)}
+  header{padding:14px var(--pad) 8px;font-weight:700;letter-spacing:.4px}
+  nav{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 var(--pad) 10px}
+  nav button{height:40px;border:none;border-radius:12px;background:var(--ghost);color:var(--ink2)}
+  nav button.active{background:var(--accent);color:#0a1214;font-weight:700}
+  main{flex:1;padding:0 var(--pad) 14px}
+  .tab{display:none}.tab.active{display:block}
+  .row{display:flex;gap:10px;align-items:center}
+  .col{display:flex;flex-direction:column;gap:10px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+  .h{opacity:.9;font-size:14px;margin:2px 0 6px}
+  label.small{font-size:12px;color:var(--ink2)}
+  input[type="number"],input[type="text"],select{width:100%;height:44px;border-radius:12px;border:1px solid var(--border);background:#ffffff10;color:var(--ink);padding:0 12px;outline:none}
+  .btn{height:50px;border:none;border-radius:12px;color:#091114;background:var(--accent);font-weight:800;font-size:15px}
+  .btn.ghost{background:#ffffff18;color:var(--ink)}
+  .btn.danger{background:var(--danger);color:#fff}
+  .btn.gray{background:#8b919c;color:#0b0f16}
+  .btn.sm{height:38px;font-size:13px;border-radius:10px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .mono{font-variant-numeric:tabular-nums}
+  .hidden{display:none !important}
+
+  .kbox{background:#ffffff10;border:1px solid var(--border);border-radius:12px;padding:10px}
+  .kbox .label{font-size:14px;color:var(--ink2);margin-bottom:6px}
+  .kbox .value{font-size:28px;font-weight:800;letter-spacing:.5px}
+  .bigline{font-size:22px;font-weight:900;margin-top:2px}
+
+  #bigTap{
+    position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 10px);transform:translateX(-50%);
+    width:var(--tapW);height:var(--tapH);background:#ffffff14;border:1px solid var(--border);border-radius:22px;
+    display:flex;align-items:center;justify-content:center;backdrop-filter:saturate(140%) blur(4px);z-index:10
+  }
+  #bigTap.hidden{display:none!important}
+  #bigTap span{font-weight:900}
+
+  #toast{position:fixed;left:50%;bottom:calc(var(--tapH) + env(safe-area-inset-bottom) + 20px);
+    transform:translateX(-50%);background:#000c;color:#fff;padding:10px 14px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .25s;z-index:40}
+  #toast.show{opacity:1}
+
+  .tpl-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border-radius:12px;background:#ffffff10;border:1px solid var(--border)}
+  .tpl-row .title{font-weight:700}
+  .tpl-actions{display:flex;gap:8px}
+  .chip{font-size:12px;color:var(--ink2)}
+  .range { appearance:none; width:100%; height:6px; border-radius:999px; background:#ffffff22; }
+  .range::-webkit-slider-thumb { appearance:none; width:18px; height:18px; border-radius:50%; background:#fff; border:1px solid #0003; }
+
+  /* ------- FULL SCREENS (true new screens) ------- */
+  .screen{
+    position:fixed; inset:0; z-index:30; display:none;
+    background:var(--bg); color:var(--ink); overflow:hidden;
+  }
+  .screen.active{display:flex; flex-direction:column;}
+  .screen header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px var(--pad); border-bottom:1px solid var(--border); font-weight:900;
+  }
+  .xbtn{height:36px;min-width:36px;padding:0 12px;border:none;border-radius:999px;background:#ffffff18;color:var(--ink);font-weight:800}
+  .screen main{flex:1; padding:12px var(--pad) 16px; display:flex; flex-direction:column; gap:12px; overflow:hidden;}
+  .rowSplit{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .centerBig{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:8px}
+  .centerBig .num{font-size:90px; font-weight:1000}
+  .centerBig .sub{opacity:.85}
+  .tapLayer{position:absolute; inset:0; z-index:1}
+
+  /* Template screen specifics */
+  #tmplStepsBox{border:1px solid var(--border); border-radius:12px; background:#ffffff08; padding:8px; overflow:auto; max-height:200px}
+  .step-pill{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid var(--border);background:#ffffff10;cursor:pointer;margin-bottom:6px}
+  .step-pill:last-child{margin-bottom:0}
+  .step-pill.active{background:var(--accent);color:#0b1214;border-color:transparent;font-weight:900}
+  .pill-meta{font-size:12px;opacity:.85}
+
+  .edit-box{margin-top:8px;padding:10px;border:1px dashed var(--border);border-radius:12px;background:#ffffff08}
+</style>
+</head>
+<body data-theme="classic">
+<div id="app">
+  <header>RepSet</header>
+  <nav>
+    <button type="button" data-tab="custom" class="active">Custom</button>
+    <button type="button" data-tab="free">Free</button>
+    <button type="button" data-tab="templates">Templates</button>
+    <button type="button" data-tab="settings">Settings</button>
+  </nav>
+
+  <main>
+    <!-- CUSTOM -->
+    <section id="custom" class="tab active">
+      <div class="card col">
+        <div class="row">
+          <div class="h">Custom Session</div>
+          <div style="flex:1"></div>
+          <button type="button" class="btn sm ghost" id="openFSReps">Reps Full Screen</button>
+          <button type="button" class="btn sm ghost" id="openFSTime">Time Full Screen</button>
+        </div>
+
+        <!-- Reps form -->
+        <div id="repsForm" class="col">
+          <div class="row" role="tablist" aria-label="Mode">
+            <button type="button" class="btn sm ghost" id="modeReps">Reps</button>
+            <button type="button" class="btn sm ghost" id="modeTime">Time</button>
+          </div>
+          <label class="small">Exercise name</label>
+          <input id="rName" type="text" placeholder="Push-ups" />
+          <div class="row">
+            <div style="flex:1">
+              <label class="small">Sets</label>
+              <input id="rSets" type="number" inputmode="numeric" value="4" />
+            </div>
+            <div style="flex:1">
+              <label class="small">Reps per set</label>
+              <input id="rReps" type="number" inputmode="numeric" value="10" />
+            </div>
+          </div>
+          <div class="row">
+            <div style="flex:1">
+              <label class="small">Rest (sec)</label>
+              <input id="rRest" type="number" inputmode="numeric" value="60" />
+            </div>
+            <div style="flex:1">
+              <label class="small">Cap (sec, optional)</label>
+              <input id="rCap" type="number" inputmode="numeric" value="0" />
+            </div>
+          </div>
+          <button type="button" class="btn" id="startReps">Start Reps Session</button>
+        </div>
+
+        <!-- Time form -->
+        <div id="timeForm" class="col hidden">
+          <label class="small">Exercise name</label>
+          <input id="tName" type="text" placeholder="Plank Tabata" />
+          <div class="row">
+            <div style="flex:1">
+              <label class="small">Rounds (sets)</label>
+              <input id="tRounds" type="number" inputmode="numeric" value="8" />
+            </div>
+            <div style="flex:1">
+              <label class="small">Work (sec)</label>
+              <input id="tWork" type="number" inputmode="numeric" value="40" />
+            </div>
+            <div style="flex:1">
+              <label class="small">Rest (sec)</label>
+              <input id="tRest" type="number" inputmode="numeric" value="20" />
+            </div>
+          </div>
+          <button type="button" class="btn" id="startTime">Start Time Session</button>
+        </div>
+      </div>
+
+      <!-- Minimal on-page session panel -->
+      <div id="session" class="card col hidden" aria-live="polite">
+        <div class="row" style="justify-content:space-between">
+          <div class="h" id="sName">Session</div>
+          <div class="h mono" id="sElapsed">00:00</div>
+        </div>
+        <div class="row">
+          <div class="kbox" style="flex:1">
+            <div class="label">Work</div>
+            <div class="value mono" id="sWork">00:00</div>
+          </div>
+          <div class="kbox" style="flex:1">
+            <div class="label">Rest</div>
+            <div class="value mono" id="sRest">—</div>
+          </div>
+        </div>
+        <div class="bigline mono" id="sProg">—</div>
+        <div class="bigline mono" id="sTarget">—</div>
+        <div class="grid3" style="margin-top:6px">
+          <button type="button" class="btn ghost" id="btnMinus">−1</button>
+          <button type="button" class="btn" id="btnPlus">+1 Rep</button>
+          <button type="button" class="btn ghost" id="btnNext">Next</button>
+        </div>
+        <div class="grid3">
+          <button type="button" class="btn ghost" id="btnPause">Pause</button>
+          <button type="button" class="btn ghost" id="btnSkip">Skip</button>
+          <button type="button" class="btn danger" id="btnEnd">End</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FREE -->
+    <section id="free" class="tab">
+      <div class="card col">
+        <div class="row">
+          <div class="h">Free • Reps Counter</div>
+          <div style="flex:1"></div>
+          <button type="button" class="btn sm ghost" id="fsFreeReps">Full Screen</button>
+        </div>
+        <div class="row">
+          <div class="kbox" style="flex:1">
+            <div class="label">Sets</div>
+            <div class="value mono" id="frSets">1</div>
+          </div>
+          <div class="kbox" style="flex:1">
+            <div class="label">Reps</div>
+            <div class="value mono" id="frReps">0</div>
+          </div>
+        </div>
+        <div class="grid3" style="margin-top:6px">
+          <button type="button" class="btn ghost" id="frReset">Reset</button>
+          <button type="button" class="btn ghost" id="frDec">−1 Rep</button>
+          <div></div>
+        </div>
+      </div>
+
+      <div class="card col">
+        <div class="row">
+          <div class="h">Free • Stopwatch</div>
+          <div style="flex:1"></div>
+          <button type="button" class="btn sm ghost" id="fsStopwatch">Full Screen</button>
+        </div>
+        <div class="value mono" id="swTime">00:00</div>
+        <div class="grid3">
+          <button type="button" class="btn ghost" id="swStart">Start</button>
+          <button type="button" class="btn ghost" id="swPause">Pause</button>
+          <button type="button" class="btn ghost" id="swReset">Reset</button>
+        </div>
+      </div>
+
+      <div class="card col">
+        <div class="row">
+          <div class="h">Free • Countdown</div>
+          <div style="flex:1"></div>
+          <button type="button" class="btn sm ghost" id="fsCountdown">Full Screen</button>
+        </div>
+        <div class="row">
+          <div style="flex:1">
+            <label class="small">Seconds</label>
+            <input id="cdInput" type="number" inputmode="numeric" value="60" />
+          </div>
+          <div class="kbox" style="flex:1">
+            <div class="label">Time</div>
+            <div class="value mono" id="cdTime">01:00</div>
+          </div>
+        </div>
+        <div class="grid3">
+          <button type="button" class="btn ghost" id="cdStart">Start</button>
+          <button type="button" class="btn ghost" id="cdStop">Stop</button>
+          <button type="button" class="btn ghost" id="cdReset">Reset</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEMPLATES -->
+    <section id="templates" class="tab">
+      <div class="card col">
+        <div class="h">Template Editor</div>
+        <div class="row">
+          <input id="tplName" type="text" placeholder="Full Body A" style="flex:2" />
+          <div style="flex:1">
+            <label class="small">Transition between steps (sec)</label>
+            <input id="tplTrans" type="number" inputmode="numeric" value="30" />
+          </div>
+          <button class="btn sm ghost" id="tplAutoBtn" title="Auto-step (advance automatically)">Auto-step: On</button>
+        </div>
+
+        <!-- Add Step Form -->
+        <div class="card col">
+          <div class="row">
+            <div style="flex:1">
+              <label class="small">Type</label>
+              <select id="stepType">
+                <option value="reps">Reps</option>
+                <option value="time">Time</option>
+              </select>
+            </div>
+            <div style="flex:2">
+              <label class="small">Name</label>
+              <input id="stepName" type="text" placeholder="Push-ups / Plank" />
+            </div>
+          </div>
+          <div class="row">
+            <div style="flex:1">
+              <label class="small">Sets / Rounds</label>
+              <input id="stepSets" type="number" inputmode="numeric" value="3" />
+            </div>
+            <div style="flex:1" id="repsField">
+              <label class="small">Reps per set</label>
+              <input id="stepReps" type="number" inputmode="numeric" value="10" />
+            </div>
+            <div style="flex:1" id="workField" class="hidden">
+              <label class="small">Work (sec)</label>
+              <input id="stepWork" type="number" inputmode="numeric" value="30" />
+            </div>
+            <div style="flex:1">
+              <label class="small">Rest (sec)</label>
+              <input id="stepRest" type="number" inputmode="numeric" value="60" />
+            </div>
+          </div>
+          <button type="button" class="btn" id="addStepBtn">Add Step</button>
+        </div>
+
+        <div id="tplSteps" class="col"></div>
+
+        <div class="row">
+          <button type="button" class="btn" id="saveTpl">Save Template</button>
+          <button type="button" class="btn ghost" id="clearCurSteps">Clear Steps</button>
+          <button type="button" class="btn ghost" id="cancelEdit" style="display:none">Cancel Edit</button>
+        </div>
+      </div>
+
+      <div class="card col">
+        <div class="h">Saved Templates</div>
+        <div id="tplList" class="col"></div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="settings" class="tab">
+      <div class="card col">
+        <div class="h">Cues & Display</div>
+        <div class="row">
+          <button type="button" class="btn sm ghost" id="enableSound">Enable Sound</button>
+          <button type="button" class="btn sm ghost" id="testBeep">Test Beep</button>
+        </div>
+        <div class="row">
+          <button type="button" class="btn sm ghost" id="wakeOn">Keep Screen Awake</button>
+          <button type="button" class="btn sm ghost" id="wakeOff">Allow Sleep</button>
+        </div>
+        <div class="row">
+          <div style="flex:1">
+            <label class="small">Master Volume</label>
+            <input id="cueVol" class="range" type="range" min="0" max="100" value="60" />
+          </div>
+        </div>
+        <div class="row"><div class="h">Sound toggles</div></div>
+        <div class="row">
+          <button type="button" class="btn sm ghost" id="toggleStartCue">Start cue: On</button>
+          <button type="button" class="btn sm ghost" id="toggleEndCue">End cue: On</button>
+        </div>
+        <div class="row">
+          <button type="button" class="btn sm ghost" id="toggleRepClick">Rep click: Off</button>
+          <button type="button" class="btn sm ghost" id="toggleTimeTick">Timer tick: Off</button>
+        </div>
+        <div class="row">
+          <button type="button" class="btn sm ghost" id="toggleCountIn">Count-in: Off</button>
+          <button type="button" class="btn sm ghost" id="toggleAutoPause">Auto-pause in background: On</button>
+        </div>
+        <div class="row">
+          <div style="flex:1">
+            <label class="small">Theme</label>
+            <select id="themeSel">
+              <option value="classic">Classic</option>
+              <option value="oled">OLED Black</option>
+              <option value="hi">High Contrast</option>
+            </select>
+          </div>
+        </div>
+        <div class="stat">Note: iOS plays sound only after your first tap. If wake-lock doesn’t work on your iOS version, temporarily disable Auto-Lock.</div>
+      </div>
+
+      <div class="card col">
+        <div class="h">Templates Storage</div>
+        <div class="row">
+          <button type="button" class="btn sm ghost" id="exportTemplates">Export</button>
+          <button type="button" class="btn sm ghost" id="importTemplates">Import</button>
+          <button type="button" class="btn sm ghost" id="downloadExample">Download example</button>
+          <input id="tplFile" type="file" accept="application/json" class="hidden" />
+        </div>
+        <button type="button" class="btn sm ghost" id="clearTemplates">Clear All Saved Templates</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Shared BIG tap -->
+  <div id="bigTap" class="hidden" role="button" aria-label="Tap to add rep"><span>+1 Rep</span></div>
+  <div id="toast"></div>
+</div>
+
+<!-- ############## FULL-SCREEN SCREENS ############## -->
+
+<!-- Custom Reps Screen -->
+<div id="scrReps" class="screen" aria-live="polite">
+  <header>
+    <div id="srTitle">Reps Session</div>
+    <button class="xbtn" id="srExit">×</button>
+  </header>
+  <main>
+    <div class="row" style="justify-content:space-between">
+      <div class="h mono" id="srElapsed">00:00</div>
+      <div class="h mono" id="srSetRep">Set 1/1 — 0/0</div>
+    </div>
+    <div class="rowSplit">
+      <div class="kbox">
+        <div class="label">Work</div>
+        <div class="value mono" id="srWork">00:00</div>
+      </div>
+      <div class="kbox">
+        <div class="label">Rest</div>
+        <div class="value mono" id="srRest">—</div>
+      </div>
+    </div>
+    <div class="centerBig" style="position:relative; flex:1">
+      <div class="num mono" id="srBig">0</div>
+      <div class="sub mono" id="srHint">Tap anywhere to +1</div>
+      <div class="tapLayer" id="srTap"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Custom Time Screen -->
+<div id="scrTime" class="screen" aria-live="polite">
+  <header>
+    <div id="stTitle">Time Session</div>
+    <button class="xbtn" id="stExit">×</button>
+  </header>
+  <main>
+    <div class="row" style="justify-content:space-between">
+      <div class="h mono" id="stElapsed">00:00</div>
+      <div class="h mono" id="stRoundMeta">Round 1/1</div>
+    </div>
+    <div class="rowSplit">
+      <div class="kbox">
+        <div class="label">Work</div>
+        <div class="value mono" id="stWork">00:00</div>
+      </div>
+      <div class="kbox">
+        <div class="label">Rest</div>
+        <div class="value mono" id="stRest">—</div>
+      </div>
+    </div>
+    <div class="centerBig">
+      <div class="num mono" id="stBig">00:00</div>
+      <div class="sub mono">Full screen blocks other controls</div>
+    </div>
+  </main>
+</div>
+
+<!-- Free Reps Screen -->
+<div id="scrFreeReps" class="screen">
+  <header>
+    <div>Free • Reps</div>
+    <button class="xbtn" id="sfrExit">×</button>
+  </header>
+  <main>
+    <div class="rowSplit">
+      <div class="kbox"><div class="label">Sets</div><div class="value mono" id="sfrSets">1</div></div>
+      <div class="kbox"><div class="label">Reps</div><div class="value mono" id="sfrReps">0</div></div>
+    </div>
+    <div class="centerBig" style="position:relative; flex:1">
+      <div class="num mono" id="sfrBig">0</div>
+      <div class="sub mono">Tap anywhere to +1</div>
+      <div class="tapLayer" id="sfrTap"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Free Stopwatch Screen -->
+<div id="scrStopwatch" class="screen">
+  <header>
+    <div>Free • Stopwatch</div>
+    <button class="xbtn" id="sswExit">×</button>
+  </header>
+  <main>
+    <div class="centerBig" style="flex:1">
+      <div class="num mono" id="sswBig">00:00</div>
+      <div class="sub mono">Tap is disabled to avoid accidental actions</div>
+    </div>
+  </main>
+</div>
+
+<!-- Free Countdown Screen -->
+<div id="scrCountdown" class="screen">
+  <header>
+    <div>Free • Countdown</div>
+    <button class="xbtn" id="scdExit">×</button>
+  </header>
+  <main>
+    <div class="centerBig" style="flex:1">
+      <div class="num mono" id="scdBig">00:00</div>
+      <div class="sub mono">Tap is disabled to avoid accidental actions</div>
+    </div>
+  </main>
+</div>
+
+<!-- Template Run Screen (dedicated new screen) -->
+<div id="scrTemplate" class="screen" aria-live="polite">
+  <header>
+    <div class="row" style="gap:8px">
+      <div id="ttTitle" style="font-weight:900">Template</div>
+      <button class="btn sm ghost" id="ttAutoBtn" title="Auto-step">✔</button>
+    </div>
+    <div class="row" style="gap:10px">
+      <div class="h mono" id="ttElapsed">00:00</div>
+      <button class="xbtn" id="ttExit">×</button>
+    </div>
+  </header>
+  <main>
+    <div>
+      <div class="row" style="justify-content:space-between">
+        <div class="h">Steps</div>
+        <div class="h mono" id="ttStepMeta">—</div>
+      </div>
+      <div id="tmplStepsBox"><div id="ttList"></div></div>
+    </div>
+
+    <div class="rowSplit">
+      <div class="kbox">
+        <div class="label">Work</div>
+        <div class="value mono" id="ttWork">00:00</div>
+      </div>
+      <div class="kbox">
+        <div class="label" id="ttRestLabel">Rest</div>
+        <div class="value mono" id="ttRest">—</div>
+      </div>
+    </div>
+
+    <div class="col mono">
+      <div class="bigline" id="ttPhase">—</div>
+      <div class="bigline" id="ttProg">—</div>
+      <div class="bigline" id="ttTarget">—</div>
+    </div>
+
+    <div class="grid3">
+      <button type="button" class="btn ghost" id="ttMinus">−1</button>
+      <button type="button" class="btn" id="ttPlus">+1 Rep</button>
+      <button type="button" class="btn ghost" id="ttNext">Next</button>
+    </div>
+    <div class="grid3">
+      <button type="button" class="btn ghost" id="ttPause">Pause</button>
+      <button type="button" class="btn ghost" id="ttSkip">Skip</button>
+      <button type="button" class="btn danger" id="ttEnd">End</button>
+    </div>
+
+    <div class="tapLayer" id="ttTap" style="pointer-events:none;"></div>
+  </main>
+</div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const el = (tag, cls, txt) => {const e=document.createElement(tag); if(cls) e.className=cls; if(txt) e.textContent=txt; return e;}
+const fmt = sec => {sec=Math.max(0,Math.floor(sec)); const m=String(Math.floor(sec/60)).padStart(2,'0'); const s=String(sec%60).padStart(2,'0'); return `${m}:${s}`;}
+function toast(msg){const t=$("#toast"); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1100);}
+
+/* ---------- prefs & theme ---------- */
+const PREF_KEY='repset.prefs.v3';
+let prefs = {
+  repClick:false, timeTick:false, cueVol:0.6, countIn:false, autoPause:true, theme:'classic',
+  cueStart:true, cueEnd:true
+};
+try{ const p=JSON.parse(localStorage.getItem(PREF_KEY)||'{}'); prefs={...prefs, ...p}; }catch{}
+function savePrefs(){ localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); }
+function renderPrefs(){
+  $("#cueVol").value=Math.round((prefs.cueVol||0.6)*100);
+  $("#toggleStartCue").textContent = `Start cue: ${prefs.cueStart?'On':'Off'}`;
+  $("#toggleEndCue").textContent   = `End cue: ${prefs.cueEnd?'On':'Off'}`;
+  $("#toggleRepClick").textContent = `Rep click: ${prefs.repClick?'On':'Off'}`;
+  $("#toggleTimeTick").textContent = `Timer tick: ${prefs.timeTick?'On':'Off'}`;
+  $("#toggleCountIn").textContent  = `Count-in: ${prefs.countIn?'On':'Off'}`;
+  $("#toggleAutoPause").textContent= `Auto-pause in background: ${prefs.autoPause?'On':'Off'}`;
+  $("#themeSel").value=prefs.theme||'classic';
+  document.body.setAttribute('data-theme', prefs.theme||'classic');
+}
+renderPrefs();
+
+/* ---------- audio ---------- */
+let AC=null, MASTER=null;
+function ensureAudio(){
+  if(!AC){
+    const C=window.AudioContext||window.webkitAudioContext;
+    if(C){ AC=new C(); MASTER=AC.createGain(); MASTER.gain.value=(prefs.cueVol ?? 0.6); MASTER.connect(AC.destination); }
+  }
+}
+function oscWithGain(){ ensureAudio(); const o=AC.createOscillator(), g=AC.createGain(); g.gain.value=1.0; o.connect(g).connect(MASTER); return {o,g}; }
+function playMorse(pattern){
+  if(!AC) return; let t=AC.currentTime, unit=0.18, gap=0.14;
+  for(const ch of pattern.replace(/\s+/g,'')){
+    const {o,g}=oscWithGain(); o.type=(ch==='.')?'sine':'square'; o.frequency.value=(ch==='.')?900:600;
+    g.gain.value=0.06; o.start(t); const dur=(ch==='.')?unit:3*unit; o.stop(t+dur); t+=dur+gap;
+  }
+}
+function playClick(){ if(!AC) return; const t=AC.currentTime; const {o,g}=oscWithGain(); o.type='triangle'; o.frequency.value=1200; g.gain.value=0.02; o.start(t); o.stop(t+0.05); }
+const CUE_SHORT='.'; const CUE_LONG='-';
+$("#enableSound").addEventListener('click', ()=>{ ensureAudio(); AC && AC.resume && AC.resume(); toast('Sound enabled'); });
+$("#testBeep").addEventListener('click', ()=>{ ensureAudio(); playMorse('.'); });
+document.addEventListener('input', (e)=>{
+  if(e.target && e.target.id==='cueVol'){
+    const v = Math.max(0, Math.min(1, (+e.target.value||0)/100));
+    prefs.cueVol = v; savePrefs(); if(MASTER){ MASTER.gain.setTargetAtTime(v, AC.currentTime, 0.01); }
+  }
+});
+$("#toggleStartCue").addEventListener('click', ()=>{ prefs.cueStart=!prefs.cueStart; savePrefs(); renderPrefs(); });
+$("#toggleEndCue").addEventListener('click',   ()=>{ prefs.cueEnd=!prefs.cueEnd; savePrefs(); renderPrefs(); });
+$("#toggleRepClick").addEventListener('click', ()=>{ prefs.repClick=!prefs.repClick; savePrefs(); renderPrefs(); });
+$("#toggleTimeTick").addEventListener('click', ()=>{ prefs.timeTick=!prefs.timeTick; savePrefs(); renderPrefs(); });
+$("#toggleCountIn").addEventListener('click',  ()=>{ prefs.countIn=!prefs.countIn; savePrefs(); renderPrefs(); });
+$("#toggleAutoPause").addEventListener('click',()=>{ prefs.autoPause=!prefs.autoPause; savePrefs(); renderPrefs(); });
+$("#themeSel").addEventListener('change', (e)=>{ prefs.theme=e.target.value; savePrefs(); renderPrefs(); });
+
+/* ---------- wake lock ---------- */
+let wake=null;
+async function keepAwake(on){
+  try{
+    if(on && 'wakeLock' in navigator){ wake=await navigator.wakeLock.request('screen'); toast('Screen awake on'); }
+    else { if(wake){ await wake.release(); wake=null; } toast('Screen can sleep'); }
+  }catch(e){ toast('Wake lock failed'); }
+}
+$("#wakeOn").addEventListener('click', ()=> keepAwake(true));
+$("#wakeOff").addEventListener('click', ()=> keepAwake(false));
+
+/* ---------- ticker ---------- */
+const Ticker = (function(){
+  let subs = new Set(); let running=false, timer=null;
+  function start(){ if(running) return; running=true; timer=setInterval(()=>{ subs.forEach(fn=>{ try{ fn(); }catch{} }); },1000); }
+  function stop(){ if(!running) return; running=false; clearInterval(timer); timer=null; }
+  function subscribe(fn){ subs.add(fn); start(); return ()=> subs.delete(fn); }
+  function isRunning(){ return running; }
+  return { subscribe, start, stop, isRunning };
+})();
+document.addEventListener('visibilitychange', ()=>{ if(!prefs.autoPause) return; if(document.hidden){ Ticker.stop(); } else { Ticker.start(); } });
+
+/* ---------- tabs ---------- */
+function showTab(id){
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active', x.dataset.tab===id));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active', x.id===id));
+  hideBigTap();
+}
+document.querySelectorAll('nav button').forEach(b=> b.addEventListener('click', ()=> showTab(b.dataset.tab)));
+
+/* ---------- shared big tap ---------- */
+const bigTap = $("#bigTap");
+let bigTapHandler = null;
+function showBigTap(handler){ bigTapHandler = handler; bigTap.classList.remove('hidden'); }
+function hideBigTap(){ bigTap.classList.add('hidden'); bigTapHandler = null; }
+bigTap.addEventListener('click', ()=>{ if(typeof bigTapHandler==='function') bigTapHandler(); });
+
+/* ---------- Count-in ---------- */
+async function doCountIn(cb){
+  if(!prefs.countIn) return cb();
+  ensureAudio();
+  if(prefs.cueStart) playMorse(CUE_SHORT);
+  await new Promise(r=>setTimeout(r,600));
+  if(prefs.cueStart) playMorse(CUE_SHORT);
+  await new Promise(r=>setTimeout(r,600));
+  if(prefs.cueStart) playMorse(CUE_SHORT);
+  await new Promise(r=>setTimeout(r,600));
+  if(prefs.cueStart) playMorse(CUE_LONG);
+  await new Promise(r=>setTimeout(r,180));
+  cb();
+}
+
+/* ################### CUSTOM SESSION ################### */
+function Session(){
+  let mode=null, cfg=null;
+  let elapsed=0, workUp=0, repCount=0, curSet=1;
+  let workRemain=0, restRemain=0, resting=false, running=false, transitioning=false;
+  let unsubSess=null, unsubWork=null, unsubRest=null;
+
+  const ui = {
+    panel: $("#session"),
+    name: $("#sName"), elapsed: $("#sElapsed"),
+    work: $("#sWork"), rest: $("#sRest"),
+    prog: $("#sProg"), target: $("#sTarget"),
+    minus: $("#btnMinus"), plus: $("#btnPlus"), next: $("#btnNext"),
+    pause: $("#btnPause"), skip: $("#btnSkip"), end: $("#btnEnd")
+  };
+
+  const fsReps = {
+    el: $("#scrReps"),
+    title: $("#srTitle"), elapsed: $("#srElapsed"), setrep: $("#srSetRep"),
+    work: $("#srWork"), rest: $("#srRest"), big: $("#srBig"), tap: $("#srTap"), exit: $("#srExit")
+  };
+  const fsTime = {
+    el: $("#scrTime"),
+    title: $("#stTitle"), elapsed: $("#stElapsed"), round: $("#stRoundMeta"),
+    work: $("#stWork"), rest: $("#stRest"), big: $("#stBig"), exit: $("#stExit")
+  };
+
+  function showFSReps(){ fsReps.el.classList.add('active'); }
+  function hideFSReps(){ fsReps.el.classList.remove('active'); }
+  function showFSTime(){ fsTime.el.classList.add('active'); }
+  function hideFSTime(){ fsTime.el.classList.remove('active'); }
+
+  function show(){ ui.panel.classList.remove('hidden'); }
+  function hide(){ ui.panel.classList.add('hidden'); hideBigTap(); hideFSReps(); hideFSTime(); }
+  function clearSubs(){ [unsubSess,unsubWork,unsubRest].forEach(fn=>{ if(fn) fn(); }); unsubSess=unsubWork=unsubRest=null; }
+
+  function start(m, c){
+    ensureAudio(); if(prefs.cueStart) playMorse(CUE_LONG);
+    mode=m; cfg=c; elapsed=0; workUp=0; repCount=0; curSet=1; resting=false; transitioning=false;
+    workRemain = (mode==='time') ? cfg.work : 0;
+
+    ui.name.textContent = cfg.name || (mode==='reps'?'Reps Session':'Time Session');
+    ui.elapsed.textContent = '00:00';
+    if(mode==='reps'){
+      ui.work.textContent='00:00';
+      ui.rest.textContent = cfg.rest>0 ? fmt(cfg.rest) : '—';
+      ui.prog.textContent=`Set ${curSet}/${cfg.sets}`;
+      ui.target.textContent=`${repCount}/${cfg.reps}`;
+      showBigTap(tapRep);
+    }else{
+      ui.work.textContent=fmt(workRemain);
+      ui.rest.textContent='—';
+      ui.prog.textContent=`Round ${curSet}/${cfg.sets}`;
+      ui.target.textContent=`Work ${fmt(cfg.work)}`;
+      hideBigTap();
+    }
+
+    fsReps.title.textContent = ui.name.textContent;
+    fsTime.title.textContent = ui.name.textContent;
+    renderFS();
+
+    bindButtons();
+    show(); resume();
+  }
+
+  function bindButtons(){
+    ui.plus.onclick = tapRep;
+    ui.minus.onclick= ()=>{ if(mode!=='reps' || resting || curSet>cfg.sets) return; repCount=Math.max(0,repCount-1); ui.target.textContent=`${repCount}/${cfg.reps}`; renderFS(); };
+    ui.next.onclick = ()=>{ if(mode==='reps'){ finishSet(); } else { nextRound(); } };
+    ui.pause.onclick= ()=>{ running ? pause() : resume(); ui.pause.textContent = running?'Pause':'Resume'; };
+    ui.skip.onclick = ()=>{ if(mode==='reps'){ if(resting){ resting=false; if(unsubRest){ unsubRest(); unsubRest=null; } ui.rest.textContent='—'; } startNextSet(); }
+                            else { nextRound(true); } };
+    ui.end.onclick  = ()=>{ pause(); hide(); toast('Session ended'); if(prefs.cueEnd) playMorse(CUE_LONG); };
+
+    $("#openFSReps").onclick = ()=>{ if(mode!=='reps'){ toast('Switch to Reps first'); return; } showFSReps(); };
+    $("#openFSTime").onclick = ()=>{ if(mode!=='time'){ toast('Switch to Time first'); return; } showFSTime(); };
+
+    fsReps.exit.addEventListener('click', hideFSReps);
+    fsTime.exit.addEventListener('click', hideFSTime);
+    fsReps.tap.addEventListener('click', ()=>{ if(mode==='reps' && !resting && curSet<=cfg.sets) tapRep(); });
+  }
+
+  function tapRep(){
+    if(mode!=='reps' || resting || transitioning || curSet>cfg.sets) return;
+    repCount++; ui.target.textContent=`${repCount}/${cfg.reps}`;
+    if(prefs.repClick) playClick();
+    if(cfg.reps>=3 && (repCount===cfg.reps-2 || repCount===cfg.reps-1) && prefs.cueStart) playMorse(CUE_SHORT);
+    renderFS();
+    if(repCount>=cfg.reps){ transitioning=true; finishSet(); setTimeout(()=>transitioning=false, 140); }
+  }
+
+  function resume(){
+    if(running) return; running=true; clearSubs();
+    unsubSess = Ticker.subscribe(()=>{ elapsed++; ui.elapsed.textContent=fmt(elapsed); renderFS(); });
+
+    if(mode==='reps'){
+      unsubWork = Ticker.subscribe(()=>{
+        workUp++; ui.work.textContent=fmt(workUp); renderFS();
+        const cap = Number(cfg.cap||0);
+        if(cap>0 && workUp>=cap){ finishSet(); }
+      });
+      if(resting){ unsubRest = Ticker.subscribe(tickRest); }
+    }else{
+      doCountIn(()=>{
+        unsubWork = Ticker.subscribe(()=>{
+          if(workRemain>0){
+            workRemain--; ui.work.textContent=fmt(workRemain); renderFS();
+            if(prefs.timeTick) playClick();
+            if((workRemain===3 || workRemain===2) && prefs.cueStart) playMorse(CUE_SHORT);
+            else if(workRemain===1 && prefs.cueStart) playMorse(CUE_LONG);
+            if(workRemain===0){ if(cfg.rest>0) beginRest(); else nextRound(); }
+          }
+        });
+      });
+    }
+  }
+  function pause(){ if(!running) return; running=false; clearSubs(); }
+
+  function beginRest(){
+    resting=true; restRemain=cfg.rest; ui.rest.textContent=fmt(restRemain);
+    ui.work.textContent='—'; if(unsubWork){ unsubWork(); unsubWork=null; }
+    renderFS();
+    if(!unsubRest) unsubRest=Ticker.subscribe(tickRest);
+  }
+  function tickRest(){
+    if(!resting) return;
+    if(restRemain>0){
+      restRemain--; ui.rest.textContent=fmt(restRemain); renderFS();
+      if(restRemain===0){
+        if(prefs.cueStart) playMorse('..-'); resting=false; ui.rest.textContent='—';
+        if(mode==='reps') startNextSet(); else nextRound();
+      }
+    }
+  }
+  function finishSet(){
+    if(prefs.cueEnd) playMorse(CUE_LONG);
+    if(curSet>=cfg.sets){ pause(); hide(); toast('Completed ✅'); return; }
+    if(cfg.rest>0){ beginRest(); } else { startNextSet(); }
+  }
+  function startNextSet(){
+    curSet++;
+    if(curSet>cfg.sets){ pause(); hide(); toast('Completed ✅'); return; }
+    repCount=0; workUp=0;
+    ui.prog.textContent=`Set ${curSet}/${cfg.sets}`;
+    ui.target.textContent=`0/${cfg.reps}`;
+    ui.work.textContent='00:00';
+    ui.rest.textContent = cfg.rest>0 ? fmt(cfg.rest) : '—';
+    showBigTap(tapRep); renderFS();
+  }
+  function nextRound(force=false){
+    if(force){ resting=false; if(unsubRest){ unsubRest(); unsubRest=null; } ui.rest.textContent='—'; }
+    if(curSet>=cfg.sets){ pause(); hide(); toast('Completed ✅'); if(prefs.cueEnd) playMorse(CUE_LONG); return; }
+    curSet++; workRemain=cfg.work;
+    ui.work.textContent=fmt(workRemain);
+    ui.prog.textContent=`Round ${curSet}/${cfg.sets}`;
+    ui.target.textContent=`Work ${fmt(cfg.work)}`;
+    ui.rest.textContent='—'; renderFS();
+    if(unsubWork){ unsubWork(); unsubWork=null; }
+    doCountIn(()=>{
+      unsubWork = Ticker.subscribe(()=>{
+        if(workRemain>0){
+          workRemain--; ui.work.textContent=fmt(workRemain); renderFS();
+          if(prefs.timeTick) playClick();
+          if((workRemain===3 || workRemain===2) && prefs.cueStart) playMorse(CUE_SHORT);
+          else if(workRemain===1 && prefs.cueStart) playMorse(CUE_LONG);
+          if(workRemain===0){ if(cfg.rest>0) beginRest(); else nextRound(); }
+        }
+      });
+    });
+  }
+
+  function renderFS(){
+    fsReps.elapsed.textContent = ui.elapsed.textContent;
+    fsReps.setrep.textContent  = `Set ${curSet}/${ mode==='reps'?cfg.sets:1 } — ${repCount}/${ mode==='reps'?cfg.reps:0 }`;
+    fsReps.work.textContent    = (mode==='reps')? fmt(workUp) : '—';
+    fsReps.rest.textContent    = (resting? fmt(restRemain) : (cfg?.rest>0? fmt(cfg.rest):'—'));
+    fsReps.big.textContent     = String(repCount);
+
+    fsTime.elapsed.textContent = ui.elapsed.textContent;
+    fsTime.round.textContent   = (mode==='time')? `Round ${curSet}/${cfg.sets}` : '—';
+    fsTime.work.textContent    = (mode==='time')? fmt(workRemain) : '—';
+    fsTime.rest.textContent    = resting? fmt(restRemain) : '—';
+    fsTime.big.textContent     = (mode==='time')? fmt(workRemain) : '—';
+  }
+
+  return { start };
+}
+const session = Session();
+
+/* ---------- forms ---------- */
+const modeReps = $("#modeReps"), modeTime=$("#modeTime"), repsForm=$("#repsForm"), timeForm=$("#timeForm");
+function setMode(m){ if(m==='reps'){ repsForm.classList.remove('hidden'); timeForm.classList.add('hidden'); } else { timeForm.classList.remove('hidden'); repsForm.classList.add('hidden'); } }
+modeReps.addEventListener('click', ()=>setMode('reps'));
+modeTime.addEventListener('click', ()=>setMode('time'));
+setMode('reps');
+
+$("#startReps").addEventListener('click', ()=>{
+  const cfg={name: $("#rName").value.trim() || "Reps Session",
+             sets: Math.max(1, +$("#rSets").value||1),
+             reps: Math.max(1, +$("#rReps").value||1),
+             rest: Math.max(0, +$("#rRest").value||0),
+             cap:  Math.max(0, +$("#rCap").value||0)};
+  session.start('reps', cfg);
+});
+$("#startTime").addEventListener('click', ()=>{
+  const cfg={name: $("#tName").value.trim() || "Time Session",
+             sets: Math.max(1, +$("#tRounds").value||1),
+             work: Math.max(1, +$("#tWork").value||1),
+             rest: Math.max(0, +$("#tRest").value||0)};
+  session.start('time', cfg);
+});
+
+/* ################### FREE TOOLS ################### */
+let fr_sets=1, fr_reps=0;
+const frSets=$("#frSets"), frReps=$("#frReps");
+function frRender(){ frSets.textContent=fr_sets; frReps.textContent=fr_reps; }
+$("#frReset").addEventListener('click', ()=>{ fr_sets=1; fr_reps=0; frRender(); });
+$("#frDec").addEventListener('click', ()=>{ fr_reps=Math.max(0,fr_reps-1); frRender(); });
+document.querySelector('button[data-tab="free"]').addEventListener('click', ()=>{ showBigTap(()=>{ fr_reps++; frRender(); if(prefs.repClick){ ensureAudio(); playClick(); } }); });
+['custom','templates','settings'].forEach(t => { document.querySelector(`button[data-tab="${t}"]`).addEventListener('click', hideBigTap); });
+
+/* -- Declare screen handles FIRST to avoid ReferenceErrors -- */
+let scrStopwatch = null;
+let scrCountdown = null;
+
+/* Stopwatch */
+let sw_running=false, sw_start=0, sw_elapsed=0, swUnsub=null;
+function swTick(){
+  const t=(sw_running?(Date.now()-sw_start):0)+sw_elapsed;
+  $("#swTime").textContent=fmt(Math.floor(t/1000));
+  if(scrStopwatch && scrStopwatch.el.classList.contains('active')){
+    scrStopwatch.big.textContent=$("#swTime").textContent;
+  }
+}
+$("#swStart").addEventListener('click', ()=>{ if(!sw_running){ sw_running=true; sw_start=Date.now(); if(!swUnsub) swUnsub=Ticker.subscribe(swTick);} });
+$("#swPause").addEventListener('click', ()=>{ if(sw_running){ sw_elapsed+=Date.now()-sw_start; sw_running=false; } else { sw_running=true; sw_start=Date.now(); } });
+$("#swReset").addEventListener('click', ()=>{ sw_running=false; sw_elapsed=0; swTick(); });
+swTick();
+scrStopwatch = { el:$("#scrStopwatch"), big:$("#sswBig"), exit:$("#sswExit") };
+$("#fsStopwatch").addEventListener('click', ()=>{ scrStopwatch.big.textContent=$("#swTime").textContent; scrStopwatch.el.classList.add('active'); });
+scrStopwatch.exit.addEventListener('click', ()=> scrStopwatch.el.classList.remove('active'));
+
+/* Countdown */
+let cd_total=60, cd_remain=60, cd_running=false, cdUnsub=null;
+function cdRender(){
+  $("#cdTime").textContent=fmt(cd_remain);
+  if(scrCountdown && scrCountdown.el.classList.contains('active')){
+    scrCountdown.big.textContent=fmt(cd_remain);
+  }
+}
+$("#cdInput").addEventListener('input', ()=>{ const v=Math.max(1, +$("#cdInput").value||60); cd_total=v; if(!cd_running){ cd_remain=v; cdRender(); }});
+$("#cdStart").addEventListener('click', ()=>{
+  ensureAudio(); if(prefs.cueStart) playMorse(CUE_LONG);
+  cd_total=Math.max(1, +$("#cdInput").value||60); cd_remain=cd_total; cdRender(); cd_running=true;
+  if(!cdUnsub) cdUnsub=Ticker.subscribe(()=>{ if(!cd_running) return; cd_remain--; cdRender(); if(prefs.timeTick) playClick(); if(cd_remain<=0){ cd_running=false; if(prefs.cueEnd) playMorse(CUE_LONG); } });
+});
+$("#cdStop").addEventListener('click', ()=>{ cd_running=false; });
+$("#cdReset").addEventListener('click', ()=>{ cd_running=false; cd_remain=Math.max(1, +$("#cdInput").value||60); cdRender(); });
+cdRender();
+scrCountdown = { el:$("#scrCountdown"), big:$("#scdBig"), exit:$("#scdExit") };
+$("#fsCountdown").addEventListener('click', ()=>{ scrCountdown.big.textContent=fmt(cd_remain); scrCountdown.el.classList.add('active'); });
+scrCountdown.exit.addEventListener('click', ()=> scrCountdown.el.classList.remove('active'));
+
+/* Free FS Reps */
+const scrFreeReps = { el:$("#scrFreeReps"), sets:$("#sfrSets"), reps:$("#sfrReps"), big:$("#sfrBig"), tap:$("#sfrTap"), exit:$("#sfrExit") };
+$("#fsFreeReps").addEventListener('click', ()=>{ scrFreeReps.sets.textContent=fr_sets; scrFreeReps.reps.textContent=fr_reps; scrFreeReps.big.textContent=fr_reps; scrFreeReps.el.classList.add('active'); });
+scrFreeReps.exit.addEventListener('click', ()=> scrFreeReps.el.classList.remove('active'));
+scrFreeReps.tap.addEventListener('click', ()=>{ fr_reps++; frRender(); scrFreeReps.reps.textContent=fr_reps; scrFreeReps.big.textContent=fr_reps; if(prefs.repClick){ ensureAudio(); playClick(); } });
+
+/* ################### TEMPLATES ################### */
+const LS_KEY='repset.templates.v8';
+const getTpls = ()=>{ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch{return []} };
+const setTpls = (arr)=> localStorage.setItem(LS_KEY, JSON.stringify(arr));
+
+let curSteps=[]; let editingIdx=null; let tplAuto=true;
+const tplAutoBtn=$("#tplAutoBtn");
+tplAutoBtn.addEventListener('click', ()=>{ tplAuto=!tplAuto; tplAutoBtn.textContent=`Auto-step: ${tplAuto?'On':'Off'}`; });
+
+function renderSteps(){
+  const box=$("#tplSteps"); box.innerHTML='';
+  if(curSteps.length===0){ box.appendChild(el('div','h','No steps yet. Drag to reorder after adding.')); return; }
+  curSteps.forEach((s,i)=>{
+    const row=el('div','tpl-row'); row.setAttribute('draggable','true'); row.dataset.idx=i;
+    row.addEventListener('dragstart', (ev)=>{ ev.dataTransfer.setData('text/plain', String(i)); });
+    row.addEventListener('dragover', (ev)=> ev.preventDefault());
+    row.addEventListener('drop', (ev)=>{
+      ev.preventDefault();
+      const from = +ev.dataTransfer.getData('text/plain'); const to = +row.dataset.idx;
+      if(isNaN(from)||isNaN(to) || from===to) return;
+      const [item]=curSteps.splice(from,1); curSteps.splice(to,0,item); renderSteps();
+    });
+
+    const desc = s.type==='reps'
+      ? `Reps · ${s.name} · ${s.sets}×${s.reps} · rest ${s.rest}s`
+      : `Time · ${s.name} · ${s.sets}×work${s.work}/rest${s.rest}s`;
+    const left=el('div'); left.append(el('div','title',desc));
+    const actions=el('div','tpl-actions');
+    const edit=el('button','btn sm ghost','Edit');
+    const dup=el('button','btn sm ghost','Duplicate');
+    const del=el('button','btn sm gray','Delete');
+
+    dup.addEventListener('click', ()=>{ curSteps.splice(i+1,0,JSON.parse(JSON.stringify(s))); renderSteps(); });
+    del.addEventListener('click', ()=>{
+      if(del.dataset.confirm==='1'){ curSteps.splice(i,1); renderSteps(); }
+      else{ del.dataset.confirm='1'; del.textContent='Confirm'; del.classList.remove('gray'); del.classList.add('danger');
+        setTimeout(()=>{ del.dataset.confirm=''; del.textContent='Delete'; del.classList.add('gray'); del.classList.remove('danger'); }, 2200);
+      }
+    });
+
+    const editor=el('div','edit-box hidden');
+    edit.addEventListener('click', ()=>{
+      editor.classList.toggle('hidden');
+      if(!editor.dataset.ready){
+        editor.dataset.ready='1';
+        editor.innerHTML=`
+          <div class="row">
+            <div style="flex:1">
+              <label class="small">Type</label>
+              <select class="edType">
+                <option value="reps">Reps</option>
+                <option value="time">Time</option>
+              </select>
+            </div>
+            <div style="flex:2">
+              <label class="small">Name</label>
+              <input class="edName" type="text" />
+            </div>
+          </div>
+          <div class="row">
+            <div style="flex:1">
+              <label class="small">Sets/Rounds</label>
+              <input class="edSets" type="number" inputmode="numeric"/>
+            </div>
+            <div style="flex:1" class="edRepsWrap">
+              <label class="small">Reps</label>
+              <input class="edReps" type="number" inputmode="numeric"/>
+            </div>
+            <div style="flex:1" class="edWorkWrap hidden">
+              <label class="small">Work (sec)</label>
+              <input class="edWork" type="number" inputmode="numeric"/>
+            </div>
+            <div style="flex:1">
+              <label class="small">Rest (sec)</label>
+              <input class="edRest" type="number" inputmode="numeric"/>
+            </div>
+          </div>
+          <div class="row">
+            <button class="btn sm">Save Step</button>
+          </div>
+        `;
+        const q = sel=>editor.querySelector(sel);
+        q('.edType').value=s.type;
+        q('.edName').value=s.name;
+        q('.edSets').value=s.sets;
+        if(s.type==='reps'){ q('.edReps').value=s.reps; q('.edRepsWrap').classList.remove('hidden'); q('.edWorkWrap').classList.add('hidden'); }
+        else{ q('.edWork').value=s.work; q('.edWorkWrap').classList.remove('hidden'); q('.edRepsWrap').classList.add('hidden'); }
+        q('.edRest').value=s.rest;
+
+        q('.edType').addEventListener('change', (e)=>{
+          const isReps=e.target.value==='reps';
+          q('.edRepsWrap').classList.toggle('hidden', !isReps);
+          q('.edWorkWrap').classList.toggle('hidden', isReps);
+        });
+        editor.querySelector('.btn').addEventListener('click', ()=>{
+          const type=q('.edType').value;
+          const name=(q('.edName').value||'').trim() || (type==='reps'?'Reps':'Time');
+          const sets=Math.max(1, +(q('.edSets').value)||1);
+          const rest=Math.max(0, +(q('.edRest').value)||0);
+          if(type==='reps'){
+            const reps=Math.max(1, +(q('.edReps').value)||1);
+            curSteps[i]={type,name,sets,reps,rest};
+          }else{
+            const work=Math.max(1, +(q('.edWork').value)||1);
+            curSteps[i]={type,name,sets,work,rest};
+          }
+          renderSteps(); toast('Step updated');
+        });
+      }
+    });
+
+    actions.append(edit,dup,del);
+    row.append(left,actions);
+    row.appendChild(editor);
+    box.appendChild(row);
+  });
+}
+function renderTplList(){
+  const box=$("#tplList"); box.innerHTML='';
+  const tpls=getTpls();
+  if(tpls.length===0){ box.appendChild(el('div','h','No templates saved.')); return; }
+  tpls.forEach((t, idx)=>{
+    const row=el('div','tpl-row');
+    const left=el('div');
+    left.appendChild(el('div','title',t.name));
+    left.appendChild(el('div','chip',`${t.steps.length} step(s) · transition ${t.trans||0}s · auto-step ${t.autoStep!==false?'On':'Off'}`));
+    const actions=el('div','tpl-actions');
+    const run=el('button','btn sm ghost','Run (Full Screen)');
+    const edit=el('button','btn sm ghost','Edit');
+    const del=el('button','btn sm gray','Delete');
+    run.addEventListener('click', ()=> runTemplate(idx));
+    edit.addEventListener('click', ()=> loadTemplateForEdit(idx));
+    del.addEventListener('click', ()=>{
+      if(del.dataset.confirm==='1'){ const arr=getTpls(); arr.splice(idx,1); setTpls(arr); renderTplList(); }
+      else{ del.dataset.confirm='1'; del.textContent='Confirm'; del.classList.remove('gray'); del.classList.add('danger'); setTimeout(()=>{ del.dataset.confirm=''; del.textContent='Delete'; del.classList.add('gray'); del.classList.remove('danger'); }, 2200); }
+    });
+    actions.append(run,edit,del); row.append(left,actions); box.appendChild(row);
+  });
+}
+renderSteps(); renderTplList();
+
+const stepType=$("#stepType"), stepName=$("#stepName"), stepSets=$("#stepSets"),
+      stepReps=$("#stepReps"), stepWork=$("#stepWork"), stepRest=$("#stepRest"),
+      repsField=$("#repsField"), workField=$("#workField");
+function updateStepFields(){ const isReps = stepType.value==='reps'; repsField.classList.toggle('hidden', !isReps); workField.classList.toggle('hidden', isReps); }
+stepType.addEventListener('change', updateStepFields); updateStepFields();
+
+$("#addStepBtn").addEventListener('click', ()=>{
+  const type = stepType.value;
+  const name = (stepName.value||'').trim() || (type==='reps'?'Reps':'Time');
+  const sets = Math.max(1, +stepSets.value||1);
+  const rest = Math.max(0, +stepRest.value||0);
+  if(type==='reps'){
+    const reps = Math.max(1, +stepReps.value||1);
+    curSteps.push({type,name,sets,reps,rest});
+  }else{
+    const work = Math.max(1, +stepWork.value||1);
+    curSteps.push({type,name,sets,work,rest});
+  }
+  stepName.value=''; renderSteps(); toast('Step added');
+});
+$("#clearCurSteps").addEventListener('click', ()=>{ curSteps=[]; renderSteps(); });
+$("#cancelEdit").addEventListener('click', ()=>{ editingIdx=null; $("#cancelEdit").style.display='none'; $("#saveTpl").textContent='Save Template'; $("#tplName").value=''; $("#tplTrans").value='30'; tplAuto=true; tplAutoBtn.textContent='Auto-step: On'; curSteps=[]; renderSteps(); });
+
+$("#saveTpl").addEventListener('click', ()=>{
+  const name=$("#tplName").value.trim();
+  const trans=Math.max(0, +$("#tplTrans").value||0);
+  if(!name){ toast('Name required'); return; }
+  if(curSteps.length===0){ toast('Add at least 1 step'); return; }
+  const tpl={name, trans, autoStep: tplAuto!==false, steps:curSteps};
+  const arr=getTpls();
+  if(editingIdx==null){ arr.push(tpl); } else { arr[editingIdx]=tpl; }
+  setTpls(arr);
+  editingIdx=null; $("#cancelEdit").style.display='none'; $("#saveTpl").textContent='Save Template';
+  curSteps=[]; $("#tplName").value=''; $("#tplTrans").value='30'; tplAuto=true; tplAutoBtn.textContent='Auto-step: On';
+  renderSteps(); renderTplList(); toast('Template saved');
+});
+function loadTemplateForEdit(idx){
+  const arr=getTpls(); const t=arr[idx]; if(!t) return;
+  editingIdx=idx; $("#cancelEdit").style.display='inline-block'; $("#saveTpl").textContent='Update Template';
+  $("#tplName").value=t.name||''; $("#tplTrans").value=+t.trans||0;
+  tplAuto = (t.autoStep!==false); tplAutoBtn.textContent=`Auto-step: ${tplAuto?'On':'Off'}`;
+  curSteps=JSON.parse(JSON.stringify(t.steps||[])); renderSteps();
+  showTab('templates');
+}
+
+/* Import/Export/Example */
+function downloadText(filename, text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text], {type:'application/json'})); a.download=filename; document.body.appendChild(a); a.click(); a.remove(); }
+$("#exportTemplates").addEventListener('click', ()=>{
+  try{
+    const data = { version:8, exportedAt:new Date().toISOString(), templates:getTpls() };
+    downloadText('repset-templates.json', JSON.stringify(data, null, 2));
+    toast('Exported');
+  }catch(e){ toast('Export failed'); }
+});
+$("#importTemplates").addEventListener('click', ()=> $("#tplFile").click());
+$("#tplFile").addEventListener('change', async (e)=>{
+  const f=e.target.files?.[0]; if(!f) return;
+  try{
+    const text=await f.text(); const json=JSON.parse(text);
+    let arr;
+    if(Array.isArray(json)) arr=json;
+    else if(Array.isArray(json.templates)) arr=json.templates;
+    else throw new Error('Bad file');
+    arr.forEach(t=>{ if(typeof t.autoStep==='undefined') t.autoStep=true; if(!Array.isArray(t.steps)) t.steps=[]; });
+    setTpls(arr); renderTplList(); toast('Imported');
+  }catch(err){ console.error(err); toast('Import failed'); }
+  e.target.value='';
+});
+$("#downloadExample").addEventListener('click', ()=>{
+  const example = [
+    { name:"Upper Body A", trans:0, autoStep:true, steps:[
+      {type:"reps", name:"Push-ups", sets:3, reps:12, rest:60},
+      {type:"time", name:"Plank",   sets:2, work:45,  rest:0},
+      {type:"reps", name:"Rows",    sets:3, reps:10,  rest:45}
+    ]},
+    { name:"Tabata Core", trans:10, autoStep:false, steps:[
+      {type:"time", name:"Hollow Hold", sets:8, work:20, rest:10}
+    ]}
+  ];
+  downloadText('repset-example-templates.json', JSON.stringify(example, null, 2)); toast('Example downloaded');
+});
+
+/* ############ Template RUN SCREEN (full screen) ############ */
+const scrT = {
+  el: $("#scrTemplate"),
+  title: $("#ttTitle"), elapsed: $("#ttElapsed"), stepMeta: $("#ttStepMeta"),
+  autoBtn: $("#ttAutoBtn"),
+  list: $("#ttList"), restLabel: $("#ttRestLabel"),
+  phase: $("#ttPhase"), prog: $("#ttProg"), target: $("#ttTarget"),
+  work: $("#ttWork"), rest: $("#ttRest"),
+  minus: $("#ttMinus"), plus: $("#ttPlus"), next: $("#ttNext"),
+  pause: $("#ttPause"), skip: $("#ttSkip"), end: $("#ttEnd"),
+  tap: $("#ttTap"), exit: $("#ttExit")
+};
+
+function TemplateRunner(){
+  let tpl=null, idx=0, curSet=1, repCount=0, workRemain=0, restRemain=0;
+  let phase='work', running=false; let elapsed=0;
+  let unsubSess=null, unsubWork=null, unsubRest=null, unsubTrans=null;
+  let autoStep=true;
+
+  function show(){ scrT.el.classList.add('active'); }
+  function hide(){ scrT.el.classList.remove('active'); disableTapAnywhere(); clearSubs(); }
+  function clearSubs(){ [unsubSess,unsubWork,unsubRest,unsubTrans].forEach(fn=>{ if(fn) fn(); }); unsubSess=unsubWork=unsubRest=unsubTrans=null; }
+  function setOnlyWork(val){ scrT.work.textContent=val; scrT.rest.textContent='—'; }
+  function setOnlyRest(val){ scrT.rest.textContent=val; scrT.work.textContent='—'; }
+  function enableTapAnywhere(){ scrT.tap.style.pointerEvents='auto'; }
+  function disableTapAnywhere(){ scrT.tap.style.pointerEvents='none'; }
+
+  function renderList(){
+    scrT.list.innerHTML='';
+    tpl.steps.forEach((s,i)=>{
+      const pill=el('div','step-pill');
+      if(i===idx) pill.classList.add('active');
+      const title = s.type==='reps'
+        ? `${i+1}. ${s.name} • ${s.sets}×${s.reps} • rest ${s.rest}s`
+        : `${i+1}. ${s.name} • ${s.sets}×${s.work}s • rest ${s.rest}s`;
+      pill.append(el('div',null,title), el('div','pill-meta', s.type==='reps'?'Reps':'Time'));
+      pill.addEventListener('click', ()=>{ jumpTo(i); });
+      scrT.list.appendChild(pill);
+    });
+    scrT.stepMeta.textContent=`Step ${idx+1}/${tpl.steps.length}`;
+  }
+
+  function start(t){
+    tpl=t; idx=0; elapsed=0; scrT.elapsed.textContent='00:00';
+    autoStep = (tpl.autoStep!==false);
+    scrT.autoBtn.textContent = autoStep ? '✔' : '⏸';
+    scrT.title.textContent = tpl.name;
+    clearSubs();
+    unsubSess=Ticker.subscribe(()=>{ elapsed++; scrT.elapsed.textContent=fmt(elapsed); });
+    bind(); show(); loadStep(); running=true;
+  }
+
+  function bind(){
+    scrT.autoBtn.onclick = ()=>{ autoStep=!autoStep; scrT.autoBtn.textContent = autoStep?'✔':'⏸'; };
+    scrT.plus.onclick = addRep;
+    scrT.minus.onclick= ()=>{ const s=tpl.steps[idx]; if(s.type!=='reps' || phase!=='work') return; repCount=Math.max(0,repCount-1); scrT.target.textContent=`Set ${curSet}/${s.sets} — ${repCount}/${s.reps}`; };
+    scrT.next.onclick  = ()=>{ if(scrT.phase.textContent==='Waiting…'){ idx++; loadStep(); } else { nextRoundOrStep(); } };
+    scrT.pause.onclick = ()=>{ if(unsubWork||unsubRest||unsubTrans){ [unsubWork,unsubRest,unsubTrans].forEach(fn=>fn&&fn()); unsubWork=unsubRest=unsubTrans=null; scrT.pause.textContent='Resume'; }
+                               else { scrT.pause.textContent='Pause';
+                                 const s=tpl.steps[idx];
+                                 if(phase==='work'){
+                                   if(s.type==='reps'){
+                                     unsubWork=Ticker.subscribe(()=>{ const p=scrT.work.textContent.split(':'); let m=+p[0]||0,sec=+p[1]||0; scrT.work.textContent=fmt(m*60+sec+1); });
+                                   }else{
+                                     unsubWork=Ticker.subscribe(()=>{ if(workRemain>0){ workRemain--; scrT.work.textContent=fmt(workRemain); tickCues(); if(workRemain===0){ if(s.rest>0) beginRest(); else nextRoundOrStep(); } } });
+                                   }
+                                 }else if(phase==='rest'){
+                                   unsubRest=Ticker.subscribe(()=>{ if(restRemain>0){ restRemain--; setOnlyRest(fmt(restRemain)); if(restRemain===0){ if(prefs.cueStart) playMorse('..-'); nextRoundOrStep(); } } });
+                                 }
+                               }};
+    scrT.skip.onclick  = ()=>{ if(idx<tpl.steps.length-1){ idx++; loadStep(); } };
+    scrT.end.onclick   = ()=>{ if(prefs.cueEnd) playMorse(CUE_LONG); stopAll(); hide(); toast('Ended'); };
+    scrT.exit.onclick  = ()=>{ stopAll(); hide(); };
+    scrT.tap.onclick   = ()=> addRep();
+  }
+
+  function jumpTo(i){
+    if(unsubWork){ unsubWork(); unsubWork=null; }
+    if(unsubRest){ unsubRest(); unsubRest=null; }
+    if(unsubTrans){ unsubTrans(); unsubTrans=null; }
+    idx=i; loadStep();
+  }
+
+  function loadStep(){
+    if(idx>=tpl.steps.length){ stopAll(); hide(); toast('Template done ✅'); return; }
+    const s=tpl.steps[idx]; repCount=0; curSet=1; phase='work';
+    ensureAudio(); if(prefs.cueStart) playMorse(CUE_LONG);
+    renderList();
+    scrT.prog.textContent = `${s.name}`;
+    if(s.type==='reps'){
+      scrT.phase.textContent='Reps';
+      scrT.target.textContent=`Set 1/${s.sets} — 0/${s.reps}`;
+      setOnlyWork('00:00'); scrT.rest.textContent = s.rest?fmt(s.rest):'—';
+      enableTapAnywhere();
+      if(unsubWork) unsubWork();
+      unsubWork=Ticker.subscribe(()=>{ const p=scrT.work.textContent.split(':'); let m=+p[0]||0,sec=+p[1]||0; scrT.work.textContent=fmt(m*60+sec+1); });
+    }else{
+      scrT.phase.textContent='Time';
+      scrT.target.textContent=`Round 1/${s.sets} — Work ${fmt(s.work)}`;
+      workRemain=s.work; setOnlyWork(fmt(workRemain));
+      disableTapAnywhere();
+      if(unsubWork) unsubWork();
+      doCountIn(()=>{ unsubWork=Ticker.subscribe(()=>{ if(workRemain>0){ workRemain--; scrT.work.textContent=fmt(workRemain); tickCues(); if(workRemain===0){ if(s.rest>0) beginRest(); else nextRoundOrStep(); } } }); });
+    }
+  }
+  function tickCues(){
+    if(prefs.timeTick) playClick();
+    if((workRemain===3 || workRemain===2) && prefs.cueStart) playMorse(CUE_SHORT);
+    else if(workRemain===1 && prefs.cueStart) playMorse(CUE_LONG);
+  }
+
+  function addRep(){
+    const s=tpl.steps[idx]; if(s.type!=='reps' || phase!=='work') return;
+    repCount++; scrT.target.textContent=`Set ${curSet}/${s.sets} — ${repCount}/${s.reps}`;
+    if(prefs.repClick) playClick();
+    if(s.reps>=3 && (repCount===s.reps-2 || repCount===s.reps-1) && prefs.cueStart) playMorse(CUE_SHORT);
+    if(repCount>=s.reps){ if(prefs.cueEnd) playMorse(CUE_LONG); if(s.rest>0) beginRest(); else nextRoundOrStep(); }
+  }
+
+  function beginRest(){
+    const s=tpl.steps[idx];
+    phase='rest'; restRemain=s.rest; scrT.phase.textContent='Rest';
+    setOnlyRest(fmt(restRemain)); if(unsubWork){ unsubWork(); unsubWork=null; }
+    disableTapAnywhere();
+    if(restRemain===0){ nextRoundOrStep(); return; }
+    if(unsubRest) unsubRest();
+    unsubRest=Ticker.subscribe(()=>{ if(restRemain>0){ restRemain--; setOnlyRest(fmt(restRemain)); if(restRemain===0){ if(prefs.cueStart) playMorse('..-'); nextRoundOrStep(); } } });
+  }
+
+  function nextRoundOrStep(){
+    const s=tpl.steps[idx];
+    if(s.type==='reps'){
+      if(curSet>=s.sets){ startTransitionOrNext(); }
+      else{
+        curSet++; repCount=0; phase='work';
+        scrT.phase.textContent='Reps';
+        scrT.target.textContent=`Set ${curSet}/${s.sets} — 0/${s.reps}`;
+        setOnlyWork('00:00'); enableTapAnywhere();
+        if(unsubRest){ unsubRest(); unsubRest=null; }
+        if(unsubWork) unsubWork();
+        unsubWork=Ticker.subscribe(()=>{ const p=scrT.work.textContent.split(':'); let m=+p[0]||0,sec=+p[1]||0; scrT.work.textContent=fmt(m*60+sec+1); });
+      }
+    }else{
+      if(curSet>=s.sets){ startTransitionOrNext(); }
+      else{
+        curSet++; workRemain=s.work; phase='work';
+        scrT.phase.textContent='Time';
+        scrT.target.textContent=`Round ${curSet}/${s.sets} — Work ${fmt(s.work)}`;
+        setOnlyWork(fmt(workRemain)); disableTapAnywhere();
+        if(unsubRest){ unsubRest(); unsubRest=null; }
+        if(unsubWork) unsubWork();
+        doCountIn(()=>{ unsubWork=Ticker.subscribe(()=>{ if(workRemain>0){ workRemain--; scrT.work.textContent=fmt(workRemain); tickCues(); if(workRemain===0){ if(s.rest>0) beginRest(); else nextRoundOrStep(); } } }); });
+      }
+    }
+  }
+
+  function startTransitionOrNext(){
+    const trans=+tpl.trans||0;
+    if(idx < tpl.steps.length-1 && trans>0){
+      let tr=trans; scrT.phase.textContent='Transition'; scrT.restLabel.textContent='Transition';
+      setOnlyRest(fmt(tr)); disableTapAnywhere();
+      if(unsubWork){ unsubWork(); unsubWork=null; } if(unsubRest){ unsubRest(); unsubRest=null; }
+      if(unsubTrans) unsubTrans();
+      unsubTrans=Ticker.subscribe(()=>{ if(tr>0){ tr--; setOnlyRest(fmt(tr)); if(tr===0){ if(prefs.cueStart) playMorse('..-'); idx++; scrT.restLabel.textContent='Rest'; if(unsubTrans){unsubTrans();unsubTrans=null;} if(!autoStep){ scrT.phase.textContent='Waiting…'; renderList(); return; } loadStep(); } } });
+    }else{
+      if(!autoStep && idx<tpl.steps.length-1){ scrT.phase.textContent='Waiting…'; renderList(); return; }
+      idx++; loadStep();
+    }
+  }
+
+  function stopAll(){ clearSubs(); running=false; }
+  return { start };
+}
+const tplRunner = TemplateRunner();
+function runTemplate(idx){
+  const arr=getTpls(); const t=JSON.parse(JSON.stringify(arr[idx]||null));
+  if(!t){ toast('Template missing'); return; }
+  if(typeof t.autoStep==='undefined') t.autoStep=true;
+  scrT.exit.onclick = ()=>{ scrT.el.classList.remove('active'); }; // ensure bound
+  tplRunner.start(t);
+}
+
+/* ---------- Settings: clear storage ---------- */
+$("#clearTemplates").addEventListener('click', ()=>{ localStorage.removeItem(LS_KEY); renderTplList(); toast('Templates cleared'); });
+
+/* ---------- Init ---------- */
+showTab('custom'); Ticker.start();
+</script>
+</body>
+</html>
