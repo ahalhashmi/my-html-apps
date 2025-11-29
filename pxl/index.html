@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Rubik’s Mosaic — Touch Toolbar + Sticky Previews</title>
+<style>
+  :root{
+    --bg:#0b0c10; --card:#151821; --text:#e8eef4; --muted:#9aa7b3;
+    --btn:#222634; --btnhi:#2b3042; --accent:#6aa2ff; --border:#2a3043;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  header{position:sticky;top:0;z-index:10;padding:12px 16px;background:linear-gradient(180deg,rgba(11,12,16,.98),rgba(11,12,16,.75));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.05)}
+  h1{margin:0;font-size:18px}
+  .wrap{padding:12px 12px 88px 12px;display:flex;flex-direction:column;gap:12px} /* leave space for toolbar */
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px}
+  .hint{font-size:12px;color:var(--muted)}
+  input[type="file"]{display:none}
+  .btn{appearance:none;border:1px solid var(--border);background:var(--btn);color:var(--text);padding:12px;border-radius:12px;font-size:16px}
+  .btn:active{transform:translateY(1px);background:var(--btnhi)}
+  .btn.full{width:100%}
+
+  .previews{position:sticky;top:58px;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .pbox{background:#0c1020;border:1px solid var(--border);border-radius:12px;padding:8px}
+  .pbox h3{margin:0 0 6px 0;font-size:12px;color:#9aa7b3}
+  .pbox canvas{aspect-ratio:1/1;border-radius:8px;width:100%;height:auto;image-rendering:pixelated}
+
+  .stage{width:100%;max-width:820px;margin:0 auto;position:relative;aspect-ratio:1/1;background:#0c1020;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+  canvas#display{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:-moz-crisp-edges}
+  .legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .swatch{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--border);border-radius:10px;background:#121727}
+  .chip{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.35)}
+  .counts{margin-left:auto;color:#9aa7b3;font-size:13px}
+  .gridnote{font-size:12px;color:#9aa7b3;margin-top:6px}
+
+  /* Toolbar */
+  .toolbar{
+    position:fixed;bottom:0;left:0;right:0;z-index:20;
+    background:linear-gradient(0deg,rgba(11,12,16,.98),rgba(11,12,16,.88));
+    border-top:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px);
+  }
+  .twrap{display:flex;align-items:center;gap:8px;padding:8px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+  .tool{
+    flex:0 0 auto;scroll-snap-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    padding:8px 10px;border:1px solid var(--border);border-radius:12px;background:#141a27;min-width:64px
+  }
+  .tool:active{background:#1a2131}
+  .tool .ico{font-size:18px}
+  .tool .cap{font-size:11px;color:var(--muted);white-space:nowrap}
+
+  /* Overlay + Bottom Sheet */
+  .overlay{position:fixed;inset:0;z-index:25;display:none;background:transparent}
+  .overlay.open{display:block}
+
+  .sheet{
+    position:fixed;left:0;right:0;bottom:-100%;z-index:30;
+    background:linear-gradient(0deg,#0e1220 0%,#12182a 100%);
+    border-top-left-radius:16px;border-top-right-radius:16px;
+    border-top:1px solid rgba(255,255,255,.08);
+    box-shadow:0 -10px 30px rgba(0,0,0,.35);
+    transition:bottom .25s ease;
+    padding:12px 14px 16px 14px;
+  }
+  .sheet.open{bottom:0}
+  .sheet .grab{width:44px;height:5px;border-radius:99px;background:#2c344a;margin:0 auto 10px auto}
+  .sheet h3{margin:0 0 10px 0;font-size:14px;color:#cfe0ff}
+  .sheet .xbtn{position:absolute;right:10px;top:10px;border:none;background:#20263a;color:#dbe6ff;border-radius:10px;padding:6px 10px;font-size:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .opt{background:#1a1f2b;border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;align-items:center;gap:10px;min-height:44px}
+  .opt input[type="range"], .opt input[type="number"], .opt select, .opt input[type="text"]{
+    background:#0f1320;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:6px 10px;font-size:14px
+  }
+  .opt .mini{font-size:12px;color:#9aa7b3}
+  .footerNote{color:#7f8b96;font-size:11px;text-align:center;padding:10px}
+</style>
+</head>
+<body>
+<header><h1>Rubik’s Mosaic — 6 colors · Touch Toolbar</h1></header>
+
+<div class="wrap">
+  <div class="card">
+    <label class="btn full" for="fileInput">📷 Choose Photo (Library or Camera)</label>
+    <input id="fileInput" type="file" accept="image/*" />
+    <div class="hint">Tap a tool below to open its mini control. Previews stay put so you can see changes instantly.</div>
+  </div>
+
+  <!-- Sticky previews -->
+  <div class="previews" id="previews">
+    <div class="pbox">
+      <h3>Original crop (N×N)</h3>
+      <canvas id="previewOrig" width="256" height="256"></canvas>
+    </div>
+    <div class="pbox">
+      <h3>After filters (N×N)</h3>
+      <canvas id="previewFilt" width="256" height="256"></canvas>
+    </div>
+  </div>
+
+  <!-- Mosaic -->
+  <div class="card">
+    <div class="stage"><canvas id="display" width="900" height="900"></canvas></div>
+    <div class="legend" id="legend"></div>
+    <div class="gridnote">Preview shows <span id="gsz">15</span>×<span id="gsz2">15</span>. <span class="counts" id="counts"></span></div>
+  </div>
+
+  <div class="footerNote">All processing stays on your device. Presets are saved locally.</div>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <div class="twrap" id="twrap">
+    <!-- General -->
+    <button class="tool" data-sheet="grid"><div class="ico">🔢</div><div class="cap">Grid</div></button>
+    <button class="tool" data-sheet="sample"><div class="ico">🖼️</div><div class="cap">Sample</div></button>
+    <button class="tool" data-sheet="dither"><div class="ico">🧩</div><div class="cap">Dither</div></button>
+    <button class="tool" data-sheet="lines"><div class="ico">#️⃣</div><div class="cap">Gridlines</div></button>
+    <button class="tool" data-sheet="export"><div class="ico">⬇️</div><div class="cap">Export</div></button>
+    <button class="tool" data-sheet="presets"><div class="ico">⭐</div><div class="cap">Presets</div></button>
+    <!-- Filters -->
+    <button class="tool" data-sheet="median"><div class="ico">🔳</div><div class="cap">Median</div></button>
+    <button class="tool" data-sheet="gauss"><div class="ico">🌫️</div><div class="cap">Blur</div></button>
+    <button class="tool" data-sheet="sharp"><div class="ico">✴️</div><div class="cap">Sharpen</div></button>
+    <button class="tool" data-sheet="levels"><div class="ico">⚖️</div><div class="cap">Levels</div></button>
+    <button class="tool" data-sheet="bright"><div class="ico">💡</div><div class="cap">Brightness</div></button>
+    <button class="tool" data-sheet="contrast"><div class="ico">🌓</div><div class="cap">Contrast</div></button>
+    <button class="tool" data-sheet="saturation"><div class="ico">🎨</div><div class="cap">Saturation</div></button>
+    <button class="tool" data-sheet="vibrance"><div class="ico">🌈</div><div class="cap">Vibrance</div></button>
+    <button class="tool" data-sheet="gamma"><div class="ico">📈</div><div class="cap">Gamma</div></button>
+    <button class="tool" data-sheet="temptint"><div class="ico">🌡️</div><div class="cap">Temp/Tint</div></button>
+  </div>
+</div>
+
+<!-- Overlay + Bottom Sheet -->
+<div class="overlay" id="overlay"></div>
+<div class="sheet" id="sheet">
+  <div class="grab"></div>
+  <button class="xbtn" id="sheetClose">✕</button>
+  <h3 id="sheetTitle">Controls</h3>
+  <div id="sheetBody"></div>
+</div>
+
+<!-- Panels (templates) -->
+<template id="panel-grid">
+  <div class="row">
+    <div class="opt"><div>Grid size <span class="mini">(3–1000)</span></div><input id="gridSize" type="number" min="3" max="1000" style="width:110px" /></div>
+  </div>
+</template>
+
+<template id="panel-sample">
+  <div class="row">
+    <div class="opt"><div>Resample</div><select id="method">
+      <option value="average">Average (block mean)</option>
+      <option value="resize">Resize (browser sampling)</option>
+    </select></div>
+  </div>
+</template>
+
+<template id="panel-dither">
+  <div class="row">
+    <div class="opt"><div>Dithering</div><select id="ditherMethod">
+      <option value="none">None</option>
+      <option value="fs">Floyd–Steinberg</option>
+      <option value="jjn">Jarvis–Judice–Ninke</option>
+      <option value="stucki">Stucki</option>
+      <option value="atkinson">Atkinson</option>
+      <option value="sierra-lite">Sierra Lite</option>
+      <option value="ordered4">Ordered (Bayer 4×4)</option>
+      <option value="ordered8">Ordered (Bayer 8×8)</option>
+    </select></div>
+    <div class="opt"><div>Strength <span id="ditherStrengthVal" class="mini"></span></div>
+      <input id="ditherStrength" type="range" min="0" max="100" />
+    </div>
+  </div>
+</template>
+
+<template id="panel-lines">
+  <div class="row">
+    <div class="opt"><input id="gridlines" type="checkbox" /><label for="gridlines">Gridlines</label></div>
+    <div class="opt"><input id="labels" type="checkbox" /><label for="labels">Labels (W,Y,R,O,B,G)</label></div>
+  </div>
+</template>
+
+<template id="panel-export">
+  <div class="row">
+    <button id="downloadPng" class="btn">⬇️ PNG</button>
+    <button id="openPng" class="btn">🔎 Open PNG</button>
+    <button id="downloadCsv" class="btn">⬇️ CSV</button>
+  </div>
+</template>
+
+<template id="panel-presets">
+  <div class="row">
+    <div class="opt"><input id="presetName" type="text" placeholder="Preset name…" style="width:180px"/></div>
+    <button id="savePreset" class="btn">💾 Save</button>
+  </div>
+  <div class="row" style="margin-top:6px">
+    <div class="opt"><select id="presetSelect" style="min-width:180px"></select></div>
+    <button id="loadPreset" class="btn">📂 Load</button>
+    <button id="deletePreset" class="btn">🗑️ Delete</button>
+  </div>
+</template>
+
+<!-- Filters -->
+<template id="panel-median">
+  <div class="row">
+    <div class="opt"><input id="f_median_on" type="checkbox"><label for="f_median_on">Enable</label></div>
+    <div class="opt"><div>Intensity <span id="f_median_val">50</span>% (3–7px)</div><input id="f_median" type="range" min="0" max="100"></div>
+  </div>
+</template>
+<template id="panel-gauss">
+  <div class="row">
+    <div class="opt"><input id="f_gauss_on" type="checkbox"><label for="f_gauss_on">Enable</label></div>
+    <div class="opt"><div>Radius <span id="f_gauss_val">2.0</span> px</div><input id="f_gauss" type="range" min="0" max="50"></div>
+  </div>
+</template>
+<template id="panel-sharp">
+  <div class="row">
+    <div class="opt"><input id="f_sharp_on" type="checkbox"><label for="f_sharp_on">Enable</label></div>
+    <div class="opt"><div>Amount <span id="f_sharp_val">100</span>%</div><input id="f_sharp" type="range" min="0" max="200"></div>
+  </div>
+</template>
+<template id="panel-levels">
+  <div class="row">
+    <div class="opt"><input id="f_autolevel_on" type="checkbox"><label for="f_autolevel_on">Enable</label></div>
+    <div class="opt"><div>Strength <span id="f_autolevel_val">100</span>%</div><input id="f_autolevel" type="range" min="0" max="100"></div>
+  </div>
+</template>
+<template id="panel-bright">
+  <div class="row">
+    <div class="opt"><input id="f_bright_on" type="checkbox"><label for="f_bright_on">Enable</label></div>
+    <div class="opt"><div>Brightness <span id="f_bright_val">0</span></div><input id="f_bright" type="range" min="-100" max="100"></div>
+  </div>
+</template>
+<template id="panel-contrast">
+  <div class="row">
+    <div class="opt"><input id="f_contrast_on" type="checkbox"><label for="f_contrast_on">Enable</label></div>
+    <div class="opt"><div>Contrast <span id="f_contrast_val">0</span></div><input id="f_contrast" type="range" min="-100" max="100"></div>
+  </div>
+</template>
+<template id="panel-saturation">
+  <div class="row">
+    <div class="opt"><input id="f_saturation_on" type="checkbox"><label for="f_saturation_on">Enable</label></div>
+    <div class="opt"><div>Saturation <span id="f_saturation_val">0</span></div><input id="f_saturation" type="range" min="-100" max="100"></div>
+  </div>
+</template>
+<template id="panel-vibrance">
+  <div class="row">
+    <div class="opt"><input id="f_vibrance_on" type="checkbox"><label for="f_vibrance_on">Enable</label></div>
+    <div class="opt"><div>Vibrance <span id="f_vibrance_val">0</span>%</div><input id="f_vibrance" type="range" min="0" max="100"></div>
+  </div>
+</template>
+<template id="panel-gamma">
+  <div class="row">
+    <div class="opt"><input id="f_gamma_on" type="checkbox"><label for="f_gamma_on">Enable</label></div>
+    <div class="opt"><div>Gamma <span id="f_gamma_val">1.00</span></div><input id="f_gamma" type="range" min="50" max="150"></div>
+  </div>
+</template>
+<template id="panel-temptint">
+  <div class="row">
+    <div class="opt"><input id="f_temp_on" type="checkbox"><label for="f_temp_on">Enable</label></div>
+    <div class="opt"><div>Temp <span id="f_temp_val">0</span></div><input id="f_temp" type="range" min="-100" max="100"></div>
+    <div class="opt"><div>Tint <span id="f_tint_val">0</span></div><input id="f_tint" type="range" min="-100" max="100"></div>
+  </div>
+</template>
+
+<script>
+/* ================== Helpers & State ================== */
+const $ = (id)=>document.getElementById(id);
+const on = (el,ev,fn)=> el && el.addEventListener(ev,fn);
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const deepClone=(o)=>JSON.parse(JSON.stringify(o));
+const LS_PRESETS='rubiksPresetsV1';
+
+const defaultState = {
+  gridSize:15,
+  method:'average',
+  ditherMethod:'none',
+  ditherStrength:100,
+  gridlines:true,
+  labels:false,
+  filters:{
+    median_on:false, median:50,
+    gauss_on:false, gauss:20,
+    sharp_on:false, sharp:100,
+    autolevel_on:false, autolevel:100,
+    bright_on:false, bright:0,
+    contrast_on:false, contrast:0,
+    saturation_on:false, saturation:0,
+    vibrance_on:false, vibrance:0,
+    gamma_on:false, gamma:100,
+    temp_on:false, temp:0, tint:0,
+  }
+};
+let state = deepClone(defaultState);
+
+function savePreset(name){
+  const map = getAllPresets();
+  map[name] = deepClone(state);
+  localStorage.setItem(LS_PRESETS, JSON.stringify(map));
+}
+function getAllPresets(){ try{ return JSON.parse(localStorage.getItem(LS_PRESETS)) || {}; }catch{ return {}; } }
+function refreshPresetSelect(){
+  const sel = sheetBody.querySelector('#presetSelect'); if(!sel) return;
+  const names = Object.keys(getAllPresets()).sort((a,b)=>a.localeCompare(b));
+  sel.innerHTML='';
+  if(names.length===0){ const o=document.createElement('option'); o.value=''; o.textContent='(no presets)'; sel.appendChild(o); return; }
+  for(const n of names){ const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); }
+}
+
+/* ================== Palette & Color ================== */
+const RUBIKS=[{name:'W',label:'White',hex:'#FFFFFF'},{name:'Y',label:'Yellow',hex:'#FFD500'},{name:'R',label:'Red',hex:'#C41E3A'},{name:'O',label:'Orange',hex:'#FF5800'},{name:'B',label:'Blue',hex:'#0051BA'},{name:'G',label:'Green',hex:'#009E60'}];
+const hexToRgb=h=>{h=h.replace('#','');return{r:parseInt(h.slice(0,2),16),g:parseInt(h.slice(2,4),16),b:parseInt(h.slice(4,6),16)}};
+function srgb2lin(c){c/=255;return c<=0.04045? c/12.92 : Math.pow((c+0.055)/1.055,2.4)}
+function rgb2xyz(r,g,b){r=srgb2lin(r);g=srgb2lin(g);b=srgb2lin(b);return{x:r*0.4124564+g*0.3575761+b*0.1804375,y:r*0.2126729+g*0.7151522+b*0.0721750,z:r*0.0193339+g*0.1191920+b*0.9503041}}
+function xyz2lab(x,y,z){const Xn=0.95047,Yn=1,Zn=1.08883;function f(t){return t>Math.pow(6/29,3)?Math.cbrt(t):t/(3*Math.pow(6/29,2))+4/29}let fx=f(x/Xn),fy=f(y/Yn),fz=f(z/Zn);return{L:116*fy-16,a:500*(fx-fy),b:200*(fy-fz)}}
+function rgb2lab(r,g,b){const xyz=rgb2xyz(r,g,b);return xyz2lab(xyz.x,xyz.y,xyz.z)}
+function dE76(a,b){const dL=a.L-b.L, da=a.a-b.a, db=a.b-b.b; return Math.sqrt(dL*dL+da*da+db*db)}
+const PALETTE=RUBIKS.map(c=>{const rgb=hexToRgb(c.hex);return {...c,rgb,lab:rgb2lab(rgb.r,rgb.g,rgb.b)}});
+
+/* ================== Dither kernels ================== */
+const KERNELS={
+  'fs':[[1,0,7/16],[-1,1,3/16],[0,1,5/16],[1,1,1/16]],
+  'jjn':[[1,0,7/48],[2,0,5/48],[-2,1,3/48],[-1,1,5/48],[0,1,7/48],[1,1,5/48],[2,1,3/48],[-2,2,1/48],[-1,2,3/48],[0,2,5/48],[1,2,3/48],[2,2,1/48]],
+  'stucki':[[1,0,8/42],[2,0,4/42],[-2,1,2/42],[-1,1,4/42],[0,1,8/42],[1,1,4/42],[2,1,2/42],[-2,2,1/42],[-1,2,2/42],[0,2,4/42],[1,2,2/42],[2,2,1/42]],
+  'atkinson':[[1,0,1/8],[2,0,1/8],[-1,1,1/8],[0,1,1/8],[1,1,1/8],[0,2,1/8]],
+  'sierra-lite':[[1,0,2/4],[-1,1,1/4],[0,1,1/4]],
+};
+/* Bayer matrices (normalized later) */
+const BAYER4 = [
+  [0,8,2,10],
+  [12,4,14,6],
+  [3,11,1,9],
+  [15,7,13,5]
+];
+const BAYER8 = [
+  [0,48,12,60,3,51,15,63],
+  [32,16,44,28,35,19,47,31],
+  [8,56,4,52,11,59,7,55],
+  [40,24,36,20,43,27,39,23],
+  [2,50,14,62,1,49,13,61],
+  [34,18,46,30,33,17,45,29],
+  [10,58,6,54,9,57,5,53],
+  [42,26,38,22,41,25,37,21]
+];
+
+/* ================== DOM refs ================== */
+const fileInput=$('fileInput');
+const display=$('display'), ctx=display.getContext('2d');
+const legend=$('legend'), countsEl=$('counts'), gsz=$('gsz'), gsz2=$('gsz2');
+const prevOrig=$('previewOrig'), prevOrigCtx=prevOrig.getContext('2d');
+const prevFilt=$('previewFilt'), prevFiltCtx=prevFilt.getContext('2d');
+const previewsEl=$('previews');
+
+const overlay=$('overlay'), sheet=$('sheet'), sheetTitle=$('sheetTitle'), sheetBody=$('sheetBody'), sheetClose=$('sheetClose');
+const toolWrap=$('twrap');
+
+/* ================== Sheet open/close ================== */
+const SHEETS={
+  grid:  {title:'Grid', tpl:'panel-grid'},
+  sample:{title:'Resample', tpl:'panel-sample'},
+  dither:{title:'Dithering', tpl:'panel-dither'},
+  lines: {title:'Grid & Labels', tpl:'panel-lines'},
+  export:{title:'Export', tpl:'panel-export'},
+  presets:{title:'Presets', tpl:'panel-presets'},
+  median:{title:'Median Denoise', tpl:'panel-median'},
+  gauss: {title:'Gaussian Blur', tpl:'panel-gauss'},
+  sharp: {title:'Sharpen', tpl:'panel-sharp'},
+  levels:{title:'Auto Levels', tpl:'panel-levels'},
+  bright:{title:'Brightness', tpl:'panel-bright'},
+  contrast:{title:'Contrast', tpl:'panel-contrast'},
+  saturation:{title:'Saturation', tpl:'panel-saturation'},
+  vibrance:{title:'Vibrance', tpl:'panel-vibrance'},
+  gamma:{title:'Gamma', tpl:'panel-gamma'},
+  temptint:{title:'Temperature / Tint', tpl:'panel-temptint'},
+};
+
+toolWrap.addEventListener('click', (e)=>{
+  const btn=e.target.closest('.tool'); if(!btn) return;
+  const key=btn.dataset.sheet; const spec=SHEETS[key]; if(!spec) return;
+  openSheet(spec.title,spec.tpl);
+});
+function openSheet(title,tplId){
+  sheetTitle.textContent=title;
+  sheetBody.innerHTML='';
+  const tpl=document.getElementById(tplId);
+  if(tpl) sheetBody.appendChild(tpl.content.cloneNode(true));
+  applyStateToPanel();         // fill inputs from state
+  bindPanelInputsToState();    // wire events to update state
+  if(tplId==='panel-presets') wirePresetButtons();
+  sheet.classList.add('open'); overlay.classList.add('open');
+}
+function closeSheet(){
+  sheet.classList.remove('open'); overlay.classList.remove('open');
+}
+on(overlay,'click', closeSheet);
+on(sheetClose,'click', closeSheet);
+on(previewsEl,'click', closeSheet);
+on(display,'click', closeSheet);
+
+/* ================== Bindings ================== */
+function setVal(selector, value){
+  const el = sheetBody.querySelector(selector); if(!el) return;
+  if(el.type==='checkbox') el.checked=!!value; else el.value=value;
+  if(el.id==='ditherStrength'){ const v=sheetBody.querySelector('#ditherStrengthVal'); if(v) v.textContent=value+'%'; }
+  if(el.id==='f_gauss'){ const v=sheetBody.querySelector('#f_gauss_val'); if(v) v.textContent=(value/10).toFixed(1); }
+  if(el.id==='f_gamma'){ const v=sheetBody.querySelector('#f_gamma_val'); if(v) v.textContent=(value/100).toFixed(2); }
+  if(el.id==='f_median'){ const v=sheetBody.querySelector('#f_median_val'); if(v) v.textContent=value; }
+  if(el.id==='f_bright'){ const v=sheetBody.querySelector('#f_bright_val'); if(v) v.textContent=value; }
+  if(el.id==='f_contrast'){ const v=sheetBody.querySelector('#f_contrast_val'); if(v) v.textContent=value; }
+  if(el.id==='f_saturation'){ const v=sheetBody.querySelector('#f_saturation_val'); if(v) v.textContent=value; }
+  if(el.id==='f_vibrance'){ const v=sheetBody.querySelector('#f_vibrance_val'); if(v) v.textContent=value; }
+  if(el.id==='f_temp'){ const v=sheetBody.querySelector('#f_temp_val'); if(v) v.textContent=value; }
+  if(el.id==='f_tint'){ const v=sheetBody.querySelector('#f_tint_val'); if(v) v.textContent=value; }
+}
+function applyStateToPanel(){
+  // general
+  setVal('#gridSize', state.gridSize);
+  setVal('#method', state.method);
+  setVal('#ditherMethod', state.ditherMethod);
+  setVal('#ditherStrength', state.ditherStrength);
+  setVal('#gridlines', state.gridlines);
+  setVal('#labels', state.labels);
+  // filters
+  const f = state.filters;
+  setVal('#f_median_on', f.median_on); setVal('#f_median', f.median);
+  setVal('#f_gauss_on', f.gauss_on);   setVal('#f_gauss', f.gauss);
+  setVal('#f_sharp_on', f.sharp_on);   setVal('#f_sharp', f.sharp);
+  setVal('#f_autolevel_on', f.autolevel_on); setVal('#f_autolevel', f.autolevel);
+  setVal('#f_bright_on', f.bright_on); setVal('#f_bright', f.bright);
+  setVal('#f_contrast_on', f.contrast_on); setVal('#f_contrast', f.contrast);
+  setVal('#f_saturation_on', f.saturation_on); setVal('#f_saturation', f.saturation);
+  setVal('#f_vibrance_on', f.vibrance_on); setVal('#f_vibrance', f.vibrance);
+  setVal('#f_gamma_on', f.gamma_on);   setVal('#f_gamma', f.gamma);
+  setVal('#f_temp_on', f.temp_on);     setVal('#f_temp', f.temp); setVal('#f_tint', f.tint);
+}
+function bindPanelInputsToState(){
+  sheetBody.querySelectorAll('input,select').forEach(el=>{
+    const handler = ()=>{
+      // write into state
+      const id=el.id, val=(el.type==='checkbox')? el.checked : (el.type==='range'||el.type==='number')? (el.value*1) : el.value;
+      if(id==='gridSize') state.gridSize = clamp(val,3,1000);
+      else if(id==='method') state.method = val;
+      else if(id==='ditherMethod') state.ditherMethod = val;
+      else if(id==='ditherStrength') state.ditherStrength = clamp(val,0,100);
+      else if(id==='gridlines') state.gridlines = !!val;
+      else if(id==='labels') state.labels = !!val;
+      else if(id.startsWith('f_')) {
+        const key = id.replace('f_','');
+        if(id.endsWith('_on')) state.filters[key] = !!val;
+        else state.filters[key] = val;
+      }
+      // reflect label live
+      setVal('#'+id, val);
+      // recompute
+      if(lastImg) process(lastImg);
+      // update grid size label
+      if($('#gsz')) $('#gsz').textContent = state.gridSize;
+      if($('#gsz2')) $('#gsz2').textContent = state.gridSize;
+    };
+    el.addEventListener(el.type==='range' || el.type==='number' ? 'input' : 'change', handler);
+    el.addEventListener('change', handler);
+  });
+
+  // Export buttons (if present)
+  const png=$('downloadPng'), op=$('openPng'), csv=$('downloadCsv');
+  if(png) on(png,'click', ()=>{ if(!mosaic) return alert('Add a photo first.'); savePNG(`rubiks-${mosaic.size}x${mosaic.size}.png`); });
+  if(op) on(op,'click', ()=>{ if(!mosaic) return alert('Add a photo first.'); const dataURL=display.toDataURL('image/png'); const win=window.open(); if(win){ win.document.write('<title>PNG</title><img style="width:100%;height:auto;display:block" src="'+dataURL+'">'); win.document.close(); } else window.location.href=dataURL; });
+  if(csv) on(csv,'click', ()=>{
+    if(!mosaic) return alert('Add a photo first.');
+    const rows=Array.from({length:mosaic.size},(_,y)=>Array.from({length:mosaic.size},(_,x)=>RUBIKS[mosaic.grid[y][x]].name).join(',')).join('\n');
+    const url=URL.createObjectURL(new Blob([rows],{type:'text/csv'})); const a=document.createElement('a'); a.href=url; a.download=`rubiks-${mosaic.size}x${mosaic.size}.csv`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000);
+  });
+}
+function wirePresetButtons(){
+  refreshPresetSelect();
+  const saveBtn=$('savePreset'), loadBtn=$('loadPreset'), delBtn=$('deletePreset'), nameEl=$('presetName'), sel=$('presetSelect');
+  if(saveBtn) on(saveBtn,'click', ()=>{
+    const name=(nameEl?.value||('Preset '+new Date().toLocaleString())).trim();
+    if(!name) return alert('Enter a preset name.');
+    savePreset(name); refreshPresetSelect(); if(sel) sel.value=name; alert('Preset saved: '+name);
+  });
+  if(loadBtn) on(loadBtn,'click', ()=>{
+    const name=sel?.value; if(!name) return alert('No preset selected.');
+    const p=getAllPresets()[name]; if(!p) return alert('Preset not found.');
+    state = deepClone(defaultState); // ensure defaults exist
+    Object.assign(state, p, {filters: Object.assign({}, defaultState.filters, p.filters||{})});
+    applyStateToPanel(); if(lastImg) process(lastImg);
+  });
+  if(delBtn) on(delBtn,'click', ()=>{
+    const name=sel?.value; if(!name) return alert('No preset selected.');
+    const map=getAllPresets(); if(!(name in map)) return alert('Preset not found.');
+    if(!confirm('Delete preset "'+name+'"?')) return;
+    delete map[name]; localStorage.setItem(LS_PRESETS, JSON.stringify(map)); refreshPresetSelect();
+  });
+}
+
+/* ================== Input & Pipeline ================== */
+let lastImg=null, mosaic=null;
+
+on(fileInput,'change', e=>{
+  const f=e.target.files && e.target.files[0]; if(!f) return;
+  const url=URL.createObjectURL(f);
+  const img=new Image();
+  img.onload=()=>{ URL.revokeObjectURL(url); lastImg=img; process(img); };
+  img.onerror=()=>{ URL.revokeObjectURL(url); alert('Could not read image'); };
+  img.src=url;
+});
+
+function process(img){
+  const N=clamp(state.gridSize,3,1000);
+  if($('#gsz')) $('#gsz').textContent=N; if($('#gsz2')) $('#gsz2').textContent=N;
+
+  // Square crop
+  const side=Math.min(img.naturalWidth,img.naturalHeight);
+  const sx=Math.floor((img.naturalWidth-side)/2), sy=Math.floor((img.naturalHeight-side)/2);
+
+  // Tiny canvas N×N
+  const tiny=document.createElement('canvas'); tiny.width=N; tiny.height=N;
+  const tctx=tiny.getContext('2d',{willReadFrequently:true});
+  if(state.method==='resize'){
+    tctx.imageSmoothingEnabled=true; tctx.imageSmoothingQuality='high';
+    tctx.drawImage(img,sx,sy,side,side,0,0,N,N);
+  }else{
+    const scale=Math.min(4*N,2048);
+    const inter=document.createElement('canvas'); inter.width=scale; inter.height=scale;
+    const ictx=inter.getContext('2d'); ictx.imageSmoothingEnabled=true; ictx.imageSmoothingQuality='high';
+    ictx.drawImage(img,sx,sy,side,side,0,0,scale,scale);
+    tctx.drawImage(inter,0,0,scale,scale,0,0,N,N);
+  }
+
+  // Original preview
+  drawPreview(prevOrigCtx, tctx.getImageData(0,0,N,N), N,N);
+
+  // Filters
+  let id=tctx.getImageData(0,0,N,N);
+  const F=state.filters;
+  if(F.median_on && F.median>0) id=filterMedian(id,N,N, Math.max(3, 2*Math.round((3+(F.median/100)*4)/2)-1));
+  if(F.gauss_on && F.gauss>0) id=filterGaussianApprox(id,N,N,(F.gauss/10));
+  if(F.autolevel_on && F.autolevel>0) id=filterAutoLevels(id,N,N, F.autolevel/100);
+  if(F.bright_on && F.bright!=0) id=filterBrightness(id,N,N, F.bright);
+  if(F.contrast_on && F.contrast!=0) id=filterContrast(id,N,N, F.contrast);
+  if(F.gamma_on && F.gamma!=100) id=filterGamma(id,N,N, F.gamma/100);
+  if(F.saturation_on && F.saturation!=0) id=filterSaturation(id,N,N, F.saturation);
+  if(F.vibrance_on && F.vibrance>0) id=filterVibrance(id,N,N, F.vibrance);
+  if(F.temp_on && (F.temp!=0||F.tint!=0)) id=filterTempTint(id,N,N, F.temp, F.tint);
+
+  // Filtered preview
+  drawPreview(prevFiltCtx, id, N,N);
+
+  // write filtered for quantization
+  tctx.putImageData(id,0,0);
+
+  // quantize+dither -> grid
+  const grid=quantizeToRubiks(tctx,N,state.ditherMethod,state.ditherStrength/100);
+
+  // counts + render
+  const counts=new Array(PALETTE.length).fill(0);
+  for(let y=0;y<N;y++) for(let x=0;x<N;x++) counts[grid[y][x]]++;
+  drawMosaic(grid,N,{gridlines:state.gridlines,labels:state.labels});
+  mosaic={grid,size:N,counts};
+  renderLegend(counts);
+}
+
+function drawPreview(pctx,imgData,W,H){
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  cv.getContext('2d').putImageData(imgData,0,0);
+  const w=pctx.canvas.width, h=pctx.canvas.height;
+  pctx.imageSmoothingEnabled=false; pctx.clearRect(0,0,w,h);
+  pctx.drawImage(cv,0,0,W,H,0,0,w,h);
+}
+
+/* ================== Quantize + Dither ================== */
+function quantizeToRubiks(tctx,N,method,strength){
+  const data=tctx.getImageData(0,0,N,N);
+  const isOrdered = (method==='ordered4' || method==='ordered8');
+  const kernel = (!isOrdered && method!=='none') ? KERNELS[method] : null;
+  const err = kernel ? new Float32Array(N*N*3) : null;
+  const grid=Array.from({length:N},()=>new Uint16Array(N));
+  const bayer = method==='ordered8' ? BAYER8 : BAYER4;
+  const bSize = method==='ordered8' ? 8 : 4;
+  const bNorm = bSize*bSize;
+
+  for(let y=0;y<N;y++){
+    for(let x=0;x<N;x++){
+      const idx=y*N+x, i4=idx*4;
+      let r=data.data[i4], g=data.data[i4+1], b=data.data[i4+2];
+
+      if(isOrdered && strength>0){
+        const t = (bayer[y % bSize][x % bSize] + 0.5) / bNorm; // 0..1
+        const offset = (t - 0.5) * 2 * 40 * strength; // ±40 scaled by strength
+        r = clamp(r + offset,0,255)|0;
+        g = clamp(g + offset,0,255)|0;
+        b = clamp(b + offset,0,255)|0;
+      }
+
+      if(err){
+        r=clamp((r+err[idx*3])|0,0,255); g=clamp((g+err[idx*3+1])|0,0,255); b=clamp((b+err[idx*3+2])|0,0,255);
+      }
+
+      const lab=rgb2lab(r,g,b);
+      let best=0, bestD=1e9;
+      for(let p=0;p<PALETTE.length;p++){ const d=dE76(lab,PALETTE[p].lab); if(d<bestD){bestD=d;best=p;} }
+      grid[y][x]=best;
+
+      if(err && strength>0){
+        const pr=PALETTE[best].rgb.r, pg=PALETTE[best].rgb.g, pb=PALETTE[best].rgb.b;
+        const erR=(r-pr)*strength, erG=(g-pg)*strength, erB=(b-pb)*strength;
+        for(const [dx,dy,w] of kernel){
+          const nx=x+dx, ny=y+dy; if(nx<0||nx>=N||ny<0||ny>=N) continue;
+          const j=(ny*N+nx)*3; err[j]+=erR*w; err[j+1]+=erG*w; err[j+2]+=erB*w;
+        }
+      }
+    }
+  }
+  return grid;
+}
+
+/* ================== Filters ================== */
+function filterMedian(imgData,W,H,win){
+  const r=win|0; if(r<3) return imgData; const rad=(r-1)>>1;
+  const src=imgData.data, out=new Uint8ClampedArray(src.length);
+  for(let y=0;y<H;y++){ for(let x=0;x<W;x++){
+    const rr=[],gg=[],bb=[];
+    for(let dy=-rad; dy<=rad; dy++){ const yy=clamp(y+dy,0,H-1);
+      for(let dx=-rad; dx<=rad; dx++){ const xx=clamp(x+dx,0,W-1); const k=(yy*W+xx)*4; rr.push(src[k]); gg.push(src[k+1]); bb.push(src[k+2]); }
+    }
+    rr.sort((a,b)=>a-b); gg.sort((a,b)=>a-b); bb.sort((a,b)=>a-b);
+    const mid=(rr.length>>1), i=(y*W+x)*4;
+    out[i]=rr[mid]; out[i+1]=gg[mid]; out[i+2]=bb[mid]; out[i+3]=255;
+  }} return new ImageData(out,W,H);
+}
+function filterGaussianApprox(imgData,W,H,radius){
+  if(radius<=0.01) return imgData;
+  const boxes=boxSizesForGauss(radius,3); let tmp=imgData;
+  for(const b of boxes){ tmp=boxBlur(tmp,W,H,(b-1)>>1); } return tmp;
+  function boxSizesForGauss(sigma,n){ const wIdeal=Math.sqrt((12*sigma*sigma/n)+1); let wl=Math.floor(wIdeal); if(!(wl&1)) wl--; const wu=wl+2; const m=Math.round((12*sigma*sigma-n*wl*wl-4*n*wl-3*n)/(-4*wl-4)); return Array.from({length:n},(_,i)=> i<m?wl:wu); }
+  function boxBlur(imgData,W,H,rad){
+    if(rad<=0) return imgData;
+    const src=imgData.data,tmp=new Uint8ClampedArray(src.length),out=new Uint8ClampedArray(src.length);
+    for(let y=0;y<H;y++){
+      let r=0,g=0,b=0; const yOff=y*W;
+      for(let i=-rad;i<=rad;i++){ const x=clamp(i,0,W-1); const k=((yOff+x)<<2); r+=src[k]; g+=src[k+1]; b+=src[k+2]; }
+      for(let x=0;x<W;x++){
+        const ki=((yOff+x)<<2); tmp[ki]=r/(2*rad+1)|0; tmp[ki+1]=g/(2*rad+1)|0; tmp[ki+2]=b/(2*rad+1)|0; tmp[ki+3]=255;
+        const xAdd=clamp(x+rad+1,0,W-1), xSub=clamp(x-rad,0,W-1);
+        const kAdd=((yOff+xAdd)<<2), kSub=((yOff+xSub)<<2);
+        r+=src[kAdd]-src[kSub]; g+=src[kAdd+1]-src[kSub+1]; b+=src[kAdd+2]-src[kSub+2];
+      }
+    }
+    for(let x=0;x<W;x++){
+      let r=0,g=0,b=0;
+      for(let i=-rad;i<=rad;i++){ const y=clamp(i,0,H-1); const k=((y*W+x)<<2); r+=tmp[k]; g+=tmp[k+1]; b+=tmp[k+2]; }
+      for(let y=0;y<H;y++){
+        const ki=((y*W+x)<<2); out[ki]=r/(2*rad+1)|0; out[ki+1]=g/(2*rad+1)|0; out[ki+2]=b/(2*rad+1)|0; out[ki+3]=255;
+        const yAdd=clamp(y+rad+1,0,H-1), ySub=clamp(y-rad,0,H-1);
+        const kAdd=((yAdd*W+x)<<2), kSub=((ySub*W+x)<<2);
+        r+=tmp[kAdd]-tmp[kSub]; g+=tmp[kAdd+1]-tmp[kSub+1]; b+=tmp[kAdd+2]-tmp[kSub+2];
+      }
+    }
+    return new ImageData(out,W,H);
+  }
+}
+function filterAutoLevels(imgData,W,H,str){
+  const src=imgData.data,out=new Uint8ClampedArray(src.length);
+  let rMin=255,rMax=0,gMin=255,gMax=0,bMin=255,bMax=0;
+  for(let i=0;i<src.length;i+=4){const r=src[i],g=src[i+1],b=src[i+2]; if(r<rMin)rMin=r;if(r>rMax)rMax=r; if(g<gMin)gMin=g;if(g>gMax)gMax=g; if(b<bMin)bMin=b;if(b>bMax)bMax=b;}
+  for(let i=0;i<src.length;i+=4){
+    const r=src[i],g=src[i+1],b=src[i+2];
+    const R=stretch(rMin,rMax,r), G=stretch(gMin,gMax,g), B=stretch(bMin,bMax,b);
+    out[i]=lerp(r,R,str); out[i+1]=lerp(g,G,str); out[i+2]=lerp(b,B,str); out[i+3]=255;
+  } return new ImageData(out,W,H);
+  function stretch(min,max,v){ if(max<=min) return v; return clamp(Math.round((v-min)*255/(max-min)),0,255); }
+  function lerp(a,b,t){ return Math.round(a*(1-t)+b*t); }
+}
+function filterBrightness(imgData,W,H,val){
+  const src=imgData.data,out=new Uint8ClampedArray(src.length);
+  for(let i=0;i<src.length;i+=4){ out[i]=clamp(src[i]+val,0,255); out[i+1]=clamp(src[i+1]+val,0,255); out[i+2]=clamp(src[i+2]+val,0,255); out[i+3]=255; }
+  return new ImageData(out,W,H);
+}
+function filterContrast(imgData,W,H,val){
+  const src=imgData.data,out=new Uint8ClampedArray(src.length);
+  const c=clamp(val,-100,100), f=(259*(c+255))/(255*(259-c));
+  for(let i=0;i<src.length;i+=4){
+    out[i]=clamp(f*(src[i]-128)+128,0,255)|0;
+    out[i+1]=clamp(f*(src[i+1]-128)+128,0,255)|0;
+    out[i+2]=clamp(f*(src[i+2]-128)+128,0,255)|0;
+    out[i+3]=255;
+  } return new ImageData(out,W,H);
+}
+function filterGamma(imgData,W,H,gamma){
+  if(gamma<=0.01) gamma=0.01;
+  const src=imgData.data,out=new Uint8ClampedArray(src.length);
+  const inv=1/gamma; const LUT=new Uint8Array(256); for(let i=0;i<256;i++){ LUT[i]=clamp(Math.pow(i/255,inv)*255|0,0,255); }
+  for(let i=0;i<src.length;i+=4){ out[i]=LUT[src[i]]; out[i+1]=LUT[src[i+1]]; out[i+2]=LUT[src[i+2]]; out[i+3]=255; }
+  return new ImageData(out,W,H);
+}
+function filterSaturation(imgData,W,H,val){
+  const src=imgData.data,out=new Uint8ClampedArray(src.length);
+  const s=clamp(val,-100,100)/100;
+  for(let i=0;i<src.length;i+=4){
+    const r=src[i],g=src[i+1],b=src[i+2], l=0.2126*r+0.7152*g+0.0722*b;
+    out[i]=clamp(l+(r-l)*(1+s),0,255)|0;
+    out[i+1]=clamp(l+(g-l)*(1+s),0,255)|0;
+    out[i+2]=clamp(l+(b-l)*(1+s),0,255)|0;
+    out[i+3]=255;
+  } return new ImageData(out,W,H);
+}
+function filterVibrance(imgData,W,H,val){
+  const src=imgData.data,out=new Uint8ClampedArray(src.length);
+  const v=clamp(val,0,100)/100;
+  for(let i=0;i<src.length;i+=4){
+    const r=src[i],g=src[i+1],b=src[i+2], maxc=Math.max(r,g,b), minc=Math.min(r,g,b);
+    const sat=(maxc===0)?0:(maxc-minc)/maxc, boost=v*(1-sat), l=0.2126*r+0.7152*g+0.0722*b;
+    out[i]=clamp(l+(r-l)*(1+boost),0,255)|0;
+    out[i+1]=clamp(l+(g-l)*(1+boost),0,255)|0;
+    out[i+2]=clamp(l+(b-l)*(1+boost),0,255)|0;
+    out[i+3]=255;
+  } return new ImageData(out,W,H);
+}
+function filterTempTint(imgData,W,H,temp,tint){
+  const src=imgData.data,out=new Uint8ClampedArray(src.length);
+  const t=temp/100, p=tint/100;
+  const rGain=1+0.5*t-0.1*p, gGain=1+0.2*p, bGain=1-0.5*t-0.1*p;
+  for(let i=0;i<src.length;i+=4){
+    out[i]=clamp(src[i]*rGain,0,255)|0; out[i+1]=clamp(src[i+1]*gGain,0,255)|0; out[i+2]=clamp(src[i+2]*bGain,0,255)|0; out[i+3]=255;
+  } return new ImageData(out,W,H);
+}
+
+/* ================== Draw & Export ================== */
+function drawMosaic(grid,N,opts){
+  const W=display.width,H=display.height; ctx.clearRect(0,0,W,H);
+  const cell=Math.floor(Math.min(W,H)/N), ox=Math.floor((W-cell*N)/2), oy=Math.floor((H-cell*N)/2);
+  for(let y=0;y<N;y++){ for(let x=0;x<N;x++){ ctx.fillStyle=PALETTE[grid[y][x]].hex; ctx.fillRect(ox+x*cell,oy+y*cell,cell,cell); } }
+  if(opts.gridlines){
+    ctx.strokeStyle='rgba(0,0,0,.35)'; ctx.lineWidth=Math.max(1,(cell*0.06)|0);
+    for(let i=0;i<=N;i++){ const gx=ox+i*cell, gy=oy+i*cell; ctx.beginPath(); ctx.moveTo(ox,gy); ctx.lineTo(ox+cell*N,gy); ctx.stroke(); ctx.beginPath(); ctx.moveTo(gx,oy); ctx.lineTo(gx,oy+cell*N); ctx.stroke(); }
+  }
+  if(opts.labels){
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font=`${Math.floor(cell*0.45)}px -apple-system, Segoe UI, Roboto, Arial`;
+    for(let y=0;y<N;y++) for(let x=0;x<N;x++){
+      const p=PALETTE[grid[y][x]].rgb; const luma=0.2126*p.r+0.7152*p.g+0.0722*p.b;
+      ctx.fillStyle = luma<140 ? 'rgba(255,255,255,.95)' : 'rgba(0,0,0,.75)';
+      ctx.fillText(PALETTE[grid[y][x]].name, ox+x*cell+cell/2, oy+y*cell+cell/2);
+    }
+  }
+}
+function renderLegend(counts=null){
+  legend.innerHTML='';
+  PALETTE.forEach(c=>{
+    const d=document.createElement('div'); d.className='swatch';
+    const chip=document.createElement('div'); chip.className='chip'; chip.style.background=c.hex;
+    const name=document.createElement('div'); name.textContent=`${c.name} — ${c.label}`;
+    d.appendChild(chip); d.appendChild(name); legend.appendChild(d);
+  });
+  countsEl.textContent = counts ? ('Tiles: ' + counts.map((n,i)=>`${PALETTE[i].name}:${n}`).join(' · ')) : '';
+}
+function savePNG(filename='rubiks.png'){
+  const dataURL=display.toDataURL('image/png');
+  const a=document.createElement('a'); a.href=dataURL; a.download=filename;
+  const isIOS=/iP(hone|ad|od)/i.test(navigator.userAgent);
+  if(isIOS){ const win=window.open(); if(win){ win.document.write('<title>PNG</title><img style="width:100%;height:auto;display:block" src="'+dataURL+'">'); win.document.close(); } else window.location.href=dataURL; }
+  else{ document.body.appendChild(a); a.click(); a.remove(); }
+}
+
+/* ================== Init ================== */
+(function init(){
+  // Seed mosaic visual
+  const N=state.gridSize; const grid=Array.from({length:N},(_,y)=>Array.from({length:N},(_,x)=>(x+y)%PALETTE.length));
+  drawMosaic(grid,N,{gridlines:state.gridlines,labels:state.labels});
+  renderLegend();
+})();
+</script>
+</body>
+</html>
