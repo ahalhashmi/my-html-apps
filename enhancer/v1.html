@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Qur'an Audio Enhancer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <style>
+    :root {
+      --bg: #050814;
+      --card: #101622;
+      --accent: #28c4a6;
+      --accent-soft: rgba(40,196,166,0.2);
+      --text: #f4f5f7;
+      --muted: #a7b0c3;
+      --danger: #ff4b6a;
+      --border: #1d2536;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      background: radial-gradient(circle at top, #10142a 0, #050814 50%, #02030a 100%);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 14px 14px 32px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      margin: 6px 0 2px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #e4f4ff;
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(29, 37, 54, 0.9);
+      border: 1px solid rgba(66, 105, 180, 0.4);
+      font-size: 0.68rem;
+      color: #b2c5ff;
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px rgba(40,196,166,0.8);
+    }
+
+    .card {
+      background: linear-gradient(145deg, rgba(26,33,53,0.98), rgba(12,17,33,0.98));
+      border-radius: var(--radius-lg);
+      padding: 14px 14px 12px;
+      margin-bottom: 14px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+      border: 1px solid rgba(39, 52, 87, 0.9);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #d7e4ff;
+    }
+
+    .card-subtitle {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .pill {
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(71, 101, 172, 0.8);
+      font-size: 0.72rem;
+      color: #c3d2ff;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-ghost {
+      border-style: dashed;
+      color: var(--muted);
+    }
+
+    .pill .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      flex: 1;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      background: #1c263b;
+      color: #e2ecff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.65);
+    }
+
+    button.primary {
+      background: radial-gradient(circle at top left, #38f4c4, #1ea58b);
+      color: #02130e;
+    }
+
+    button.danger {
+      background: radial-gradient(circle at top left, #ff7d96, #ff4162);
+      color: #230107;
+    }
+
+    button.outline {
+      background: transparent;
+      border: 1px solid rgba(95, 124, 190,0.9);
+      color: #d4e0ff;
+      box-shadow: none;
+    }
+
+    button.small {
+      padding: 8px 10px;
+      font-size: 0.78rem;
+    }
+
+    button[disabled] {
+      opacity: 0.4;
+    }
+
+    .status {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status strong {
+      color: #e9f1ff;
+      font-weight: 600;
+    }
+
+    .status-pill {
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      background: rgba(34, 46, 80, 0.95);
+      border: 1px solid rgba(104, 137, 210, 0.8);
+      color: #c4d5ff;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 4px;
+      background: #555f7c;
+    }
+    .status-dot.on {
+      background: #ff4b6a;
+      box-shadow: 0 0 8px rgba(255,75,106,0.9);
+    }
+
+    select {
+      width: 100%;
+      border-radius: 999px;
+      padding: 7px 12px;
+      background: rgba(16,22,40,0.96);
+      border: 1px solid rgba(67,93,163,0.9);
+      color: #d8e2ff;
+      font-size: 0.8rem;
+    }
+
+    .preset-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .preset-row button {
+      flex: 0 0 auto;
+    }
+
+    .note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    .note strong {
+      color: #dbe6ff;
+    }
+
+    .sliders-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    @media (min-width: 420px) {
+      .sliders-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .slider-group {
+      background: radial-gradient(circle at top left, rgba(34,43,73,0.95), rgba(14,21,40,0.98));
+      border-radius: var(--radius-md);
+      padding: 8px 10px 9px;
+      border: 1px solid rgba(52, 73, 122, 0.9);
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+    }
+
+    .slider-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #d2e3ff;
+    }
+
+    .slider-value {
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      margin: 4px 0 0;
+      background: transparent;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent-soft), rgba(66,94,167,0.6));
+      border-radius: 999px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fefefe;
+      box-shadow: 0 0 0 3px rgba(40,196,166,0.6);
+      margin-top: -7px;
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent-soft), rgba(66,94,167,0.6));
+      border-radius: 999px;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fefefe;
+      box-shadow: 0 0 0 3px rgba(40,196,166,0.6);
+    }
+
+    .timebar-wrap {
+      margin-top: 8px;
+    }
+
+    .timebar-label {
+      margin-top: 2px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .footer {
+      margin-top: 10px;
+      font-size: 0.7rem;
+      color: #7b88a4;
+      text-align: center;
+      opacity: 0.85;
+    }
+
+    .export-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .export-row label {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="badge">
+        <span class="badge-dot"></span>
+        Qur'an Voice Enhancer • Web
+      </div>
+      <h1>Masjid-Style Recitation</h1>
+      <div class="subtitle">
+        Record, clean, add gentle reverb, and export — tuned for Qur'an
+      </div>
+    </header>
+
+    <!-- RECORDING CARD -->
+    <section class="card" id="recordCard">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Recording</div>
+          <div class="card-subtitle">Tap record, recite, then stop to process</div>
+        </div>
+        <div class="pill">
+          <span class="dot"></span>
+          Mic capture
+        </div>
+      </div>
+
+      <div class="controls-row">
+        <button id="recordBtn" class="primary">
+          ⏺ Record
+        </button>
+        <button id="stopBtn" class="danger" disabled>
+          ⏹ Stop
+        </button>
+      </div>
+
+      <div class="controls-row" style="margin-top:6px;">
+        <button id="playDryBtn" class="outline" disabled>
+          ▶ Dry
+        </button>
+        <button id="playProcessedBtn" class="outline" disabled>
+          ▶ Processed
+        </button>
+        <button id="pausePlaybackBtn" class="outline" disabled>
+          ⏸ Pause
+        </button>
+        <button id="stopPlaybackBtn" class="outline" disabled>
+          ⏹ Stop
+        </button>
+      </div>
+
+      <div class="export-row" style="margin-top:8px;">
+        <label for="playbackRate"><strong>Playback speed:</strong></label>
+        <select id="playbackRate">
+          <option value="0.75">0.75x (slower)</option>
+          <option value="1" selected>1.0x (normal)</option>
+          <option value="1.25">1.25x</option>
+          <option value="1.5">1.5x</option>
+        </select>
+      </div>
+
+      <div class="timebar-wrap">
+        <input type="range" id="seekBar" min="0" max="0" value="0" step="0.01" />
+        <div class="timebar-label" id="seekLabel">00:00 / 00:00</div>
+      </div>
+
+      <div class="status">
+        <div>
+          <span id="statusDot" class="status-dot"></span>
+          <span id="statusText">Idle — no recording yet</span>
+        </div>
+        <div id="lengthBadge" class="status-pill">
+          00:00
+        </div>
+      </div>
+    </section>
+
+    <!-- PRESETS CARD -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Presets</div>
+          <div class="card-subtitle">Mosque, studio & special curves for Qur'an</div>
+        </div>
+        <div class="pill pill-ghost">Non-destructive — only sliders change</div>
+      </div>
+
+      <select id="presetSelect"></select>
+
+      <div class="preset-row">
+        <button id="applyPresetBtn" class="small primary">Apply Preset</button>
+        <button id="savePresetBtn" class="small outline">Save Custom</button>
+      </div>
+
+      <div class="note">
+        <strong>Presets included:</strong> big & small masjid, studio mic, clean home, outdoor, deep imam, close tajwīd and more.  
+        Save your own curve with a name — it will appear in the list.
+      </div>
+    </section>
+
+    <!-- SLIDERS CARD -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Tone & Clarity</div>
+          <div class="card-subtitle">Filter & EQ to remove noise and shape voice</div>
+        </div>
+      </div>
+
+      <div class="sliders-grid">
+        <!-- High-pass -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">High-Pass (Cut Rumbling)</div>
+            <div class="slider-value" id="hpFreqVal"></div>
+          </div>
+          <input type="range" id="hpFreq" data-setting="hpFreq" min="20" max="200" step="5" />
+        </div>
+
+        <!-- Low-pass -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">Low-Pass (Cut Hiss)</div>
+            <div class="slider-value" id="lpFreqVal"></div>
+          </div>
+          <input type="range" id="lpFreq" data-setting="lpFreq" min="6000" max="18000" step="500" />
+        </div>
+
+        <!-- Bass -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">Bass Shelf</div>
+            <div class="slider-value" id="bassGainVal"></div>
+          </div>
+          <input type="range" id="bassGain" data-setting="bassGain" min="-10" max="10" step="0.5" />
+        </div>
+
+        <!-- Mid -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">Mids (Presence)</div>
+            <div class="slider-value" id="midGainVal"></div>
+          </div>
+          <input type="range" id="midGain" data-setting="midGain" min="-8" max="8" step="0.5" />
+        </div>
+
+        <!-- Mid Freq -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">Mid Freq</div>
+            <div class="slider-value" id="midFreqVal"></div>
+          </div>
+          <input type="range" id="midFreq" data-setting="midFreq" min="800" max="4000" step="100" />
+        </div>
+
+        <!-- Treble -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">Treble (Air)</div>
+            <div class="slider-value" id="trebleGainVal"></div>
+          </div>
+          <input type="range" id="trebleGain" data-setting="trebleGain" min="-8" max="8" step="0.5" />
+        </div>
+      </div>
+
+      <div class="note">
+        <strong>For Qur'an:</strong> modest bass, light boost around 2–3 kHz, and smooth treble gives clear articulation without harshness.
+      </div>
+    </section>
+
+    <!-- DYNAMICS + REVERB -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Dynamics & Space</div>
+          <div class="card-subtitle">Compressor + Mosque-style reverb</div>
+        </div>
+      </div>
+
+      <div class="sliders-grid">
+        <!-- Compressor -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">Comp Threshold</div>
+            <div class="slider-value" id="compThresholdVal"></div>
+          </div>
+          <input type="range" id="compThreshold" data-setting="compThreshold" min="-50" max="-10" step="1" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">Comp Ratio</div>
+            <div class="slider-value" id="compRatioVal"></div>
+          </div>
+          <input type="range" id="compRatio" data-setting="compRatio" min="1" max="6" step="0.2" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">Attack (ms)</div>
+            <div class="slider-value" id="compAttackVal"></div>
+          </div>
+          <input type="range" id="compAttack" data-setting="compAttack" min="0.5" max="50" step="0.5" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">Release (ms)</div>
+            <div class="slider-value" id="compReleaseVal"></div>
+          </div>
+          <input type="range" id="compRelease" data-setting="compRelease" min="50" max="800" step="10" />
+        </div>
+
+        <!-- Reverb -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">Reverb Length</div>
+            <div class="slider-value" id="reverbDurationVal"></div>
+          </div>
+          <input type="range" id="reverbDuration" data-setting="reverbDuration" min="0.4" max="4" step="0.1" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">Reverb Decay</div>
+            <div class="slider-value" id="reverbDecayVal"></div>
+          </div>
+          <input type="range" id="reverbDecay" data-setting="reverbDecay" min="0.8" max="4" step="0.1" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">Reverb Mix</div>
+            <div class="slider-value" id="reverbMixVal"></div>
+          </div>
+          <input type="range" id="reverbMix" data-setting="reverbMix" min="0" max="0.7" step="0.02" />
+        </div>
+
+        <!-- Output Gain -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-title">Output Level</div>
+            <div class="slider-value" id="outGainVal"></div>
+          </div>
+          <input type="range" id="outGain" data-setting="outGain" min="-12" max="6" step="0.5" />
+        </div>
+      </div>
+
+      <div class="export-row">
+        <label for="exportFormat"><strong>Export format:</strong></label>
+        <select id="exportFormat">
+          <option value="m4a" selected>M4A / MP4 (compressed, if supported)</option>
+          <option value="wav">WAV (highest quality, larger size)</option>
+          <option value="mp3">MP3 (compressed, if supported)</option>
+        </select>
+      </div>
+
+      <div class="controls-row" style="margin-top:10px;">
+        <button id="renderBtn" class="primary small">Render & Save</button>
+      </div>
+
+      <div class="note">
+        <strong>Note:</strong> WAV is always supported. MP3/M4A depend on browser support; if not available you'll be asked to use WAV.
+      </div>
+    </section>
+
+    <div class="footer">
+      Designed for iPhone / Chrome • Uses Web Audio API (everything stays on device)
+    </div>
+  </div>
+
+  <script>
+    // -----------------------------
+    // GLOBAL STATE
+    // -----------------------------
+    let audioCtx = null;
+
+    // Recording
+    const MAX_RECORD_SECONDS = 600; // 10 minutes
+    let micStream = null;
+    let micSourceNode = null;
+    let scriptNode = null;
+    let recordingBuffers = [];
+    let recordingLength = 0;
+    let recordSampleRate = 44100;
+    let isRecording = false;
+
+    // Recorded buffer
+    let recordedBuffer = null;
+
+    // Playback state
+    let currentSource = null;
+    let playbackRate = 1.0;
+    let isPlaying = false;
+    let currentPlayMode = null; // 'dry' | 'processed'
+    let playOffset = 0; // seconds from start
+    let playStartTimeCtx = 0;
+    let seekAnimationId = null;
+
+    // Export state for compressed formats
+    let isExportingCompressed = false;
+
+    const statusText = document.getElementById('statusText');
+    const statusDot = document.getElementById('statusDot');
+    const lengthBadge = document.getElementById('lengthBadge');
+
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const playDryBtn = document.getElementById('playDryBtn');
+    const playProcessedBtn = document.getElementById('playProcessedBtn');
+    const pausePlaybackBtn = document.getElementById('pausePlaybackBtn');
+    const stopPlaybackBtn = document.getElementById('stopPlaybackBtn');
+    const renderBtn = document.getElementById('renderBtn');
+
+    const presetSelect = document.getElementById('presetSelect');
+    const applyPresetBtn = document.getElementById('applyPresetBtn');
+    const savePresetBtn = document.getElementById('savePresetBtn');
+    const exportFormatSelect = document.getElementById('exportFormat');
+    const playbackRateSelect = document.getElementById('playbackRate');
+
+    const seekBar = document.getElementById('seekBar');
+    const seekLabel = document.getElementById('seekLabel');
+
+    playbackRateSelect.addEventListener('change', () => {
+      playbackRate = parseFloat(playbackRateSelect.value) || 1.0;
+      if (currentSource) {
+        currentSource.playbackRate.value = playbackRate;
+      }
+    });
+
+    // Core settings
+    const currentSettings = {
+      hpFreq: 80,
+      lpFreq: 14000,
+      bassGain: 1,
+      midGain: 2.5,
+      midFreq: 2100,
+      trebleGain: 1.5,
+      compThreshold: -28,
+      compRatio: 2.8,
+      compAttack: 8,
+      compRelease: 320,
+      reverbDuration: 2.8,
+      reverbDecay: 2.4,
+      reverbMix: 0.32,
+      outGain: 0
+    };
+
+    // Current preset tracking
+    let currentPresetKey = 'grandMasjid';
+
+    // Built-in presets
+    const builtinPresets = {
+      grandMasjid: {
+        hpFreq: 80, lpFreq: 13000, bassGain: 1, midGain: 2.5, midFreq: 2100,
+        trebleGain: 2, compThreshold: -30, compRatio: 2.4, compAttack: 10,
+        compRelease: 380, reverbDuration: 3.2, reverbDecay: 2.8,
+        reverbMix: 0.38, outGain: 1
+      },
+      smallMasjid: {
+        hpFreq: 90, lpFreq: 14000, bassGain: 0.5, midGain: 2, midFreq: 2000,
+        trebleGain: 1.5, compThreshold: -29, compRatio: 2.2, compAttack: 10,
+        compRelease: 300, reverbDuration: 2.2, reverbDecay: 2.2,
+        reverbMix: 0.26, outGain: 0
+      },
+      cleanHome: {
+        hpFreq: 90, lpFreq: 11000, bassGain: 0, midGain: 1.5, midFreq: 1900,
+        trebleGain: 0, compThreshold: -27, compRatio: 2.4, compAttack: 8,
+        compRelease: 260, reverbDuration: 1.6, reverbDecay: 1.6,
+        reverbMix: 0.18, outGain: 0
+      },
+      studioMic: {
+        hpFreq: 85, lpFreq: 15000, bassGain: 1.2, midGain: 2.2, midFreq: 2300,
+        trebleGain: 2.5, compThreshold: -32, compRatio: 3.5, compAttack: 6,
+        compRelease: 330, reverbDuration: 1.4, reverbDecay: 1.6,
+        reverbMix: 0.14, outGain: 1.5
+      },
+      podcastWarm: {
+        hpFreq: 70, lpFreq: 12000, bassGain: 2.2, midGain: 1.2, midFreq: 1600,
+        trebleGain: 1.2, compThreshold: -26, compRatio: 3, compAttack: 5,
+        compRelease: 250, reverbDuration: 0.9, reverbDecay: 1.2,
+        reverbMix: 0.10, outGain: 0.5
+      },
+      imamDeep: {
+        hpFreq: 75, lpFreq: 13000, bassGain: 2.5, midGain: 1.5, midFreq: 1800,
+        trebleGain: 1, compThreshold: -30, compRatio: 2.6, compAttack: 8,
+        compRelease: 320, reverbDuration: 3.0, reverbDecay: 2.6,
+        reverbMix: 0.34, outGain: 0.5
+      },
+      tajweedClose: {
+        hpFreq: 95, lpFreq: 15000, bassGain: 0.2, midGain: 3, midFreq: 2500,
+        trebleGain: 1.5, compThreshold: -29, compRatio: 3, compAttack: 6,
+        compRelease: 260, reverbDuration: 1.2, reverbDecay: 1.4,
+        reverbMix: 0.16, outGain: 0
+      },
+      echoHall: {
+        hpFreq: 80, lpFreq: 13000, bassGain: 0.8, midGain: 2.2, midFreq: 2200,
+        trebleGain: 1.8, compThreshold: -31, compRatio: 2.5, compAttack: 10,
+        compRelease: 400, reverbDuration: 3.5, reverbDecay: 3.0,
+        reverbMix: 0.42, outGain: 0.5
+      },
+      outdoorSoft: {
+        hpFreq: 100, lpFreq: 10000, bassGain: -1, midGain: 2, midFreq: 2300,
+        trebleGain: 0.5, compThreshold: -27, compRatio: 2.4, compAttack: 7,
+        compRelease: 260, reverbDuration: 1.0, reverbDecay: 1.2,
+        reverbMix: 0.12, outGain: 0
+      },
+      phoneFix: {
+        hpFreq: 120, lpFreq: 9000, bassGain: -1.5, midGain: 3.2, midFreq: 2600,
+        trebleGain: 0.8, compThreshold: -28, compRatio: 3.2, compAttack: 5,
+        compRelease: 240, reverbDuration: 1.4, reverbDecay: 1.6,
+        reverbMix: 0.20, outGain: 0.5
+      }
+    };
+
+    // Built-in preset codes for filenames
+    const presetCodes = {
+      grandMasjid: 'GM',
+      smallMasjid: 'SM',
+      cleanHome: 'CH',
+      studioMic: 'SMF',
+      podcastWarm: 'PW',
+      imamDeep: 'IDV',
+      tajweedClose: 'TCM',
+      echoHall: 'EH',
+      outdoorSoft: 'OS',
+      phoneFix: 'PF'
+    };
+
+    // -----------------------------
+    // AUDIO CONTEXT HELPERS
+    // -----------------------------
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AC();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function dbToGain(db) {
+      return Math.pow(10, db / 20);
+    }
+
+    function formatTime(seconds) {
+      const s = Math.floor(seconds);
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`;
+    }
+
+    // -----------------------------
+    // REVERB IMPULSE CREATION
+    // -----------------------------
+    function createReverbIR(ctx, duration, decay) {
+      const rate = ctx.sampleRate;
+      const length = Math.max(1, Math.floor(duration * rate));
+      const numChannels = 2;
+      const ir = ctx.createBuffer(numChannels, length, rate);
+
+      for (let ch = 0; ch < numChannels; ch++) {
+        const channelData = ir.getChannelData(ch);
+        for (let i = 0; i < length; i++) {
+          const t = i / length;
+          const env = Math.pow(1 - t, decay);
+          channelData[i] = (Math.random() * 2 - 1) * env;
+        }
+      }
+      return ir;
+    }
+
+    // -----------------------------
+    // BUILD AUDIO GRAPH
+    // -----------------------------
+    function buildAudioGraph(ctx, buffer, destinationNode) {
+      const cs = currentSettings;
+
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+
+      const inputGain = ctx.createGain();
+
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = cs.hpFreq;
+
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = cs.lpFreq;
+
+      const bass = ctx.createBiquadFilter();
+      bass.type = 'lowshelf';
+      bass.frequency.value = 120;
+      bass.gain.value = cs.bassGain;
+
+      const mid = ctx.createBiquadFilter();
+      mid.type = 'peaking';
+      mid.frequency.value = cs.midFreq;
+      mid.Q.value = 1.0;
+      mid.gain.value = cs.midGain;
+
+      const treble = ctx.createBiquadFilter();
+      treble.type = 'highshelf';
+      treble.frequency.value = 8000;
+      treble.gain.value = cs.trebleGain;
+
+      const comp = ctx.createDynamicsCompressor();
+      comp.threshold.value = cs.compThreshold;
+      comp.knee.value = 12;
+      comp.ratio.value = cs.compRatio;
+      comp.attack.value = cs.compAttack / 1000;
+      comp.release.value = cs.compRelease / 1000;
+
+      const dryGain = ctx.createGain();
+      const wetGain = ctx.createGain();
+      const reverb = ctx.createConvolver();
+      const out = ctx.createGain();
+
+      reverb.buffer = createReverbIR(ctx, cs.reverbDuration, cs.reverbDecay);
+      wetGain.gain.value = cs.reverbMix;
+      dryGain.gain.value = 1 - cs.reverbMix;
+      out.gain.value = dbToGain(cs.outGain);
+
+      source.connect(inputGain);
+      inputGain.connect(hp);
+      hp.connect(lp);
+      lp.connect(bass);
+      bass.connect(mid);
+      mid.connect(treble);
+      treble.connect(comp);
+
+      comp.connect(dryGain);
+      comp.connect(wetGain);
+
+      wetGain.connect(reverb);
+      reverb.connect(out);
+      dryGain.connect(out);
+
+      out.connect(destinationNode);
+
+      return { source };
+    }
+
+    // -----------------------------
+    // RECORDING
+    // -----------------------------
+    async function startRecording() {
+      if (isRecording) return;
+
+      try {
+        const ctx = getAudioContext();
+
+        micStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false
+          }
+        });
+
+        recordSampleRate = ctx.sampleRate;
+        micSourceNode = ctx.createMediaStreamSource(micStream);
+
+        scriptNode = ctx.createScriptProcessor(4096, 1, 1);
+        recordingBuffers = [];
+        recordingLength = 0;
+        isRecording = true;
+
+        scriptNode.onaudioprocess = (e) => {
+          if (!isRecording) return;
+          const input = e.inputBuffer.getChannelData(0);
+          const chunk = new Float32Array(input.length);
+          chunk.set(input);
+          recordingBuffers.push(chunk);
+          recordingLength += chunk.length;
+
+          const dur = recordingLength / recordSampleRate;
+          lengthBadge.textContent = formatTime(dur);
+          updateSeekUI(dur, 0);
+
+          if (dur >= MAX_RECORD_SECONDS) {
+            statusText.textContent = `Reached ${MAX_RECORD_SECONDS}s max; stopping.`;
+            stopRecordingInternal(true);
+          }
+        };
+
+        micSourceNode.connect(scriptNode);
+        scriptNode.connect(ctx.destination);
+
+        statusText.textContent = 'Recording… tap Stop when you finish reciting';
+        statusDot.classList.add('on');
+        recordBtn.disabled = true;
+        stopBtn.disabled = false;
+        playDryBtn.disabled = true;
+        playProcessedBtn.disabled = true;
+        renderBtn.disabled = true;
+        pausePlaybackBtn.disabled = true;
+        stopPlaybackBtn.disabled = true;
+
+      } catch (err) {
+        console.error(err);
+        statusText.textContent = 'Unable to access microphone. Check browser permissions.';
+      }
+    }
+
+    function stopRecordingInternal(autoStop) {
+      if (!isRecording) return;
+      isRecording = false;
+
+      if (scriptNode) {
+        scriptNode.disconnect();
+        scriptNode.onaudioprocess = null;
+        scriptNode = null;
+      }
+      if (micSourceNode) {
+        micSourceNode.disconnect();
+        micSourceNode = null;
+      }
+      if (micStream) {
+        micStream.getTracks().forEach(t => t.stop());
+        micStream = null;
+      }
+
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+      statusDot.classList.remove('on');
+
+      if (!recordingLength) {
+        statusText.textContent = 'No audio captured.';
+        return;
+      }
+
+      const merged = new Float32Array(recordingLength);
+      let offset = 0;
+      for (const b of recordingBuffers) {
+        merged.set(b, offset);
+        offset += b.length;
+      }
+
+      const ctx = getAudioContext();
+      const monoBuf = ctx.createBuffer(1, recordingLength, recordSampleRate);
+      monoBuf.getChannelData(0).set(merged);
+
+      const stereoBuf = ctx.createBuffer(2, recordingLength, recordSampleRate);
+      stereoBuf.getChannelData(0).set(merged);
+      stereoBuf.getChannelData(1).set(merged);
+      recordedBuffer = stereoBuf;
+
+      const lenSec = recordedBuffer.duration;
+      lengthBadge.textContent = formatTime(lenSec);
+      playDryBtn.disabled = false;
+      playProcessedBtn.disabled = false;
+      renderBtn.disabled = false;
+      pausePlaybackBtn.disabled = false;
+      stopPlaybackBtn.disabled = true;
+
+      playOffset = 0;
+      seekBar.min = 0;
+      seekBar.max = lenSec;
+      seekBar.value = 0;
+      updateSeekUI(lenSec, 0);
+
+      statusText.textContent = autoStop
+        ? 'Reached max recording length; you can now play & process.'
+        : 'Recording ready — you can play & process';
+    }
+
+    recordBtn.addEventListener('click', startRecording);
+    stopBtn.addEventListener('click', () => stopRecordingInternal(false));
+
+    // -----------------------------
+    // SEEK UI
+    // -----------------------------
+    function updateSeekUI(total, pos) {
+      if (!total || !isFinite(total)) {
+        seekLabel.textContent = '00:00 / 00:00';
+        return;
+      }
+      const clampedPos = Math.max(0, Math.min(pos, total));
+      seekLabel.textContent = `${formatTime(clampedPos)} / ${formatTime(total)}`;
+    }
+
+    function startSeekAnimation() {
+      if (!recordedBuffer) return;
+      const ctx = getAudioContext();
+      const duration = recordedBuffer.duration;
+
+      if (seekAnimationId !== null) {
+        cancelAnimationFrame(seekAnimationId);
+      }
+
+      const loop = () => {
+        if (!isPlaying || !recordedBuffer) {
+          seekAnimationId = null;
+          return;
+        }
+        const elapsedCtx = ctx.currentTime - playStartTimeCtx;
+        const currentPos = playOffset + elapsedCtx * playbackRate;
+        if (currentPos >= duration) {
+          seekBar.value = duration;
+          updateSeekUI(duration, duration);
+        } else {
+          seekBar.value = currentPos;
+          updateSeekUI(duration, currentPos);
+        }
+        seekAnimationId = requestAnimationFrame(loop);
+      };
+
+      seekAnimationId = requestAnimationFrame(loop);
+    }
+
+    function stopCurrentSource() {
+      if (currentSource) {
+        try { currentSource.stop(); } catch (_) {}
+        currentSource = null;
+      }
+      isPlaying = false;
+      pausePlaybackBtn.textContent = '⏸ Pause';
+      pausePlaybackBtn.disabled = !recordedBuffer;
+      stopPlaybackBtn.disabled = true;
+      if (seekAnimationId !== null) {
+        cancelAnimationFrame(seekAnimationId);
+        seekAnimationId = null;
+      }
+    }
+
+    function beginPlayback(mode, offsetSec) {
+      if (!recordedBuffer) return;
+      const duration = recordedBuffer.duration;
+      const offset = Math.max(0, Math.min(offsetSec, duration));
+
+      stopCurrentSource();
+
+      const ctx = getAudioContext();
+      let source;
+      if (mode === 'dry') {
+        source = ctx.createBufferSource();
+        source.buffer = recordedBuffer;
+        source.connect(ctx.destination);
+      } else {
+        ({ source } = buildAudioGraph(ctx, recordedBuffer, ctx.destination));
+      }
+
+      source.playbackRate.value = playbackRate;
+      currentSource = source;
+      currentPlayMode = mode;
+      playOffset = offset;
+      playStartTimeCtx = ctx.currentTime;
+      isPlaying = true;
+      pausePlaybackBtn.disabled = false;
+      stopPlaybackBtn.disabled = false;
+
+      source.start(0, offset);
+
+      statusText.textContent = `Playing ${mode === 'dry' ? 'dry' : 'processed'} at ${playbackRate.toFixed(2)}x…`;
+      startSeekAnimation();
+
+      source.onended = () => {
+        if (currentSource === source) {
+          isPlaying = false;
+          pausePlaybackBtn.textContent = '⏸ Pause';
+          pausePlaybackBtn.disabled = !recordedBuffer;
+          stopPlaybackBtn.disabled = true;
+          currentSource = null;
+          if (seekAnimationId !== null) {
+            cancelAnimationFrame(seekAnimationId);
+            seekAnimationId = null;
+          }
+          if (recordedBuffer) {
+            seekBar.value = recordedBuffer.duration;
+            updateSeekUI(recordedBuffer.duration, recordedBuffer.duration);
+          }
+        }
+      };
+    }
+
+    playDryBtn.addEventListener('click', () => {
+      beginPlayback('dry', playOffset || 0);
+    });
+
+    playProcessedBtn.addEventListener('click', () => {
+      beginPlayback('processed', playOffset || 0);
+    });
+
+    pausePlaybackBtn.addEventListener('click', () => {
+      if (!recordedBuffer) return;
+      const ctx = getAudioContext();
+      const duration = recordedBuffer.duration;
+
+      if (isPlaying && currentSource) {
+        const elapsed = ctx.currentTime - playStartTimeCtx;
+        const currentPos = playOffset + elapsed * playbackRate;
+        playOffset = Math.max(0, Math.min(currentPos, duration));
+        stopCurrentSource();
+        seekBar.value = playOffset;
+        updateSeekUI(duration, playOffset);
+        statusText.textContent = `Paused at ${formatTime(playOffset)}.`;
+        pausePlaybackBtn.textContent = '▶ Resume';
+      } else {
+        // Resume
+        if (!currentPlayMode) currentPlayMode = 'dry';
+        beginPlayback(currentPlayMode, playOffset || 0);
+        pausePlaybackBtn.textContent = '⏸ Pause';
+      }
+    });
+
+    stopPlaybackBtn.addEventListener('click', () => {
+      if (!recordedBuffer) return;
+      stopCurrentSource();
+      playOffset = 0;
+      seekBar.value = 0;
+      updateSeekUI(recordedBuffer.duration, 0);
+      statusText.textContent = 'Playback stopped.';
+    });
+
+    // Seek bar interactions
+    seekBar.addEventListener('input', () => {
+      if (!recordedBuffer) return;
+      const pos = parseFloat(seekBar.value) || 0;
+      const duration = recordedBuffer.duration;
+      playOffset = Math.max(0, Math.min(pos, duration));
+      updateSeekUI(duration, playOffset);
+
+      if (isPlaying && currentPlayMode) {
+        beginPlayback(currentPlayMode, playOffset);
+      }
+    });
+
+    // -----------------------------
+    // SLIDERS & SETTINGS
+    // -----------------------------
+    function formatSetting(setting, value) {
+      switch (setting) {
+        case 'hpFreq':
+        case 'lpFreq':
+        case 'midFreq':
+          return `${Math.round(value)} Hz`;
+        case 'bassGain':
+        case 'midGain':
+        case 'trebleGain':
+        case 'outGain':
+          return `${value.toFixed(1)} dB`;
+        case 'compThreshold':
+          return `${Math.round(value)} dB`;
+        case 'compRatio':
+          return `${value.toFixed(1)}:1`;
+        case 'compAttack':
+        case 'compRelease':
+          return `${Math.round(value)} ms`;
+        case 'reverbDuration':
+        case 'reverbDecay':
+          return `${value.toFixed(1)} s`;
+        case 'reverbMix':
+          return `${Math.round(value * 100)}%`;
+        default:
+          return value;
+      }
+    }
+
+    function syncSlidersFromSettings() {
+      const sliders = document.querySelectorAll('input[type="range"][data-setting]');
+      sliders.forEach(sl => {
+        const setting = sl.dataset.setting;
+        if (currentSettings.hasOwnProperty(setting)) {
+          sl.value = currentSettings[setting];
+          const valEl = document.getElementById(setting + 'Val');
+          if (valEl) {
+            valEl.textContent = formatSetting(setting, currentSettings[setting]);
+          }
+        }
+      });
+    }
+
+    document.querySelectorAll('input[type="range"][data-setting]').forEach(sl => {
+      const setting = sl.dataset.setting;
+      if (currentSettings.hasOwnProperty(setting)) {
+        sl.value = currentSettings[setting];
+        const valEl = document.getElementById(setting + 'Val');
+        if (valEl) {
+          valEl.textContent = formatSetting(setting, currentSettings[setting]);
+        }
+      }
+
+      sl.addEventListener('input', (e) => {
+        const s = e.target.dataset.setting;
+        const v = parseFloat(e.target.value);
+        currentSettings[s] = v;
+        const valEl = document.getElementById(s + 'Val');
+        if (valEl) {
+          valEl.textContent = formatSetting(s, v);
+        }
+      });
+    });
+
+    // -----------------------------
+    // PRESETS
+    // -----------------------------
+    function loadCustomPresets() {
+      try {
+        const raw = localStorage.getItem('quranFxPresets');
+        if (!raw) return {};
+        return JSON.parse(raw);
+      } catch (_) {
+        return {};
+      }
+    }
+
+    function saveCustomPresets(obj) {
+      try {
+        localStorage.setItem('quranFxPresets', JSON.stringify(obj));
+      } catch (_) {}
+    }
+
+    function refreshPresetSelect() {
+      const previous = presetSelect.value;
+      const custom = loadCustomPresets();
+
+      presetSelect.innerHTML = '';
+      const makeOpt = (val, label) => {
+        const o = document.createElement('option');
+        o.value = val;
+        o.textContent = label;
+        return o;
+      };
+
+      presetSelect.appendChild(makeOpt('grandMasjid', 'Grand Masjid (Wide)'));
+      presetSelect.appendChild(makeOpt('smallMasjid', 'Small Masjid (Tighter)'));
+      presetSelect.appendChild(makeOpt('cleanHome', 'Clean Home (Low Noise)'));
+      presetSelect.appendChild(makeOpt('studioMic', 'Studio Mic Focus'));
+      presetSelect.appendChild(makeOpt('podcastWarm', 'Podcast Warm'));
+      presetSelect.appendChild(makeOpt('imamDeep', 'Imam Deep Voice'));
+      presetSelect.appendChild(makeOpt('tajweedClose', 'Tajwīd Close Mic'));
+      presetSelect.appendChild(makeOpt('echoHall', 'Echo Hall'));
+      presetSelect.appendChild(makeOpt('outdoorSoft', 'Outdoor Soft'));
+      presetSelect.appendChild(makeOpt('phoneFix', 'Phone Recording Fix'));
+
+      Object.keys(custom).forEach(name => {
+        presetSelect.appendChild(makeOpt('custom:' + name, '★ ' + name));
+      });
+
+      const exists = Array.from(presetSelect.options).some(o => o.value === previous);
+      presetSelect.value = exists ? previous : 'grandMasjid';
+      currentPresetKey = presetSelect.value;
+    }
+
+    function applyPresetKey(key) {
+      let preset = null;
+      if (key.startsWith('custom:')) {
+        const name = key.slice('custom:'.length);
+        const custom = loadCustomPresets();
+        preset = custom[name] || null;
+      } else {
+        preset = builtinPresets[key] || null;
+      }
+      if (!preset) return;
+
+      Object.keys(preset).forEach(k => {
+        if (currentSettings.hasOwnProperty(k)) {
+          currentSettings[k] = preset[k];
+        }
+      });
+      currentPresetKey = key;
+      syncSlidersFromSettings();
+      statusText.textContent = 'Preset applied — adjust sliders if needed.';
+    }
+
+    presetSelect.addEventListener('change', () => {
+      currentPresetKey = presetSelect.value;
+    });
+
+    applyPresetBtn.addEventListener('click', () => {
+      // If playing, pause, capture position, apply, then resume
+      if (isPlaying && currentSource && recordedBuffer) {
+        const ctx = getAudioContext();
+        const duration = recordedBuffer.duration;
+        const elapsed = ctx.currentTime - playStartTimeCtx;
+        const currentPos = playOffset + elapsed * playbackRate;
+        playOffset = Math.max(0, Math.min(currentPos, duration));
+        stopCurrentSource();
+        seekBar.value = playOffset;
+        updateSeekUI(duration, playOffset);
+        applyPresetKey(presetSelect.value);
+        // resume with new preset if last mode was processed
+        if (!currentPlayMode) currentPlayMode = 'processed';
+        beginPlayback(currentPlayMode, playOffset);
+      } else {
+        applyPresetKey(presetSelect.value);
+      }
+    });
+
+    savePresetBtn.addEventListener('click', () => {
+      let name = prompt('Preset name (required):');
+      if (name === null) return;
+      name = name.trim();
+      if (!name) {
+        alert('Preset name cannot be empty.');
+        return;
+      }
+
+      const custom = loadCustomPresets();
+      if (custom[name]) {
+        const overwrite = confirm('Preset with this name exists. Overwrite?');
+        if (!overwrite) return;
+      }
+
+      custom[name] = { ...currentSettings };
+      saveCustomPresets(custom);
+      refreshPresetSelect();
+      presetSelect.value = 'custom:' + name;
+      currentPresetKey = 'custom:' + name;
+      statusText.textContent = 'Custom preset saved and added to list.';
+    });
+
+    // -----------------------------
+    // FILENAME UTIL
+    // -----------------------------
+    function codeFromCustomName(name) {
+      const words = name.trim().split(/\s+/).filter(Boolean);
+      let code = '';
+      if (words.length) {
+        for (let w of words) {
+          code += w[0] || '';
+          if (code.length >= 4) break;
+        }
+      } else {
+        code = name.slice(0, 4);
+      }
+      code = code.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+      if (!code) code = 'FX';
+      return code;
+    }
+
+    function getCurrentPresetCode() {
+      const key = currentPresetKey || presetSelect.value || 'grandMasjid';
+      if (key.startsWith('custom:')) {
+        const name = key.slice('custom:'.length);
+        return codeFromCustomName(name);
+      }
+      if (presetCodes[key]) return presetCodes[key];
+      return 'FX';
+    }
+
+    function makeFileName(ext) {
+      const code = getCurrentPresetCode();
+      const d = new Date();
+      const yy = String(d.getFullYear() % 100).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      return `${code}-${yy}${mm}${dd}-${hh}${min}.${ext}`;
+    }
+
+    // -----------------------------
+    // ENCODE WAV
+    // -----------------------------
+    function encodeWAV(audioBuffer) {
+      const numCh = audioBuffer.numberOfChannels;
+      const sampleRate = audioBuffer.sampleRate;
+      const samples = audioBuffer.length;
+      const bytesPerSample = 2;
+      const blockAlign = numCh * bytesPerSample;
+      const buffer = new ArrayBuffer(44 + samples * blockAlign);
+      const view = new DataView(buffer);
+
+      function writeString(offset, str) {
+        for (let i = 0; i < str.length; i++) {
+          view.setUint8(offset + i, str.charCodeAt(i));
+        }
+      }
+
+      writeString(0, 'RIFF');
+      view.setUint32(4, 36 + samples * blockAlign, true);
+      writeString(8, 'WAVE');
+
+      writeString(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, numCh, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * blockAlign, true);
+      view.setUint16(32, blockAlign, true);
+      view.setUint16(34, 16, true);
+
+      writeString(36, 'data');
+      view.setUint32(40, samples * blockAlign, true);
+
+      let offset = 44;
+      const channelData = [];
+      for (let ch = 0; ch < numCh; ch++) {
+        channelData.push(audioBuffer.getChannelData(ch));
+      }
+
+      for (let i = 0; i < samples; i++) {
+        for (let ch = 0; ch < numCh; ch++) {
+          let sample = channelData[ch][i];
+          sample = Math.max(-1, Math.min(1, sample));
+          const s = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+          view.setInt16(offset, s, true);
+          offset += 2;
+        }
+      }
+
+      return new Blob([buffer], { type: 'audio/wav' });
+    }
+
+    // -----------------------------
+    // RENDER & SAVE
+    // -----------------------------
+    renderBtn.addEventListener('click', async () => {
+      if (!recordedBuffer) {
+        alert('Record something first.');
+        return;
+      }
+
+      const format = exportFormatSelect.value;
+
+      // WAV — offline render
+      if (format === 'wav') {
+        try {
+          renderBtn.disabled = true;
+          statusText.textContent = 'Rendering WAV (offline)…';
+          const sampleRate = recordedBuffer.sampleRate;
+          const numCh = recordedBuffer.numberOfChannels;
+          const length = recordedBuffer.length;
+
+          const offlineCtx = new OfflineAudioContext(numCh, length, sampleRate);
+          const { source } = buildAudioGraph(offlineCtx, recordedBuffer, offlineCtx.destination);
+          source.start(0);
+
+          const rendered = await offlineCtx.startRendering();
+          const wavBlob = encodeWAV(rendered);
+          const url = URL.createObjectURL(wavBlob);
+
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = makeFileName('wav');
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+          statusText.textContent = 'Rendered & downloaded WAV.';
+        } catch (err) {
+          console.error(err);
+          statusText.textContent = 'Render failed — maybe the clip is too long for this device.';
+        } finally {
+          renderBtn.disabled = false;
+        }
+        return;
+      }
+
+      // Compressed export (m4a/mp3) via MediaRecorder
+      if (!window.MediaRecorder) {
+        alert('Compressed formats (MP3/M4A) are not supported in this browser. Please use WAV.');
+        return;
+      }
+
+      if (isExportingCompressed) {
+        alert('Already exporting audio. Please wait until it finishes.');
+        return;
+      }
+
+      let desiredMime = '';
+      if (format === 'm4a') {
+        if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/mp4;codecs=aac')) {
+          desiredMime = 'audio/mp4;codecs=aac';
+        } else if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/mp4')) {
+          desiredMime = 'audio/mp4';
+        }
+      } else if (format === 'mp3') {
+        if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/mpeg')) {
+          desiredMime = 'audio/mpeg';
+        }
+      }
+
+      if (!desiredMime) {
+        alert(`This browser cannot encode ${format.toUpperCase()} with MediaRecorder. Please export as WAV instead.`);
+        return;
+      }
+
+      try {
+        const ctx = getAudioContext();
+        const dest = ctx.createMediaStreamDestination();
+        const { source } = buildAudioGraph(ctx, recordedBuffer, dest);
+
+        const recOptions = { mimeType: desiredMime };
+        const recorder = new MediaRecorder(dest.stream, recOptions);
+        const chunks = [];
+        isExportingCompressed = true;
+        renderBtn.disabled = true;
+
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) chunks.push(e.data);
+        };
+
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: desiredMime });
+          const url = URL.createObjectURL(blob);
+          const ext = (format === 'm4a') ? 'm4a' : 'mp3';
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = makeFileName(ext);
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 5000);
+          statusText.textContent = `Rendered & downloaded compressed audio (${ext}).`;
+          isExportingCompressed = false;
+          renderBtn.disabled = false;
+        };
+
+        statusText.textContent = 'Rendering compressed audio in real time… it will download when finished playing.';
+        recorder.start();
+        source.start(0);
+
+        source.onended = () => {
+          if (recorder.state !== 'inactive') {
+            recorder.stop();
+          }
+        };
+      } catch (err) {
+        console.error(err);
+        isExportingCompressed = false;
+        renderBtn.disabled = false;
+        statusText.textContent = 'Compressed export failed on this browser. Please use WAV.';
+      }
+    });
+
+    // iOS sometimes suspends AudioContext until a tap
+    document.body.addEventListener('touchstart', () => {
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }, { passive: true });
+
+    // Init presets & sliders
+    refreshPresetSelect();
+    syncSlidersFromSettings();
+    updateSeekUI(0, 0);
+
+    // Initial format support check
+    (function initFormatSupport() {
+      if (!window.MediaRecorder) {
+        const m4aOpt = exportFormatSelect.querySelector('option[value="m4a"]');
+        const mp3Opt = exportFormatSelect.querySelector('option[value="mp3"]');
+        if (m4aOpt) m4aOpt.disabled = true;
+        if (mp3Opt) mp3Opt.disabled = true;
+        exportFormatSelect.value = 'wav';
+      }
+    })();
+  </script>
+</body>
+</html>
