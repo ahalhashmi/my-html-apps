@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abdullah's App Hub</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 26px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    p.subtitle {
+      opacity: 0.8;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      padding: 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, background 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      background: #1d2632;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+    .card-title {
+      font-size: 18px;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    .card-path {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+    .empty {
+      margin-top: 20px;
+      opacity: 0.7;
+      font-size: 14px;
+    }
+    .error {
+      margin-top: 20px;
+      color: #f97373;
+      font-size: 14px;
+    }
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Abdullah's App Hub</h1>
+  <p class="subtitle">
+    Automatically listing all app folders in <code>my-html-apps</code>.
+  </p>
+
+  <div id="apps" class="grid"></div>
+
+  <div id="empty" class="empty" style="display:none;">
+    No apps found yet. Create a folder (e.g. <code>enhancer/</code>) with an <code>index.html</code> and it will appear here automatically.
+  </div>
+
+  <div id="error" class="error" style="display:none;"></div>
+
+  <footer>© 2025 Abdullah — All rights reserved.</footer>
+
+  <script>
+    // Configure your GitHub repo details
+    const GITHUB_USER = "ahalhashmi";
+    const GITHUB_REPO = "my-html-apps";
+    const API_URL = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/`;
+
+    const appsContainer = document.getElementById("apps");
+    const emptyMsg = document.getElementById("empty");
+    const errorMsg = document.getElementById("error");
+
+    function niceName(folderName) {
+      // Turn "quran-enhancer" -> "Quran Enhancer"
+      return folderName
+        .replace(/[-_]+/g, " ")
+        .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    async function loadApps() {
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) {
+          throw new Error("GitHub API error: " + res.status);
+        }
+        const items = await res.json();
+
+        // Filter to only directories (folders)
+        let dirs = items.filter(item => item.type === "dir");
+
+        // Optional: ignore some internal folders if you add them later
+        const ignore = new Set([".github", "assets", "static"]);
+        dirs = dirs.filter(d => !ignore.has(d.name));
+
+        // Sort alphabetically
+        dirs.sort((a, b) => a.name.localeCompare(b.name));
+
+        if (dirs.length === 0) {
+          emptyMsg.style.display = "block";
+          return;
+        }
+
+        dirs.forEach(dir => {
+          const a = document.createElement("a");
+          a.className = "card";
+          a.href = `./${dir.name}/`;
+          a.target = "_blank";
+
+          const title = document.createElement("div");
+          title.className = "card-title";
+          title.textContent = niceName(dir.name);
+
+          const path = document.createElement("div");
+          path.className = "card-path";
+          path.textContent = `/${dir.name}/`;
+
+          a.appendChild(title);
+          a.appendChild(path);
+          appsContainer.appendChild(a);
+        });
+      } catch (err) {
+        console.error(err);
+        errorMsg.textContent = "Failed to load apps list from GitHub. Try refreshing the page.";
+        errorMsg.style.display = "block";
+      }
+    }
+
+    loadApps();
+  </script>
+
+</body>
+</html>
