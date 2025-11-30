@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=1.0, user-scalable=no" />
+  <title>Sound Files Viewer</title>
+  <style>
+    :root{
+      --bg:#171b22; --card:#1f252f; --panel:#232a36; --text:#e7ebf3; --muted:#a9b2bf;
+      --border:#2b3340; --accent:#7aa2f7; --chip:#2b3544; --danger:#e06666;
+      --radius:10px; --fs:14px; --playing:#223a28;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--text);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+      font-size:var(--fs); line-height:1.4;
+      padding:20px; padding-bottom:20px; transition:padding-bottom .2s ease;
+    }
+    h1{margin:0 0 12px; text-align:center; font-weight:600; font-size:20px}
+
+    .bar{
+      background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+      padding:10px; margin:10px auto; max-width:1400px;
+      display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap;
+    }
+    label{color:var(--muted); font-size:13px}
+    input[type="text"], textarea, select, .btn{
+      background:var(--chip); color:var(--text); border:1px solid var(--border); border-radius:8px;
+      padding:7px 9px; font-size:var(--fs);
+    }
+    textarea{resize:vertical}
+    .chip{background:var(--chip); padding:4px 8px; border-radius:999px; font-size:12px; color:var(--muted); border:1px solid var(--border)}
+    .btn{cursor:pointer; transition:background .15s ease, transform .03s ease}
+    .btn:hover{background:#334057} .btn:active{background:#405270; transform:translateY(1px)}
+
+    /* Filter builder */
+    .filters {flex-direction:column; align-items:stretch}
+    .filters .row {display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .filters .row .op {min-width:64px}
+    .filters .row .field {min-width:160px}
+    .filters .row .value {min-width:160px}
+    .filters .row .remove {margin-left:auto}
+
+    /* Table */
+    table{width:100%; max-width:1400px; margin:14px auto 0; border-collapse:separate; border-spacing:0; overflow:hidden; border:1px solid var(--border); border-radius:var(--radius)}
+    th, td{padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top}
+    thead th{background:var(--card); position:sticky; top:0; z-index:2; cursor:pointer; user-select:none; white-space:nowrap}
+    thead th.noSort{cursor:default}
+    tbody tr:nth-child(even){background:#1b212b}
+    tbody tr:nth-child(odd){background:#1a2029}
+    tr.nowPlaying{background:var(--playing) !important}
+    td .nameLink{color:var(--text); text-decoration:none; cursor:pointer}
+    td .nameLink:hover{text-decoration:underline; color:var(--accent)}
+    .deleteMark{color:var(--danger); font-weight:700; margin-left:6px; visibility:hidden}
+
+    /* Player Panel */
+    #playerPanel{
+      position:fixed; left:0; right:0; bottom:0; background:var(--panel); border-top:1px solid var(--border);
+      box-shadow:0 -6px 30px rgba(0,0,0,0.35); z-index:1000; display:none;
+    }
+    #playerPanel.expanded{display:block; height:48vh; padding:12px}
+    #playerPanel.minimized{display:block; height:72px; padding:8px}
+    body.player-expanded{padding-bottom:52vh}
+    body.player-minimized{padding-bottom:92px}
+
+    .playerTop{display:flex; gap:8px; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap}
+    .titleArea{display:flex; gap:8px; align-items:center; min-width:0}
+    .titleArea .title{font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60vw}
+    .controlsArea{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
+    .transport .btn{min-width:40px; height:32px; font-weight:700; font-size:16px; padding:0}
+    .playerBody{display:flex; gap:10px; height:calc(100% - 52px)}
+    .leftPane,.rightPane{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:10px}
+    .leftPane{flex:1 1 42%}
+    .rightPane{flex:1 1 58%; display:flex; flex-direction:column}
+    .row{display:flex; gap:8px; align-items:center; margin:6px 0}
+    .row label{min-width:70px; color:var(--muted); font-size:13px}
+    .timeLine{width:100%}
+    .timeMeta{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-top:6px}
+    #playerPanel.minimized .playerBody, #playerPanel.minimized .leftPane{display:none}
+    #playerPanel.minimized .rightPane{display:flex; border:none; padding:0; background:transparent}
+    #playerPanel.minimized .playerTop{margin:0}
+
+    /* Summary modal */
+    .modalMask{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:1100}
+    .modal{position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:min(800px,92vw);
+           background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; display:none; z-index:1101}
+    .modal h3{margin:0 0 6px}
+    .muted{color:var(--muted); font-size:13px}
+    .modal .content{max-height:55vh; overflow:auto; border-top:1px solid var(--border); margin-top:10px; padding-top:10px}
+    .modal footer{display:flex; justify-content:flex-end; gap:8px; margin-top:10px}
+    .list{white-space:pre-wrap; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+  </style>
+</head>
+<body>
+  <h1>Sound Files Viewer</h1>
+
+  <!-- Arrange + Export/Import + Summary -->
+  <div class="bar">
+    <span class="chip">Arrange by</span>
+    <select id="arrangeBy">
+      <option value="name">Name</option>
+      <option value="size">Size</option>
+      <option value="rating">Rating</option>
+      <option value="tags">Tags</option>
+      <option value="date">Date</option>
+      <option value="duration">Duration</option>
+      <option value="lastPlayed">Last Played</option>
+    </select>
+    <span class="chip">Order</span>
+    <select id="arrangeOrder">
+      <option value="asc">Ascending</option>
+      <option value="desc">Descending</option>
+    </select>
+
+    <button id="btnSummary" class="btn">Summary</button>
+    <button id="btnExport" class="btn">Export State</button>
+    <button id="btnImport" class="btn">Import State</button>
+    <input id="importInput" type="file" accept=".json,application/json" style="display:none">
+  </div>
+
+  <!-- Filter Builder -->
+  <div class="bar filters" id="filtersBox">
+    <div class="row" id="filtersList"></div>
+    <div class="row">
+      <button id="btnAddFilter" class="btn">Add condition</button>
+      <button id="btnClearFilters" class="btn">Clear</button>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:var(--muted);max-width:1200px;margin:6px auto 0">Select a folder or sound files:</p>
+  <input type="file" id="fileInput" webkitdirectory directory multiple
+         accept="audio/mpeg,audio/wav,audio/x-m4a,audio/mp4,.mp3,.wav,.m4a"
+         style="display:block;margin:10px auto" />
+
+  <table id="fileTable">
+    <thead>
+      <tr>
+        <th id="nameHeader">File Name &#x25B2;</th>
+        <th id="sizeHeader">File Size</th>
+        <th class="noSort">Delete</th>
+        <th id="ratingHeader">Rating</th>
+        <th id="tagHeader">Tags</th>
+        <th id="dateHeader">Date</th>
+        <th id="durationHeader">Duration</th>
+        <th class="noSort">Note</th>
+        <th id="lpHeader">Last Played</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="resetContainer" style="text-align:center;margin-top:10px">
+    <button id="resetStatusButton" class="btn">Reset All Statuses</button>
+  </div>
+
+  <!-- Now Playing Panel (starts hidden, no expanded class) -->
+  <div id="playerPanel" aria-live="polite">
+    <div class="playerTop">
+      <div class="titleArea">
+        <span class="chip">Now Playing</span>
+        <span id="playerTitle" class="title">—</span>
+      </div>
+      <div class="controlsArea">
+        <label><input type="checkbox" id="autoplayCheckbox" style="transform:scale(1.05); margin-right:6px;"> Autoplay</label>
+        <span class="chip">Speed</span>
+        <button id="speedToggleBtn" class="btn" title="Toggle speed">1x</button>
+        <div class="transport">
+          <button id="btnBack" class="btn" title="Back">&#9664;</button>
+          <button id="btnPlayPause" class="btn" title="Play/Pause">&#9658;</button>
+          <button id="btnNext" class="btn" title="Next">&#9654;&#9654;</button>
+        </div>
+        <button id="btnMinToggle" class="btn" title="Minimize">Minimize</button>
+      </div>
+    </div>
+
+    <div class="playerBody">
+      <div class="leftPane">
+        <div class="row">
+          <label>Rating</label>
+          <select id="panelRating"></select>
+        </div>
+        <div class="row">
+          <label>Tags</label>
+          <select id="panelTags" multiple></select>
+        </div>
+        <div class="row">
+          <label>Delete</label>
+          <input type="checkbox" id="panelDelete"><span class="deleteMark" id="panelDeleteMark">✖</span>
+        </div>
+        <div class="row">
+          <label>Note</label>
+          <textarea id="panelNote" rows="3" placeholder="Add note…"></textarea>
+        </div>
+      </div>
+      <div class="rightPane">
+        <input type="range" id="playerSlider" class="timeLine" min="0" value="0" step="0.1" />
+        <div class="timeMeta">
+          <span id="timeCurrent">00:00</span>
+          <span id="timeRemain">00:00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Modal -->
+  <div class="modalMask" id="sumMask"></div>
+  <div class="modal" id="sumModal">
+    <h3>Summary</h3>
+    <div id="sumFilters" class="muted"></div>
+    <div class="content">
+      <div id="sumList" class="list"></div>
+    </div>
+    <footer>
+      <button id="sumClose" class="btn">Close</button>
+    </footer>
+  </div>
+
+  <script>
+    /************ State ************/
+    const TAG_OPTIONS = ["normal","recite","training","imitate","saba","nahawand","ajam","bayat","seka","hijaz","rast","kurd","other","mix","random","warsh"];
+    let filesList = [];
+    let currentSort = { field:'name', ascending:true };
+    let currentAudio = null;
+    let currentAudioUrl = null;   // NEW: track current object URL for cleanup
+    let currentIndex = null;
+    let resetAwaitingConfirm = false;
+    const SPEED_STEPS = [1, 1.5, 2];
+    let speedIndex = 0;
+    let sessionMaxTime = 0;
+    let sessionFullRecorded = false;
+
+    /************ Elements ************/
+    const fileInput = document.getElementById('fileInput');
+    const tbody = document.querySelector('#fileTable tbody');
+    const nameHeader = document.getElementById('nameHeader');
+    const sizeHeader = document.getElementById('sizeHeader');
+    const ratingHeader = document.getElementById('ratingHeader');
+    const tagHeader = document.getElementById('tagHeader');
+    const dateHeader = document.getElementById('dateHeader');
+    const durationHeader = document.getElementById('durationHeader');
+    const lpHeader = document.getElementById('lpHeader');
+    const arrangeBy = document.getElementById('arrangeBy');
+    const arrangeOrder = document.getElementById('arrangeOrder');
+    const resetStatusButton = document.getElementById('resetStatusButton');
+
+    // Player
+    const playerPanel = document.getElementById('playerPanel');
+    const btnBack = document.getElementById('btnBack');
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const btnNext = document.getElementById('btnNext');
+    const btnMinToggle = document.getElementById('btnMinToggle');
+    const playerSlider = document.getElementById('playerSlider');
+    const timeCurrent = document.getElementById('timeCurrent');
+    const timeRemain = document.getElementById('timeRemain');
+    const autoplayCheckbox = document.getElementById('autoplayCheckbox');
+    const speedToggleBtn = document.getElementById('speedToggleBtn');
+    const playerTitle = document.getElementById('playerTitle');
+    const panelRating = document.getElementById('panelRating');
+    const panelTags = document.getElementById('panelTags');
+    const panelDelete = document.getElementById('panelDelete');
+    const panelDeleteMark = document.getElementById('panelDeleteMark');
+    const panelNote = document.getElementById('panelNote');
+
+    // Summary
+    const btnSummary = document.getElementById('btnSummary');
+    const sumMask = document.getElementById('sumMask');
+    const sumModal = document.getElementById('sumModal');
+    const sumFilters = document.getElementById('sumFilters');
+    const sumList = document.getElementById('sumList');
+    const sumClose = document.getElementById('sumClose');
+
+    // Filter builder
+    const filtersList = document.getElementById('filtersList');
+    const btnAddFilter = document.getElementById('btnAddFilter');
+    const btnClearFilters = document.getElementById('btnClearFilters');
+
+    /************ Utils & Persistence ************/
+    function getFileKey(f){ return f.name + "_" + f.size; }
+    function formatFileSize(sz){
+      if (sz < 1024) return sz + ' B';
+      if (sz < 1024*1024) return (sz/1024).toFixed(2) + ' KB';
+      return (sz/(1024*1024)).toFixed(2) + ' MB';
+    }
+    function two(n){ return n<10 ? '0'+n : ''+n; }
+    function formatStamp(d){
+      const day = d.getDate();
+      const mon = d.getMonth()+1;
+      const yr = d.getFullYear();
+      return `${day}/${mon}/${yr} ${two(d.getHours())}:${two(d.getMinutes())}:${two(d.getSeconds())}`;
+    }
+    function formatTime(sec){
+      if (!isFinite(sec)) return '00:00';
+      sec = Math.max(0, Math.floor(sec));
+      const m = Math.floor(sec/60), s = sec%60;
+      return (m<10?'0':'')+m+':' + (s<10?'0':'')+s;
+    }
+    function formatDate(ts){ return new Date(ts).toLocaleString(); }
+
+    // Unified, safer converter: works with "P-1/5/2025 10:10:10" OR "1/5/2025 10:10:10"
+    function toISO(stampOrCombined){
+      if (!stampOrCombined) return '';
+      let s = String(stampOrCombined).trim();
+      if (s.length >= 2 && s[1] === '-') s = s.slice(2).trim(); // drop "P-" / "F-"
+      const parts = s.split(' ');
+      if (parts.length < 2) return s;
+      const [dpart, tpart] = parts;
+      const dSplit = dpart.split('/');
+      if (dSplit.length !== 3) return s;
+      const [D,M,Y] = dSplit.map(n=>parseInt(n,10));
+      if (!D || !M || !Y) return s;
+      return `${Y}-${String(M).padStart(2,'0')}-${String(D).padStart(2,'0')}T${tpart}`;
+    }
+
+    function saveDelete(file, marked){ localStorage.setItem("fileDelete_"+getFileKey(file), marked?"true":"false"); }
+    function getDelete(file){ return localStorage.getItem("fileDelete_"+getFileKey(file))==="true"; }
+    function saveRating(file, rating){ localStorage.setItem("fileRating_"+getFileKey(file), rating==='-'?'':String(rating)); }
+    function getRating(file){ const v = localStorage.getItem("fileRating_"+getFileKey(file)); return (v===null||v==='') ? '-' : v; }
+    function saveTags(file, tags){ localStorage.setItem("fileTags_"+getFileKey(file), JSON.stringify(tags||[])); localStorage.removeItem("fileTag_"+getFileKey(file)); }
+    function getTags(file){
+      const k = getFileKey(file);
+      const m = localStorage.getItem("fileTags_"+k);
+      if (m){ try { return JSON.parse(m) || []; } catch { return []; } }
+      const single = localStorage.getItem("fileTag_"+k);
+      return single ? [single] : [];
+    }
+    function saveNote(file, note){ localStorage.setItem("fileNote_"+getFileKey(file), note||""); }
+    function getNote(file){ return localStorage.getItem("fileNote_"+getFileKey(file)) || ""; }
+    function saveLastPlayed(file, type, stampStr){
+      // stampStr is "d/m/yyyy hh:mm:ss"
+      localStorage.setItem("fileLP_"+getFileKey(file), JSON.stringify({type, stamp: stampStr}));
+    }
+    function getLastPlayed(file){
+      const v = localStorage.getItem("fileLP_"+getFileKey(file));
+      if (!v) return {type:null, stamp:null};
+      try{ return JSON.parse(v) || {type:null, stamp:null}; }catch{ return {type:null, stamp:null}; }
+    }
+
+    function updateBodyPadding(){
+      document.body.classList.remove('player-expanded','player-minimized');
+      if (playerPanel.style.display==='none') return;
+      if (playerPanel.classList.contains('expanded')) document.body.classList.add('player-expanded');
+      else if (playerPanel.classList.contains('minimized')) document.body.classList.add('player-minimized');
+    }
+
+    /************ Filter Builder UI ************/
+    const FIELD_TYPES = {
+      'Tag =': 'tag',
+      'Rating =': 'rating',
+      'Marked Delete =': 'delete',
+      'Keyword contains': 'keyword',
+      'Last Played Type =': 'lpType'
+    };
+
+    function makeFieldSelect(){
+      const sel = document.createElement('select'); sel.className='field';
+      Object.keys(FIELD_TYPES).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; sel.appendChild(o); });
+      return sel;
+    }
+    function makeValueInput(kind){
+      const wrap = document.createElement('span'); wrap.className='value';
+      if (kind==='tag'){
+        const s=document.createElement('select');
+        TAG_OPTIONS.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;s.appendChild(o);});
+        wrap.appendChild(s);
+      } else if (kind==='rating'){
+        const s=document.createElement('select'); ['-','0','1','2','3','4','5'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o);}); wrap.appendChild(s);
+      } else if (kind==='delete'){
+        const s=document.createElement('select'); [{v:'true',t:'true'},{v:'false',t:'false'}].forEach(o1=>{const o=document.createElement('option');o.value=o1.v;o.textContent=o1.t;s.appendChild(o);}); wrap.appendChild(s);
+      } else if (kind==='keyword'){
+        const i=document.createElement('input'); i.type='text'; i.placeholder='text…'; wrap.appendChild(i);
+      } else if (kind==='lpType'){
+        const s=document.createElement('select'); ['P','F'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o);}); wrap.appendChild(s);
+      }
+      return wrap;
+    }
+
+    function addFilterRow(opValue){
+      const row = document.createElement('div'); row.className='row';
+
+      if (opValue){
+        const op = document.createElement('select'); op.className='op';
+        ['AND','OR'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v; op.appendChild(o);});
+        op.value = opValue; row.appendChild(op);
+      } else {
+        const main = document.createElement('span'); main.className='chip'; main.textContent='Main'; row.appendChild(main);
+      }
+
+      const fieldSel = makeFieldSelect(); row.appendChild(fieldSel);
+      let valWrap = makeValueInput(FIELD_TYPES[fieldSel.value]); row.appendChild(valWrap);
+
+      const removeBtn = document.createElement('button'); removeBtn.className='btn remove'; removeBtn.textContent='Remove';
+      removeBtn.addEventListener('click', ()=>{ row.remove(); applyFilters(); });
+      row.appendChild(removeBtn);
+
+      fieldSel.addEventListener('change', ()=>{
+        row.removeChild(valWrap);
+        valWrap = makeValueInput(FIELD_TYPES[fieldSel.value]);
+        row.insertBefore(valWrap, removeBtn);
+        applyFilters();
+      });
+
+      row.addEventListener('input', ()=>applyFilters());
+      row.addEventListener('change', ()=>applyFilters());
+
+      filtersList.appendChild(row);
+      applyFilters();
+    }
+
+    btnAddFilter.addEventListener('click', ()=>{
+      const isFirst = filtersList.children.length===0;
+      addFilterRow(isFirst ? null : 'AND');
+    });
+
+    btnClearFilters.addEventListener('click', ()=>{
+      filtersList.innerHTML=''; applyFilters();
+    });
+
+    function readFilters(){
+      const rows = Array.from(filtersList.children);
+      return rows.map((row)=>{
+        const opEl = row.querySelector('.op');
+        const op = opEl ? opEl.value : null;
+        const fieldLabel = row.querySelector('.field').value;
+        const kind = FIELD_TYPES[fieldLabel];
+        let val;
+        const vEl = row.querySelector('.value select, .value input');
+        if (kind==='keyword') val = (vEl.value||'').toLowerCase().trim();
+        else if (kind==='delete') val = vEl.value==='true';
+        else val = vEl.value;
+        return {op, kind, val, label:fieldLabel};
+      });
+    }
+
+    /************ Filter Evaluation ************/
+    function matchCond(fo, cond){
+      const {kind, val} = cond;
+      if (kind==='tag'){ return (fo.tags||[]).includes(val); }
+      if (kind==='rating'){ return (fo.rating||'-')===val; }
+      if (kind==='delete'){ return !!fo.deleteMarked === !!val; }
+      if (kind==='keyword'){
+        if (!val) return true;
+        const name=(fo.file.webkitRelativePath||fo.file.name).toLowerCase();
+        const tags=(fo.tags||[]).join(' ').toLowerCase();
+        const note=(fo.note||'').toLowerCase();
+        const lp=(fo.lastPlayedStr||'').toLowerCase();
+        return name.includes(val)||tags.includes(val)||note.includes(val)||lp.includes(val);
+      }
+      if (kind==='lpType'){ return (fo.lastPlayedType||'')===val; }
+      return true;
+    }
+
+    function passesFilterBuilder(fo){
+      const f = readFilters();
+      if (!f.length) return true;
+
+      let clauses = [];
+      let current = [f[0]];
+      for (let i=1;i<f.length;i++){
+        const op = f[i].op;
+        if (op==='OR'){ clauses.push(current); current = [f[i]]; }
+        else { current.push(f[i]); }
+      }
+      clauses.push(current);
+
+      const firstOp = f.length>=2 ? f[1].op : null;
+      if (firstOp==='AND'){
+        const main = f[0];
+        clauses = clauses.map(cl => (cl.includes(main) ? cl : [main, ...cl]));
+      }
+
+      return clauses.some(cl => cl.every(c => matchCond(fo,c)));
+    }
+
+    function filtersDescription(){
+      const f = readFilters();
+      if (!f.length) return 'Filters: (none — showing all)';
+      const tokens = [];
+      for (let i=0;i<f.length;i++){
+        const lab = f[i].label + ' ' + (f[i].kind==='keyword' ? `"${f[i].val}"` : f[i].val);
+        if (i===0) tokens.push(lab);
+        else tokens.push(f[i].op + ' ' + lab);
+      }
+      const firstOp = f.length>=2 ? f[1].op : null;
+      const anchorNote = (firstOp==='AND') ? ' | anchored main across OR' : '';
+      return 'Filters: ' + tokens.join(' ') + anchorNote;
+    }
+
+    /************ Sorting ************/
+    function compareStrings(a,b){ a=(a||'').toLowerCase(); b=(b||'').toLowerCase(); if (a<b) return -1; if (a>b) return 1; return 0; }
+
+    function visibleIndices(){
+      const idxs = [];
+      for (let i=0;i<filesList.length;i++){ if (passesFilterBuilder(filesList[i])) idxs.push(i); }
+      const asc = currentSort.ascending ? 1 : -1;
+      idxs.sort((ia, ib)=>{
+        const A = filesList[ia], B = filesList[ib];
+        switch(currentSort.field){
+          case 'name': {
+            const a=(A.file.webkitRelativePath||A.file.name), b=(B.file.webkitRelativePath||B.file.name);
+            return asc*compareStrings(a,b);
+          }
+          case 'size': return asc * (A.file.size - B.file.size);
+          case 'rating': {
+            const ra = (A.rating==='-'? -1 : parseInt(A.rating)||0);
+            const rb = (B.rating==='-'? -1 : parseInt(B.rating)||0);
+            return asc * (ra - rb);
+          }
+          case 'tags': {
+            const a=(A.tags||[]).slice().sort().join(',');
+            const b=(B.tags||[]).slice().sort().join(',');
+            return asc*compareStrings(a,b);
+          }
+          case 'date': return asc * ((A.date||0) - (B.date||0));
+          case 'duration': {
+            const da=(A.duration!=null)?A.duration:Number.MAX_VALUE;
+            const db=(B.duration!=null)?B.duration:Number.MAX_VALUE;
+            return asc*(da-db);
+          }
+          case 'lastPlayed': {
+            const ta = A.lastPlayedStr ? Date.parse(toISO(A.lastPlayedStr)) : (currentSort.ascending ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY);
+            const tb = B.lastPlayedStr ? Date.parse(toISO(B.lastPlayedStr)) : (currentSort.ascending ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY);
+            return asc * (ta - tb);
+          }
+        }
+        return 0;
+      });
+      return idxs;
+    }
+
+    function updateSortIndicators(){
+      const up='&#x25B2;', down='&#x25BC;';
+      function set(th, active, labelText){
+        const base = labelText;
+        th.innerHTML = active ? (base + ' ' + (currentSort.ascending?up:down)) : base;
+      }
+      set(nameHeader, currentSort.field==='name', 'File Name');
+      set(sizeHeader, currentSort.field==='size', 'File Size');
+      set(ratingHeader, currentSort.field==='rating', 'Rating');
+      set(tagHeader, currentSort.field==='tags', 'Tags');
+      set(dateHeader, currentSort.field==='date', 'Date');
+      set(durationHeader, currentSort.field==='duration', 'Duration');
+      set(lpHeader, currentSort.field==='lastPlayed', 'Last Played');
+    }
+
+    /************ Render Table ************/
+    function renderTable(){
+      const order = visibleIndices();
+      tbody.innerHTML = '';
+      order.forEach((idx)=>{
+        const fo = filesList[idx];
+        const row = document.createElement('tr');
+        row.dataset.index = idx;
+        if (currentIndex===idx) row.classList.add('nowPlaying');
+
+        const nameCell = document.createElement('td');
+        const a = document.createElement('a');
+        a.className='nameLink';
+        a.textContent = fo.file.webkitRelativePath || fo.file.name;
+        a.href = 'javascript:void(0)';
+        a.addEventListener('click', ()=> playIndex(idx));
+        nameCell.appendChild(a);
+
+        const sizeCell = document.createElement('td'); sizeCell.textContent = formatFileSize(fo.file.size);
+
+        const delCell = document.createElement('td');
+        const delCb = document.createElement('input'); delCb.type='checkbox'; delCb.checked = !!fo.deleteMarked;
+        const delMark=document.createElement('span'); delMark.className='deleteMark'; delMark.textContent='✖';
+        delMark.style.visibility = delCb.checked ? 'visible' : 'hidden';
+        delCb.addEventListener('change', ()=>{
+          fo.deleteMarked = delCb.checked; saveDelete(fo.file, fo.deleteMarked);
+          delMark.style.visibility = delCb.checked ? 'visible' : 'hidden';
+          if (currentIndex===idx){ panelDelete.checked = delCb.checked; panelDeleteMark.style.visibility = delCb.checked ? 'visible':'hidden'; }
+        });
+        delCell.appendChild(delCb); delCell.appendChild(delMark);
+
+        const ratingCell = document.createElement('td');
+        const ratingSelect = document.createElement('select');
+        ['-','0','1','2','3','4','5'].forEach(v=>{ const opt=document.createElement('option'); opt.value=v; opt.textContent=v; ratingSelect.appendChild(opt); });
+        ratingSelect.value = fo.rating || '-';
+        ratingSelect.addEventListener('change', ()=>{
+          fo.rating = ratingSelect.value; saveRating(fo.file, fo.rating);
+          if (currentIndex===idx) panelRating.value = fo.rating;
+        });
+        ratingCell.appendChild(ratingSelect);
+
+        const tagCell = document.createElement('td');
+        const tagSel = document.createElement('select');
+        tagSel.multiple = true; tagSel.style.minHeight='96px';
+        TAG_OPTIONS.forEach(tag=>{
+          const opt=document.createElement('option'); opt.value=tag; opt.textContent=tag;
+          if ((fo.tags||[]).includes(tag)) opt.selected = true;
+          tagSel.appendChild(opt);
+        });
+        tagSel.addEventListener('change', ()=>{
+          fo.tags = Array.from(tagSel.options).filter(o=>o.selected).map(o=>o.value);
+          saveTags(fo.file, fo.tags);
+          if (currentIndex===idx) { Array.from(panelTags.options).forEach(o=> o.selected = fo.tags.includes(o.value)); }
+        });
+        tagCell.appendChild(tagSel);
+
+        const dateCell = document.createElement('td'); dateCell.textContent = formatDate(fo.date);
+        const durCell = document.createElement('td'); durCell.textContent = (fo.duration!=null)?formatTime(fo.duration):'…';
+
+        const noteCell = document.createElement('td');
+        const note = document.createElement('textarea'); note.rows=2; note.placeholder='Add note…'; note.value = fo.note || '';
+        note.addEventListener('input', ()=>{
+          fo.note = note.value; saveNote(fo.file, fo.note);
+          if (currentIndex===idx) panelNote.value = fo.note;
+        });
+        noteCell.appendChild(note);
+
+        const lpCell = document.createElement('td'); lpCell.textContent = fo.lastPlayedStr || ''; lpCell.dataset.role = 'lp';
+
+        row.appendChild(nameCell); row.appendChild(sizeCell); row.appendChild(delCell);
+        row.appendChild(ratingCell); row.appendChild(tagCell); row.appendChild(dateCell); row.appendChild(durCell); row.appendChild(noteCell); row.appendChild(lpCell);
+        tbody.appendChild(row);
+      });
+    }
+
+    /************ Duration Loader ************/
+    function loadDurations(){
+      filesList.forEach((fo, idx)=>{
+        if (fo.duration!=null) return;
+        const url = URL.createObjectURL(fo.file);
+        const aud = new Audio(); aud.preload='metadata'; aud.src=url;
+        aud.addEventListener('loadedmetadata', ()=>{
+          fo.duration = aud.duration || 0; URL.revokeObjectURL(url);
+          if (currentSort.field==='duration') renderTable(); else {
+            const row = tbody.querySelector(`tr[data-index="${idx}"]`);
+            if (row) row.children[6].textContent = formatTime(fo.duration);
+          }
+        });
+        aud.addEventListener('error', ()=> URL.revokeObjectURL(url));
+      });
+    }
+
+    /************ Last Played ************/
+    function setLastPlayed(idx, type){
+      const fo = filesList[idx];
+      const stamp = formatStamp(new Date()); // "d/m/yyyy hh:mm:ss"
+      const combined = `${type}-${stamp}`;
+      fo.lastPlayedStr = combined;
+      fo.lastPlayedType = type;
+      saveLastPlayed(fo.file, type, stamp);
+      const row = tbody.querySelector(`tr[data-index="${idx}"]`);
+      if (row){
+        const lpCell = row.querySelector('td[data-role="lp"]');
+        if (lpCell) lpCell.textContent = combined;
+      }
+    }
+    function highlightRow(idx){
+      tbody.querySelectorAll('tr.nowPlaying').forEach(r=>r.classList.remove('nowPlaying'));
+      const row = tbody.querySelector(`tr[data-index="${idx}"]`);
+      if (row) row.classList.add('nowPlaying');
+    }
+
+    /************ Player ************/
+    function ensurePanelVisible(){
+      playerPanel.style.display='block';
+      if (!playerPanel.classList.contains('expanded') && !playerPanel.classList.contains('minimized')){
+        playerPanel.classList.add('expanded');
+      }
+      updateBodyPadding();
+    }
+
+    function updatePanelFromFile(idx){
+      const fo = filesList[idx];
+      playerTitle.textContent = fo.file.webkitRelativePath || fo.file.name;
+
+      panelRating.innerHTML = '';
+      ['-','0','1','2','3','4','5'].forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; panelRating.appendChild(o); });
+      panelRating.value = fo.rating || '-';
+
+      panelTags.innerHTML='';
+      TAG_OPTIONS.forEach(t=>{
+        const o=document.createElement('option');o.value=t;o.textContent=t;
+        if ((fo.tags||[]).includes(t)) o.selected=true;
+        panelTags.appendChild(o);
+      });
+
+      panelDelete.checked = !!fo.deleteMarked;
+      panelDeleteMark.style.visibility = panelDelete.checked ? 'visible' : 'hidden';
+      panelNote.value = fo.note || '';
+
+      playerSlider.max = fo.duration || 0;
+      playerSlider.value = 0;
+      timeCurrent.textContent = '00:00';
+      timeRemain.textContent = formatTime(fo.duration||0);
+      speedToggleBtn.textContent = SPEED_STEPS[speedIndex]+'x';
+
+      sessionMaxTime = 0;
+      sessionFullRecorded = false;
+    }
+
+    function cleanupCurrentAudio(){
+      if (currentAudio){
+        currentAudio.pause();
+        currentAudio = null;
+      }
+      if (currentAudioUrl){
+        URL.revokeObjectURL(currentAudioUrl);
+        currentAudioUrl = null;
+      }
+    }
+
+    function playIndex(idx){
+      const order = visibleIndices();
+      if (order.length===0) return;
+
+      // Save partial listen for previous track if needed
+      if (currentAudio && currentIndex!=null && !sessionFullRecorded){
+        if (sessionMaxTime >= 10){
+          setLastPlayed(currentIndex, 'P');
+        }
+      }
+
+      cleanupCurrentAudio();
+      currentIndex = idx;
+      const fo = filesList[idx];
+
+      currentAudioUrl = URL.createObjectURL(fo.file);
+      currentAudio = new Audio(currentAudioUrl);
+      currentAudio.playbackRate = SPEED_STEPS[speedIndex];
+
+      ensurePanelVisible();
+      updatePanelFromFile(idx);
+      highlightRow(idx);
+
+      currentAudio.addEventListener('loadedmetadata', ()=>{
+        fo.duration = currentAudio.duration || fo.duration || 0;
+        playerSlider.max = fo.duration || 0;
+        timeRemain.textContent = formatTime(fo.duration||0);
+        const r = tbody.querySelector(`tr[data-index="${idx}"]`);
+        if (r) r.children[6].textContent = formatTime(fo.duration||0);
+      });
+
+      currentAudio.addEventListener('timeupdate', ()=>{
+        if (!currentAudio) return;
+        const t = currentAudio.currentTime || 0;
+        sessionMaxTime = Math.max(sessionMaxTime, t);
+        playerSlider.value = t;
+        timeCurrent.textContent = formatTime(t);
+        const remain = (currentAudio.duration||0) - t;
+        timeRemain.textContent = formatTime(remain);
+
+        const dur = currentAudio.duration || 0;
+        if (!sessionFullRecorded && dur>0 && t >= (dur - 1)){
+          setLastPlayed(currentIndex, 'F');
+          sessionFullRecorded = true;
+        }
+      });
+
+      currentAudio.addEventListener('ended', ()=>{
+        if (!sessionFullRecorded){
+          setLastPlayed(currentIndex, 'F');
+          sessionFullRecorded = true;
+        }
+        if (autoplayCheckbox.checked){
+          const order = visibleIndices();
+          const pos = order.indexOf(idx);
+          const nextIdx = (pos>=0 && pos<order.length-1) ? order[pos+1] : null;
+          if (nextIdx!=null) playIndex(nextIdx);
+        }
+      });
+
+      currentAudio.play();
+      btnPlayPause.innerHTML = '&#10074;&#10074;';
+    }
+
+    btnPlayPause.addEventListener('click', ()=>{
+      if (!currentAudio) {
+        const order = visibleIndices();
+        if (order.length) playIndex(order[0]);
+        return;
+      }
+      if (currentAudio.paused){
+        currentAudio.play();
+        btnPlayPause.innerHTML = '&#10074;&#10074;';
+      } else {
+        currentAudio.pause();
+        btnPlayPause.innerHTML = '&#9658;';
+      }
+    });
+
+    btnNext.addEventListener('click', ()=>{
+      const order = visibleIndices(); if (!order.length) return;
+      if (currentIndex==null){ playIndex(order[0]); return; }
+      const pos = order.indexOf(currentIndex);
+      const next = (pos>=0 && pos<order.length-1) ? order[pos+1] : null;
+      if (next!=null) playIndex(next);
+    });
+
+    btnBack.addEventListener('click', ()=>{
+      const order = visibleIndices(); if (!order.length) return;
+      if (currentIndex==null){ playIndex(order[0]); return; }
+      if (currentAudio && currentAudio.currentTime>5){ currentAudio.currentTime = 0; return; }
+      const pos = order.indexOf(currentIndex);
+      const prev = (pos>0) ? order[pos-1] : null;
+      if (prev!=null) playIndex(prev);
+      else if (currentAudio){ currentAudio.currentTime = 0; }
+    });
+
+    playerSlider.addEventListener('input', ()=>{
+      if (!currentAudio) return;
+      const v = parseFloat(playerSlider.value)||0;
+      currentAudio.currentTime = v;
+      sessionMaxTime = Math.max(sessionMaxTime, v);
+      const dur = currentAudio.duration||0;
+      if (dur>0 && v >= dur - 1 && !sessionFullRecorded){
+        setLastPlayed(currentIndex, 'F');
+        sessionFullRecorded=true;
+      } else if (v >= 10 && !sessionFullRecorded){
+        setLastPlayed(currentIndex, 'P');
+      }
+    });
+
+    panelRating.addEventListener('change', ()=>{
+      if (currentIndex==null) return;
+      filesList[currentIndex].rating = panelRating.value;
+      saveRating(filesList[currentIndex].file, panelRating.value);
+      const row = tbody.querySelector(`tr[data-index="${currentIndex}"]`);
+      if (row) row.children[3].querySelector('select').value = panelRating.value;
+    });
+    panelTags.addEventListener('change', ()=>{
+      if (currentIndex==null) return;
+      const vals = Array.from(panelTags.options).filter(o=>o.selected).map(o=>o.value);
+      filesList[currentIndex].tags = vals; saveTags(filesList[currentIndex].file, vals);
+      const row = tbody.querySelector(`tr[data-index="${currentIndex}"]`);
+      if (row){
+        const sel = row.children[4].querySelector('select');
+        Array.from(sel.options).forEach(o=> o.selected = vals.includes(o.value));
+      }
+    });
+    panelDelete.addEventListener('change', ()=>{
+      if (currentIndex==null) return;
+      filesList[currentIndex].deleteMarked = panelDelete.checked;
+      saveDelete(filesList[currentIndex].file, panelDelete.checked);
+      panelDeleteMark.style.visibility = panelDelete.checked ? 'visible' : 'hidden';
+      const row = tbody.querySelector(`tr[data-index="${currentIndex}"]`);
+      if (row){
+        const cb = row.children[2].querySelector('input[type="checkbox"]');
+        const mk = row.children[2].querySelector('.deleteMark');
+        cb.checked = panelDelete.checked;
+        mk.style.visibility = panelDelete.checked ? 'visible' : 'hidden';
+      }
+    });
+    panelNote.addEventListener('input', ()=>{
+      if (currentIndex==null) return;
+      filesList[currentIndex].note = panelNote.value;
+      saveNote(filesList[currentIndex].file, panelNote.value);
+      const row = tbody.querySelector(`tr[data-index="${currentIndex}"]`);
+      if (row){ row.children[7].querySelector('textarea').value = panelNote.value; }
+    });
+
+    function updateMinBtn(){
+      btnMinToggle.textContent = playerPanel.classList.contains('expanded') ? 'Minimize' : 'Expand';
+    }
+
+    btnMinToggle.addEventListener('click', ()=>{
+      if (playerPanel.classList.contains('expanded')){
+        playerPanel.classList.remove('expanded');
+        playerPanel.classList.add('minimized');
+      } else {
+        playerPanel.classList.remove('minimized');
+        playerPanel.classList.add('expanded');
+      }
+      updateMinBtn();
+      updateBodyPadding();
+    });
+
+    speedToggleBtn.addEventListener('click', ()=>{
+      speedIndex = (speedIndex+1)%SPEED_STEPS.length;
+      speedToggleBtn.textContent = SPEED_STEPS[speedIndex]+'x';
+      if (currentAudio) currentAudio.playbackRate = SPEED_STEPS[speedIndex];
+    });
+
+    // Small keyboard shortcut: space = play/pause
+    document.addEventListener('keydown', (e)=>{
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+      if (e.code === 'Space'){
+        e.preventDefault();
+        btnPlayPause.click();
+      }
+    });
+
+    /************ Sorting / Headers ************/
+    function setSort(field){
+      if (currentSort.field===field) currentSort.ascending = !currentSort.ascending;
+      else { currentSort.field = field; currentSort.ascending = true; }
+      arrangeBy.value = field; arrangeOrder.value = currentSort.ascending?'asc':'desc';
+      updateSortIndicators(); renderTable();
+    }
+    nameHeader.addEventListener('click', ()=>setSort('name'));
+    sizeHeader.addEventListener('click', ()=>setSort('size'));
+    ratingHeader.addEventListener('click', ()=>setSort('rating'));
+    tagHeader.addEventListener('click', ()=>setSort('tags'));
+    dateHeader.addEventListener('click', ()=>setSort('date'));
+    durationHeader.addEventListener('click', ()=>setSort('duration'));
+    lpHeader.addEventListener('click', ()=>setSort('lastPlayed'));
+    arrangeBy.addEventListener('change', ()=>{
+      currentSort.field = arrangeBy.value;
+      currentSort.ascending = (arrangeOrder.value==='asc');
+      updateSortIndicators(); renderTable();
+    });
+    arrangeOrder.addEventListener('change', ()=>{
+      currentSort.ascending = (arrangeOrder.value==='asc');
+      updateSortIndicators(); renderTable();
+    });
+
+    /************ Summary modal ************/
+    function openSummary(){
+      const idxs = visibleIndices();
+      sumFilters.textContent = filtersDescription();
+      if (!idxs.length){
+        sumList.textContent = '(No matches)';
+      } else {
+        const names = idxs.map(i => (filesList[i].file.webkitRelativePath || filesList[i].file.name));
+        const total = `Total files: ${names.length}`;
+        sumList.textContent = total + '\n\n' + names.join('\n');
+      }
+      sumMask.style.display='block'; sumModal.style.display='block';
+    }
+    function closeSummary(){
+      sumMask.style.display='none'; sumModal.style.display='none';
+    }
+    btnSummary.addEventListener('click', openSummary);
+    sumMask.addEventListener('click', closeSummary);
+    sumClose.addEventListener('click', closeSummary);
+
+    /************ Apply Filters ************/
+    function applyFilters(){ renderTable(); }
+
+    /************ File Load ************/
+    fileInput.addEventListener('change', (e)=>{
+      const files = Array.from(e.target.files);
+      filesList = files.map(f=>{
+        const lp = getLastPlayed(f);
+        const lastPlayedStr = lp.type ? `${lp.type}-${lp.stamp}` : '';
+        return {
+          file:f,
+          rating:getRating(f),
+          tags:getTags(f),
+          note:getNote(f),
+          date:f.lastModified || Date.now(),
+          duration:null,
+          deleteMarked:getDelete(f),
+          lastPlayedStr,
+          lastPlayedType: lp.type || null
+        };
+      });
+      currentSort = {field:'name', ascending:true};
+      arrangeBy.value='name'; arrangeOrder.value='asc';
+      updateSortIndicators();
+      renderTable();
+      loadDurations();
+
+      // Reset player UI & hide panel until first play
+      cleanupCurrentAudio();
+      currentIndex=null;
+      playerPanel.style.display='none';
+      playerPanel.classList.remove('expanded','minimized');
+      updateMinBtn();
+      updateBodyPadding();
+    });
+
+    /************ Export / Import ************/
+    const btnExport = document.getElementById('btnExport');
+    const btnImport = document.getElementById('btnImport');
+    const importInput = document.getElementById('importInput');
+
+    btnExport.addEventListener('click', ()=>{
+      const state = {};
+      filesList.forEach(fo=>{
+        const k = getFileKey(fo.file);
+        state[k] = {
+          path: (fo.file.webkitRelativePath || fo.file.name),
+          name: fo.file.name,
+          size: fo.file.size,
+          rating: fo.rating || '-',
+          tags: fo.tags || [],
+          note: fo.note || "",
+          deleteMarked: !!fo.deleteMarked,
+          lastPlayedStr: fo.lastPlayedStr || "",
+          lastPlayedType: fo.lastPlayedType || null
+        };
+      });
+      const blob = new Blob(
+        [JSON.stringify({version:3, exportedAt: new Date().toISOString(), items: state}, null, 2)],
+        {type:'application/json'}
+      );
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'sound_viewer_state.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+    });
+
+    btnImport.addEventListener('click', ()=> importInput.click());
+    importInput.addEventListener('change', (e)=>{
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        try{
+          const data = JSON.parse(reader.result);
+          const items = data.items || {};
+          filesList.forEach(fo=>{
+            const k = getFileKey(fo.file);
+            if (items[k]){
+              const it = items[k];
+              fo.rating = it.rating ?? fo.rating;
+              fo.tags = it.tags ?? fo.tags;
+              fo.note = it.note ?? fo.note;
+              fo.deleteMarked = !!it.deleteMarked;
+              fo.lastPlayedStr = it.lastPlayedStr || '';
+              fo.lastPlayedType = it.lastPlayedType || null;
+
+              saveRating(fo.file, fo.rating);
+              saveTags(fo.file, fo.tags);
+              saveNote(fo.file, fo.note);
+              saveDelete(fo.file, fo.deleteMarked);
+
+              if (fo.lastPlayedType && fo.lastPlayedStr){
+                // Extract inner stamp text (works with both "P-..." and plain date)
+                const innerStamp = fo.lastPlayedStr[1]==='-' ? fo.lastPlayedStr.slice(2).trim() : fo.lastPlayedStr.trim();
+                saveLastPlayed(fo.file, fo.lastPlayedType, innerStamp);
+              }
+            }
+          });
+          renderTable();
+          openSummary(); // quick confirmation
+        }catch(err){
+          alert('Invalid state file.');
+        }
+        importInput.value = '';
+      };
+      reader.readAsText(file);
+    });
+
+    /************ Reset ************/
+    let confirmTimer = null;
+    resetStatusButton.addEventListener('click', ()=>{
+      if (!resetAwaitingConfirm){
+        resetAwaitingConfirm = true;
+        const orig='Reset All Statuses';
+        resetStatusButton.textContent='Confirm Reset';
+        resetStatusButton.style.background='#4c2a2a';
+        confirmTimer = setTimeout(()=>{
+          resetAwaitingConfirm=false;
+          resetStatusButton.textContent=orig;
+          resetStatusButton.style.background='';
+        }, 6000);
+        return;
+      }
+      if (confirmTimer) clearTimeout(confirmTimer);
+      resetAwaitingConfirm=false;
+      resetStatusButton.textContent='Reset All Statuses';
+      resetStatusButton.style.background='';
+
+      for (let i=localStorage.length-1;i>=0;i--){
+        const k = localStorage.key(i);
+        if (k && (k.startsWith('fileDelete_')||k.startsWith('fileRating_')||k.startsWith('fileTag_')||k.startsWith('fileTags_')||k.startsWith('fileNote_')||k.startsWith('fileLP_'))){
+          localStorage.removeItem(k);
+        }
+      }
+
+      cleanupCurrentAudio();
+      currentIndex=null;
+      playerPanel.style.display='none';
+      playerPanel.classList.remove('expanded','minimized');
+      updateBodyPadding();
+
+      filesList.forEach(fo=>{
+        fo.rating='-';
+        fo.tags=[];
+        fo.note='';
+        fo.deleteMarked=false;
+        fo.lastPlayedStr='';
+        fo.lastPlayedType=null;
+      });
+      renderTable();
+    });
+
+    /************ Init ************/
+    ['-','0','1','2','3','4','5'].forEach(v=>{
+      const o=document.createElement('option'); o.value=v; o.textContent=v; panelRating.appendChild(o);
+    });
+    TAG_OPTIONS.forEach(t=>{
+      const o=document.createElement('option');o.value=t;o.textContent=t; panelTags.appendChild(o);
+    });
+    updateSortIndicators();
+  </script>
+</body>
+</html>
