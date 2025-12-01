@@ -321,12 +321,19 @@
       display: flex;
       gap: 8px;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .guess-row input[type="text"] {
       flex: 1;
       text-transform: lowercase;
+    }
+
+    .tools-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
     }
 
     .feedback {
@@ -348,6 +355,8 @@
       font-size: 0.78rem;
       color: var(--muted);
       margin-top: 4px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .hidden {
@@ -474,7 +483,7 @@
   <div class="app">
     <header>
       <h1>Anagram Rush</h1>
-      <p>Unscramble long words as fast as you can. Finish a full set and lock in your best time.</p>
+      <p>Unscramble long words as fast as you can. Hints and skips cost you time.</p>
       <div class="badge">
         <span class="badge-dot"></span>
         <span>Single player &middot; Local leaderboard</span>
@@ -515,7 +524,7 @@
       </div>
       <div class="settings-footer">
         <div class="hint-pill">
-          Tip: 6–10 letters is a good range to get mostly long, tricky single words.
+          Tip: 6–10 letters gives you long, tricky single words.
         </div>
         <button class="btn-primary" id="startBtn">
           <span>Start Game</span>
@@ -552,6 +561,12 @@
           <button type="submit" class="btn-primary" id="submitBtn" disabled>Submit</button>
         </div>
       </form>
+
+      <div class="tools-row">
+        <button class="btn-ghost btn-sm" id="hintBtn" disabled>Hint (+30s)</button>
+        <button class="btn-ghost btn-sm" id="skipBtn" disabled>Skip word (+60s)</button>
+      </div>
+
       <div id="guessFeedback" class="feedback"></div>
       <div class="mini-meta">
         <span id="letterCount">Letters: 0</span>
@@ -560,7 +575,7 @@
 
       <div id="summaryPanel" class="summary hidden">
         <div class="summary-row">
-          <span>Total time</span>
+          <span>Total time (incl. penalties)</span>
           <span id="summaryTime">00:00.0</span>
         </div>
         <div class="summary-row">
@@ -632,7 +647,6 @@
 
   <script>
     // ===== Word list =====
-    // Longish English words (6–14 letters). We only accept the exact word as correct.
     const WORDS = [
       "anchor", "battery", "capture", "diamond", "elastic", "flamingo", "gallery",
       "habitat", "impulse", "jungle", "kingdom", "lantern", "magnify", "nectarine",
@@ -667,6 +681,8 @@
     const guessForm = document.getElementById("guessForm");
     const guessInput = document.getElementById("guessInput");
     const submitBtn = document.getElementById("submitBtn");
+    const hintBtn = document.getElementById("hintBtn");
+    const skipBtn = document.getElementById("skipBtn");
     const guessFeedbackEl = document.getElementById("guessFeedback");
     const letterCountEl = document.getElementById("letterCount");
     const debugHintEl = document.getElementById("debugHint");
@@ -693,7 +709,9 @@
     let currentWord = "";
     let startTime = null;
     let timerInterval = null;
-    let lastResult = null; // used when saving to leaderboard
+    let penaltyMs = 0;            // time penalties from hints & skips
+    let hintCountForCurrent = 0;  // how many letters revealed for this word
+    let lastResult = null;        // used when saving to leaderboard
 
     // ===== Helpers =====
     function shuffleLetters(word) {
@@ -704,7 +722,6 @@
       }
       const shuffled = arr.join("");
       if (shuffled.toLowerCase() === word.toLowerCase() && word.length > 2) {
-        // avoid identical order
         return shuffleLetters(word);
       }
       return shuffled;
@@ -714,7 +731,7 @@
       const totalSeconds = ms / 1000;
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = Math.floor(totalSeconds % 60);
-      const fraction = Math.floor((totalSeconds * 10) % 10); // tenths
+      const fraction = Math.floor((totalSeconds * 10) % 10);
       const mm = String(minutes).padStart(2, "0");
       const ss = String(seconds).padStart(2, "0");
       return `${mm}:${ss}.${fraction}`;
@@ -730,6 +747,8 @@
       currentIndex = 0;
       currentWord = "";
       startTime = null;
+      penaltyMs = 0;
+      hintCountForCurrent = 0;
       if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
@@ -742,7 +761,10 @@
       guessInput.value = "";
       guessInput.disabled = true;
       submitBtn.disabled = true;
+      hintBtn.disabled = true;
+      skipBtn.disabled = true;
       guessFeedbackEl.textContent = "";
+      guessFeedbackEl.classList.remove("ok", "err");
       letterCountEl.textContent = "Letters: 0";
       debugHintEl.textContent = "";
       summaryPanel.classList.add("hidden");
@@ -753,9 +775,21 @@
       startTime = performance.now();
       timerInterval = setInterval(() => {
         if (!gameActive || startTime == null) return;
-        const elapsed = performance.now() - startTime;
-        timerEl.textContent = "⏱ " + formatTime(elapsed);
+        const elapsedBase = performance.now() - startTime;
+        const total = elapsedBase + penaltyMs;
+        timerEl.textContent = "⏱ " + formatTime(total);
       }, 80);
+    }
+
+    function updateHintDisplay() {
+      if (!currentWord || hintCountForCurrent <= 0) {
+        debugHintEl.textContent = "";
+        return;
+      }
+      const revealed = currentWord.slice(0, hintCountForCurrent);
+      const remainingCount = Math.max(currentWord.length - hintCountForCurrent, 0);
+      const mask = remainingCount > 0 ? "•".repeat(remainingCount) : "";
+      debugHintEl.textContent = `Hint: ${revealed}${mask}`;
     }
 
     function loadCurrentWord() {
@@ -765,9 +799,10 @@
       scrambleBoxEl.textContent = scrambled.split("").join(" ");
       scrambleSubEl.textContent = "Unscramble to form a single valid word.";
       letterCountEl.textContent = `Letters: ${currentWord.length}`;
-      debugHintEl.textContent = ""; // you can reveal hints here for debugging if you want
+      hintCountForCurrent = 0;
+      updateHintDisplay();
       progressTextEl.textContent = `${currentIndex + 1} / ${selectedWords.length}`;
-      const progressPercent = ((currentIndex) / selectedWords.length) * 100;
+      const progressPercent = (currentIndex / selectedWords.length) * 100;
       progressBarEl.style.width = `${progressPercent}%`;
       guessInput.value = "";
       guessInput.focus();
@@ -782,7 +817,8 @@
         clearInterval(timerInterval);
         timerInterval = null;
       }
-      const totalMs = performance.now() - startTime;
+      const base = performance.now() - startTime;
+      const totalMs = base + penaltyMs;
       const minLen = parseInt(minLenEl.value, 10);
       const maxLen = parseInt(maxLenEl.value, 10);
       const wordCount = selectedWords.length;
@@ -796,6 +832,8 @@
       playerNameEl.focus();
       guessInput.disabled = true;
       submitBtn.disabled = true;
+      hintBtn.disabled = true;
+      skipBtn.disabled = true;
       progressBarEl.style.width = "100%";
 
       lastResult = {
@@ -828,18 +866,15 @@
         return;
       }
 
-      // Filter words by length
       const pool = WORDS.filter(w => w.length >= minLen && w.length <= maxLen);
       if (pool.length < wordCount) {
         showSettingsError(`Not enough words in that range. Available: ${pool.length}. Try widening the range.`);
         return;
       }
 
-      // Reset and start
       resetGameState();
       gameActive = true;
 
-      // Shuffle pool
       const shuffledPool = [...pool];
       for (let i = shuffledPool.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -851,6 +886,8 @@
       scrambleSubEl.textContent = "Game started. Type your answers as fast as you can!";
       guessInput.disabled = false;
       submitBtn.disabled = false;
+      hintBtn.disabled = false;
+      skipBtn.disabled = false;
       guessInput.focus();
 
       startTimer();
@@ -880,8 +917,39 @@
         guessFeedbackEl.classList.remove("ok");
         guessFeedbackEl.classList.add("err");
         scrambleBoxEl.classList.remove("shake");
-        void scrambleBoxEl.offsetWidth; // restart animation
+        void scrambleBoxEl.offsetWidth;
         scrambleBoxEl.classList.add("shake");
+      }
+    });
+
+    // Hint: reveal letters one by one, +30s each click
+    hintBtn.addEventListener("click", () => {
+      if (!gameActive || !currentWord) return;
+      if (hintCountForCurrent >= currentWord.length) return;
+
+      hintCountForCurrent += 1;
+      penaltyMs += 30000; // 30 seconds
+      updateHintDisplay();
+
+      guessFeedbackEl.textContent = `Hint used: +30s penalty.`;
+      guessFeedbackEl.classList.remove("ok");
+      guessFeedbackEl.classList.add("err");
+    });
+
+    // Skip: move to next word, +60s penalty
+    skipBtn.addEventListener("click", () => {
+      if (!gameActive || !currentWord) return;
+
+      penaltyMs += 60000; // 60 seconds
+      guessFeedbackEl.textContent = `Word skipped: +60s penalty.`;
+      guessFeedbackEl.classList.remove("ok");
+      guessFeedbackEl.classList.add("err");
+
+      currentIndex += 1;
+      if (currentIndex >= selectedWords.length) {
+        finishGame();
+      } else {
+        loadCurrentWord();
       }
     });
 
@@ -926,8 +994,6 @@
     playAgainBtn.addEventListener("click", (e) => {
       e.preventDefault();
       resetGameState();
-      guessInput.disabled = true;
-      submitBtn.disabled = true;
       scrambleSubEl.textContent = "Ready when you are. Adjust settings and hit “Start Game”.";
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
