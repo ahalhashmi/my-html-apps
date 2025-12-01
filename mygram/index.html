@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Anagram Rush</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <style>
+    :root {
+      --bg: #050816;
+      --card: #0b1020;
+      --accent: #7aa2f7;
+      --accent-soft: rgba(122, 162, 247, 0.12);
+      --danger: #ff6b6b;
+      --success: #5bd19a;
+      --text: #e7ecf5;
+      --muted: #9ca3b5;
+      --border: #1b2134;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.55);
+    }
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at top, #161b32 0, #050816 55%, #020510 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2.2fr);
+      gap: 18px;
+      align-content: flex-start;
+    }
+
+    @media (max-width: 840px) {
+      .app {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+
+    .card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), transparent);
+      border-radius: var(--radius-lg);
+      padding: 18px 18px 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(12px);
+    }
+
+    .card h2 {
+      margin: 0 0 4px;
+      font-size: 1.05rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+    }
+
+    header {
+      grid-column: 1 / -1;
+      margin-bottom: -6px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.45rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(122, 162, 247, 0.35);
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(122, 162, 247, 0.7);
+    }
+
+    /* Controls */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+      align-items: flex-end;
+    }
+
+    @media (max-width: 580px) {
+      .settings-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .field label span {
+      color: var(--accent);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    input[type="number"],
+    select,
+    input[type="text"] {
+      background: #050814;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      padding: 7px 8px;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease, transform 0.06s ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="number"]:focus,
+    select:focus,
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(122, 162, 247, 0.3);
+      transform: translateY(-1px);
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 9px 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.07s ease, box-shadow 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(120deg, #7aa2f7, #9f7af7);
+      color: #020409;
+      box-shadow: 0 16px 30px rgba(120, 164, 247, 0.5);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 34px rgba(120, 164, 247, 0.6);
+    }
+
+    .btn-ghost {
+      background: rgba(9, 13, 25, 0.9);
+      color: var(--muted);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      padding-inline: 10px;
+      font-size: 0.8rem;
+    }
+
+    .btn-ghost:hover {
+      background: rgba(24, 32, 63, 0.9);
+      color: var(--text);
+    }
+
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      border-radius: 999px;
+    }
+
+    .btn-danger {
+      background: rgba(255, 107, 107, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(255, 107, 107, 0.7);
+      border-radius: var(--radius-md);
+    }
+
+    .btn-danger:hover {
+      background: rgba(255, 107, 107, 0.18);
+    }
+
+    .settings-footer {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .hint-pill {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(122, 162, 247, 0.1);
+      border: 1px dashed rgba(122, 162, 247, 0.35);
+    }
+
+    /* Game area */
+    .game-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 0.83rem;
+      color: var(--muted);
+    }
+
+    .timer {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(3, 11, 40, 0.9);
+      border: 1px solid rgba(122, 162, 247, 0.3);
+      font-variant-numeric: tabular-nums;
+      font-size: 0.9rem;
+      color: var(--accent);
+    }
+
+    .progress {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress-bar {
+      height: 4px;
+      width: 120px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      overflow: hidden;
+    }
+
+    .progress-bar-inner {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #7aa2f7, #5bd19a);
+      transition: width 0.18s ease;
+    }
+
+    .scramble-box {
+      margin: 4px 0 12px;
+      padding: 14px 12px;
+      border-radius: calc(var(--radius-lg) - 4px);
+      background: radial-gradient(circle at top, rgba(122, 162, 247, 0.18), transparent 60%);
+      border: 1px solid rgba(122, 162, 247, 0.4);
+      text-align: center;
+      letter-spacing: 0.3em;
+      font-size: 1.4rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .scramble-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .shake {
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-4px); }
+      40% { transform: translateX(4px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
+      100% { transform: translateX(0); }
+    }
+
+    .guess-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .guess-row input[type="text"] {
+      flex: 1;
+      text-transform: lowercase;
+    }
+
+    .feedback {
+      min-height: 18px;
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+    }
+
+    .feedback.ok {
+      color: var(--success);
+    }
+    .feedback.err {
+      color: var(--danger);
+    }
+
+    .mini-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Summary */
+    .summary {
+      margin-top: 6px;
+      padding: 10px 10px 8px;
+      border-radius: var(--radius-md);
+      background: rgba(10, 22, 32, 0.85);
+      border: 1px solid rgba(122, 162, 247, 0.25);
+      font-size: 0.9rem;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .summary-row span:last-child {
+      font-variant-numeric: tabular-nums;
+      color: var(--accent);
+    }
+
+    .summary-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: center;
+    }
+
+    .summary-footer input[type="text"] {
+      flex: 1;
+      min-width: 130px;
+    }
+
+    /* Leaderboard */
+    .leaderboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .filters-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .filters-row select {
+      font-size: 0.78rem;
+      padding-block: 4px;
+      padding-inline: 6px;
+      border-radius: 999px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    thead {
+      background: rgba(8, 15, 36, 0.96);
+    }
+
+    th, td {
+      padding: 6px 7px;
+      text-align: left;
+    }
+
+    th {
+      font-weight: 500;
+      color: var(--muted);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 0.75rem;
+    }
+
+    tbody tr:nth-child(odd) {
+      background: rgba(5, 10, 24, 0.9);
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(7, 13, 30, 0.95);
+    }
+
+    tbody tr:hover {
+      background: rgba(17, 30, 60, 0.98);
+    }
+
+    .time-cell {
+      font-variant-numeric: tabular-nums;
+      color: var(--accent);
+    }
+
+    .empty-text {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Anagram Rush</h1>
+      <p>Unscramble long words as fast as you can. Finish a full set and lock in your best time.</p>
+      <div class="badge">
+        <span class="badge-dot"></span>
+        <span>Single player &middot; Local leaderboard</span>
+      </div>
+    </header>
+
+    <!-- Left side: settings + game -->
+    <section class="card" id="settings-card">
+      <h2>Game Setup</h2>
+      <h3>Configure Your Challenge</h3>
+      <div class="settings-grid">
+        <div class="field">
+          <label>
+            Number of words
+            <span>round length</span>
+          </label>
+          <select id="wordCount">
+            <option value="5">5 words</option>
+            <option value="10" selected>10 words</option>
+            <option value="15">15 words</option>
+            <option value="20">20 words</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>
+            Min letters
+            <span>difficulty</span>
+          </label>
+          <input id="minLen" type="number" min="4" max="14" value="6" />
+        </div>
+        <div class="field">
+          <label>
+            Max letters
+            <span>difficulty</span>
+          </label>
+          <input id="maxLen" type="number" min="4" max="14" value="10" />
+        </div>
+      </div>
+      <div class="settings-footer">
+        <div class="hint-pill">
+          Tip: 6–10 letters is a good range to get mostly long, tricky single words.
+        </div>
+        <button class="btn-primary" id="startBtn">
+          <span>Start Game</span>
+          <span>▶</span>
+        </button>
+      </div>
+      <div id="settingsError" class="feedback err" style="margin-top:6px;"></div>
+    </section>
+
+    <section class="card" id="game-card">
+      <h2>Live Game</h2>
+      <h3>Unscramble the Word</h3>
+      <div class="game-meta">
+        <div class="timer" id="timer">⏱ 00:00.0</div>
+        <div class="progress">
+          <span id="progressText">0 / 0</span>
+          <div class="progress-bar">
+            <div class="progress-bar-inner" id="progressBar"></div>
+          </div>
+        </div>
+      </div>
+      <div class="scramble-box" id="scrambleBox">------</div>
+      <div class="scramble-sub" id="scrambleSub">Press “Start Game” to begin.</div>
+
+      <form id="guessForm">
+        <div class="guess-row">
+          <input
+            id="guessInput"
+            type="text"
+            autocomplete="off"
+            placeholder="Type your guess and press Enter…"
+            disabled
+          />
+          <button type="submit" class="btn-primary" id="submitBtn" disabled>Submit</button>
+        </div>
+      </form>
+      <div id="guessFeedback" class="feedback"></div>
+      <div class="mini-meta">
+        <span id="letterCount">Letters: 0</span>
+        <span id="debugHint"></span>
+      </div>
+
+      <div id="summaryPanel" class="summary hidden">
+        <div class="summary-row">
+          <span>Total time</span>
+          <span id="summaryTime">00:00.0</span>
+        </div>
+        <div class="summary-row">
+          <span>Words</span>
+          <span id="summaryWords">-</span>
+        </div>
+        <div class="summary-row">
+          <span>Difficulty</span>
+          <span id="summaryDiff">-</span>
+        </div>
+        <div class="summary-footer">
+          <input id="playerName" type="text" maxlength="20" placeholder="Your name for the leaderboard" />
+          <button class="btn-primary btn-sm" id="saveScoreBtn">Save score</button>
+          <button class="btn-ghost btn-sm" id="playAgainBtn">Play again</button>
+        </div>
+        <div id="summaryMsg" class="feedback" style="margin-top:4px;"></div>
+      </div>
+    </section>
+
+    <!-- Right side: leaderboard -->
+    <section class="card" id="leaderboard-card">
+      <div class="leaderboard-header">
+        <div>
+          <h2>Leaderboard</h2>
+          <h3>Fastest Runs</h3>
+        </div>
+        <button class="btn-danger btn-sm" id="clearLbBtn">Clear</button>
+      </div>
+
+      <div class="filters-row">
+        <div class="field" style="flex:1; min-width:120px;">
+          <label>
+            Filter by word count
+            <span>round size</span>
+          </label>
+          <select id="filterWords">
+            <option value="all">All</option>
+          </select>
+        </div>
+        <div class="field" style="flex:1; min-width:140px;">
+          <label>
+            Filter by difficulty
+            <span>min–max letters</span>
+          </label>
+          <select id="filterDiff">
+            <option value="all">All</option>
+          </select>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Player</th>
+            <th>Time</th>
+            <th>Words</th>
+            <th>Difficulty</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+      <div id="leaderboardEmpty" class="empty-text">
+        No scores yet. Finish a run and save your first record.
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ===== Word list =====
+    // Longish English words (6–14 letters). We only accept the exact word as correct.
+    const WORDS = [
+      "anchor", "battery", "capture", "diamond", "elastic", "flamingo", "gallery",
+      "habitat", "impulse", "jungle", "kingdom", "lantern", "magnify", "nectarine",
+      "octagon", "painter", "quantum", "railway", "sapphire", "tangent", "umbrella",
+      "venture", "warrior", "yawning", "zealotry", "airplane", "blizzard",
+      "charming", "daughter", "exercise", "friction", "granular", "harmonic",
+      "illustrate", "junction", "language", "material", "notebook", "overcome",
+      "platform", "question", "resource", "sunlight", "triangle", "universe",
+      "vacation", "wildlife", "xylophone", "yearning", "zeppelin", "acoustic",
+      "boundary", "calendar", "delicate", "engineer", "festival", "geologic",
+      "hospital", "identify", "judgment", "keyboard", "laughter", "membrane",
+      "national", "operator", "printing", "reaction", "security", "tropical",
+      "upstream", "variable", "workshop", "yourself",
+      "background", "chocolate", "definition", "earthquake", "firefighter",
+      "generation", "historical", "industrial", "journalism", "laboratory",
+      "motivation", "navigation", "occupation", "population", "regulation",
+      "strawberry", "technology", "understand", "watermelon"
+    ];
+
+    // ===== DOM elements =====
+    const wordCountEl = document.getElementById("wordCount");
+    const minLenEl = document.getElementById("minLen");
+    const maxLenEl = document.getElementById("maxLen");
+    const startBtn = document.getElementById("startBtn");
+    const settingsErrorEl = document.getElementById("settingsError");
+
+    const timerEl = document.getElementById("timer");
+    const progressTextEl = document.getElementById("progressText");
+    const progressBarEl = document.getElementById("progressBar");
+    const scrambleBoxEl = document.getElementById("scrambleBox");
+    const scrambleSubEl = document.getElementById("scrambleSub");
+    const guessForm = document.getElementById("guessForm");
+    const guessInput = document.getElementById("guessInput");
+    const submitBtn = document.getElementById("submitBtn");
+    const guessFeedbackEl = document.getElementById("guessFeedback");
+    const letterCountEl = document.getElementById("letterCount");
+    const debugHintEl = document.getElementById("debugHint");
+
+    const summaryPanel = document.getElementById("summaryPanel");
+    const summaryTimeEl = document.getElementById("summaryTime");
+    const summaryWordsEl = document.getElementById("summaryWords");
+    const summaryDiffEl = document.getElementById("summaryDiff");
+    const playerNameEl = document.getElementById("playerName");
+    const saveScoreBtn = document.getElementById("saveScoreBtn");
+    const playAgainBtn = document.getElementById("playAgainBtn");
+    const summaryMsgEl = document.getElementById("summaryMsg");
+
+    const filterWordsEl = document.getElementById("filterWords");
+    const filterDiffEl = document.getElementById("filterDiff");
+    const leaderboardBodyEl = document.getElementById("leaderboardBody");
+    const leaderboardEmptyEl = document.getElementById("leaderboardEmpty");
+    const clearLbBtn = document.getElementById("clearLbBtn");
+
+    // ===== Game state =====
+    let gameActive = false;
+    let selectedWords = [];
+    let currentIndex = 0;
+    let currentWord = "";
+    let startTime = null;
+    let timerInterval = null;
+    let lastResult = null; // used when saving to leaderboard
+
+    // ===== Helpers =====
+    function shuffleLetters(word) {
+      const arr = word.split("");
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      const shuffled = arr.join("");
+      if (shuffled.toLowerCase() === word.toLowerCase() && word.length > 2) {
+        // avoid identical order
+        return shuffleLetters(word);
+      }
+      return shuffled;
+    }
+
+    function formatTime(ms) {
+      const totalSeconds = ms / 1000;
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = Math.floor(totalSeconds % 60);
+      const fraction = Math.floor((totalSeconds * 10) % 10); // tenths
+      const mm = String(minutes).padStart(2, "0");
+      const ss = String(seconds).padStart(2, "0");
+      return `${mm}:${ss}.${fraction}`;
+    }
+
+    function showSettingsError(msg) {
+      settingsErrorEl.textContent = msg || "";
+    }
+
+    function resetGameState() {
+      gameActive = false;
+      selectedWords = [];
+      currentIndex = 0;
+      currentWord = "";
+      startTime = null;
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      timerEl.textContent = "⏱ 00:00.0";
+      progressTextEl.textContent = "0 / 0";
+      progressBarEl.style.width = "0%";
+      scrambleBoxEl.textContent = "------";
+      scrambleSubEl.textContent = "Press “Start Game” to begin.";
+      guessInput.value = "";
+      guessInput.disabled = true;
+      submitBtn.disabled = true;
+      guessFeedbackEl.textContent = "";
+      letterCountEl.textContent = "Letters: 0";
+      debugHintEl.textContent = "";
+      summaryPanel.classList.add("hidden");
+      summaryMsgEl.textContent = "";
+    }
+
+    function startTimer() {
+      startTime = performance.now();
+      timerInterval = setInterval(() => {
+        if (!gameActive || startTime == null) return;
+        const elapsed = performance.now() - startTime;
+        timerEl.textContent = "⏱ " + formatTime(elapsed);
+      }, 80);
+    }
+
+    function loadCurrentWord() {
+      if (currentIndex < 0 || currentIndex >= selectedWords.length) return;
+      currentWord = selectedWords[currentIndex];
+      const scrambled = shuffleLetters(currentWord);
+      scrambleBoxEl.textContent = scrambled.split("").join(" ");
+      scrambleSubEl.textContent = "Unscramble to form a single valid word.";
+      letterCountEl.textContent = `Letters: ${currentWord.length}`;
+      debugHintEl.textContent = ""; // you can reveal hints here for debugging if you want
+      progressTextEl.textContent = `${currentIndex + 1} / ${selectedWords.length}`;
+      const progressPercent = ((currentIndex) / selectedWords.length) * 100;
+      progressBarEl.style.width = `${progressPercent}%`;
+      guessInput.value = "";
+      guessInput.focus();
+      guessFeedbackEl.textContent = "";
+      guessFeedbackEl.classList.remove("ok", "err");
+    }
+
+    function finishGame() {
+      if (!gameActive) return;
+      gameActive = false;
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      const totalMs = performance.now() - startTime;
+      const minLen = parseInt(minLenEl.value, 10);
+      const maxLen = parseInt(maxLenEl.value, 10);
+      const wordCount = selectedWords.length;
+
+      summaryTimeEl.textContent = formatTime(totalMs);
+      summaryWordsEl.textContent = `${wordCount} words`;
+      summaryDiffEl.textContent = `${minLen}–${maxLen} letters`;
+      summaryPanel.classList.remove("hidden");
+      summaryMsgEl.textContent = "";
+      playerNameEl.value = "";
+      playerNameEl.focus();
+      guessInput.disabled = true;
+      submitBtn.disabled = true;
+      progressBarEl.style.width = "100%";
+
+      lastResult = {
+        timeMs: totalMs,
+        words: wordCount,
+        minLen,
+        maxLen,
+        date: new Date().toISOString()
+      };
+    }
+
+    // ===== Event handlers =====
+    startBtn.addEventListener("click", () => {
+      showSettingsError("");
+      summaryPanel.classList.add("hidden");
+      summaryMsgEl.textContent = "";
+
+      const wordCount = parseInt(wordCountEl.value, 10);
+      let minLen = parseInt(minLenEl.value, 10);
+      let maxLen = parseInt(maxLenEl.value, 10);
+
+      if (Number.isNaN(minLen) || Number.isNaN(maxLen)) {
+        showSettingsError("Please enter both minimum and maximum letters.");
+        return;
+      }
+      if (minLen < 4) minLen = 4;
+      if (maxLen > 14) maxLen = 14;
+      if (minLen > maxLen) {
+        showSettingsError("Minimum letters cannot be greater than maximum.");
+        return;
+      }
+
+      // Filter words by length
+      const pool = WORDS.filter(w => w.length >= minLen && w.length <= maxLen);
+      if (pool.length < wordCount) {
+        showSettingsError(`Not enough words in that range. Available: ${pool.length}. Try widening the range.`);
+        return;
+      }
+
+      // Reset and start
+      resetGameState();
+      gameActive = true;
+
+      // Shuffle pool
+      const shuffledPool = [...pool];
+      for (let i = shuffledPool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledPool[i], shuffledPool[j]] = [shuffledPool[j], shuffledPool[i]];
+      }
+      selectedWords = shuffledPool.slice(0, wordCount);
+      currentIndex = 0;
+
+      scrambleSubEl.textContent = "Game started. Type your answers as fast as you can!";
+      guessInput.disabled = false;
+      submitBtn.disabled = false;
+      guessInput.focus();
+
+      startTimer();
+      loadCurrentWord();
+    });
+
+    guessForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!gameActive || !currentWord) return;
+
+      const guess = guessInput.value.trim().toLowerCase();
+      if (!guess) return;
+
+      if (guess === currentWord.toLowerCase()) {
+        guessFeedbackEl.textContent = "Correct!";
+        guessFeedbackEl.classList.remove("err");
+        guessFeedbackEl.classList.add("ok");
+        currentIndex += 1;
+
+        if (currentIndex >= selectedWords.length) {
+          finishGame();
+        } else {
+          loadCurrentWord();
+        }
+      } else {
+        guessFeedbackEl.textContent = "Not quite. Check spelling and all letters.";
+        guessFeedbackEl.classList.remove("ok");
+        guessFeedbackEl.classList.add("err");
+        scrambleBoxEl.classList.remove("shake");
+        void scrambleBoxEl.offsetWidth; // restart animation
+        scrambleBoxEl.classList.add("shake");
+      }
+    });
+
+    // Save to leaderboard
+    saveScoreBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (!lastResult) {
+        summaryMsgEl.textContent = "No finished run to save.";
+        summaryMsgEl.classList.remove("ok");
+        summaryMsgEl.classList.add("err");
+        return;
+      }
+
+      const name = playerNameEl.value.trim() || "Player";
+      const entry = {
+        name,
+        timeMs: lastResult.timeMs,
+        words: lastResult.words,
+        minLen: lastResult.minLen,
+        maxLen: lastResult.maxLen,
+        date: lastResult.date
+      };
+
+      try {
+        const raw = localStorage.getItem("anagramLeaderboard");
+        const arr = raw ? JSON.parse(raw) : [];
+        arr.push(entry);
+        arr.sort((a, b) => a.timeMs - b.timeMs);
+        localStorage.setItem("anagramLeaderboard", JSON.stringify(arr));
+        summaryMsgEl.textContent = "Saved to leaderboard!";
+        summaryMsgEl.classList.remove("err");
+        summaryMsgEl.classList.add("ok");
+        renderLeaderboard();
+      } catch (err) {
+        console.error(err);
+        summaryMsgEl.textContent = "Unable to save score (localStorage error).";
+        summaryMsgEl.classList.remove("ok");
+        summaryMsgEl.classList.add("err");
+      }
+    });
+
+    playAgainBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      resetGameState();
+      guessInput.disabled = true;
+      submitBtn.disabled = true;
+      scrambleSubEl.textContent = "Ready when you are. Adjust settings and hit “Start Game”.";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    clearLbBtn.addEventListener("click", () => {
+      if (!confirm("Clear all leaderboard entries?")) return;
+      try {
+        localStorage.removeItem("anagramLeaderboard");
+      } catch (_) {}
+      renderLeaderboard();
+    });
+
+    filterWordsEl.addEventListener("change", renderLeaderboard);
+    filterDiffEl.addEventListener("change", renderLeaderboard);
+
+    // ===== Leaderboard rendering =====
+    function getLeaderboard() {
+      try {
+        const raw = localStorage.getItem("anagramLeaderboard");
+        return raw ? JSON.parse(raw) : [];
+      } catch (err) {
+        console.error(err);
+        return [];
+      }
+    }
+
+    function renderLeaderboard() {
+      const data = getLeaderboard();
+      const filterWords = filterWordsEl.value;
+      const filterDiff = filterDiffEl.value;
+
+      let filtered = [...data];
+      if (filterWords !== "all") {
+        const wc = parseInt(filterWords, 10);
+        filtered = filtered.filter(e => e.words === wc);
+      }
+      if (filterDiff !== "all") {
+        const [minStr, maxStr] = filterDiff.split("-");
+        const min = parseInt(minStr, 10);
+        const max = parseInt(maxStr, 10);
+        filtered = filtered.filter(e => e.minLen === min && e.maxLen === max);
+      }
+
+      filtered.sort((a, b) => a.timeMs - b.timeMs);
+
+      leaderboardBodyEl.innerHTML = "";
+      if (filtered.length === 0) {
+        leaderboardEmptyEl.style.display = "block";
+      } else {
+        leaderboardEmptyEl.style.display = "none";
+      }
+
+      filtered.slice(0, 50).forEach((entry, index) => {
+        const tr = document.createElement("tr");
+        const dateObj = new Date(entry.date);
+        const dateStr = isNaN(dateObj.getTime())
+          ? ""
+          : dateObj.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${entry.name}</td>
+          <td class="time-cell">${formatTime(entry.timeMs)}</td>
+          <td>${entry.words}</td>
+          <td>${entry.minLen}&ndash;${entry.maxLen}</td>
+          <td>${dateStr}</td>
+        `;
+        leaderboardBodyEl.appendChild(tr);
+      });
+
+      // Update filters with available values
+      const uniqueW = Array.from(new Set(data.map(e => e.words))).sort((a, b) => a - b);
+      filterWordsEl.innerHTML = `<option value="all">All</option>` +
+        uniqueW.map(w => `<option value="${w}">${w} words</option>`).join("");
+
+      const uniqueDiff = Array.from(new Set(data.map(e => `${e.minLen}-${e.maxLen}`)));
+      uniqueDiff.sort((a, b) => {
+        const [amin, amax] = a.split("-").map(Number);
+        const [bmin, bmax] = b.split("-").map(Number);
+        if (amin !== bmin) return amin - bmin;
+        return amax - bmax;
+      });
+      filterDiffEl.innerHTML = `<option value="all">All</option>` +
+        uniqueDiff.map(d => `<option value="${d}">${d.replace("-", "–")} letters</option>`).join("");
+    }
+
+    // ===== Init =====
+    resetGameState();
+    renderLeaderboard();
+  </script>
+</body>
+</html>
