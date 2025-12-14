@@ -1,83 +1,119 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>UAE Offshore Tracker (Stable Controls)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>UAE Offshore Tracker (Rewrite)</title>
 
+  <!-- Leaflet (only dependency) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet.wms@0.1.1/dist/leaflet.wms.js"></script>
 
   <style>
     :root{
-      --bg:#0b1020;
-      --bar:#111827;
-      --bar2:#0f172a;
+      --barH: 240px;
+      --bg: #0b1020;
+      --bar: #0f172a;
+      --bar2:#111827;
       --ink:#eaf0ff;
       --muted:#b8c6e6;
       --btn:#2d6cdf;
       --btn2:#2a2f3a;
       --danger:#b63a3a;
+      --ok:#1a7f3a;
+      --chip:#00000033;
       --radius:14px;
-      --barH: 210px; /* control bar height */
     }
 
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink);
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
 
-    /* Layout: map area + bottom control bar */
-    .app{height:100%; display:flex; flex-direction:column;}
-    #map{flex:1; min-height: 200px;}
+    /* Map occupies everything ABOVE the bottom bar */
+    #map{
+      position: absolute;
+      left: 0; right: 0;
+      top: 0;
+      bottom: calc(var(--barH) + env(safe-area-inset-bottom));
+      z-index: 1;
+      background: #0b1020;
+    }
 
+    /* Fixed bottom bar - ALWAYS clickable */
     .bar{
-      height: var(--barH);
+      position: fixed;
+      left: 0; right: 0;
+      bottom: 0;
+      height: calc(var(--barH) + env(safe-area-inset-bottom));
+      z-index: 999999;
       background: linear-gradient(180deg, var(--bar2), var(--bar));
-      border-top: 1px solid rgba(255,255,255,0.10);
+      border-top: 1px solid rgba(255,255,255,0.12);
       padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
       box-sizing: border-box;
-    }
-
-    .title{font-weight:800; font-size:16px; margin-bottom:8px;}
-    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:8px;}
-
-    label{display:flex; gap:8px; align-items:center; user-select:none; font-size:14px;}
-    input[type="checkbox"]{transform: scale(1.1);}
-
-    .pill{
-      display:inline-block; padding:4px 10px; border-radius:999px;
-      background: rgba(0,0,0,0.25); color: var(--muted); font-size:12px;
-    }
-
-    button{
-      border:0; border-radius:12px; padding:10px 12px;
-      font-weight:800; background:var(--btn); color:white;
-      font-size:14px;
+      pointer-events: auto;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    button.secondary{ background:var(--btn2); }
-    button.danger{ background:var(--danger); }
+
+    .titleRow{
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 10px; margin-bottom: 8px;
+    }
+    .title{ font-weight: 900; font-size: 16px; }
+    .chips{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .chip{
+      background: var(--chip);
+      border: 1px solid rgba(255,255,255,0.10);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .chip.ok{ background: rgba(26,127,58,0.25); color: #dfffe7; border-color: rgba(26,127,58,0.35); }
+    .chip.bad{ background: rgba(182,58,58,0.25); color: #ffe3e3; border-color: rgba(182,58,58,0.35); }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom: 10px; }
+    label{ display:flex; gap:8px; align-items:center; user-select:none; font-size: 14px; color: var(--ink); }
+    input[type="checkbox"]{ transform: scale(1.15); }
+
+    button{
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 900;
+      font-size: 14px;
+      background: var(--btn);
+      color: #fff;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button.secondary{ background: var(--btn2); }
+    button.danger{ background: var(--danger); }
 
     .status{
-      font-size:12px; color:var(--muted); line-height:1.35;
-      background: rgba(0,0,0,0.20);
-      padding: 10px; border-radius: 12px;
-      max-height: 70px; overflow:auto;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 12px;
+      padding: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      max-height: 78px;
+      overflow: auto;
     }
 
-    /* Simple toast */
     .toast{
       position: fixed;
       left: 50%;
-      bottom: calc(var(--barH) + 18px);
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.75);
+      bottom: calc(var(--barH) + 18px);
+      z-index: 1000000;
+      background: rgba(0,0,0,0.80);
       color: #fff;
-      padding: 10px 12px;
+      padding: 10px 14px;
       border-radius: 999px;
-      font-weight: 800;
-      z-index: 999999;
+      font-weight: 900;
+      font-size: 14px;
       opacity: 0;
       pointer-events: none;
       transition: opacity .18s ease;
@@ -85,337 +121,536 @@
       text-align: center;
     }
     .toast.show{ opacity: 1; }
+
+    /* Sessions overlay (optional) */
+    .modal{
+      position: fixed;
+      left: 0; right: 0;
+      top: 0; bottom: 0;
+      z-index: 1000001;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: flex-end;
+      padding: 12px;
+      box-sizing: border-box;
+    }
+    .sheet{
+      width: 100%;
+      background: #0c1328;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+      padding: 12px;
+      max-height: 72vh;
+      overflow: auto;
+    }
+    .sheetTitle{ font-weight: 900; margin: 4px 0 10px; }
+    .sess{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      padding:10px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255,255,255,0.10);
+      margin-bottom: 8px;
+    }
+    .meta{ color: var(--muted); font-size: 12px; margin-top: 3px; }
+    .sessBtns{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
   </style>
 </head>
 
 <body>
-  <div class="app">
-    <div id="map"></div>
+  <div id="map"></div>
 
-    <div class="bar">
-      <div class="title">UAE Offshore Tracker (Stable Controls)</div>
-
-      <div class="row">
-        <label><input id="seamarks" type="checkbox" checked> Seamarks</label>
-        <label><input id="gebco" type="checkbox" checked> Bathymetry</label>
-        <span class="pill" id="gpsPill">GPS: OFF</span>
-        <span class="pill" id="trkPill">TRACK: OFF</span>
+  <div class="bar" id="bar">
+    <div class="titleRow">
+      <div class="title">UAE Offshore Tracker (Rewrite)</div>
+      <div class="chips">
+        <span class="chip" id="jsChip">JS: …</span>
+        <span class="chip" id="tapChip">Taps: 0</span>
+        <span class="chip" id="gpsChip">GPS: OFF</span>
+        <span class="chip" id="trkChip">TRACK: OFF</span>
       </div>
+    </div>
 
-      <div class="row">
-        <!-- Inline onclick is a fallback in case addEventListener is blocked -->
-        <button id="testBtn" class="secondary" onclick="window.__btnTest && window.__btnTest()">Test Button</button>
-        <button id="gpsBtn" onclick="window.__gpsToggle && window.__gpsToggle()">Start GPS</button>
-        <button id="centerBtn" class="secondary" onclick="window.__center && window.__center()">Center</button>
-        <button id="trackBtn" class="secondary" onclick="window.__trackToggle && window.__trackToggle()">Start Tracking</button>
-        <button id="saveBtn" class="secondary" onclick="window.__save && window.__save()">Save Session</button>
-        <button id="clearBtn" class="danger" onclick="window.__clear && window.__clear()">Clear</button>
-      </div>
+    <div class="row">
+      <label><input id="seamarksToggle" type="checkbox" checked> Seamarks</label>
+      <label><input id="bathToggle" type="checkbox" checked> Bathymetry (GEBCO WMS)</label>
+    </div>
 
-      <div class="status" id="status">
-        Tap <b>Test Button</b>. If you see a toast, buttons are working.
-      </div>
+    <div class="row">
+      <button id="testBtn" class="secondary">Test Button</button>
+      <button id="gpsBtn">Start GPS</button>
+      <button id="centerBtn" class="secondary">Center</button>
+      <button id="trackBtn" class="secondary">Start Tracking</button>
+      <button id="saveBtn" class="secondary">Save Session</button>
+      <button id="sessionsBtn" class="secondary">Sessions</button>
+      <button id="clearBtn" class="danger">Clear Track</button>
+    </div>
+
+    <div class="status" id="status">
+      1) Tap <b>Test Button</b> → you must see an alert + toast.<br>
+      2) Tap <b>Start GPS</b> (HTTPS required).<br>
+      3) Tap <b>Start Tracking</b>, move, then <b>Save Session</b>.
     </div>
   </div>
 
-  <div class="toast" id="toast">Buttons are working ✅</div>
+  <div class="toast" id="toast">OK</div>
+
+  <div class="modal" id="modal">
+    <div class="sheet">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+        <div class="sheetTitle">Saved Sessions</div>
+        <button id="closeModalBtn" class="secondary">Close</button>
+      </div>
+      <div id="sessionsList"></div>
+    </div>
+  </div>
 
   <script>
-    // ---------- Helpers ----------
-    const $ = (id) => document.getElementById(id);
-    const toast = $("toast");
-    function showToast(msg){
-      toast.textContent = msg;
-      toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 1200);
-      if (navigator.vibrate) navigator.vibrate(50);
-    }
-    function setStatus(html){ $("status").innerHTML = html; }
-    function setPill(id, on, label){
-      const el = $(id);
-      el.textContent = `${label}: ${on ? "ON" : "OFF"}`;
-      el.style.background = on ? "rgba(26,127,58,0.35)" : "rgba(0,0,0,0.25)";
-      el.style.color = on ? "#dfffe7" : "#b8c6e6";
-    }
+    (function(){
+      "use strict";
 
-    // ---------- Map ----------
-    const UAE_GULF_BOUNDS = L.latLngBounds([23.0, 50.0], [27.8, 56.8]);
+      const $ = (id) => document.getElementById(id);
+      const toastEl = $("toast");
+      const statusEl = $("status");
+      const jsChip = $("jsChip");
+      const tapChip = $("tapChip");
+      const gpsChip = $("gpsChip");
+      const trkChip = $("trkChip");
 
-    const map = L.map('map', {
-      zoomControl: true,
-      maxBounds: UAE_GULF_BOUNDS.pad(0.15),
-      maxBoundsViscosity: 0.8
-    });
-    map.fitBounds(UAE_GULF_BOUNDS);
+      let tapCount = 0;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+      function toast(msg){
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        setTimeout(() => toastEl.classList.remove("show"), 1200);
+        if (navigator.vibrate) navigator.vibrate(40);
+      }
 
-    const openSeaMarks = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
-      maxZoom: 18, opacity: 0.95, attribution: 'Seamarks &copy; OpenSeaMap'
-    }).addTo(map);
+      function setStatus(html){
+        statusEl.innerHTML = html;
+      }
 
-    const gebcoWms = L.WMS.overlay('https://wms.gebco.net/mapserv?', {
-      layers: 'GEBCO_LATEST',
-      format: 'image/png',
-      transparent: true,
-      opacity: 0.65,
-      attribution: 'Bathymetry &copy; GEBCO'
-    }).addTo(map);
+      function setChip(el, label, state){
+        el.textContent = `${label}: ${state}`;
+        el.classList.remove("ok","bad");
+        if (state === "ON") el.classList.add("ok");
+        if (state === "OFF") el.classList.add("bad");
+      }
 
-    $("seamarks").addEventListener("change", (e) => {
-      e.target.checked ? map.addLayer(openSeaMarks) : map.removeLayer(openSeaMarks);
-      showToast("Seamarks toggled ✅");
-    });
-    $("gebco").addEventListener("change", (e) => {
-      e.target.checked ? map.addLayer(gebcoWms) : map.removeLayer(gebcoWms);
-      showToast("Bathymetry toggled ✅");
-    });
+      // Live JS indicator (proves script is running)
+      setInterval(() => {
+        const t = new Date().toLocaleTimeString();
+        jsChip.textContent = `JS: ${t}`;
+      }, 1000);
 
-    // ---------- GPS + Tracking ----------
-    let watchId = null;
-    let lastFix = null;
+      // Tap counter on the entire bar (proves taps are reaching UI)
+      $("bar").addEventListener("pointerdown", () => {
+        tapCount += 1;
+        tapChip.textContent = `Taps: ${tapCount}`;
+      }, {passive:true});
 
-    let gpsMarker = null;
-    let gpsAccCircle = null;
+      // ---------- Map init ----------
+      // UAE / Arabian Gulf bounds
+      const UAE_GULF_BOUNDS = L.latLngBounds([23.0, 50.0], [27.8, 56.8]);
 
-    let isTracking = false;
-    let trackPoints = [];
-    let trackLine = null;
+      const map = L.map("map", {
+        zoomControl: true,
+        maxBounds: UAE_GULF_BOUNDS.pad(0.15),
+        maxBoundsViscosity: 0.85
+      });
+      map.fitBounds(UAE_GULF_BOUNDS);
 
-    const STORE_KEY = "uae_offshore_track_sessions_v1";
+      const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(map);
 
-    function drawGPS(fix){
-      const ll = L.latLng(fix.lat, fix.lng);
+      const seamarks = L.tileLayer("https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        opacity: 0.95,
+        attribution: "Seamarks &copy; OpenSeaMap"
+      }).addTo(map);
 
-      if (!gpsMarker) gpsMarker = L.circleMarker(ll, { radius: 7, weight: 2, fillOpacity: 0.9 }).addTo(map);
-      else gpsMarker.setLatLng(ll);
+      // Leaflet built-in WMS support (no plugin)
+      const gebco = L.tileLayer.wms("https://wms.gebco.net/mapserv?", {
+        layers: "GEBCO_LATEST",
+        format: "image/png",
+        transparent: true,
+        opacity: 0.65,
+        attribution: "Bathymetry &copy; GEBCO"
+      }).addTo(map);
 
-      if (!gpsAccCircle) gpsAccCircle = L.circle(ll, { radius: fix.acc || 0, weight: 1, fillOpacity: 0.12 }).addTo(map);
-      else { gpsAccCircle.setLatLng(ll); gpsAccCircle.setRadius(fix.acc || 0); }
-    }
+      // ---------- Controls: map layers ----------
+      $("seamarksToggle").addEventListener("change", (e) => {
+        if (e.target.checked) map.addLayer(seamarks);
+        else map.removeLayer(seamarks);
+        toast("Seamarks toggled ✅");
+      });
 
-    function ensureTrackLine(){
-      if (!trackLine) trackLine = L.polyline([], { weight: 4, opacity: 0.9 }).addTo(map);
-    }
+      $("bathToggle").addEventListener("change", (e) => {
+        if (e.target.checked) map.addLayer(gebco);
+        else map.removeLayer(gebco);
+        toast("Bathymetry toggled ✅");
+      });
 
-    function shouldAppendPoint(prev, next){
-      if (!prev) return true;
-      if ((next.acc || 9999) > 50) return false;
+      // ---------- GPS + Tracking ----------
+      let watchId = null;
+      let gpsMarker = null;
+      let gpsAccCircle = null;
+      let lastFix = null;
 
-      const distM = map.distance([prev.lat, prev.lng], [next.lat, next.lng]);
-      const dtMs = (next.ts - prev.ts);
+      let tracking = false;
+      let trackPoints = []; // {lat,lng,ts,acc,speed,heading}
+      let trackLine = null;
 
-      const moving = (next.speed || 0) > 0.6; // ~2.2 km/h
-      const distThresh = moving ? 8 : 15;     // meters
-      const timeThresh = 8000;                // 8 sec
+      const STORE_KEY = "uae_offshore_sessions_v2";
 
-      return distM >= distThresh || dtMs >= timeThresh;
-    }
+      function ensureSecure(){
+        if (location.protocol === "file:") {
+          setStatus("❌ You opened this as <b>file://</b>. iPhone won’t allow GPS reliably. Host on <b>HTTPS</b>.");
+          toast("Use HTTPS ❌");
+          return false;
+        }
+        if (!window.isSecureContext){
+          setStatus("❌ Not a secure context. Use <b>HTTPS</b> (or localhost).");
+          toast("Use HTTPS ❌");
+          return false;
+        }
+        return true;
+      }
 
-    function onPosSuccess(pos){
-      const c = pos.coords;
-      const fix = {
-        lat: c.latitude,
-        lng: c.longitude,
-        acc: c.accuracy ?? null,
-        speed: c.speed ?? null,
-        heading: c.heading ?? null,
-        ts: pos.timestamp || Date.now()
-      };
-      lastFix = fix;
-      drawGPS(fix);
+      function drawGPS(fix){
+        const ll = L.latLng(fix.lat, fix.lng);
 
-      if (isTracking){
-        const prev = trackPoints.length ? trackPoints[trackPoints.length - 1] : null;
-        if (shouldAppendPoint(prev, fix)){
-          trackPoints.push(fix);
-          ensureTrackLine();
-          trackLine.addLatLng([fix.lat, fix.lng]);
+        if (!gpsMarker) gpsMarker = L.circleMarker(ll, { radius: 7, weight: 2, fillOpacity: 0.95 }).addTo(map);
+        else gpsMarker.setLatLng(ll);
+
+        if (!gpsAccCircle) gpsAccCircle = L.circle(ll, { radius: fix.acc || 0, weight: 1, fillOpacity: 0.12 }).addTo(map);
+        else { gpsAccCircle.setLatLng(ll); gpsAccCircle.setRadius(fix.acc || 0); }
+      }
+
+      function ensureTrackLine(){
+        if (!trackLine){
+          trackLine = L.polyline([], { weight: 4, opacity: 0.95 }).addTo(map);
         }
       }
 
-      setStatus(
-        `<b>GPS ON</b> • ${new Date(fix.ts).toLocaleTimeString()}<br>` +
-        `Lat ${fix.lat.toFixed(6)} • Lng ${fix.lng.toFixed(6)} • Acc ~${Math.round(fix.acc || 0)}m` +
-        (isTracking ? `<br><b>Tracking…</b> Points: ${trackPoints.length}` : "")
-      );
-    }
+      function shouldAppend(prev, next){
+        if (!prev) return true;
+        if ((next.acc || 9999) > 60) return false;
 
-    function onPosError(err){
-      stopGPS();
-      setStatus(
-        `<b>GPS error</b>: ${err.message || err}<br>` +
-        `Make sure you open this on <b>HTTPS</b> and Safari location is allowed.`
-      );
-      showToast("GPS error ❌");
-    }
+        const distM = map.distance([prev.lat, prev.lng], [next.lat, next.lng]);
+        const dtMs = next.ts - prev.ts;
+        const moving = (next.speed || 0) > 0.6;
 
-    function startGPS(){
-      if (!navigator.geolocation){
-        setStatus("Geolocation not supported.");
-        showToast("No geolocation ❌");
-        return;
-      }
-      if (location.protocol === "file:"){
-        setStatus("Open from <b>HTTPS</b> (not file://) to allow GPS permissions.");
-        showToast("Use HTTPS ❌");
-        return;
-      }
-      if (!window.isSecureContext){
-        setStatus("Not a secure context. Use <b>HTTPS</b> (or localhost).");
-        showToast("Use HTTPS ❌");
-        return;
+        const distThresh = moving ? 8 : 15;
+        const timeThresh = 8000;
+
+        return distM >= distThresh || dtMs >= timeThresh;
       }
 
-      setStatus("Requesting GPS permission…");
-      watchId = navigator.geolocation.watchPosition(onPosSuccess, onPosError, {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 12000
-      });
+      function onPos(pos){
+        const c = pos.coords;
+        const fix = {
+          lat: c.latitude,
+          lng: c.longitude,
+          acc: c.accuracy ?? null,
+          speed: c.speed ?? null,
+          heading: c.heading ?? null,
+          ts: pos.timestamp || Date.now()
+        };
 
-      $("gpsBtn").textContent = "Stop GPS";
-      setPill("gpsPill", true, "GPS");
-      showToast("GPS started ✅");
-    }
+        lastFix = fix;
+        drawGPS(fix);
 
-    function stopGPS(){
-      if (watchId !== null){
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
-      }
-      if (isTracking) stopTracking();
+        if (tracking){
+          const prev = trackPoints.length ? trackPoints[trackPoints.length - 1] : null;
+          if (shouldAppend(prev, fix)){
+            trackPoints.push(fix);
+            ensureTrackLine();
+            trackLine.addLatLng([fix.lat, fix.lng]);
+          }
+        }
 
-      if (gpsMarker){ map.removeLayer(gpsMarker); gpsMarker = null; }
-      if (gpsAccCircle){ map.removeLayer(gpsAccCircle); gpsAccCircle = null; }
-
-      lastFix = null;
-      $("gpsBtn").textContent = "Start GPS";
-      setPill("gpsPill", false, "GPS");
-      setStatus("GPS OFF.");
-    }
-
-    function toggleGPS(){ watchId === null ? startGPS() : stopGPS(); }
-
-    function centerOnMe(){
-      if (!lastFix){
-        setStatus("No GPS fix yet. Start GPS first.");
-        showToast("No fix ⚠️");
-        return;
-      }
-      map.setView([lastFix.lat, lastFix.lng], Math.max(map.getZoom(), 12));
-      showToast("Centered ✅");
-    }
-
-    function startTracking(){
-      if (watchId === null){
-        setStatus("Start GPS first, then start tracking.");
-        showToast("Start GPS first ⚠️");
-        return;
-      }
-      isTracking = true;
-      setPill("trkPill", true, "TRACK");
-      $("trackBtn").textContent = "Stop Tracking";
-      $("trackBtn").classList.remove("secondary");
-      ensureTrackLine();
-
-      if (lastFix && trackPoints.length === 0){
-        trackPoints.push(lastFix);
-        trackLine.addLatLng([lastFix.lat, lastFix.lng]);
-      }
-
-      setStatus(`Tracking started… Points: ${trackPoints.length}`);
-      showToast("Tracking started ✅");
-    }
-
-    function stopTracking(){
-      isTracking = false;
-      setPill("trkPill", false, "TRACK");
-      $("trackBtn").textContent = "Start Tracking";
-      $("trackBtn").classList.add("secondary");
-      setStatus(`Tracking stopped. Points: ${trackPoints.length}`);
-      showToast("Tracking stopped");
-    }
-
-    function toggleTracking(){ isTracking ? stopTracking() : startTracking(); }
-
-    function clearAll(){
-      if (isTracking) stopTracking();
-      trackPoints = [];
-      if (trackLine){ map.removeLayer(trackLine); trackLine = null; }
-      setStatus("Cleared current track (saved sessions remain).");
-      showToast("Cleared ✅");
-    }
-
-    function loadSessions(){
-      try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); }
-      catch { return []; }
-    }
-    function saveSessions(list){
-      localStorage.setItem(STORE_KEY, JSON.stringify(list));
-    }
-
-    function saveCurrentSession(){
-      if (trackPoints.length < 2){
-        setStatus("Need at least 2 points to save. Start tracking and move.");
-        showToast("Not enough points ⚠️");
-        return;
-      }
-
-      let dist = 0;
-      for (let i=1; i<trackPoints.length; i++){
-        dist += map.distance(
-          [trackPoints[i-1].lat, trackPoints[i-1].lng],
-          [trackPoints[i].lat, trackPoints[i].lng]
+        setStatus(
+          `<b>GPS ON</b> • ${new Date(fix.ts).toLocaleTimeString()}<br>` +
+          `Lat ${fix.lat.toFixed(6)} • Lng ${fix.lng.toFixed(6)} • Acc ~${Math.round(fix.acc || 0)}m` +
+          (tracking ? `<br><b>Tracking…</b> Points: ${trackPoints.length}` : "")
         );
       }
 
-      const startTs = trackPoints[0].ts;
-      const session = {
-        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2)),
-        name: `Session ${new Date(startTs).toLocaleString()}`,
-        createdAt: Date.now(),
-        points: trackPoints,
-        distanceM: Math.round(dist)
-      };
+      function onPosErr(err){
+        stopGPS();
+        setStatus(`<b>GPS error</b>: ${err.message || err}<br>
+          iPhone: Settings → Privacy & Security → Location Services → Safari Websites → <b>While Using</b>.`);
+        toast("GPS error ❌");
+      }
 
-      const sessions = loadSessions();
-      sessions.unshift(session);
-      saveSessions(sessions);
+      function startGPS(){
+        if (!navigator.geolocation){
+          setStatus("❌ Geolocation not supported.");
+          toast("No GPS ❌");
+          return;
+        }
+        if (!ensureSecure()) return;
 
-      setStatus(`✅ Saved: <b>${session.name}</b> • ${session.points.length} pts • ~${session.distanceM} m`);
-      showToast("Saved ✅");
-    }
+        setStatus("Requesting GPS permission…");
+        watchId = navigator.geolocation.watchPosition(onPos, onPosErr, {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout: 12000
+        });
 
-    // ---------- Button wiring (both addEventListener + inline fallback already present) ----------
-    function btnTest(){
-      showToast("Buttons are working ✅");
-      setStatus("Test OK ✅ Bottom bar buttons are clickable.");
-      alert("Buttons are working ✅"); // extra-strong proof
-    }
+        $("gpsBtn").textContent = "Stop GPS";
+        setChip(gpsChip, "GPS", "ON");
+        toast("GPS started ✅");
+      }
 
-    // Expose functions for inline onclick fallback
-    window.__btnTest = btnTest;
-    window.__gpsToggle = toggleGPS;
-    window.__center = centerOnMe;
-    window.__trackToggle = toggleTracking;
-    window.__save = saveCurrentSession;
-    window.__clear = clearAll;
+      function stopGPS(){
+        if (watchId !== null){
+          navigator.geolocation.clearWatch(watchId);
+          watchId = null;
+        }
+        if (tracking) stopTracking();
 
-    // Also wire via addEventListener
-    $("testBtn").addEventListener("click", btnTest);
-    $("gpsBtn").addEventListener("click", toggleGPS);
-    $("centerBtn").addEventListener("click", centerOnMe);
-    $("trackBtn").addEventListener("click", toggleTracking);
-    $("saveBtn").addEventListener("click", saveCurrentSession);
-    $("clearBtn").addEventListener("click", clearAll);
+        if (gpsMarker){ map.removeLayer(gpsMarker); gpsMarker = null; }
+        if (gpsAccCircle){ map.removeLayer(gpsAccCircle); gpsAccCircle = null; }
+        lastFix = null;
 
-    // init pills
-    setPill("gpsPill", false, "GPS");
-    setPill("trkPill", false, "TRACK");
+        $("gpsBtn").textContent = "Start GPS";
+        setChip(gpsChip, "GPS", "OFF");
+      }
+
+      function toggleGPS(){
+        if (watchId === null) startGPS();
+        else { stopGPS(); toast("GPS stopped"); setStatus("GPS OFF."); }
+      }
+
+      function centerMe(){
+        if (!lastFix){
+          toast("No fix yet ⚠️");
+          setStatus("No GPS fix yet. Start GPS first.");
+          return;
+        }
+        map.setView([lastFix.lat, lastFix.lng], Math.max(map.getZoom(), 12));
+        toast("Centered ✅");
+      }
+
+      function startTracking(){
+        if (watchId === null){
+          toast("Start GPS first ⚠️");
+          setStatus("Start GPS first, then start tracking.");
+          return;
+        }
+        tracking = true;
+        setChip(trkChip, "TRACK", "ON");
+        $("trackBtn").textContent = "Stop Tracking";
+        $("trackBtn").classList.remove("secondary");
+
+        ensureTrackLine();
+
+        if (lastFix && trackPoints.length === 0){
+          trackPoints.push(lastFix);
+          trackLine.addLatLng([lastFix.lat, lastFix.lng]);
+        }
+
+        toast("Tracking started ✅");
+        setStatus(`Tracking started… Points: ${trackPoints.length}`);
+      }
+
+      function stopTracking(){
+        tracking = false;
+        setChip(trkChip, "TRACK", "OFF");
+        $("trackBtn").textContent = "Start Tracking";
+        $("trackBtn").classList.add("secondary");
+        toast("Tracking stopped");
+        setStatus(`Tracking stopped. Points: ${trackPoints.length}`);
+      }
+
+      function toggleTracking(){
+        if (!tracking) startTracking();
+        else stopTracking();
+      }
+
+      function clearTrack(){
+        if (tracking) stopTracking();
+        trackPoints = [];
+        if (trackLine){ map.removeLayer(trackLine); trackLine = null; }
+        toast("Track cleared ✅");
+        setStatus("Cleared current track. Saved sessions remain.");
+      }
+
+      function loadSessions(){
+        try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); }
+        catch { return []; }
+      }
+      function saveSessions(list){
+        localStorage.setItem(STORE_KEY, JSON.stringify(list));
+      }
+
+      function calcDistance(points){
+        let d = 0;
+        for (let i=1; i<points.length; i++){
+          d += map.distance([points[i-1].lat, points[i-1].lng], [points[i].lat, points[i].lng]);
+        }
+        return Math.round(d);
+      }
+
+      function saveSession(){
+        if (trackPoints.length < 2){
+          toast("Not enough points ⚠️");
+          setStatus("Need at least 2 points to save. Start tracking and move.");
+          return;
+        }
+
+        const startTs = trackPoints[0].ts;
+        const distM = calcDistance(trackPoints);
+
+        const session = {
+          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2)),
+          name: `Session ${new Date(startTs).toLocaleString()}`,
+          createdAt: Date.now(),
+          points: trackPoints,
+          distanceM: distM
+        };
+
+        const sessions = loadSessions();
+        sessions.unshift(session);
+        saveSessions(sessions);
+
+        toast("Saved ✅");
+        setStatus(`✅ Saved: <b>${escapeHtml(session.name)}</b><br>Points: ${session.points.length} • Distance: ~${session.distanceM} m`);
+      }
+
+      function escapeHtml(str){
+        return String(str).replace(/[&<>"']/g, (m) => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+        }[m]));
+      }
+
+      // ---------- Sessions modal + export GPX ----------
+      const modal = $("modal");
+      const listEl = $("sessionsList");
+
+      function openSessions(){
+        renderSessions();
+        modal.style.display = "flex";
+      }
+      function closeSessions(){
+        modal.style.display = "none";
+      }
+
+      function toGPX(session){
+        // minimal GPX track
+        const pts = session.points.map(p =>
+          `<trkpt lat="${p.lat}" lon="${p.lng}"><time>${new Date(p.ts).toISOString()}</time></trkpt>`
+        ).join("");
+        return `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="UAE Offshore Tracker" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk><name>${escapeXml(session.name)}</name><trkseg>${pts}</trkseg></trk>
+</gpx>`;
+      }
+      function escapeXml(str){
+        return String(str).replace(/[<>&'"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c]));
+      }
+      function downloadText(filename, text){
+        const blob = new Blob([text], {type:"application/octet-stream"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 500);
+      }
+
+      function showSessionOnMap(session){
+        const latlngs = session.points.map(p => [p.lat, p.lng]);
+        const poly = L.polyline(latlngs, { weight: 5, opacity: 0.95 }).addTo(map);
+        map.fitBounds(poly.getBounds().pad(0.1));
+        toast("Showing session ✅");
+        // auto-remove after 12s
+        setTimeout(() => { if (map.hasLayer(poly)) map.removeLayer(poly); }, 12000);
+      }
+
+      function renderSessions(){
+        const sessions = loadSessions();
+        if (!sessions.length){
+          listEl.innerHTML = `<div class="meta">No saved sessions yet.</div>`;
+          return;
+        }
+
+        listEl.innerHTML = "";
+        sessions.slice(0, 30).forEach(s => {
+          const mins = Math.max(1, Math.round((s.points[s.points.length-1].ts - s.points[0].ts) / 60000));
+          const km = (s.distanceM / 1000).toFixed(2);
+
+          const wrap = document.createElement("div");
+          wrap.className = "sess";
+          wrap.innerHTML = `
+            <div style="min-width:0">
+              <div style="font-weight:900; word-break:break-word">${escapeHtml(s.name)}</div>
+              <div class="meta">${mins} min • ${km} km • ${s.points.length} pts</div>
+            </div>
+            <div class="sessBtns">
+              <button class="secondary" data-act="show" data-id="${s.id}">Show</button>
+              <button class="secondary" data-act="gpx" data-id="${s.id}">Export GPX</button>
+              <button class="danger" data-act="del" data-id="${s.id}">Delete</button>
+            </div>
+          `;
+          listEl.appendChild(wrap);
+        });
+
+        listEl.onclick = (e) => {
+          const btn = e.target.closest("button");
+          if (!btn) return;
+          const id = btn.getAttribute("data-id");
+          const act = btn.getAttribute("data-act");
+          const sessions = loadSessions();
+          const s = sessions.find(x => x.id === id);
+          if (!s) return;
+
+          if (act === "show"){
+            closeSessions();
+            showSessionOnMap(s);
+          } else if (act === "gpx"){
+            const gpx = toGPX(s);
+            downloadText(`track-${id}.gpx`, gpx);
+            toast("GPX exported ✅");
+          } else if (act === "del"){
+            const kept = sessions.filter(x => x.id !== id);
+            saveSessions(kept);
+            renderSessions();
+            toast("Deleted");
+          }
+        };
+      }
+
+      $("closeModalBtn").addEventListener("click", closeSessions);
+      modal.addEventListener("click", (e) => { if (e.target === modal) closeSessions(); });
+
+      // ---------- Button wiring (plus a hardproof alert) ----------
+      $("testBtn").addEventListener("click", () => {
+        toast("Buttons are working ✅");
+        alert("Buttons are working ✅");
+        setStatus("✅ Test OK. If you saw this alert, taps + JS are working.");
+      });
+
+      $("gpsBtn").addEventListener("click", toggleGPS);
+      $("centerBtn").addEventListener("click", centerMe);
+      $("trackBtn").addEventListener("click", toggleTracking);
+      $("saveBtn").addEventListener("click", saveSession);
+      $("sessionsBtn").addEventListener("click", openSessions);
+      $("clearBtn").addEventListener("click", clearTrack);
+
+      // Init chips
+      setChip(gpsChip, "GPS", "OFF");
+      setChip(trkChip, "TRACK", "OFF");
+    })();
   </script>
 </body>
 </html>
