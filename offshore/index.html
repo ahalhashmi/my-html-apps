@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UAE Offshore Map (Prototype)</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Leaflet WMS helper -->
+  <script src="https://unpkg.com/leaflet.wms@0.1.1/dist/leaflet.wms.js"></script>
+
+  <style>
+    html, body, #map { height: 100%; margin: 0; }
+    .chip {
+      position: absolute; z-index: 1000; left: 10px; top: 10px;
+      background: #111a; color: #fff; padding: 10px 12px; border-radius: 12px;
+      backdrop-filter: blur(8px); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      max-width: 92vw;
+    }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    label { display:flex; gap:8px; align-items:center; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="chip">
+    <div style="font-weight:700; margin-bottom:6px;">UAE Offshore Layers</div>
+    <div class="row">
+      <label><input id="seamarks" type="checkbox" checked> OpenSeaMap seamarks</label>
+      <label><input id="gebco" type="checkbox" checked> GEBCO bathymetry (WMS)</label>
+    </div>
+    <div style="opacity:.85; font-size:12px; margin-top:6px;">
+      Prototype only (not a navigation chart).
+    </div>
+  </div>
+
+  <script>
+    // Approx bounding box for Abu Dhabi + Arabian Gulf area
+    // [southWestLat, southWestLng], [northEastLat, northEastLng]
+    const UAE_GULF_BOUNDS = L.latLngBounds(
+      [23.0, 50.0],
+      [27.8, 56.8]
+    );
+
+    const map = L.map('map', {
+      zoomControl: true,
+      maxBounds: UAE_GULF_BOUNDS.pad(0.15),
+      maxBoundsViscosity: 0.8
+    });
+
+    // Start centered offshore-ish from Abu Dhabi
+    map.fitBounds(UAE_GULF_BOUNDS);
+
+    // Base layer (free)
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // OpenSeaMap seamarks overlay (nautical marks)
+    // (Overlay only; keep a base map beneath it)
+    const openSeaMarks = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      opacity: 0.95,
+      attribution: 'Seamarks &copy; OpenSeaMap (OSM-based)'
+    }).addTo(map);
+
+    // GEBCO WMS bathymetry (global)
+    // Official GEBCO WMS endpoint (layer names can vary; this works for their public WMS)
+    const gebcoWms = L.WMS.overlay('https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/mapserv?', {
+      layers: 'GEBCO_LATEST',
+      format: 'image/png',
+      transparent: true,
+      opacity: 0.65,
+      attribution: 'Bathymetry &copy; GEBCO'
+    }).addTo(map);
+
+    // Toggle UI
+    document.getElementById('seamarks').addEventListener('change', (e) => {
+      if (e.target.checked) map.addLayer(openSeaMarks);
+      else map.removeLayer(openSeaMarks);
+    });
+
+    document.getElementById('gebco').addEventListener('change', (e) => {
+      if (e.target.checked) map.addLayer(gebcoWms);
+      else map.removeLayer(gebcoWms);
+    });
+  </script>
+</body>
+</html>
