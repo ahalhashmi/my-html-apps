@@ -16,11 +16,13 @@
     .chip {
       position: absolute; z-index: 1000; left: 10px; top: 10px;
       background: #111a; color: #fff; padding: 10px 12px; border-radius: 12px;
-      backdrop-filter: blur(8px); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      backdrop-filter: blur(8px);
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       max-width: 92vw;
     }
     .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    label { display:flex; gap:8px; align-items:center; }
+    label { display:flex; gap:8px; align-items:center; user-select:none; }
+    .status { margin-top:6px; font-size:12px; opacity:.9; }
   </style>
 </head>
 <body>
@@ -31,19 +33,14 @@
     <div class="row">
       <label><input id="seamarks" type="checkbox" checked> OpenSeaMap seamarks</label>
       <label><input id="gebco" type="checkbox" checked> GEBCO bathymetry (WMS)</label>
+      <label><input id="livegps" type="checkbox"> Live GPS</label>
     </div>
-    <div style="opacity:.85; font-size:12px; margin-top:6px;">
-      Prototype only (not a navigation chart).
-    </div>
+    <div id="gpsStatus" class="status">Prototype only (not a navigation chart).</div>
   </div>
 
   <script>
-    // Approx bounding box for Abu Dhabi + Arabian Gulf area
-    // [southWestLat, southWestLng], [northEastLat, northEastLng]
-    const UAE_GULF_BOUNDS = L.latLngBounds(
-      [23.0, 50.0],
-      [27.8, 56.8]
-    );
+    // Offshore-ish bounding box for Abu Dhabi + Arabian Gulf region
+    const UAE_GULF_BOUNDS = L.latLngBounds([23.0, 50.0], [27.8, 56.8]);
 
     const map = L.map('map', {
       zoomControl: true,
@@ -51,26 +48,23 @@
       maxBoundsViscosity: 0.8
     });
 
-    // Start centered offshore-ish from Abu Dhabi
     map.fitBounds(UAE_GULF_BOUNDS);
 
-    // Base layer (free)
+    // Base layer
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // OpenSeaMap seamarks overlay (nautical marks)
-    // (Overlay only; keep a base map beneath it)
+    // OpenSeaMap seamarks overlay
     const openSeaMarks = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
       maxZoom: 18,
       opacity: 0.95,
       attribution: 'Seamarks &copy; OpenSeaMap (OSM-based)'
     }).addTo(map);
 
-    // GEBCO WMS bathymetry (global)
-    // Official GEBCO WMS endpoint (layer names can vary; this works for their public WMS)
-    const gebcoWms = L.WMS.overlay('https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/mapserv?', {
+    // ✅ Updated GEBCO WMS endpoint
+    const gebcoWms = L.WMS.overlay('https://wms.gebco.net/mapserv?', {
       layers: 'GEBCO_LATEST',
       format: 'image/png',
       transparent: true,
@@ -78,15 +72,111 @@
       attribution: 'Bathymetry &copy; GEBCO'
     }).addTo(map);
 
-    // Toggle UI
+    // Layer toggles
     document.getElementById('seamarks').addEventListener('change', (e) => {
-      if (e.target.checked) map.addLayer(openSeaMarks);
-      else map.removeLayer(openSeaMarks);
+      e.target.checked ? map.addLayer(openSeaMarks) : map.removeLayer(openSeaMarks);
     });
 
     document.getElementById('gebco').addEventListener('change', (e) => {
-      if (e.target.checked) map.addLayer(gebcoWms);
-      else map.removeLayer(gebcoWms);
+      e.target.checked ? map.addLayer(gebcoWms) : map.removeLayer(gebcoWms);
+    });
+
+    // ---- Live GPS (updates every 1 second while enabled) ----
+    const gpsStatusEl = document.getElementById('gpsStatus');
+
+    let gpsMarker = null;
+    let gpsAccuracyCircle = null;
+
+    let watchId = null;
+    let pollTimer = null;
+
+    function setGpsStatus(msg) {
+      gpsStatusEl.textContent = msg;
+    }
+
+    function updateGpsOnMap(pos) {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const acc = pos.coords.accuracy ?? 0; // meters
+
+      const ll = L.latLng(lat, lng);
+
+      if (!gpsMarker) {
+        gpsMarker = L.marker(ll, { title: "You" }).addTo(map);
+      } else {
+        gpsMarker.setLatLng(ll);
+      }
+
+      if (!gpsAccuracyCircle) {
+        gpsAccuracyCircle = L.circle(ll, {
+          radius: acc,
+          weight: 1,
+          fillOpacity: 0.15
+        }).addTo(map);
+      } else {
+        gpsAccuracyCircle.setLatLng(ll);
+        gpsAccuracyCircle.setRadius(acc);
+      }
+
+      const ts = new Date(pos.timestamp || Date.now()).toLocaleTimeString();
+      setGpsStatus(`Live GPS ON • Accuracy ~${Math.round(acc)}m • Updated ${ts}`);
+    }
+
+    function onGpsError(err) {
+      setGpsStatus(`GPS error: ${err.message || err}`);
+    }
+
+    function requestOneFix() {
+      if (!navigator.geolocation) {
+        setGpsStatus("Geolocation not supported on this device/browser.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(updateGpsOnMap, onGpsError, {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 8000
+      });
+    }
+
+    function startLiveGps() {
+      if (!navigator.geolocation) {
+        setGpsStatus("Geolocation not supported on this device/browser.");
+        return;
+      }
+
+      setGpsStatus("Live GPS ON • Requesting location… (Tip: must be served over HTTPS)");
+
+      // Watch (best-effort continuous updates)
+      watchId = navigator.geolocation.watchPosition(updateGpsOnMap, onGpsError, {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 8000
+      });
+
+      // Force a refresh every 1 second (per your request)
+      requestOneFix();
+      pollTimer = setInterval(requestOneFix, 1000);
+    }
+
+    function stopLiveGps() {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      if (pollTimer !== null) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+
+      // Remove marker/circle when off (clean)
+      if (gpsMarker) { map.removeLayer(gpsMarker); gpsMarker = null; }
+      if (gpsAccuracyCircle) { map.removeLayer(gpsAccuracyCircle); gpsAccuracyCircle = null; }
+
+      setGpsStatus("Live GPS OFF • Prototype only (not a navigation chart).");
+    }
+
+    document.getElementById('livegps').addEventListener('change', (e) => {
+      e.target.checked ? startLiveGps() : stopLiveGps();
     });
   </script>
 </body>
