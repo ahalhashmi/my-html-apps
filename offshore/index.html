@@ -7,8 +7,6 @@
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Leaflet WMS helper -->
   <script src="https://unpkg.com/leaflet.wms@0.1.1/dist/leaflet.wms.js"></script>
 
   <style>
@@ -22,7 +20,13 @@
     }
     .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     label { display:flex; gap:8px; align-items:center; user-select:none; }
-    .status { margin-top:6px; font-size:12px; opacity:.9; }
+    button {
+      border: 0; border-radius: 10px; padding: 8px 10px;
+      background: #2d6cdf; color: white; font-weight: 600;
+    }
+    button.secondary { background: #2a2f3a; }
+    .status { margin-top:8px; font-size:12px; opacity:.95; line-height:1.35; }
+    .warn { color: #ffd27a; }
   </style>
 </head>
 <body>
@@ -30,16 +34,24 @@
 
   <div class="chip">
     <div style="font-weight:700; margin-bottom:6px;">UAE Offshore Layers</div>
-    <div class="row">
+
+    <div class="row" style="margin-bottom:6px;">
       <label><input id="seamarks" type="checkbox" checked> OpenSeaMap seamarks</label>
-      <label><input id="gebco" type="checkbox" checked> GEBCO bathymetry (WMS)</label>
-      <label><input id="livegps" type="checkbox"> Live GPS</label>
+      <label><input id="gebco" type="checkbox" checked> GEBCO bathymetry</label>
     </div>
-    <div id="gpsStatus" class="status">Prototype only (not a navigation chart).</div>
+
+    <div class="row">
+      <button id="gpsBtn">Start GPS</button>
+      <button id="centerBtn" class="secondary">Center on me</button>
+    </div>
+
+    <div id="gpsStatus" class="status">
+      Tip: GPS needs <b>HTTPS</b> (or localhost). If you opened this as a file, it won’t prompt.
+    </div>
   </div>
 
   <script>
-    // Offshore-ish bounding box for Abu Dhabi + Arabian Gulf region
+    // UAE / Arabian Gulf bounding box
     const UAE_GULF_BOUNDS = L.latLngBounds([23.0, 50.0], [27.8, 56.8]);
 
     const map = L.map('map', {
@@ -47,23 +59,19 @@
       maxBounds: UAE_GULF_BOUNDS.pad(0.15),
       maxBoundsViscosity: 0.8
     });
-
     map.fitBounds(UAE_GULF_BOUNDS);
 
-    // Base layer
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // OpenSeaMap seamarks overlay
     const openSeaMarks = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      opacity: 0.95,
-      attribution: 'Seamarks &copy; OpenSeaMap (OSM-based)'
+      maxZoom: 18, opacity: 0.95,
+      attribution: 'Seamarks &copy; OpenSeaMap'
     }).addTo(map);
 
-    // ✅ Updated GEBCO WMS endpoint
+    // ✅ Updated GEBCO endpoint
     const gebcoWms = L.WMS.overlay('https://wms.gebco.net/mapserv?', {
       layers: 'GEBCO_LATEST',
       format: 'image/png',
@@ -72,112 +80,147 @@
       attribution: 'Bathymetry &copy; GEBCO'
     }).addTo(map);
 
-    // Layer toggles
     document.getElementById('seamarks').addEventListener('change', (e) => {
       e.target.checked ? map.addLayer(openSeaMarks) : map.removeLayer(openSeaMarks);
     });
-
     document.getElementById('gebco').addEventListener('change', (e) => {
       e.target.checked ? map.addLayer(gebcoWms) : map.removeLayer(gebcoWms);
     });
 
-    // ---- Live GPS (updates every 1 second while enabled) ----
+    // ----- GPS -----
     const gpsStatusEl = document.getElementById('gpsStatus');
-
-    let gpsMarker = null;
-    let gpsAccuracyCircle = null;
+    const gpsBtn = document.getElementById('gpsBtn');
+    const centerBtn = document.getElementById('centerBtn');
 
     let watchId = null;
-    let pollTimer = null;
+    let gpsMarker = null;
+    let gpsAccuracyCircle = null;
+    let lastFixLatLng = null;
+    let autoCenterOnce = true;
 
-    function setGpsStatus(msg) {
-      gpsStatusEl.textContent = msg;
+    function setStatus(html, warn=false) {
+      gpsStatusEl.classList.toggle('warn', warn);
+      gpsStatusEl.innerHTML = html;
     }
 
-    function updateGpsOnMap(pos) {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      const acc = pos.coords.accuracy ?? 0; // meters
+    function ensureSecureContextHint() {
+      // file:// or non-https frequently breaks iOS prompting
+      const isFile = location.protocol === 'file:';
+      const isHttps = location.protocol === 'https:';
+      const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 
+      if (isFile) {
+        setStatus(
+          "You opened this as a <b>file</b> (file://). iPhone Safari usually won’t request location here.<br>" +
+          "Host it on <b>HTTPS</b> (GitHub Pages / Nginx SSL) and try again.",
+          true
+        );
+        return false;
+      }
+      if (!isHttps && !isLocalhost) {
+        setStatus(
+          "This page is not on <b>HTTPS</b>. iPhone requires HTTPS for GPS.<br>" +
+          "Move it to HTTPS and try again.",
+          true
+        );
+        return false;
+      }
+      return true;
+    }
+
+    function drawPosition(lat, lng, acc, heading, speed, ts) {
       const ll = L.latLng(lat, lng);
+      lastFixLatLng = ll;
 
-      if (!gpsMarker) {
-        gpsMarker = L.marker(ll, { title: "You" }).addTo(map);
-      } else {
-        gpsMarker.setLatLng(ll);
-      }
+      if (!gpsMarker) gpsMarker = L.circleMarker(ll, { radius: 7, weight: 2, fillOpacity: 0.9 }).addTo(map);
+      else gpsMarker.setLatLng(ll);
 
-      if (!gpsAccuracyCircle) {
-        gpsAccuracyCircle = L.circle(ll, {
-          radius: acc,
-          weight: 1,
-          fillOpacity: 0.15
-        }).addTo(map);
-      } else {
+      if (!gpsAccuracyCircle) gpsAccuracyCircle = L.circle(ll, { radius: acc || 0, weight: 1, fillOpacity: 0.12 }).addTo(map);
+      else {
         gpsAccuracyCircle.setLatLng(ll);
-        gpsAccuracyCircle.setRadius(acc);
+        gpsAccuracyCircle.setRadius(acc || 0);
       }
 
-      const ts = new Date(pos.timestamp || Date.now()).toLocaleTimeString();
-      setGpsStatus(`Live GPS ON • Accuracy ~${Math.round(acc)}m • Updated ${ts}`);
+      if (autoCenterOnce) {
+        map.setView(ll, Math.max(map.getZoom(), 12));
+        autoCenterOnce = false;
+      }
+
+      const timeStr = new Date(ts).toLocaleTimeString();
+      const h = (heading == null || Number.isNaN(heading)) ? "—" : Math.round(heading) + "°";
+      const s = (speed == null || Number.isNaN(speed)) ? "—" : (speed.toFixed(1) + " m/s");
+
+      setStatus(
+        `<b>GPS ON</b> • Updated: ${timeStr}<br>` +
+        `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}<br>` +
+        `Accuracy: ~${Math.round(acc || 0)} m • Heading: ${h} • Speed: ${s}`
+      );
     }
 
-    function onGpsError(err) {
-      setGpsStatus(`GPS error: ${err.message || err}`);
+    function onPosSuccess(pos) {
+      drawPosition(
+        pos.coords.latitude,
+        pos.coords.longitude,
+        pos.coords.accuracy,
+        pos.coords.heading,
+        pos.coords.speed,
+        pos.timestamp || Date.now()
+      );
     }
 
-    function requestOneFix() {
+    function onPosError(err) {
+      // Common iOS messages: "User denied Geolocation", "Position unavailable", "Timeout"
+      setStatus(`<b>GPS error</b>: ${err.message || err}<br>
+        Check iPhone: Settings → Privacy & Security → Location Services → Safari Websites → <b>While Using</b>.`,
+        true
+      );
+      stopGps(); // stop so UI is consistent
+    }
+
+    function startGps() {
       if (!navigator.geolocation) {
-        setGpsStatus("Geolocation not supported on this device/browser.");
+        setStatus("Geolocation not supported on this device/browser.", true);
         return;
       }
-      navigator.geolocation.getCurrentPosition(updateGpsOnMap, onGpsError, {
+      if (!ensureSecureContextHint()) return;
+
+      autoCenterOnce = true;
+      setStatus("Requesting location permission… (you should see a prompt)");
+
+      // iOS is happiest when the permission prompt is triggered by a direct click (this button).
+      watchId = navigator.geolocation.watchPosition(onPosSuccess, onPosError, {
         enableHighAccuracy: true,
         maximumAge: 0,
-        timeout: 8000
-      });
-    }
-
-    function startLiveGps() {
-      if (!navigator.geolocation) {
-        setGpsStatus("Geolocation not supported on this device/browser.");
-        return;
-      }
-
-      setGpsStatus("Live GPS ON • Requesting location… (Tip: must be served over HTTPS)");
-
-      // Watch (best-effort continuous updates)
-      watchId = navigator.geolocation.watchPosition(updateGpsOnMap, onGpsError, {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 8000
+        timeout: 10000
       });
 
-      // Force a refresh every 1 second (per your request)
-      requestOneFix();
-      pollTimer = setInterval(requestOneFix, 1000);
+      gpsBtn.textContent = "Stop GPS";
     }
 
-    function stopLiveGps() {
+    function stopGps() {
       if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
       }
-      if (pollTimer !== null) {
-        clearInterval(pollTimer);
-        pollTimer = null;
-      }
-
-      // Remove marker/circle when off (clean)
       if (gpsMarker) { map.removeLayer(gpsMarker); gpsMarker = null; }
       if (gpsAccuracyCircle) { map.removeLayer(gpsAccuracyCircle); gpsAccuracyCircle = null; }
-
-      setGpsStatus("Live GPS OFF • Prototype only (not a navigation chart).");
+      lastFixLatLng = null;
+      gpsBtn.textContent = "Start GPS";
+      setStatus("GPS OFF • Tip: GPS needs HTTPS (or localhost).");
     }
 
-    document.getElementById('livegps').addEventListener('change', (e) => {
-      e.target.checked ? startLiveGps() : stopLiveGps();
+    gpsBtn.addEventListener('click', () => {
+      if (watchId === null) startGps();
+      else stopGps();
     });
+
+    centerBtn.addEventListener('click', () => {
+      if (lastFixLatLng) map.setView(lastFixLatLng, Math.max(map.getZoom(), 12));
+      else setStatus("No GPS fix yet. Press <b>Start GPS</b> first.", true);
+    });
+
+    // Initial hint
+    ensureSecureContextHint();
   </script>
 </body>
 </html>
