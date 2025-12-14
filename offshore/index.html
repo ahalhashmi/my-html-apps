@@ -12,47 +12,78 @@
   <style>
     html, body, #map { height: 100%; margin: 0; }
     :root{
-      --bg:#0b1020; --chip:#111a; --ink:#fff; --muted:#cfe0ffcc;
+      --chip:#111a; --ink:#fff; --muted:#cfe0ffcc;
       --btn:#2d6cdf; --btn2:#2a2f3a; --danger:#b63a3a;
       --radius:14px;
     }
+
+    /* IMPORTANT: ensure overlay receives taps on mobile */
     .panel{
-      position:absolute; z-index:1000; left:10px; top:10px;
-      background:var(--chip); color:var(--ink);
-      padding:10px 12px; border-radius:var(--radius);
+      position: absolute;
+      z-index: 9999;
+      left: 10px;
+      top: 10px;
+      background: var(--chip);
+      color: var(--ink);
+      padding: 10px 12px;
+      border-radius: var(--radius);
       backdrop-filter: blur(8px);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       max-width: 94vw;
+
+      pointer-events: auto;
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
     }
+
+    /* Leaflet controls can sit above if z-index isn't high enough on iOS */
+    .leaflet-top, .leaflet-bottom { z-index: 5000; }
+
     .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
     label{ display:flex; gap:8px; align-items:center; user-select:none; }
+
     button{
       border:0; border-radius:12px; padding:10px 10px;
       font-weight:700; background:var(--btn); color:white;
+      pointer-events: auto;
+      touch-action: manipulation;
     }
     button.secondary{ background:var(--btn2); }
     button.danger{ background:var(--danger); }
+
     .small{ font-size:12px; color:var(--muted); margin-top:6px; line-height:1.35; }
     .pill{
       display:inline-block; padding:3px 8px; border-radius:999px;
       background:#0003; font-size:12px; color:var(--muted);
     }
-    .list{
-      margin-top:8px; max-height: 32vh; overflow:auto;
-      background:#0002; border-radius:12px; padding:8px;
+
+    /* Toast notification */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      font-weight: 700;
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+      max-width: 92vw;
+      text-align: center;
     }
-    .sess{
-      display:flex; justify-content:space-between; gap:10px; align-items:center;
-      padding:8px; border-radius:10px; background:#0002; margin-bottom:6px;
-    }
-    .sess .meta{ font-size:12px; color:var(--muted); }
-    .sess button{ padding:8px 10px; border-radius:10px; font-weight:700; }
+    .toast.show{ opacity: 1; }
   </style>
 </head>
 <body>
   <div id="map"></div>
 
-  <div class="panel">
+  <div class="panel" id="panel">
     <div style="font-weight:800; margin-bottom:6px;">UAE Offshore Tracker</div>
 
     <div class="row" style="margin-bottom:6px;">
@@ -63,6 +94,7 @@
     </div>
 
     <div class="row">
+      <button id="testBtn" class="secondary">Test Button</button>
       <button id="gpsBtn">Start GPS</button>
       <button id="centerBtn" class="secondary">Center</button>
       <button id="trackBtn" class="secondary">Start Tracking</button>
@@ -71,11 +103,11 @@
     </div>
 
     <div class="small" id="status">
-      Tip: works best on HTTPS. Prototype only (not a navigation chart).
+      Tap “Test Button” first. If it works, you’ll see a toast + vibration (if supported).
     </div>
-
-    <div class="list" id="sessionsBox" style="display:none;"></div>
   </div>
+
+  <div class="toast" id="toast">Buttons are working ✅</div>
 
   <script>
     // --- Map ---
@@ -88,7 +120,7 @@
     });
     map.fitBounds(UAE_GULF_BOUNDS);
 
-    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
@@ -105,37 +137,57 @@
       attribution: 'Bathymetry &copy; GEBCO'
     }).addTo(map);
 
-    document.getElementById('seamarks').addEventListener('change', (e) => {
-      e.target.checked ? map.addLayer(openSeaMarks) : map.removeLayer(openSeaMarks);
-    });
-    document.getElementById('gebco').addEventListener('change', (e) => {
-      e.target.checked ? map.addLayer(gebcoWms) : map.removeLayer(gebcoWms);
-    });
-
     // --- UI helpers ---
     const $ = (id) => document.getElementById(id);
     const gpsPill = $("gpsPill");
     const trkPill = $("trkPill");
+    const toast = $("toast");
 
     function setStatus(msg){ $("status").innerHTML = msg; }
+
     function setPill(el, on, label){
       el.textContent = `${label}: ${on ? "ON" : "OFF"}`;
       el.style.background = on ? "#1a7f3a55" : "#0003";
       el.style.color = on ? "#dfffe7" : "#cfe0ffcc";
     }
 
-    // --- GPS state ---
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1200);
+      if (navigator.vibrate) navigator.vibrate(60);
+    }
+
+    // IMPORTANT: prevent map from stealing taps intended for the panel (iOS Safari)
+    // Stop pointer/touch events from propagating to Leaflet when interacting with the panel.
+    const panel = $("panel");
+    ["click","dblclick","mousedown","mouseup","touchstart","touchend","touchmove","pointerdown","pointerup","pointermove"].forEach(evt => {
+      panel.addEventListener(evt, (e) => {
+        e.stopPropagation();
+      }, { passive: false });
+    });
+
+    // Layer toggles
+    $("seamarks").addEventListener("change", (e) => {
+      e.target.checked ? map.addLayer(openSeaMarks) : map.removeLayer(openSeaMarks);
+      showToast("Layer toggled ✅");
+    });
+
+    $("gebco").addEventListener("change", (e) => {
+      e.target.checked ? map.addLayer(gebcoWms) : map.removeLayer(gebcoWms);
+      showToast("Layer toggled ✅");
+    });
+
+    // ---- GPS + Tracking state (same as before, but with visible toast feedback) ----
     let watchId = null;
-    let lastFix = null; // {lat,lng,acc,ts,speed,heading}
+    let lastFix = null;
     let gpsMarker = null;
     let gpsAccCircle = null;
 
-    // --- Tracking state ---
     let isTracking = false;
-    let trackPoints = []; // {lat,lng,ts,acc,speed,heading}
+    let trackPoints = [];
     let trackLine = null;
 
-    // Storage
     const STORE_KEY = "uae_offshore_track_sessions_v1";
 
     function drawGPS(fix){
@@ -149,27 +201,17 @@
     }
 
     function ensureTrackLine(){
-      if (!trackLine){
-        trackLine = L.polyline([], { weight: 4, opacity: 0.9 }).addTo(map);
-      }
+      if (!trackLine) trackLine = L.polyline([], { weight: 4, opacity: 0.9 }).addTo(map);
     }
 
-    // Optional: reduce noise (avoid zig-zag when stationary)
     function shouldAppendPoint(prev, next){
       if (!prev) return true;
-
-      // ignore very inaccurate fixes
       if ((next.acc || 9999) > 50) return false;
-
-      // append if moved enough OR enough time passed
       const distM = map.distance([prev.lat, prev.lng], [next.lat, next.lng]);
       const dtMs = (next.ts - prev.ts);
-
-      // if moving, accept more often
-      const moving = (next.speed || 0) > 0.6; // ~2.2 km/h
-      const distThresh = moving ? 8 : 15;     // meters
-      const timeThresh = 8000;                // 8 seconds
-
+      const moving = (next.speed || 0) > 0.6;
+      const distThresh = moving ? 8 : 15;
+      const timeThresh = 8000;
       return distM >= distThresh || dtMs >= timeThresh;
     }
 
@@ -186,12 +228,6 @@
       lastFix = fix;
       drawGPS(fix);
 
-      setStatus(
-        `<b>GPS ON</b> • ${new Date(fix.ts).toLocaleTimeString()}<br>` +
-        `Lat ${fix.lat.toFixed(6)} • Lng ${fix.lng.toFixed(6)} • Acc ~${Math.round(fix.acc || 0)}m` +
-        (isTracking ? `<br><b>Tracking…</b> Points: ${trackPoints.length}` : "")
-      );
-
       if (isTracking){
         const prev = trackPoints.length ? trackPoints[trackPoints.length - 1] : null;
         if (shouldAppendPoint(prev, fix)){
@@ -200,27 +236,37 @@
           trackLine.addLatLng([fix.lat, fix.lng]);
         }
       }
+
+      setStatus(
+        `<b>GPS ON</b> • ${new Date(fix.ts).toLocaleTimeString()}<br>` +
+        `Lat ${fix.lat.toFixed(6)} • Lng ${fix.lng.toFixed(6)} • Acc ~${Math.round(fix.acc || 0)}m` +
+        (isTracking ? `<br><b>Tracking…</b> Points: ${trackPoints.length}` : "")
+      );
     }
 
     function onPosError(err){
       stopGPS();
       setStatus(
         `<b>GPS error</b>: ${err.message || err}<br>` +
-        `iPhone: Settings → Privacy & Security → Location Services → Safari Websites → While Using.`
+        `Make sure this is opened on <b>HTTPS</b> and Safari location is allowed.`
       );
+      showToast("GPS error ❌");
     }
 
     function startGPS(){
       if (!navigator.geolocation){
         setStatus("Geolocation not supported.");
+        showToast("No geolocation ❌");
         return;
       }
       if (location.protocol === "file:"){
-        setStatus("Open this from <b>HTTPS</b> (not file://) so iPhone can request location.");
+        setStatus("Open from <b>HTTPS</b> (not file://) to allow GPS permissions.");
+        showToast("Use HTTPS ❌");
         return;
       }
       if (!window.isSecureContext){
         setStatus("Not a secure context. Use <b>HTTPS</b> (or localhost).");
+        showToast("Use HTTPS ❌");
         return;
       }
 
@@ -233,6 +279,7 @@
 
       $("gpsBtn").textContent = "Stop GPS";
       setPill(gpsPill, true, "GPS");
+      showToast("GPS started ✅");
     }
 
     function stopGPS(){
@@ -240,24 +287,23 @@
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
       }
-      $("gpsBtn").textContent = "Start GPS";
-      setPill(gpsPill, false, "GPS");
 
-      // If tracking was on, stop tracking too (so it’s consistent)
       if (isTracking) stopTracking();
 
-      // remove GPS layers
       if (gpsMarker){ map.removeLayer(gpsMarker); gpsMarker = null; }
       if (gpsAccCircle){ map.removeLayer(gpsAccCircle); gpsAccCircle = null; }
 
       lastFix = null;
-      setStatus("GPS OFF • Prototype only (not a navigation chart).");
+      $("gpsBtn").textContent = "Start GPS";
+      setPill(gpsPill, false, "GPS");
+      setStatus("GPS OFF.");
+      showToast("GPS stopped");
     }
 
-    // --- Tracking ---
     function startTracking(){
       if (watchId === null){
         setStatus("Start GPS first, then start tracking.");
+        showToast("Start GPS first ⚠️");
         return;
       }
       isTracking = true;
@@ -265,18 +311,15 @@
       $("trackBtn").textContent = "Stop Tracking";
       $("trackBtn").classList.remove("secondary");
 
-      // Start a fresh line if none exists
-      if (!trackLine){
-        trackLine = L.polyline([], { weight: 4, opacity: 0.9 }).addTo(map);
-      }
+      ensureTrackLine();
 
-      // If we already have a fix, seed first point immediately
-      if (lastFix && (trackPoints.length === 0)){
+      if (lastFix && trackPoints.length === 0){
         trackPoints.push(lastFix);
         trackLine.addLatLng([lastFix.lat, lastFix.lng]);
       }
 
       setStatus(`Tracking started… Points: ${trackPoints.length}`);
+      showToast("Tracking started ✅");
     }
 
     function stopTracking(){
@@ -285,42 +328,32 @@
       $("trackBtn").textContent = "Start Tracking";
       $("trackBtn").classList.add("secondary");
       setStatus(`Tracking stopped. Points: ${trackPoints.length}`);
+      showToast("Tracking stopped");
     }
 
     function clearAll(){
-      // stop tracking but keep GPS running if on
       if (isTracking) stopTracking();
-
       trackPoints = [];
       if (trackLine){ map.removeLayer(trackLine); trackLine = null; }
-
-      // also clear sessions list UI
-      $("sessionsBox").style.display = "none";
-      $("sessionsBox").innerHTML = "";
-
       setStatus("Cleared current track (saved sessions remain).");
+      showToast("Cleared ✅");
     }
 
-    // --- Save / Load sessions ---
     function loadSessions(){
       try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); }
       catch { return []; }
     }
-
     function saveSessions(list){
       localStorage.setItem(STORE_KEY, JSON.stringify(list));
     }
 
     function saveCurrentSession(){
       if (trackPoints.length < 2){
-        setStatus("Need at least 2 points to save a session. Start tracking and move a bit.");
+        setStatus("Need at least 2 points to save. Start tracking and move.");
+        showToast("Not enough points ⚠️");
         return;
       }
 
-      const startTs = trackPoints[0].ts;
-      const endTs = trackPoints[trackPoints.length - 1].ts;
-
-      // compute distance
       let dist = 0;
       for (let i=1; i<trackPoints.length; i++){
         dist += map.distance(
@@ -329,8 +362,11 @@
         );
       }
 
+      const startTs = trackPoints[0].ts;
+      const endTs = trackPoints[trackPoints.length - 1].ts;
+
       const session = {
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2),
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2)),
         name: `Session ${new Date(startTs).toLocaleString()}`,
         createdAt: Date.now(),
         startTs, endTs,
@@ -342,97 +378,29 @@
       sessions.unshift(session);
       saveSessions(sessions);
 
-      setStatus(`✅ Saved: <b>${session.name}</b> • Points ${trackPoints.length} • Distance ~${session.distanceM} m`);
-      renderSessions();
+      setStatus(`✅ Saved: <b>${session.name}</b> • ${session.points.length} pts • ~${session.distanceM} m`);
+      showToast("Saved ✅");
     }
 
-    function renderSessions(){
-      const sessions = loadSessions();
-      const box = $("sessionsBox");
-      if (!sessions.length){
-        box.style.display = "none";
-        box.innerHTML = "";
-        return;
-      }
+    // Buttons
+    $("testBtn").addEventListener("click", () => {
+      showToast("Buttons are working ✅");
+      setStatus("Test OK ✅ Overlay buttons receive taps.");
+    });
 
-      box.style.display = "block";
-      box.innerHTML = `<div style="font-weight:800; margin:4px 4px 10px;">Saved Sessions</div>`;
-
-      sessions.slice(0, 20).forEach(s => {
-        const mins = Math.max(1, Math.round((s.endTs - s.startTs) / 60000));
-        const km = (s.distanceM / 1000).toFixed(2);
-        const el = document.createElement("div");
-        el.className = "sess";
-        el.innerHTML = `
-          <div>
-            <div style="font-weight:800">${escapeHtml(s.name)}</div>
-            <div class="meta">${mins} min • ${km} km • ${s.points.length} pts</div>
-          </div>
-          <div class="row" style="gap:6px;">
-            <button class="secondary" data-act="show" data-id="${s.id}">Show</button>
-            <button class="danger" data-act="del" data-id="${s.id}">Del</button>
-          </div>
-        `;
-        box.appendChild(el);
-      });
-
-      box.addEventListener("click", (e) => {
-        const btn = e.target.closest("button");
-        if (!btn) return;
-        const id = btn.getAttribute("data-id");
-        const act = btn.getAttribute("data-act");
-        if (!id || !act) return;
-
-        const sessions2 = loadSessions();
-        const s = sessions2.find(x => x.id === id);
-        if (!s) return;
-
-        if (act === "show"){
-          showSessionOnMap(s);
-        } else if (act === "del"){
-          const kept = sessions2.filter(x => x.id !== id);
-          saveSessions(kept);
-          renderSessions();
-          setStatus("Deleted session.");
-        }
-      }, { once: true });
-    }
-
-    function showSessionOnMap(s){
-      // Draw it (without overwriting current track)
-      const latlngs = s.points.map(p => [p.lat, p.lng]);
-      const poly = L.polyline(latlngs, { weight: 5, opacity: 0.95 }).addTo(map);
-      map.fitBounds(poly.getBounds().pad(0.1));
-
-      setStatus(`Showing saved session: <b>${escapeHtml(s.name)}</b> • ${s.points.length} points`);
-
-      // Remove after 10 seconds to keep UI clean (simple prototype behavior)
-      setTimeout(() => {
-        if (map.hasLayer(poly)) map.removeLayer(poly);
-      }, 10000);
-    }
-
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g, (m) => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[m]));
-    }
-
-    // --- Buttons ---
     $("gpsBtn").addEventListener("click", () => watchId === null ? startGPS() : stopGPS());
     $("centerBtn").addEventListener("click", () => {
-      if (lastFix) map.setView([lastFix.lat, lastFix.lng], Math.max(map.getZoom(), 12));
-      else setStatus("No GPS fix yet. Start GPS first.");
+      if (lastFix) { map.setView([lastFix.lat, lastFix.lng], Math.max(map.getZoom(), 12)); showToast("Centered ✅"); }
+      else { setStatus("No GPS fix yet. Start GPS first."); showToast("No fix ⚠️"); }
     });
 
     $("trackBtn").addEventListener("click", () => isTracking ? stopTracking() : startTracking());
     $("saveBtn").addEventListener("click", saveCurrentSession);
     $("clearBtn").addEventListener("click", clearAll);
 
-    // initial pills + sessions
+    // Init pills
     setPill(gpsPill, false, "GPS");
     setPill(trkPill, false, "TRACK");
-    renderSessions();
   </script>
 </body>
 </html>
