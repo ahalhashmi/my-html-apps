@@ -3,74 +3,81 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>UAE Offshore Tracker (Prototype)</title>
+  <title>UAE Offshore Tracker (Stable Controls)</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.wms@0.1.1/dist/leaflet.wms.js"></script>
 
   <style>
-    html, body, #map { height: 100%; margin: 0; }
     :root{
-      --chip:#111a; --ink:#fff; --muted:#cfe0ffcc;
-      --btn:#2d6cdf; --btn2:#2a2f3a; --danger:#b63a3a;
+      --bg:#0b1020;
+      --bar:#111827;
+      --bar2:#0f172a;
+      --ink:#eaf0ff;
+      --muted:#b8c6e6;
+      --btn:#2d6cdf;
+      --btn2:#2a2f3a;
+      --danger:#b63a3a;
       --radius:14px;
+      --barH: 210px; /* control bar height */
     }
 
-    /* IMPORTANT: ensure overlay receives taps on mobile */
-    .panel{
-      position: absolute;
-      z-index: 9999;
-      left: 10px;
-      top: 10px;
-      background: var(--chip);
-      color: var(--ink);
-      padding: 10px 12px;
-      border-radius: var(--radius);
-      backdrop-filter: blur(8px);
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      max-width: 94vw;
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
 
-      pointer-events: auto;
-      touch-action: manipulation;
-      -webkit-user-select: none;
-      user-select: none;
+    /* Layout: map area + bottom control bar */
+    .app{height:100%; display:flex; flex-direction:column;}
+    #map{flex:1; min-height: 200px;}
+
+    .bar{
+      height: var(--barH);
+      background: linear-gradient(180deg, var(--bar2), var(--bar));
+      border-top: 1px solid rgba(255,255,255,0.10);
+      padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+      box-sizing: border-box;
     }
 
-    /* Leaflet controls can sit above if z-index isn't high enough on iOS */
-    .leaflet-top, .leaflet-bottom { z-index: 5000; }
+    .title{font-weight:800; font-size:16px; margin-bottom:8px;}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:8px;}
 
-    .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-    label{ display:flex; gap:8px; align-items:center; user-select:none; }
+    label{display:flex; gap:8px; align-items:center; user-select:none; font-size:14px;}
+    input[type="checkbox"]{transform: scale(1.1);}
+
+    .pill{
+      display:inline-block; padding:4px 10px; border-radius:999px;
+      background: rgba(0,0,0,0.25); color: var(--muted); font-size:12px;
+    }
 
     button{
-      border:0; border-radius:12px; padding:10px 10px;
-      font-weight:700; background:var(--btn); color:white;
-      pointer-events: auto;
+      border:0; border-radius:12px; padding:10px 12px;
+      font-weight:800; background:var(--btn); color:white;
+      font-size:14px;
       touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     button.secondary{ background:var(--btn2); }
     button.danger{ background:var(--danger); }
 
-    .small{ font-size:12px; color:var(--muted); margin-top:6px; line-height:1.35; }
-    .pill{
-      display:inline-block; padding:3px 8px; border-radius:999px;
-      background:#0003; font-size:12px; color:var(--muted);
+    .status{
+      font-size:12px; color:var(--muted); line-height:1.35;
+      background: rgba(0,0,0,0.20);
+      padding: 10px; border-radius: 12px;
+      max-height: 70px; overflow:auto;
     }
 
-    /* Toast notification */
+    /* Simple toast */
     .toast{
       position: fixed;
       left: 50%;
-      bottom: 18px;
+      bottom: calc(var(--barH) + 18px);
       transform: translateX(-50%);
       background: rgba(0,0,0,0.75);
       color: #fff;
       padding: 10px 12px;
       border-radius: 999px;
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      font-weight: 700;
-      z-index: 10000;
+      font-weight: 800;
+      z-index: 999999;
       opacity: 0;
       pointer-events: none;
       transition: opacity .18s ease;
@@ -80,37 +87,58 @@
     .toast.show{ opacity: 1; }
   </style>
 </head>
+
 <body>
-  <div id="map"></div>
+  <div class="app">
+    <div id="map"></div>
 
-  <div class="panel" id="panel">
-    <div style="font-weight:800; margin-bottom:6px;">UAE Offshore Tracker</div>
+    <div class="bar">
+      <div class="title">UAE Offshore Tracker (Stable Controls)</div>
 
-    <div class="row" style="margin-bottom:6px;">
-      <label><input id="seamarks" type="checkbox" checked> Seamarks</label>
-      <label><input id="gebco" type="checkbox" checked> Bathymetry</label>
-      <span class="pill" id="gpsPill">GPS: OFF</span>
-      <span class="pill" id="trkPill">TRACK: OFF</span>
-    </div>
+      <div class="row">
+        <label><input id="seamarks" type="checkbox" checked> Seamarks</label>
+        <label><input id="gebco" type="checkbox" checked> Bathymetry</label>
+        <span class="pill" id="gpsPill">GPS: OFF</span>
+        <span class="pill" id="trkPill">TRACK: OFF</span>
+      </div>
 
-    <div class="row">
-      <button id="testBtn" class="secondary">Test Button</button>
-      <button id="gpsBtn">Start GPS</button>
-      <button id="centerBtn" class="secondary">Center</button>
-      <button id="trackBtn" class="secondary">Start Tracking</button>
-      <button id="saveBtn" class="secondary">Save Session</button>
-      <button id="clearBtn" class="danger">Clear</button>
-    </div>
+      <div class="row">
+        <!-- Inline onclick is a fallback in case addEventListener is blocked -->
+        <button id="testBtn" class="secondary" onclick="window.__btnTest && window.__btnTest()">Test Button</button>
+        <button id="gpsBtn" onclick="window.__gpsToggle && window.__gpsToggle()">Start GPS</button>
+        <button id="centerBtn" class="secondary" onclick="window.__center && window.__center()">Center</button>
+        <button id="trackBtn" class="secondary" onclick="window.__trackToggle && window.__trackToggle()">Start Tracking</button>
+        <button id="saveBtn" class="secondary" onclick="window.__save && window.__save()">Save Session</button>
+        <button id="clearBtn" class="danger" onclick="window.__clear && window.__clear()">Clear</button>
+      </div>
 
-    <div class="small" id="status">
-      Tap “Test Button” first. If it works, you’ll see a toast + vibration (if supported).
+      <div class="status" id="status">
+        Tap <b>Test Button</b>. If you see a toast, buttons are working.
+      </div>
     </div>
   </div>
 
   <div class="toast" id="toast">Buttons are working ✅</div>
 
   <script>
-    // --- Map ---
+    // ---------- Helpers ----------
+    const $ = (id) => document.getElementById(id);
+    const toast = $("toast");
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1200);
+      if (navigator.vibrate) navigator.vibrate(50);
+    }
+    function setStatus(html){ $("status").innerHTML = html; }
+    function setPill(id, on, label){
+      const el = $(id);
+      el.textContent = `${label}: ${on ? "ON" : "OFF"}`;
+      el.style.background = on ? "rgba(26,127,58,0.35)" : "rgba(0,0,0,0.25)";
+      el.style.color = on ? "#dfffe7" : "#b8c6e6";
+    }
+
+    // ---------- Map ----------
     const UAE_GULF_BOUNDS = L.latLngBounds([23.0, 50.0], [27.8, 56.8]);
 
     const map = L.map('map', {
@@ -137,50 +165,19 @@
       attribution: 'Bathymetry &copy; GEBCO'
     }).addTo(map);
 
-    // --- UI helpers ---
-    const $ = (id) => document.getElementById(id);
-    const gpsPill = $("gpsPill");
-    const trkPill = $("trkPill");
-    const toast = $("toast");
-
-    function setStatus(msg){ $("status").innerHTML = msg; }
-
-    function setPill(el, on, label){
-      el.textContent = `${label}: ${on ? "ON" : "OFF"}`;
-      el.style.background = on ? "#1a7f3a55" : "#0003";
-      el.style.color = on ? "#dfffe7" : "#cfe0ffcc";
-    }
-
-    function showToast(msg){
-      toast.textContent = msg;
-      toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 1200);
-      if (navigator.vibrate) navigator.vibrate(60);
-    }
-
-    // IMPORTANT: prevent map from stealing taps intended for the panel (iOS Safari)
-    // Stop pointer/touch events from propagating to Leaflet when interacting with the panel.
-    const panel = $("panel");
-    ["click","dblclick","mousedown","mouseup","touchstart","touchend","touchmove","pointerdown","pointerup","pointermove"].forEach(evt => {
-      panel.addEventListener(evt, (e) => {
-        e.stopPropagation();
-      }, { passive: false });
-    });
-
-    // Layer toggles
     $("seamarks").addEventListener("change", (e) => {
       e.target.checked ? map.addLayer(openSeaMarks) : map.removeLayer(openSeaMarks);
-      showToast("Layer toggled ✅");
+      showToast("Seamarks toggled ✅");
     });
-
     $("gebco").addEventListener("change", (e) => {
       e.target.checked ? map.addLayer(gebcoWms) : map.removeLayer(gebcoWms);
-      showToast("Layer toggled ✅");
+      showToast("Bathymetry toggled ✅");
     });
 
-    // ---- GPS + Tracking state (same as before, but with visible toast feedback) ----
+    // ---------- GPS + Tracking ----------
     let watchId = null;
     let lastFix = null;
+
     let gpsMarker = null;
     let gpsAccCircle = null;
 
@@ -207,11 +204,14 @@
     function shouldAppendPoint(prev, next){
       if (!prev) return true;
       if ((next.acc || 9999) > 50) return false;
+
       const distM = map.distance([prev.lat, prev.lng], [next.lat, next.lng]);
       const dtMs = (next.ts - prev.ts);
-      const moving = (next.speed || 0) > 0.6;
-      const distThresh = moving ? 8 : 15;
-      const timeThresh = 8000;
+
+      const moving = (next.speed || 0) > 0.6; // ~2.2 km/h
+      const distThresh = moving ? 8 : 15;     // meters
+      const timeThresh = 8000;                // 8 sec
+
       return distM >= distThresh || dtMs >= timeThresh;
     }
 
@@ -248,7 +248,7 @@
       stopGPS();
       setStatus(
         `<b>GPS error</b>: ${err.message || err}<br>` +
-        `Make sure this is opened on <b>HTTPS</b> and Safari location is allowed.`
+        `Make sure you open this on <b>HTTPS</b> and Safari location is allowed.`
       );
       showToast("GPS error ❌");
     }
@@ -278,7 +278,7 @@
       });
 
       $("gpsBtn").textContent = "Stop GPS";
-      setPill(gpsPill, true, "GPS");
+      setPill("gpsPill", true, "GPS");
       showToast("GPS started ✅");
     }
 
@@ -287,7 +287,6 @@
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
       }
-
       if (isTracking) stopTracking();
 
       if (gpsMarker){ map.removeLayer(gpsMarker); gpsMarker = null; }
@@ -295,9 +294,20 @@
 
       lastFix = null;
       $("gpsBtn").textContent = "Start GPS";
-      setPill(gpsPill, false, "GPS");
+      setPill("gpsPill", false, "GPS");
       setStatus("GPS OFF.");
-      showToast("GPS stopped");
+    }
+
+    function toggleGPS(){ watchId === null ? startGPS() : stopGPS(); }
+
+    function centerOnMe(){
+      if (!lastFix){
+        setStatus("No GPS fix yet. Start GPS first.");
+        showToast("No fix ⚠️");
+        return;
+      }
+      map.setView([lastFix.lat, lastFix.lng], Math.max(map.getZoom(), 12));
+      showToast("Centered ✅");
     }
 
     function startTracking(){
@@ -307,10 +317,9 @@
         return;
       }
       isTracking = true;
-      setPill(trkPill, true, "TRACK");
+      setPill("trkPill", true, "TRACK");
       $("trackBtn").textContent = "Stop Tracking";
       $("trackBtn").classList.remove("secondary");
-
       ensureTrackLine();
 
       if (lastFix && trackPoints.length === 0){
@@ -324,12 +333,14 @@
 
     function stopTracking(){
       isTracking = false;
-      setPill(trkPill, false, "TRACK");
+      setPill("trkPill", false, "TRACK");
       $("trackBtn").textContent = "Start Tracking";
       $("trackBtn").classList.add("secondary");
       setStatus(`Tracking stopped. Points: ${trackPoints.length}`);
       showToast("Tracking stopped");
     }
+
+    function toggleTracking(){ isTracking ? stopTracking() : startTracking(); }
 
     function clearAll(){
       if (isTracking) stopTracking();
@@ -363,13 +374,10 @@
       }
 
       const startTs = trackPoints[0].ts;
-      const endTs = trackPoints[trackPoints.length - 1].ts;
-
       const session = {
         id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2)),
         name: `Session ${new Date(startTs).toLocaleString()}`,
         createdAt: Date.now(),
-        startTs, endTs,
         points: trackPoints,
         distanceM: Math.round(dist)
       };
@@ -382,25 +390,32 @@
       showToast("Saved ✅");
     }
 
-    // Buttons
-    $("testBtn").addEventListener("click", () => {
+    // ---------- Button wiring (both addEventListener + inline fallback already present) ----------
+    function btnTest(){
       showToast("Buttons are working ✅");
-      setStatus("Test OK ✅ Overlay buttons receive taps.");
-    });
+      setStatus("Test OK ✅ Bottom bar buttons are clickable.");
+      alert("Buttons are working ✅"); // extra-strong proof
+    }
 
-    $("gpsBtn").addEventListener("click", () => watchId === null ? startGPS() : stopGPS());
-    $("centerBtn").addEventListener("click", () => {
-      if (lastFix) { map.setView([lastFix.lat, lastFix.lng], Math.max(map.getZoom(), 12)); showToast("Centered ✅"); }
-      else { setStatus("No GPS fix yet. Start GPS first."); showToast("No fix ⚠️"); }
-    });
+    // Expose functions for inline onclick fallback
+    window.__btnTest = btnTest;
+    window.__gpsToggle = toggleGPS;
+    window.__center = centerOnMe;
+    window.__trackToggle = toggleTracking;
+    window.__save = saveCurrentSession;
+    window.__clear = clearAll;
 
-    $("trackBtn").addEventListener("click", () => isTracking ? stopTracking() : startTracking());
+    // Also wire via addEventListener
+    $("testBtn").addEventListener("click", btnTest);
+    $("gpsBtn").addEventListener("click", toggleGPS);
+    $("centerBtn").addEventListener("click", centerOnMe);
+    $("trackBtn").addEventListener("click", toggleTracking);
     $("saveBtn").addEventListener("click", saveCurrentSession);
     $("clearBtn").addEventListener("click", clearAll);
 
-    // Init pills
-    setPill(gpsPill, false, "GPS");
-    setPill(trkPill, false, "TRACK");
+    // init pills
+    setPill("gpsPill", false, "GPS");
+    setPill("trkPill", false, "TRACK");
   </script>
 </body>
 </html>
