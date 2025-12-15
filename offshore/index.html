@@ -3,15 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>UAE Offshore Tracker (Rewrite)</title>
+  <title>UAE Offshore Tracker + Waypoints</title>
 
-  <!-- Leaflet (only dependency) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
     :root{
-      --barH: 240px;
+      --barH: 260px;
       --bg: #0b1020;
       --bar: #0f172a;
       --bar2:#111827;
@@ -23,12 +22,14 @@
       --ok:#1a7f3a;
       --chip:#00000033;
       --radius:14px;
+      --card:#0c1328;
+      --border:rgba(255,255,255,0.12);
+      --soft:rgba(0,0,0,0.22);
     }
 
     html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink);
       font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
 
-    /* Map occupies everything ABOVE the bottom bar */
     #map{
       position: absolute;
       left: 0; right: 0;
@@ -38,7 +39,6 @@
       background: #0b1020;
     }
 
-    /* Fixed bottom bar - ALWAYS clickable */
     .bar{
       position: fixed;
       left: 0; right: 0;
@@ -46,7 +46,7 @@
       height: calc(var(--barH) + env(safe-area-inset-bottom));
       z-index: 999999;
       background: linear-gradient(180deg, var(--bar2), var(--bar));
-      border-top: 1px solid rgba(255,255,255,0.12);
+      border-top: 1px solid var(--border);
       padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
       box-sizing: border-box;
       pointer-events: auto;
@@ -91,14 +91,14 @@
     button.danger{ background: var(--danger); }
 
     .status{
-      background: rgba(0,0,0,0.22);
+      background: var(--soft);
       border: 1px solid rgba(255,255,255,0.10);
       border-radius: 12px;
       padding: 10px;
       color: var(--muted);
       font-size: 12px;
       line-height: 1.35;
-      max-height: 78px;
+      max-height: 82px;
       overflow: auto;
     }
 
@@ -122,11 +122,9 @@
     }
     .toast.show{ opacity: 1; }
 
-    /* Sessions overlay (optional) */
     .modal{
       position: fixed;
-      left: 0; right: 0;
-      top: 0; bottom: 0;
+      left: 0; right: 0; top: 0; bottom: 0;
       z-index: 1000001;
       background: rgba(0,0,0,0.55);
       display: none;
@@ -136,27 +134,103 @@
     }
     .sheet{
       width: 100%;
-      background: #0c1328;
-      border: 1px solid rgba(255,255,255,0.12);
+      background: var(--card);
+      border: 1px solid var(--border);
       border-radius: 18px;
       padding: 12px;
-      max-height: 72vh;
+      max-height: 78vh;
       overflow: auto;
     }
-    .sheetTitle{ font-weight: 900; margin: 4px 0 10px; }
-    .sess{
+    .sheetTop{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      margin-bottom: 10px;
+    }
+    .sheetTitle{ font-weight: 900; }
+    .tabs{ display:flex; gap:8px; }
+    .tab{
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.20);
+      color: var(--muted);
+      font-weight: 900;
+      font-size: 13px;
+    }
+    .tab.active{
+      background: rgba(45,108,223,0.25);
+      color: var(--ink);
+      border-color: rgba(45,108,223,0.35);
+    }
+
+    .sectionActions{
+      display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 10px;
+    }
+
+    .item{
       display:flex;
       justify-content:space-between;
       gap:10px;
-      align-items:center;
+      align-items:flex-start;
       padding:10px;
       border-radius: 14px;
       background: rgba(0,0,0,0.22);
       border: 1px solid rgba(255,255,255,0.10);
       margin-bottom: 8px;
     }
-    .meta{ color: var(--muted); font-size: 12px; margin-top: 3px; }
-    .sessBtns{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .itemLeft{ min-width:0; }
+    .itemTitle{ font-weight: 900; word-break: break-word; }
+    .meta{ color: var(--muted); font-size: 12px; margin-top: 3px; line-height: 1.35; }
+    .itemBtns{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .miniBtn{ padding:8px 10px; border-radius: 12px; font-size: 13px; }
+
+    .colorDot{
+      width: 12px; height: 12px; border-radius: 999px;
+      display:inline-block; vertical-align:middle; margin-right: 6px;
+      border: 1px solid rgba(255,255,255,0.22);
+    }
+
+    /* Waypoint icon styles (divIcon) */
+    .wpIcon{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      background: rgba(45,108,223,0.25);
+      border: 2px solid rgba(45,108,223,0.55);
+      color: #fff;
+      font-weight: 900;
+      font-size: 16px;
+      line-height: 1;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+      user-select:none;
+    }
+    .wpIcon.square { border-radius: 8px; }
+    .wpIcon.triangle{
+      border-radius: 0;
+      width: 0;
+      height: 0;
+      background: transparent;
+      border-left: 16px solid transparent;
+      border-right: 16px solid transparent;
+      border-bottom: 28px solid rgba(45,108,223,0.75);
+      border-top: 0;
+      box-shadow: none;
+      position: relative;
+    }
+    .wpIcon.triangle::after{
+      content: attr(data-txt);
+      position: absolute;
+      left: -8px;
+      top: 10px;
+      width: 16px;
+      text-align:center;
+      font-size: 14px;
+      font-weight: 900;
+      color: #fff;
+    }
+    .wpIcon.circleText { border-radius: 999px; }
   </style>
 </head>
 
@@ -165,46 +239,71 @@
 
   <div class="bar" id="bar">
     <div class="titleRow">
-      <div class="title">UAE Offshore Tracker (Rewrite)</div>
+      <div class="title">UAE Offshore Tracker + Waypoints</div>
       <div class="chips">
         <span class="chip" id="jsChip">JS: …</span>
-        <span class="chip" id="tapChip">Taps: 0</span>
         <span class="chip" id="gpsChip">GPS: OFF</span>
         <span class="chip" id="trkChip">TRACK: OFF</span>
+        <span class="chip" id="draftChip">DRAFT: none</span>
       </div>
     </div>
 
     <div class="row">
       <label><input id="seamarksToggle" type="checkbox" checked> Seamarks</label>
-      <label><input id="bathToggle" type="checkbox" checked> Bathymetry (GEBCO WMS)</label>
+      <label><input id="bathToggle" type="checkbox" checked> Bathymetry</label>
     </div>
 
     <div class="row">
-      <button id="testBtn" class="secondary">Test Button</button>
+      <button id="testBtn" class="secondary">Test</button>
       <button id="gpsBtn">Start GPS</button>
       <button id="centerBtn" class="secondary">Center</button>
+
       <button id="trackBtn" class="secondary">Start Tracking</button>
-      <button id="saveBtn" class="secondary">Save Session</button>
-      <button id="sessionsBtn" class="secondary">Sessions</button>
-      <button id="clearBtn" class="danger">Clear Track</button>
+      <button id="saveTrackBtn" class="secondary">Save Track</button>
+
+      <button id="wpHereBtn" class="secondary">Save WP (Here)</button>
+      <button id="wpManualBtn" class="secondary">Add WP (Manual)</button>
+
+      <button id="libraryBtn" class="secondary">Library</button>
+      <button id="clearDraftBtn" class="danger">Clear Draft</button>
     </div>
 
     <div class="status" id="status">
-      1) Tap <b>Test Button</b> → you must see an alert + toast.<br>
-      2) Tap <b>Start GPS</b> (HTTPS required).<br>
-      3) Tap <b>Start Tracking</b>, move, then <b>Save Session</b>.
+      1) Tap <b>Test</b> → alert + toast must appear.<br>
+      2) Use <b>Start GPS</b> (HTTPS required).<br>
+      3) Tracks: Start/Stop → Save Track (or it will be cleared on next Start).<br>
+      4) Waypoints: Save WP (Here) or Add WP (Manual).
     </div>
   </div>
 
   <div class="toast" id="toast">OK</div>
 
+  <!-- Library Modal -->
   <div class="modal" id="modal">
     <div class="sheet">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-        <div class="sheetTitle">Saved Sessions</div>
+      <div class="sheetTop">
+        <div>
+          <div class="sheetTitle">Library</div>
+          <div class="meta">Manage Tracks + Waypoints: rename, toggle, export, delete, color/icon.</div>
+        </div>
         <button id="closeModalBtn" class="secondary">Close</button>
       </div>
-      <div id="sessionsList"></div>
+
+      <div class="row" style="margin-bottom:10px;">
+        <div class="tabs">
+          <div class="tab active" id="tabTracks">Tracks</div>
+          <div class="tab" id="tabWaypoints">Waypoints</div>
+        </div>
+      </div>
+
+      <div class="sectionActions" id="tracksActions">
+        <button id="exportAllTracksBtn" class="secondary miniBtn">Export All Tracks (GPX)</button>
+        <button id="exportAllWaypointsBtn" class="secondary miniBtn">Export All Waypoints (GPX)</button>
+        <button id="exportEverythingBtn" class="secondary miniBtn">Export Everything (GPX)</button>
+      </div>
+
+      <div id="tracksView"></div>
+      <div id="waypointsView" style="display:none;"></div>
     </div>
   </div>
 
@@ -213,14 +312,14 @@
       "use strict";
 
       const $ = (id) => document.getElementById(id);
+
+      // ---------- UI helpers ----------
       const toastEl = $("toast");
       const statusEl = $("status");
       const jsChip = $("jsChip");
-      const tapChip = $("tapChip");
       const gpsChip = $("gpsChip");
       const trkChip = $("trkChip");
-
-      let tapCount = 0;
+      const draftChip = $("draftChip");
 
       function toast(msg){
         toastEl.textContent = msg;
@@ -229,9 +328,7 @@
         if (navigator.vibrate) navigator.vibrate(40);
       }
 
-      function setStatus(html){
-        statusEl.innerHTML = html;
-      }
+      function setStatus(html){ statusEl.innerHTML = html; }
 
       function setChip(el, label, state){
         el.textContent = `${label}: ${state}`;
@@ -240,20 +337,28 @@
         if (state === "OFF") el.classList.add("bad");
       }
 
-      // Live JS indicator (proves script is running)
+      function setDraftState(text){
+        draftChip.textContent = `DRAFT: ${text}`;
+        draftChip.classList.remove("ok","bad");
+        if (text === "unsaved") draftChip.classList.add("bad");
+        if (text === "saved") draftChip.classList.add("ok");
+      }
+
+      function escapeHtml(str){
+        return String(str).replace(/[&<>"']/g, (m) => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+        }[m]));
+      }
+      function escapeXml(str){
+        return String(str).replace(/[<>&'"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c]));
+      }
+
+      // Live JS indicator
       setInterval(() => {
-        const t = new Date().toLocaleTimeString();
-        jsChip.textContent = `JS: ${t}`;
+        jsChip.textContent = `JS: ${new Date().toLocaleTimeString()}`;
       }, 1000);
 
-      // Tap counter on the entire bar (proves taps are reaching UI)
-      $("bar").addEventListener("pointerdown", () => {
-        tapCount += 1;
-        tapChip.textContent = `Taps: ${tapCount}`;
-      }, {passive:true});
-
-      // ---------- Map init ----------
-      // UAE / Arabian Gulf bounds
+      // ---------- Map ----------
       const UAE_GULF_BOUNDS = L.latLngBounds([23.0, 50.0], [27.8, 56.8]);
 
       const map = L.map("map", {
@@ -263,7 +368,7 @@
       });
       map.fitBounds(UAE_GULF_BOUNDS);
 
-      const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 18,
         attribution: "&copy; OpenStreetMap contributors"
       }).addTo(map);
@@ -274,7 +379,6 @@
         attribution: "Seamarks &copy; OpenSeaMap"
       }).addTo(map);
 
-      // Leaflet built-in WMS support (no plugin)
       const gebco = L.tileLayer.wms("https://wms.gebco.net/mapserv?", {
         layers: "GEBCO_LATEST",
         format: "image/png",
@@ -283,34 +387,47 @@
         attribution: "Bathymetry &copy; GEBCO"
       }).addTo(map);
 
-      // ---------- Controls: map layers ----------
       $("seamarksToggle").addEventListener("change", (e) => {
-        if (e.target.checked) map.addLayer(seamarks);
-        else map.removeLayer(seamarks);
+        e.target.checked ? map.addLayer(seamarks) : map.removeLayer(seamarks);
         toast("Seamarks toggled ✅");
       });
-
       $("bathToggle").addEventListener("change", (e) => {
-        if (e.target.checked) map.addLayer(gebco);
-        else map.removeLayer(gebco);
+        e.target.checked ? map.addLayer(gebco) : map.removeLayer(gebco);
         toast("Bathymetry toggled ✅");
       });
 
-      // ---------- GPS + Tracking ----------
+      // Layer groups
+      const tracksGroup = L.layerGroup().addTo(map);
+      const waypointsGroup = L.layerGroup().addTo(map);
+
+      // ---------- Storage ----------
+      const TRACKS_KEY = "uae_tracks_v3";
+      const WPS_KEY    = "uae_waypoints_v1";
+
+      function loadJSON(key, fallback){
+        try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
+        catch { return fallback; }
+      }
+      function saveJSON(key, val){
+        localStorage.setItem(key, JSON.stringify(val));
+      }
+
+      let tracks = loadJSON(TRACKS_KEY, []);     // saved tracks
+      let waypoints = loadJSON(WPS_KEY, []);     // saved waypoints
+
+      // Map layers by id
+      const trackLayers = new Map();     // id -> polyline
+      const waypointLayers = new Map();  // id -> marker
+
+      // ---------- GPS ----------
       let watchId = null;
+      let lastFix = null;
       let gpsMarker = null;
       let gpsAccCircle = null;
-      let lastFix = null;
-
-      let tracking = false;
-      let trackPoints = []; // {lat,lng,ts,acc,speed,heading}
-      let trackLine = null;
-
-      const STORE_KEY = "uae_offshore_sessions_v2";
 
       function ensureSecure(){
-        if (location.protocol === "file:") {
-          setStatus("❌ You opened this as <b>file://</b>. iPhone won’t allow GPS reliably. Host on <b>HTTPS</b>.");
+        if (location.protocol === "file:"){
+          setStatus("❌ You opened this as <b>file://</b>. iPhone GPS needs <b>HTTPS</b> (or localhost).");
           toast("Use HTTPS ❌");
           return false;
         }
@@ -332,9 +449,51 @@
         else { gpsAccCircle.setLatLng(ll); gpsAccCircle.setRadius(fix.acc || 0); }
       }
 
-      function ensureTrackLine(){
-        if (!trackLine){
-          trackLine = L.polyline([], { weight: 4, opacity: 0.95 }).addTo(map);
+      // ---------- Tracking (Draft + Saved Tracks) ----------
+      let tracking = false;
+
+      // Draft recording state
+      let draftUnsaved = false;
+      let draftPoints = [];       // points being recorded (or last recorded but unsaved)
+      let draftLine = null;       // polyline for current draft
+      let draftStartTs = null;
+
+      function ensureDraftLine(color){
+        if (!draftLine){
+          draftLine = L.polyline([], { weight: 4, opacity: 0.95, color: color || "#2d6cdf" });
+          draftLine.addTo(tracksGroup);
+        }
+      }
+
+      function clearDraftInternal(){
+        tracking = false;
+        if (draftLine){
+          tracksGroup.removeLayer(draftLine);
+          draftLine = null;
+        }
+        draftPoints = [];
+        draftStartTs = null;
+        draftUnsaved = false;
+        setChip(trkChip, "TRACK", "OFF");
+        setDraftState("none");
+        $("trackBtn").textContent = "Start Tracking";
+        $("trackBtn").classList.add("secondary");
+      }
+
+      function stopTrackingOnly(){
+        tracking = false;
+        setChip(trkChip, "TRACK", "OFF");
+        $("trackBtn").textContent = "Start Tracking";
+        $("trackBtn").classList.add("secondary");
+
+        // If there are points and not saved, draft remains visible but marked unsaved
+        if (draftPoints.length >= 2){
+          draftUnsaved = true;
+          setDraftState("unsaved");
+          toast("Stopped (draft kept). Save it or it will clear on next Start.");
+        } else {
+          clearDraftInternal();
+          toast("Stopped (no draft).");
         }
       }
 
@@ -366,19 +525,20 @@
         lastFix = fix;
         drawGPS(fix);
 
+        // If actively tracking, append
         if (tracking){
-          const prev = trackPoints.length ? trackPoints[trackPoints.length - 1] : null;
+          const prev = draftPoints.length ? draftPoints[draftPoints.length - 1] : null;
           if (shouldAppend(prev, fix)){
-            trackPoints.push(fix);
-            ensureTrackLine();
-            trackLine.addLatLng([fix.lat, fix.lng]);
+            draftPoints.push(fix);
+            ensureDraftLine();
+            draftLine.addLatLng([fix.lat, fix.lng]);
           }
         }
 
         setStatus(
           `<b>GPS ON</b> • ${new Date(fix.ts).toLocaleTimeString()}<br>` +
           `Lat ${fix.lat.toFixed(6)} • Lng ${fix.lng.toFixed(6)} • Acc ~${Math.round(fix.acc || 0)}m` +
-          (tracking ? `<br><b>Tracking…</b> Points: ${trackPoints.length}` : "")
+          (tracking ? `<br><b>Tracking…</b> Draft points: ${draftPoints.length}` : (draftUnsaved ? `<br><b>Draft unsaved</b> • points: ${draftPoints.length}` : ""))
         );
       }
 
@@ -414,7 +574,7 @@
           navigator.geolocation.clearWatch(watchId);
           watchId = null;
         }
-        if (tracking) stopTracking();
+        if (tracking) stopTrackingOnly();
 
         if (gpsMarker){ map.removeLayer(gpsMarker); gpsMarker = null; }
         if (gpsAccCircle){ map.removeLayer(gpsAccCircle); gpsAccCircle = null; }
@@ -425,8 +585,7 @@
       }
 
       function toggleGPS(){
-        if (watchId === null) startGPS();
-        else { stopGPS(); toast("GPS stopped"); setStatus("GPS OFF."); }
+        watchId === null ? startGPS() : (stopGPS(), toast("GPS stopped"), setStatus("GPS OFF."));
       }
 
       function centerMe(){
@@ -439,56 +598,56 @@
         toast("Centered ✅");
       }
 
+      // ✅ BUG FIX: starting tracking again ALWAYS starts a new recording.
+      // If previous draft wasn’t saved, it is cleared automatically.
       function startTracking(){
         if (watchId === null){
           toast("Start GPS first ⚠️");
           setStatus("Start GPS first, then start tracking.");
           return;
         }
+
+        // If there is an unsaved draft, clear it before starting new track (your requirement)
+        if (draftUnsaved){
+          clearDraftInternal();
+          toast("Previous unsaved draft cleared. Starting new track ✅");
+        }
+
+        // Start a new draft recording
         tracking = true;
+        draftUnsaved = false;
+        draftPoints = [];
+        draftStartTs = Date.now();
+
+        // Remove old draft polyline if any (just in case)
+        if (draftLine){
+          tracksGroup.removeLayer(draftLine);
+          draftLine = null;
+        }
+
+        ensureDraftLine("#2d6cdf"); // default draft color
         setChip(trkChip, "TRACK", "ON");
+        setDraftState("recording");
         $("trackBtn").textContent = "Stop Tracking";
         $("trackBtn").classList.remove("secondary");
 
-        ensureTrackLine();
-
-        if (lastFix && trackPoints.length === 0){
-          trackPoints.push(lastFix);
-          trackLine.addLatLng([lastFix.lat, lastFix.lng]);
+        // Seed first point if we have lastFix
+        if (lastFix){
+          draftPoints.push(lastFix);
+          draftLine.addLatLng([lastFix.lat, lastFix.lng]);
         }
 
         toast("Tracking started ✅");
-        setStatus(`Tracking started… Points: ${trackPoints.length}`);
+        setStatus(`Tracking started… Draft points: ${draftPoints.length}`);
       }
 
       function stopTracking(){
-        tracking = false;
-        setChip(trkChip, "TRACK", "OFF");
-        $("trackBtn").textContent = "Start Tracking";
-        $("trackBtn").classList.add("secondary");
-        toast("Tracking stopped");
-        setStatus(`Tracking stopped. Points: ${trackPoints.length}`);
+        if (!tracking) return;
+        stopTrackingOnly();
       }
 
       function toggleTracking(){
-        if (!tracking) startTracking();
-        else stopTracking();
-      }
-
-      function clearTrack(){
-        if (tracking) stopTracking();
-        trackPoints = [];
-        if (trackLine){ map.removeLayer(trackLine); trackLine = null; }
-        toast("Track cleared ✅");
-        setStatus("Cleared current track. Saved sessions remain.");
-      }
-
-      function loadSessions(){
-        try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); }
-        catch { return []; }
-      }
-      function saveSessions(list){
-        localStorage.setItem(STORE_KEY, JSON.stringify(list));
+        tracking ? stopTracking() : startTracking();
       }
 
       function calcDistance(points){
@@ -499,63 +658,274 @@
         return Math.round(d);
       }
 
-      function saveSession(){
-        if (trackPoints.length < 2){
+      function randomColor(){
+        // pleasant-ish colors
+        const palette = ["#2d6cdf","#22c55e","#f97316","#a855f7","#06b6d4","#ef4444","#eab308","#f43f5e"];
+        return palette[Math.floor(Math.random() * palette.length)];
+      }
+
+      function saveDraftAsTrack(){
+        if (draftPoints.length < 2){
           toast("Not enough points ⚠️");
-          setStatus("Need at least 2 points to save. Start tracking and move.");
+          setStatus("Need at least 2 points to save a track.");
           return;
         }
 
-        const startTs = trackPoints[0].ts;
-        const distM = calcDistance(trackPoints);
+        const defaultName = `Track ${new Date(draftPoints[0].ts).toLocaleString()}`;
+        const name = (prompt("Track name:", defaultName) || defaultName).trim() || defaultName;
 
-        const session = {
-          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2)),
-          name: `Session ${new Date(startTs).toLocaleString()}`,
+        const color = (prompt("Track line color (hex like #2d6cdf). Leave blank for auto:", "") || "").trim() || randomColor();
+
+        const id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2));
+        const distM = calcDistance(draftPoints);
+
+        const track = {
+          id,
+          name,
+          color,
+          visible: true, // default ON
           createdAt: Date.now(),
-          points: trackPoints,
-          distanceM: distM
+          startTs: draftPoints[0].ts,
+          endTs: draftPoints[draftPoints.length - 1].ts,
+          distanceM: distM,
+          points: draftPoints
         };
 
-        const sessions = loadSessions();
-        sessions.unshift(session);
-        saveSessions(sessions);
+        tracks.unshift(track);
+        saveJSON(TRACKS_KEY, tracks);
 
-        toast("Saved ✅");
-        setStatus(`✅ Saved: <b>${escapeHtml(session.name)}</b><br>Points: ${session.points.length} • Distance: ~${session.distanceM} m`);
+        // Convert draft polyline into saved track layer:
+        // remove draft line and recreate via saved system to ensure consistent layer mapping
+        if (draftLine){
+          tracksGroup.removeLayer(draftLine);
+          draftLine = null;
+        }
+
+        draftPoints = [];
+        draftStartTs = null;
+        draftUnsaved = false;
+        tracking = false;
+
+        setDraftState("saved");
+        setChip(trkChip, "TRACK", "OFF");
+        $("trackBtn").textContent = "Start Tracking";
+        $("trackBtn").classList.add("secondary");
+
+        renderTrackLayersFromData(); // ensure map reflects saved track layers
+        renderLibraryIfOpen();
+
+        toast("Track saved ✅");
+        setStatus(`✅ Saved track: <b>${escapeHtml(name)}</b><br>Distance: ~${distM} m • Visible: ON`);
       }
 
-      function escapeHtml(str){
-        return String(str).replace(/[&<>"']/g, (m) => ({
-          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-        }[m]));
+      function clearDraft(){
+        if (tracking){
+          toast("Stop tracking first ⚠️");
+          setStatus("Stop tracking first, then clear draft.");
+          return;
+        }
+        if (draftUnsaved || draftPoints.length){
+          clearDraftInternal();
+          toast("Draft cleared ✅");
+          setStatus("Draft cleared.");
+        } else {
+          toast("No draft");
+        }
       }
 
-      // ---------- Sessions modal + export GPX ----------
-      const modal = $("modal");
-      const listEl = $("sessionsList");
+      // ---------- Waypoints ----------
+      function makeWaypointIcon(wp){
+        // wp.iconType: "text" | "circle" | "square" | "triangle"
+        // wp.iconText: string (emoji/char) (optional)
+        const txt = (wp.iconText || "•").slice(0, 2);
 
-      function openSessions(){
-        renderSessions();
-        modal.style.display = "flex";
-      }
-      function closeSessions(){
-        modal.style.display = "none";
+        let html = "";
+        if (wp.iconType === "triangle"){
+          // triangle uses ::after content via data-txt
+          html = `<div class="wpIcon triangle" data-txt="${escapeHtml(txt)}"></div>`;
+        } else {
+          const cls = wp.iconType === "square" ? "square" : "circleText";
+          html = `<div class="wpIcon ${cls}">${escapeHtml(txt)}</div>`;
+        }
+
+        return L.divIcon({
+          className: "",
+          html,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
       }
 
-      function toGPX(session){
-        // minimal GPX track
-        const pts = session.points.map(p =>
-          `<trkpt lat="${p.lat}" lon="${p.lng}"><time>${new Date(p.ts).toISOString()}</time></trkpt>`
-        ).join("");
+      function addWaypointToMap(wp){
+        // Create marker layer if visible
+        if (waypointLayers.has(wp.id)) return;
+
+        const marker = L.marker([wp.lat, wp.lng], { icon: makeWaypointIcon(wp) });
+        marker.bindPopup(`<b>${escapeHtml(wp.name)}</b><br>Lat ${wp.lat.toFixed(6)}<br>Lng ${wp.lng.toFixed(6)}`);
+        waypointLayers.set(wp.id, marker);
+
+        if (wp.visible){
+          marker.addTo(waypointsGroup);
+        }
+      }
+
+      function removeWaypointFromMap(wpId){
+        const m = waypointLayers.get(wpId);
+        if (!m) return;
+        waypointsGroup.removeLayer(m);
+        waypointLayers.delete(wpId);
+      }
+
+      function renderWaypointLayersFromData(){
+        // rebuild all waypoint layers
+        waypointLayers.forEach(layer => waypointsGroup.removeLayer(layer));
+        waypointLayers.clear();
+
+        for (const wp of waypoints){
+          addWaypointToMap(wp);
+        }
+      }
+
+      function saveWaypoint(wp){
+        waypoints.unshift(wp);
+        saveJSON(WPS_KEY, waypoints);
+        renderWaypointLayersFromData();
+        renderLibraryIfOpen();
+      }
+
+      function promptWaypointIcon(existing){
+        const help =
+`Choose waypoint icon type:
+1) text (emoji or 1 char)
+2) circle
+3) square
+4) triangle
+Type one: text/circle/square/triangle`;
+        const type = (prompt(help, existing?.iconType || "text") || "text").trim().toLowerCase();
+        if (!["text","circle","square","triangle"].includes(type)) return { iconType: "text", iconText: "•" };
+
+        let iconType = type;
+        let iconText = existing?.iconText || "•";
+
+        if (type === "text"){
+          iconText = (prompt("Enter emoji or single character (example: 📍 or A):", iconText) || iconText).trim() || iconText;
+          iconType = "circle"; // render text inside circle by default
+          return { iconType: "circle", iconText: iconText.slice(0, 2) };
+        }
+
+        // shapes use text too (optional)
+        iconText = (prompt("Optional text/emoji inside (example: 📍, A). Leave blank for • :", iconText) || iconText).trim() || "•";
+        return { iconType, iconText: iconText.slice(0, 2) };
+      }
+
+      function addWaypointHere(){
+        if (!lastFix){
+          toast("No GPS fix ⚠️");
+          setStatus("Start GPS and wait for a fix, then save waypoint.");
+          return;
+        }
+
+        const name = (prompt("Waypoint name:", `WP ${new Date().toLocaleString()}`) || "").trim() || `WP ${new Date().toLocaleString()}`;
+        const icon = promptWaypointIcon({ iconType: "circle", iconText: "📍" });
+
+        const wp = {
+          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2)),
+          name,
+          lat: lastFix.lat,
+          lng: lastFix.lng,
+          visible: true,
+          createdAt: Date.now(),
+          iconType: icon.iconType,
+          iconText: icon.iconText
+        };
+
+        saveWaypoint(wp);
+        toast("Waypoint saved ✅");
+      }
+
+      function addWaypointManual(){
+        const name = (prompt("Waypoint name:", `WP ${new Date().toLocaleString()}`) || "").trim() || `WP ${new Date().toLocaleString()}`;
+        const latStr = (prompt("Latitude (example 24.4539):", "") || "").trim();
+        const lngStr = (prompt("Longitude (example 54.3773):", "") || "").trim();
+
+        const lat = Number(latStr);
+        const lng = Number(lngStr);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)){
+          toast("Invalid coordinates ❌");
+          setStatus("Manual waypoint: invalid lat/lng.");
+          return;
+        }
+
+        const icon = promptWaypointIcon({ iconType: "circle", iconText: "📍" });
+
+        const wp = {
+          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2)),
+          name,
+          lat,
+          lng,
+          visible: true,
+          createdAt: Date.now(),
+          iconType: icon.iconType,
+          iconText: icon.iconText
+        };
+
+        saveWaypoint(wp);
+        toast("Waypoint added ✅");
+        map.setView([lat, lng], Math.max(map.getZoom(), 12));
+      }
+
+      // ---------- Saved Tracks (layers) ----------
+      function addTrackToMap(track){
+        if (trackLayers.has(track.id)) return;
+
+        const latlngs = track.points.map(p => [p.lat, p.lng]);
+        const poly = L.polyline(latlngs, { weight: 5, opacity: 0.95, color: track.color || "#2d6cdf" });
+        poly.bindPopup(`<b>${escapeHtml(track.name)}</b><br>${(track.distanceM/1000).toFixed(2)} km • ${track.points.length} pts`);
+        trackLayers.set(track.id, poly);
+
+        if (track.visible){
+          poly.addTo(tracksGroup);
+        }
+      }
+
+      function removeTrackFromMap(trackId){
+        const poly = trackLayers.get(trackId);
+        if (!poly) return;
+        tracksGroup.removeLayer(poly);
+        trackLayers.delete(trackId);
+      }
+
+      function renderTrackLayersFromData(){
+        // rebuild saved track layers
+        trackLayers.forEach(layer => tracksGroup.removeLayer(layer));
+        trackLayers.clear();
+
+        for (const t of tracks){
+          addTrackToMap(t);
+        }
+      }
+
+      // ---------- GPX export ----------
+      function toGPX_all({tracksList, waypointsList, name}){
+        const wpts = (waypointsList || []).map(wp => {
+          const desc = `iconType=${wp.iconType};iconText=${wp.iconText}`;
+          return `<wpt lat="${wp.lat}" lon="${wp.lng}"><name>${escapeXml(wp.name)}</name><desc>${escapeXml(desc)}</desc></wpt>`;
+        }).join("");
+
+        const trks = (tracksList || []).map(t => {
+          const pts = t.points.map(p => `<trkpt lat="${p.lat}" lon="${p.lng}"><time>${new Date(p.ts).toISOString()}</time></trkpt>`).join("");
+          const ext = `<desc>color=${escapeXml(t.color || "")};visible=${t.visible}</desc>`;
+          return `<trk><name>${escapeXml(t.name)}</name>${ext}<trkseg>${pts}</trkseg></trk>`;
+        }).join("");
+
         return `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="UAE Offshore Tracker" xmlns="http://www.topografix.com/GPX/1/1">
-  <trk><name>${escapeXml(session.name)}</name><trkseg>${pts}</trkseg></trk>
+  <metadata><name>${escapeXml(name || "Export")}</name><time>${new Date().toISOString()}</time></metadata>
+  ${wpts}
+  ${trks}
 </gpx>`;
       }
-      function escapeXml(str){
-        return String(str).replace(/[<>&'"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c]));
-      }
+
       function downloadText(filename, text){
         const blob = new Blob([text], {type:"application/octet-stream"});
         const url = URL.createObjectURL(blob);
@@ -565,91 +935,277 @@
         document.body.appendChild(a);
         a.click();
         a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 500);
+        setTimeout(() => URL.revokeObjectURL(url), 800);
       }
 
-      function showSessionOnMap(session){
-        const latlngs = session.points.map(p => [p.lat, p.lng]);
-        const poly = L.polyline(latlngs, { weight: 5, opacity: 0.95 }).addTo(map);
-        map.fitBounds(poly.getBounds().pad(0.1));
-        toast("Showing session ✅");
-        // auto-remove after 12s
-        setTimeout(() => { if (map.hasLayer(poly)) map.removeLayer(poly); }, 12000);
+      // ---------- Library Modal ----------
+      const modal = $("modal");
+      const tracksView = $("tracksView");
+      const waypointsView = $("waypointsView");
+      const tabTracks = $("tabTracks");
+      const tabWaypoints = $("tabWaypoints");
+
+      function openLibrary(){
+        renderLibrary();
+        modal.style.display = "flex";
+      }
+      function closeLibrary(){
+        modal.style.display = "none";
+      }
+      function libraryOpen(){
+        return modal.style.display === "flex";
+      }
+      function renderLibraryIfOpen(){
+        if (libraryOpen()) renderLibrary();
       }
 
-      function renderSessions(){
-        const sessions = loadSessions();
-        if (!sessions.length){
-          listEl.innerHTML = `<div class="meta">No saved sessions yet.</div>`;
+      function setActiveTab(which){
+        if (which === "tracks"){
+          tabTracks.classList.add("active");
+          tabWaypoints.classList.remove("active");
+          tracksView.style.display = "block";
+          waypointsView.style.display = "none";
+        } else {
+          tabWaypoints.classList.add("active");
+          tabTracks.classList.remove("active");
+          tracksView.style.display = "none";
+          waypointsView.style.display = "block";
+        }
+      }
+
+      function renderLibrary(){
+        renderTracksList();
+        renderWaypointsList();
+      }
+
+      function renderTracksList(){
+        if (!tracks.length){
+          tracksView.innerHTML = `<div class="meta">No saved tracks yet.</div>`;
           return;
         }
 
-        listEl.innerHTML = "";
-        sessions.slice(0, 30).forEach(s => {
-          const mins = Math.max(1, Math.round((s.points[s.points.length-1].ts - s.points[0].ts) / 60000));
-          const km = (s.distanceM / 1000).toFixed(2);
+        tracksView.innerHTML = "";
+        tracks.slice(0, 50).forEach(t => {
+          const mins = Math.max(1, Math.round((t.endTs - t.startTs) / 60000));
+          const km = (t.distanceM / 1000).toFixed(2);
+          const dot = `<span class="colorDot" style="background:${escapeHtml(t.color || "#2d6cdf")}"></span>`;
 
-          const wrap = document.createElement("div");
-          wrap.className = "sess";
-          wrap.innerHTML = `
-            <div style="min-width:0">
-              <div style="font-weight:900; word-break:break-word">${escapeHtml(s.name)}</div>
-              <div class="meta">${mins} min • ${km} km • ${s.points.length} pts</div>
+          const el = document.createElement("div");
+          el.className = "item";
+          el.innerHTML = `
+            <div class="itemLeft">
+              <div class="itemTitle">${dot}${escapeHtml(t.name)}</div>
+              <div class="meta">${mins} min • ${km} km • ${t.points.length} pts • Visible: <b>${t.visible ? "ON" : "OFF"}</b></div>
             </div>
-            <div class="sessBtns">
-              <button class="secondary" data-act="show" data-id="${s.id}">Show</button>
-              <button class="secondary" data-act="gpx" data-id="${s.id}">Export GPX</button>
-              <button class="danger" data-act="del" data-id="${s.id}">Delete</button>
+            <div class="itemBtns">
+              <button class="miniBtn secondary" data-type="track" data-act="toggle" data-id="${t.id}">${t.visible ? "Hide" : "Show"}</button>
+              <button class="miniBtn secondary" data-type="track" data-act="rename" data-id="${t.id}">Rename</button>
+              <button class="miniBtn secondary" data-type="track" data-act="color" data-id="${t.id}">Color</button>
+              <button class="miniBtn secondary" data-type="track" data-act="export" data-id="${t.id}">Export</button>
+              <button class="miniBtn danger" data-type="track" data-act="del" data-id="${t.id}">Delete</button>
             </div>
           `;
-          listEl.appendChild(wrap);
+          tracksView.appendChild(el);
         });
-
-        listEl.onclick = (e) => {
-          const btn = e.target.closest("button");
-          if (!btn) return;
-          const id = btn.getAttribute("data-id");
-          const act = btn.getAttribute("data-act");
-          const sessions = loadSessions();
-          const s = sessions.find(x => x.id === id);
-          if (!s) return;
-
-          if (act === "show"){
-            closeSessions();
-            showSessionOnMap(s);
-          } else if (act === "gpx"){
-            const gpx = toGPX(s);
-            downloadText(`track-${id}.gpx`, gpx);
-            toast("GPX exported ✅");
-          } else if (act === "del"){
-            const kept = sessions.filter(x => x.id !== id);
-            saveSessions(kept);
-            renderSessions();
-            toast("Deleted");
-          }
-        };
       }
 
-      $("closeModalBtn").addEventListener("click", closeSessions);
-      modal.addEventListener("click", (e) => { if (e.target === modal) closeSessions(); });
+      function renderWaypointsList(){
+        if (!waypoints.length){
+          waypointsView.innerHTML = `<div class="meta">No waypoints yet.</div>`;
+          return;
+        }
 
-      // ---------- Button wiring (plus a hardproof alert) ----------
-      $("testBtn").addEventListener("click", () => {
-        toast("Buttons are working ✅");
-        alert("Buttons are working ✅");
-        setStatus("✅ Test OK. If you saw this alert, taps + JS are working.");
+        waypointsView.innerHTML = "";
+        waypoints.slice(0, 100).forEach(wp => {
+          const iconLabel = `${wp.iconType}${wp.iconText ? `:${wp.iconText}` : ""}`;
+          const el = document.createElement("div");
+          el.className = "item";
+          el.innerHTML = `
+            <div class="itemLeft">
+              <div class="itemTitle">${escapeHtml(wp.name)}</div>
+              <div class="meta">Lat ${wp.lat.toFixed(6)} • Lng ${wp.lng.toFixed(6)} • Icon ${escapeHtml(iconLabel)} • Visible: <b>${wp.visible ? "ON" : "OFF"}</b></div>
+            </div>
+            <div class="itemBtns">
+              <button class="miniBtn secondary" data-type="wp" data-act="toggle" data-id="${wp.id}">${wp.visible ? "Hide" : "Show"}</button>
+              <button class="miniBtn secondary" data-type="wp" data-act="center" data-id="${wp.id}">Center</button>
+              <button class="miniBtn secondary" data-type="wp" data-act="rename" data-id="${wp.id}">Rename</button>
+              <button class="miniBtn secondary" data-type="wp" data-act="icon" data-id="${wp.id}">Icon</button>
+              <button class="miniBtn secondary" data-type="wp" data-act="export" data-id="${wp.id}">Export</button>
+              <button class="miniBtn danger" data-type="wp" data-act="del" data-id="${wp.id}">Delete</button>
+            </div>
+          `;
+          waypointsView.appendChild(el);
+        });
+      }
+
+      function findTrack(id){ return tracks.find(x => x.id === id); }
+      function findWP(id){ return waypoints.find(x => x.id === id); }
+
+      function updateTrackLayer(t){
+        // remove old layer and re-add according to visibility
+        removeTrackFromMap(t.id);
+        addTrackToMap(t);
+      }
+
+      function updateWaypointLayer(wp){
+        removeWaypointFromMap(wp.id);
+        addWaypointToMap(wp);
+      }
+
+      // Library click handler
+      $("tracksView").addEventListener("click", onLibraryClick);
+      $("waypointsView").addEventListener("click", onLibraryClick);
+
+      function onLibraryClick(e){
+        const btn = e.target.closest("button");
+        if (!btn) return;
+
+        const type = btn.getAttribute("data-type");
+        const act = btn.getAttribute("data-act");
+        const id = btn.getAttribute("data-id");
+        if (!type || !act || !id) return;
+
+        if (type === "track"){
+          const t = findTrack(id);
+          if (!t) return;
+
+          if (act === "toggle"){
+            t.visible = !t.visible;
+            saveJSON(TRACKS_KEY, tracks);
+            updateTrackLayer(t);
+            renderLibrary();
+            toast(`Track ${t.visible ? "shown" : "hidden"} ✅`);
+          }
+          else if (act === "rename"){
+            const name = (prompt("New track name:", t.name) || t.name).trim() || t.name;
+            t.name = name;
+            saveJSON(TRACKS_KEY, tracks);
+            updateTrackLayer(t);
+            renderLibrary();
+            toast("Renamed ✅");
+          }
+          else if (act === "color"){
+            const color = (prompt("New hex color (example #22c55e):", t.color || "#2d6cdf") || t.color || "#2d6cdf").trim();
+            t.color = color;
+            saveJSON(TRACKS_KEY, tracks);
+            updateTrackLayer(t);
+            renderLibrary();
+            toast("Color updated ✅");
+          }
+          else if (act === "export"){
+            const gpx = toGPX_all({ tracksList: [t], waypointsList: [], name: t.name });
+            downloadText(`track-${t.id}.gpx`, gpx);
+            toast("Exported GPX ✅");
+          }
+          else if (act === "del"){
+            if (!confirm("Delete this track?")) return;
+            tracks = tracks.filter(x => x.id !== id);
+            saveJSON(TRACKS_KEY, tracks);
+            removeTrackFromMap(id);
+            renderLibrary();
+            toast("Deleted ✅");
+          }
+        }
+
+        if (type === "wp"){
+          const wp = findWP(id);
+          if (!wp) return;
+
+          if (act === "toggle"){
+            wp.visible = !wp.visible;
+            saveJSON(WPS_KEY, waypoints);
+            updateWaypointLayer(wp);
+            renderLibrary();
+            toast(`Waypoint ${wp.visible ? "shown" : "hidden"} ✅`);
+          }
+          else if (act === "center"){
+            map.setView([wp.lat, wp.lng], Math.max(map.getZoom(), 12));
+            toast("Centered ✅");
+          }
+          else if (act === "rename"){
+            const name = (prompt("New waypoint name:", wp.name) || wp.name).trim() || wp.name;
+            wp.name = name;
+            saveJSON(WPS_KEY, waypoints);
+            updateWaypointLayer(wp);
+            renderLibrary();
+            toast("Renamed ✅");
+          }
+          else if (act === "icon"){
+            const icon = promptWaypointIcon({ iconType: wp.iconType, iconText: wp.iconText });
+            wp.iconType = icon.iconType;
+            wp.iconText = icon.iconText;
+            saveJSON(WPS_KEY, waypoints);
+            updateWaypointLayer(wp);
+            renderLibrary();
+            toast("Icon updated ✅");
+          }
+          else if (act === "export"){
+            const gpx = toGPX_all({ tracksList: [], waypointsList: [wp], name: wp.name });
+            downloadText(`waypoint-${wp.id}.gpx`, gpx);
+            toast("Exported GPX ✅");
+          }
+          else if (act === "del"){
+            if (!confirm("Delete this waypoint?")) return;
+            waypoints = waypoints.filter(x => x.id !== id);
+            saveJSON(WPS_KEY, waypoints);
+            removeWaypointFromMap(id);
+            renderLibrary();
+            toast("Deleted ✅");
+          }
+        }
+      }
+
+      // Export buttons
+      $("exportAllTracksBtn").addEventListener("click", () => {
+        if (!tracks.length){ toast("No tracks"); return; }
+        const gpx = toGPX_all({ tracksList: tracks, waypointsList: [], name: "All Tracks" });
+        downloadText(`all-tracks.gpx`, gpx);
+        toast("Exported all tracks ✅");
+      });
+      $("exportAllWaypointsBtn").addEventListener("click", () => {
+        if (!waypoints.length){ toast("No waypoints"); return; }
+        const gpx = toGPX_all({ tracksList: [], waypointsList: waypoints, name: "All Waypoints" });
+        downloadText(`all-waypoints.gpx`, gpx);
+        toast("Exported all waypoints ✅");
+      });
+      $("exportEverythingBtn").addEventListener("click", () => {
+        if (!tracks.length && !waypoints.length){ toast("Nothing to export"); return; }
+        const gpx = toGPX_all({ tracksList: tracks, waypointsList: waypoints, name: "Everything" });
+        downloadText(`everything.gpx`, gpx);
+        toast("Exported everything ✅");
       });
 
+      // ---------- Wire buttons ----------
+      $("testBtn").addEventListener("click", () => { toast("Buttons working ✅"); alert("Buttons working ✅"); });
       $("gpsBtn").addEventListener("click", toggleGPS);
       $("centerBtn").addEventListener("click", centerMe);
       $("trackBtn").addEventListener("click", toggleTracking);
-      $("saveBtn").addEventListener("click", saveSession);
-      $("sessionsBtn").addEventListener("click", openSessions);
-      $("clearBtn").addEventListener("click", clearTrack);
+      $("saveTrackBtn").addEventListener("click", saveDraftAsTrack);
+      $("clearDraftBtn").addEventListener("click", clearDraft);
 
-      // Init chips
+      $("wpHereBtn").addEventListener("click", addWaypointHere);
+      $("wpManualBtn").addEventListener("click", addWaypointManual);
+
+      $("libraryBtn").addEventListener("click", () => { openLibrary(); });
+      $("closeModalBtn").addEventListener("click", closeLibrary);
+      modal.addEventListener("click", (e) => { if (e.target === modal) closeLibrary(); });
+
+      tabTracks.addEventListener("click", () => setActiveTab("tracks"));
+      tabWaypoints.addEventListener("click", () => setActiveTab("waypoints"));
+
+      // ---------- Initial render ----------
       setChip(gpsChip, "GPS", "OFF");
       setChip(trkChip, "TRACK", "OFF");
+      setDraftState("none");
+
+      renderTrackLayersFromData();
+      renderWaypointLayersFromData();
+
+      // If there was a leftover draft in memory (we do not persist drafts), start clean:
+      clearDraftInternal();
+
+      // Default tab
+      setActiveTab("tracks");
     })();
   </script>
 </body>
