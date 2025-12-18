@@ -1,0 +1,1498 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Buy-Request Marketplace (Single-File Demo)</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#111a33;
+      --card2:#0f1730;
+      --text:#eef2ff;
+      --muted:#b8c0ffcc;
+      --line:#26325f;
+      --accent:#35d0ba;
+      --warn:#ffcc66;
+      --bad:#ff6b6b;
+      --ok:#7CFF6B;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    [data-theme="light"]{
+      --bg:#f6f7ff;
+      --card:#ffffff;
+      --card2:#f3f5ff;
+      --text:#101427;
+      --muted:#3d4566cc;
+      --line:#dde2ff;
+      --shadow: 0 10px 30px rgba(25,40,120,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 20% -20%, rgba(53,208,186,.25), transparent 55%),
+                  radial-gradient(900px 500px at 110% 10%, rgba(124,255,107,.15), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
+    a{color:inherit}
+    .wrap{max-width:1100px; margin:0 auto; padding:18px;}
+    header{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(10px);
+      background: color-mix(in oklab, var(--bg) 85%, transparent);
+      border-bottom:1px solid var(--line);
+    }
+    .topbar{display:flex; gap:10px; align-items:center; justify-content:space-between; padding:12px 18px;}
+    .brand{display:flex; gap:10px; align-items:center;}
+    .logo{
+      width:40px; height:40px; border-radius:12px;
+      background: linear-gradient(135deg, rgba(53,208,186,.95), rgba(124,255,107,.75));
+      box-shadow: var(--shadow);
+    }
+    .titleblock{display:flex; flex-direction:column; line-height:1.1}
+    .titleblock b{font-size:14px; letter-spacing:.3px}
+    .titleblock span{font-size:12px; color:var(--muted)}
+    .righttools{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:999px;
+      background: color-mix(in oklab, var(--card) 92%, transparent);
+      border:1px solid var(--line);
+      box-shadow: 0 6px 18px rgba(0,0,0,.10);
+      font-size:12px;
+    }
+    .pill .dot{width:8px; height:8px; border-radius:50%;}
+    .dot.buyer{background:var(--accent)}
+    .dot.seller{background:var(--warn)}
+    .btn{
+      appearance:none; border:none; cursor:pointer;
+      border-radius:12px;
+      padding:10px 12px;
+      background: color-mix(in oklab, var(--card) 92%, transparent);
+      color:var(--text);
+      border:1px solid var(--line);
+      box-shadow: 0 10px 20px rgba(0,0,0,.10);
+      font-weight:600;
+      font-size:13px;
+      transition: transform .06s ease, filter .15s ease, background .15s ease;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn:hover{filter:brightness(1.04)}
+    .btn:active{transform: translateY(1px)}
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(53,208,186,.95), rgba(53,208,186,.65));
+      border-color: color-mix(in oklab, var(--accent) 55%, var(--line));
+      color:#041b17;
+    }
+    .btn.danger{
+      background: color-mix(in oklab, var(--bad) 25%, var(--card));
+      border-color: color-mix(in oklab, var(--bad) 45%, var(--line));
+    }
+    .btn.ghost{background:transparent}
+    .badge{
+      min-width:18px; height:18px; padding:0 6px;
+      border-radius:999px;
+      display:inline-flex; align-items:center; justify-content:center;
+      background: color-mix(in oklab, var(--warn) 35%, var(--card));
+      border:1px solid color-mix(in oklab, var(--warn) 60%, var(--line));
+      font-size:11px;
+      color:var(--text);
+    }
+
+    .grid{display:grid; gap:14px; grid-template-columns: 1fr; margin-top:14px;}
+    @media (min-width: 980px){
+      .grid{grid-template-columns: 1.2fr .8fr;}
+    }
+
+    .card{
+      background: color-mix(in oklab, var(--card) 92%, transparent);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      background: color-mix(in oklab, var(--card2) 70%, transparent);
+      border-bottom:1px solid var(--line);
+    }
+    .card .hd h3{margin:0; font-size:14px; letter-spacing:.2px}
+    .card .bd{padding:14px 16px;}
+    .muted{color:var(--muted)}
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .row > * {flex: 1 1 auto;}
+    .field{display:flex; flex-direction:column; gap:6px; margin-bottom:10px;}
+    label{font-size:12px; color:var(--muted)}
+    input, select, textarea{
+      width:100%;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--bg) 30%, var(--card));
+      color:var(--text);
+      outline:none;
+    }
+    textarea{min-height:92px; resize:vertical}
+    .hint{font-size:12px; color:var(--muted)}
+    .list{display:flex; flex-direction:column; gap:10px;}
+    .item{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: color-mix(in oklab, var(--card) 95%, transparent);
+      padding:12px;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .item:hover{filter:brightness(1.02)}
+    .avatar{
+      width:44px; height:44px; border-radius:14px;
+      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), transparent 45%),
+                  linear-gradient(135deg, rgba(124,255,107,.45), rgba(53,208,186,.45));
+      border:1px solid var(--line);
+      box-shadow: 0 10px 18px rgba(0,0,0,.12);
+      flex: 0 0 auto;
+    }
+    .item .meta{flex: 1 1 auto;}
+    .item .meta .top{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+    }
+    .item b{font-size:14px}
+    .chips{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;}
+    .chip{
+      font-size:11px;
+      padding:6px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--card2) 70%, transparent);
+      color:var(--muted);
+    }
+    .chip.urgent{border-color: color-mix(in oklab, var(--warn) 55%, var(--line)); color: color-mix(in oklab, var(--warn) 70%, var(--text));}
+    .chip.new{border-color: color-mix(in oklab, var(--accent) 55%, var(--line)); color: color-mix(in oklab, var(--accent) 70%, var(--text));}
+    .chip.closed{border-color: color-mix(in oklab, #999 50%, var(--line)); color: color-mix(in oklab, #999 70%, var(--text));}
+    .small{font-size:12px}
+    .actions{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .divider{height:1px; background:var(--line); margin:12px 0;}
+    .toast{
+      position:fixed; right:14px; bottom:14px;
+      max-width:min(420px, calc(100vw - 28px));
+      padding:12px 12px;
+      border-radius:14px;
+      background: color-mix(in oklab, var(--card) 94%, transparent);
+      border:1px solid var(--line);
+      box-shadow: var(--shadow);
+      display:none;
+      z-index:200;
+    }
+    .toast.show{display:block; animation: pop .12s ease-out;}
+    @keyframes pop{from{transform:translateY(6px); opacity:.7} to{transform:translateY(0); opacity:1}}
+    .kpi{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .kpi .box{
+      flex:1 1 160px;
+      background: color-mix(in oklab, var(--card2) 70%, transparent);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+    }
+    .kpi .box b{font-size:18px}
+    .kpi .box div{font-size:12px; color:var(--muted)}
+    .modalback{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center; justify-content:center;
+      padding:18px;
+      z-index:150;
+    }
+    .modalback.show{display:flex;}
+    .modal{
+      width:min(760px, 100%);
+      border-radius:18px;
+      background: color-mix(in oklab, var(--card) 96%, transparent);
+      border:1px solid var(--line);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modal .hd{padding:14px 16px; border-bottom:1px solid var(--line); background: color-mix(in oklab, var(--card2) 70%, transparent);}
+    .modal .bd{padding:14px 16px;}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div class="titleblock">
+        <b>Buy-Request Marketplace</b>
+        <span class="muted">Single-file demo • localStorage • Buyer posts requests, sellers respond</span>
+      </div>
+    </div>
+
+    <div class="righttools">
+      <div class="pill" id="rolePill" title="Current role">
+        <span class="dot buyer" id="roleDot"></span>
+        <span id="roleLabel">Buyer</span>
+        <span class="badge" id="notifBadge" title="New offers for your requests">0</span>
+      </div>
+
+      <button class="btn" id="switchRoleBtn" title="Switch between Buyer/Seller">
+        🔁 Switch role
+      </button>
+
+      <button class="btn" id="themeBtn" title="Toggle theme">
+        🌓 Theme
+      </button>
+
+      <button class="btn" id="exportBtn" title="Export data to JSON">
+        ⬇️ Export
+      </button>
+
+      <button class="btn" id="importBtn" title="Import data from JSON">
+        ⬆️ Import
+      </button>
+
+      <button class="btn danger" id="resetBtn" title="Reset demo data">
+        🧨 Reset
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+    <!-- LEFT: Feed / Requests -->
+    <section class="card">
+      <div class="hd">
+        <h3 id="leftTitle">Requests feed</h3>
+        <div class="actions">
+          <button class="btn ghost" id="clearFiltersBtn">🧹 Clear filters</button>
+          <button class="btn" id="refreshBtn">🔄 Refresh</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="kpi" style="margin-bottom:12px">
+          <div class="box">
+            <b id="kpiTotal">0</b>
+            <div>Total requests</div>
+          </div>
+          <div class="box">
+            <b id="kpiOpen">0</b>
+            <div>Open</div>
+          </div>
+          <div class="box">
+            <b id="kpiOffers">0</b>
+            <div>Total offers</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field" style="flex:2 1 260px">
+            <label>Search (title, details, category, location)</label>
+            <input id="q" placeholder="e.g., iPhone 15 Pro, PlayStation, sofa, laptop..." />
+          </div>
+          <div class="field">
+            <label>Category</label>
+            <select id="cat">
+              <option value="">All</option>
+              <option>Electronics</option>
+              <option>Cars</option>
+              <option>Home</option>
+              <option>Fashion</option>
+              <option>Services</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="status">
+              <option value="">All</option>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Location</label>
+            <select id="loc">
+              <option value="">All</option>
+              <option>Abu Dhabi</option>
+              <option>Dubai</option>
+              <option>Sharjah</option>
+              <option>Ajman</option>
+              <option>Ras Al Khaimah</option>
+              <option>Fujairah</option>
+              <option>Umm Al Quwain</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Max budget (AED)</label>
+            <input id="maxBudget" type="number" min="0" placeholder="e.g., 2500" />
+          </div>
+          <div class="field">
+            <label>Sort</label>
+            <select id="sort">
+              <option value="newest">Newest</option>
+              <option value="budgetHigh">Budget: high → low</option>
+              <option value="budgetLow">Budget: low → high</option>
+              <option value="offersHigh">Offers: high → low</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="list" id="feed"></div>
+        <div class="hint" id="emptyHint" style="display:none; margin-top:10px;">
+          No matching requests. Try clearing filters.
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Role panel -->
+    <aside class="card">
+      <div class="hd">
+        <h3 id="rightTitle">Buyer panel</h3>
+        <div class="actions">
+          <button class="btn primary" id="newRequestBtn">➕ New request</button>
+        </div>
+      </div>
+      <div class="bd" id="rolePanel"></div>
+    </aside>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modalback" id="modalBack" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="hd">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <b id="modalTitle">Modal</b>
+        <button class="btn" id="modalCloseBtn">✖️ Close</button>
+      </div>
+    </div>
+    <div class="bd" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================
+   Single-file demo app
+   - localStorage persistence
+   - Roles: buyer/seller
+   - Requests + Offers + Favorites
+   - CRUD, search/filter/sort
+   - Export/Import/Reset
+========================= */
+
+(() => {
+  // ---------- Storage Keys ----------
+  const LS_KEY = "buyreq_demo_v1";
+  const LS_THEME = "buyreq_theme";
+  const LS_ROLE = "buyreq_role";
+
+  // ---------- Utilities ----------
+  const $ = (sel) => document.querySelector(sel);
+  const escapeHtml = (s="") => String(s)
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+
+  const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+  const nowIso = () => new Date().toISOString();
+  const fmtAgo = (iso) => {
+    const ms = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(ms/60000);
+    if (m < 1) return "just now";
+    if (m < 60) return `${m} min ago`;
+    const h = Math.floor(m/60);
+    if (h < 24) return `${h} hr ago`;
+    const d = Math.floor(h/24);
+    return `${d} day${d>1?"s":""} ago`;
+  };
+  const money = (n) => {
+    const x = Number(n);
+    if (!Number.isFinite(x)) return "—";
+    return x.toLocaleString("en-US") + " AED";
+  };
+
+  const toast = (msg) => {
+    const t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toast._tm);
+    toast._tm = setTimeout(() => t.classList.remove("show"), 2400);
+  };
+
+  const modal = {
+    open(title, html) {
+      $("#modalTitle").textContent = title;
+      $("#modalBody").innerHTML = html;
+      $("#modalBack").classList.add("show");
+    },
+    close() {
+      $("#modalBack").classList.remove("show");
+      $("#modalBody").innerHTML = "";
+    }
+  };
+
+  // ---------- Demo Data ----------
+  const seedIfEmpty = (state) => {
+    if (state.requests?.length) return state;
+
+    const demoRequests = [
+      {
+        id: uid(),
+        title: "iPhone 15 Pro 256GB (Natural Titanium)",
+        details: "Prefer excellent condition, battery health 90%+. Need box/receipt if possible.",
+        category: "Electronics",
+        location: "Abu Dhabi",
+        budget: 4200,
+        urgency: "today",
+        condition: "used",
+        mustHaves: ["No major scratches", "Battery 90%+", "256GB"],
+        niceToHaves: ["Box & accessories", "Receipt"],
+        createdAt: new Date(Date.now() - 1000*60*55).toISOString(),
+        createdBy: "other",
+        status: "open",
+        views: 18,
+        sellerCount: 0
+      },
+      {
+        id: uid(),
+        title: "Toyota Land Cruiser 2016-2018 (GCC)",
+        details: "Looking for clean history, no accidents. Mileage under 160k preferred.",
+        category: "Cars",
+        location: "Dubai",
+        budget: 135000,
+        urgency: "week",
+        condition: "used",
+        mustHaves: ["GCC specs", "No major accident"],
+        niceToHaves: ["Full service history", "V8"],
+        createdAt: new Date(Date.now() - 1000*60*60*6).toISOString(),
+        createdBy: "other",
+        status: "open",
+        views: 41,
+        sellerCount: 0
+      },
+      {
+        id: uid(),
+        title: "Modern L-shape sofa (2.8m - 3.2m)",
+        details: "Neutral color, easy to clean fabric. Delivery preferred.",
+        category: "Home",
+        location: "Sharjah",
+        budget: 3000,
+        urgency: "month",
+        condition: "any",
+        mustHaves: ["L-shape", "Good condition"],
+        niceToHaves: ["Delivery", "Washable covers"],
+        createdAt: new Date(Date.now() - 1000*60*60*20).toISOString(),
+        createdBy: "other",
+        status: "open",
+        views: 9,
+        sellerCount: 0
+      },
+      {
+        id: uid(),
+        title: "PlayStation 5 Slim (Disc)",
+        details: "New or lightly used. Prefer 1 extra controller.",
+        category: "Electronics",
+        location: "Abu Dhabi",
+        budget: 1750,
+        urgency: "week",
+        condition: "any",
+        mustHaves: ["Disc version"],
+        niceToHaves: ["Extra controller", "Games bundle"],
+        createdAt: new Date(Date.now() - 1000*60*22).toISOString(),
+        createdBy: "other",
+        status: "open",
+        views: 12,
+        sellerCount: 0
+      },
+      {
+        id: uid(),
+        title: "Photographer for small engagement shoot",
+        details: "1 hour session, deliver edited photos. Please share portfolio.",
+        category: "Services",
+        location: "Dubai",
+        budget: 900,
+        urgency: "week",
+        condition: "any",
+        mustHaves: ["Portfolio"],
+        niceToHaves: ["Same-day previews"],
+        createdAt: new Date(Date.now() - 1000*60*60*30).toISOString(),
+        createdBy: "other",
+        status: "open",
+        views: 25,
+        sellerCount: 0
+      },
+      {
+        id: uid(),
+        title: "Gaming Laptop RTX 4070 (14-16 inch)",
+        details: "Good thermals, prefer 32GB RAM. UAE warranty a plus.",
+        category: "Electronics",
+        location: "Abu Dhabi",
+        budget: 6200,
+        urgency: "month",
+        condition: "used",
+        mustHaves: ["RTX 4070", "Good condition"],
+        niceToHaves: ["32GB RAM", "UAE warranty"],
+        createdAt: new Date(Date.now() - 1000*60*60*40).toISOString(),
+        createdBy: "other",
+        status: "open",
+        views: 33,
+        sellerCount: 0
+      },
+      {
+        id: uid(),
+        title: "Mountain bike (Medium frame)",
+        details: "Prefer hardtail, decent forks. Budget flexible for quality.",
+        category: "Other",
+        location: "Fujairah",
+        budget: 2500,
+        urgency: "month",
+        condition: "used",
+        mustHaves: ["Medium frame"],
+        niceToHaves: ["Helmet bundle"],
+        createdAt: new Date(Date.now() - 1000*60*60*52).toISOString(),
+        createdBy: "other",
+        status: "open",
+        views: 6,
+        sellerCount: 0
+      }
+    ];
+
+    const demo = {
+      version: 1,
+      me: {
+        id: "me",
+        displayName: "You",
+        phone: "+971 50 000 0000"
+      },
+      role: "buyer",
+      requests: demoRequests,
+      offers: [], // {id, requestId, sellerName, phone, price, condition, message, createdAt, status: pending/accepted/rejected}
+      favorites: [], // requestId list for seller
+      lastSeenOffersAt: nowIso() // for badge
+    };
+
+    save(demo);
+    return demo;
+  };
+
+  // ---------- Load/Save ----------
+  const load = () => {
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return seedIfEmpty({requests:[]});
+      const state = JSON.parse(raw);
+      return seedIfEmpty(state);
+    } catch(e){
+      console.warn("Load error", e);
+      const demo = seedIfEmpty({requests:[]});
+      return demo;
+    }
+  };
+
+  const save = (state) => localStorage.setItem(LS_KEY, JSON.stringify(state));
+
+  // ---------- State ----------
+  let state = load();
+
+  // ---------- Theme ----------
+  const applyTheme = () => {
+    const t = localStorage.getItem(LS_THEME) || "dark";
+    document.documentElement.dataset.theme = t === "light" ? "light" : "dark";
+  };
+  applyTheme();
+
+  // ---------- Role ----------
+  const loadRole = () => {
+    const r = localStorage.getItem(LS_ROLE);
+    if (r === "buyer" || r === "seller") state.role = r;
+    return state.role;
+  };
+  loadRole();
+
+  const setRole = (role) => {
+    state.role = role;
+    localStorage.setItem(LS_ROLE, role);
+    save(state);
+    renderAll();
+    toast(`Switched to ${role === "buyer" ? "Buyer" : "Seller"} mode`);
+  };
+
+  // ---------- Derived helpers ----------
+  const myRequests = () => state.requests.filter(r => r.createdBy === "me");
+  const openRequests = () => state.requests.filter(r => r.status === "open");
+  const offersForRequest = (requestId) => state.offers.filter(o => o.requestId === requestId);
+  const myOffers = () => state.offers.filter(o => o.sellerId === "me_seller");
+  const isFav = (id) => state.favorites.includes(id);
+
+  // ---------- UI renderers ----------
+  const renderHeader = () => {
+    const isBuyer = state.role === "buyer";
+    $("#roleLabel").textContent = isBuyer ? "Buyer" : "Seller";
+    $("#roleDot").className = "dot " + (isBuyer ? "buyer" : "seller");
+    $("#rolePill").title = isBuyer ? "Buyer: create & manage your requests" : "Seller: browse requests & respond with offers";
+  };
+
+  const updateKPIs = () => {
+    $("#kpiTotal").textContent = state.requests.length;
+    $("#kpiOpen").textContent = state.requests.filter(r => r.status === "open").length;
+    $("#kpiOffers").textContent = state.offers.length;
+  };
+
+  const computeOfferBadge = () => {
+    // Badge only matters for buyer, and only for "me" requests
+    if (state.role !== "buyer") {
+      $("#notifBadge").textContent = "0";
+      $("#notifBadge").style.display = "none";
+      return;
+    }
+    $("#notifBadge").style.display = "inline-flex";
+    const lastSeen = new Date(state.lastSeenOffersAt || 0).getTime();
+    const mine = new Set(myRequests().map(r => r.id));
+    const newCount = state.offers.filter(o => mine.has(o.requestId) && new Date(o.createdAt).getTime() > lastSeen).length;
+    $("#notifBadge").textContent = String(newCount);
+  };
+
+  const getFilters = () => ({
+    q: ($("#q").value || "").trim().toLowerCase(),
+    cat: $("#cat").value,
+    status: $("#status").value,
+    loc: $("#loc").value,
+    maxBudget: Number($("#maxBudget").value || 0),
+    sort: $("#sort").value
+  });
+
+  const applyFiltersAndSort = (requests) => {
+    const f = getFilters();
+    let out = [...requests];
+
+    if (f.q){
+      out = out.filter(r => {
+        const blob = `${r.title} ${r.details} ${r.category} ${r.location}`.toLowerCase();
+        return blob.includes(f.q);
+      });
+    }
+    if (f.cat) out = out.filter(r => r.category === f.cat);
+    if (f.status) out = out.filter(r => r.status === f.status);
+    if (f.loc) out = out.filter(r => r.location === f.loc);
+    if (f.maxBudget > 0) out = out.filter(r => Number(r.budget) <= f.maxBudget);
+
+    // sort
+    if (f.sort === "newest"){
+      out.sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt));
+    } else if (f.sort === "budgetHigh"){
+      out.sort((a,b) => (b.budget||0) - (a.budget||0));
+    } else if (f.sort === "budgetLow"){
+      out.sort((a,b) => (a.budget||0) - (b.budget||0));
+    } else if (f.sort === "offersHigh"){
+      out.sort((a,b) => offersForRequest(b.id).length - offersForRequest(a.id).length);
+    }
+    return out;
+  };
+
+  const chipUrgency = (u) => {
+    if (u === "today") return `<span class="chip urgent">Urgent: today</span>`;
+    if (u === "week") return `<span class="chip">This week</span>`;
+    if (u === "month") return `<span class="chip">This month</span>`;
+    return `<span class="chip">No urgency</span>`;
+  };
+
+  const chipStatus = (s) => s === "open"
+    ? `<span class="chip new">Open</span>`
+    : `<span class="chip closed">Closed</span>`;
+
+  const requestCardHTML = (r) => {
+    const offerCount = offersForRequest(r.id).length;
+    const fav = isFav(r.id);
+    const isMine = r.createdBy === "me";
+    const canSeeBuyerControls = state.role === "buyer" && isMine;
+    const canSeeSellerControls = state.role === "seller";
+
+    const must = (r.mustHaves || []).slice(0,4).map(x => `<span class="chip">Must: ${escapeHtml(x)}</span>`).join("");
+    const nice = (r.niceToHaves || []).slice(0,3).map(x => `<span class="chip">Nice: ${escapeHtml(x)}</span>`).join("");
+
+    const buttons = [];
+    buttons.push(`<button class="btn" data-act="view" data-id="${r.id}">👁️ View</button>`);
+
+    if (canSeeSellerControls){
+      buttons.push(`<button class="btn" data-act="offer" data-id="${r.id}">💬 Make offer</button>`);
+      buttons.push(`<button class="btn" data-act="fav" data-id="${r.id}">${fav ? "⭐ Unfavorite" : "☆ Favorite"}</button>`);
+    }
+
+    if (canSeeBuyerControls){
+      buttons.push(`<button class="btn" data-act="edit" data-id="${r.id}">✏️ Edit</button>`);
+      buttons.push(`<button class="btn" data-act="close" data-id="${r.id}">${r.status==="open" ? "✅ Close" : "🔓 Re-open"}</button>`);
+      buttons.push(`<button class="btn danger" data-act="del" data-id="${r.id}">🗑️ Delete</button>`);
+      if (offerCount > 0){
+        buttons.push(`<button class="btn primary" data-act="offers" data-id="${r.id}">📥 Offers <span class="badge">${offerCount}</span></button>`);
+      }
+    }
+
+    return `
+      <div class="item" data-item="${r.id}">
+        <div class="avatar" aria-hidden="true"></div>
+        <div class="meta">
+          <div class="top">
+            <div>
+              <b>${escapeHtml(r.title)}</b>
+              <div class="small muted" style="margin-top:4px">
+                ${escapeHtml(r.category)} • ${escapeHtml(r.location)} • Budget: <b>${money(r.budget)}</b> • ${fmtAgo(r.createdAt)}
+              </div>
+            </div>
+            <div style="text-align:right; min-width:120px;">
+              <div class="chips" style="justify-content:flex-end">
+                ${chipStatus(r.status)}
+                ${chipUrgency(r.urgency)}
+              </div>
+              <div class="small muted" style="margin-top:6px">
+                Offers: <b>${offerCount}</b>${canSeeSellerControls ? (fav ? " • ⭐" : "") : ""}
+              </div>
+            </div>
+          </div>
+
+          <div class="small" style="margin-top:10px">
+            ${escapeHtml(r.details).slice(0, 160)}${r.details.length > 160 ? "…" : ""}
+          </div>
+
+          <div class="chips">
+            ${must}
+            ${nice}
+          </div>
+
+          <div class="actions" style="margin-top:10px">
+            ${buttons.join("")}
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  const renderFeed = () => {
+    const base = state.role === "buyer"
+      ? state.requests // buyer sees all (like marketplace), but controls only for own posts
+      : state.requests.filter(r => r.status === "open"); // seller sees open by default
+
+    const filtered = applyFiltersAndSort(base);
+    $("#feed").innerHTML = filtered.map(requestCardHTML).join("");
+    $("#emptyHint").style.display = filtered.length ? "none" : "block";
+
+    // Title left
+    $("#leftTitle").textContent = state.role === "buyer"
+      ? "Requests feed (you can post + manage your own)"
+      : "Requests feed (open requests you can respond to)";
+  };
+
+  const renderRolePanel = () => {
+    const isBuyer = state.role === "buyer";
+    $("#rightTitle").textContent = isBuyer ? "Buyer panel" : "Seller panel";
+    $("#newRequestBtn").style.display = isBuyer ? "inline-flex" : "none";
+
+    if (isBuyer){
+      const mine = myRequests();
+      const openMine = mine.filter(r => r.status === "open").length;
+      const myOfferCount = state.offers.filter(o => mine.some(r => r.id === o.requestId)).length;
+
+      const html = `
+        <div class="kpi" style="margin-bottom:12px">
+          <div class="box"><b>${mine.length}</b><div>Your requests</div></div>
+          <div class="box"><b>${openMine}</b><div>Open</div></div>
+          <div class="box"><b>${myOfferCount}</b><div>Offers received</div></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <button class="btn primary" id="myRequestsBtn">📌 My requests</button>
+          <button class="btn" id="markSeenBtn">👀 Mark offers as seen</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="hint">
+          Tip: As a buyer, create a request with a clear title, budget, and must-haves.
+          Sellers will respond with structured offers.
+        </div>
+      `;
+      $("#rolePanel").innerHTML = html;
+
+      $("#myRequestsBtn").onclick = () => {
+        // quick filter: show only mine
+        $("#q").value = "";
+        $("#cat").value = "";
+        $("#status").value = "";
+        $("#loc").value = "";
+        $("#maxBudget").value = "";
+        // set search to special token by temporarily filtering through renderFeed override? We'll just open a modal list.
+        modal.open("My requests", `
+          <div class="hint">Manage your requests here. (Edit/Close/Delete from the main feed too.)</div>
+          <div class="divider"></div>
+          <div class="list">
+            ${mine.length ? mine.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(r => requestCardHTML(r)).join("") : `<div class="hint">You haven't created any requests yet.</div>`}
+          </div>
+        `);
+        bindModalActions();
+      };
+
+      $("#markSeenBtn").onclick = () => {
+        state.lastSeenOffersAt = nowIso();
+        save(state);
+        computeOfferBadge();
+        toast("Marked offers as seen");
+      };
+
+    } else {
+      const favs = state.favorites.map(id => state.requests.find(r => r.id === id)).filter(Boolean);
+      const html = `
+        <div class="kpi" style="margin-bottom:12px">
+          <div class="box"><b>${state.favorites.length}</b><div>Favorites</div></div>
+          <div class="box"><b>${state.requests.filter(r => r.status==="open").length}</b><div>Open requests</div></div>
+          <div class="box"><b>${myOffers().length}</b><div>Your offers</div></div>
+        </div>
+
+        <div class="row">
+          <button class="btn primary" id="favBtn">⭐ Favorites</button>
+          <button class="btn" id="myOffersBtn">📤 My offers</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="hint">
+          Tip: Use filters (category/location/budget). When you "Make offer", the buyer can accept or reject it.
+        </div>
+      `;
+      $("#rolePanel").innerHTML = html;
+
+      $("#favBtn").onclick = () => {
+        modal.open("Favorites", `
+          <div class="hint">Requests you've favorited for quick access.</div>
+          <div class="divider"></div>
+          <div class="list">
+            ${favs.length ? favs.map(r => requestCardHTML(r)).join("") : `<div class="hint">No favorites yet. Tap “Favorite” on a request.</div>`}
+          </div>
+        `);
+        bindModalActions();
+      };
+
+      $("#myOffersBtn").onclick = () => {
+        const offers = myOffers().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+        modal.open("My offers", `
+          <div class="hint">Offers you submitted (demo: stored locally).</div>
+          <div class="divider"></div>
+          <div class="list">
+            ${offers.length ? offers.map(o => offerRowHTML(o, true)).join("") : `<div class="hint">You haven't submitted any offers yet.</div>`}
+          </div>
+        `);
+        bindModalActions();
+      };
+    }
+  };
+
+  const offerRowHTML = (o, includeRequestTitle) => {
+    const r = state.requests.find(x => x.id === o.requestId);
+    const statusChip = o.status === "accepted"
+      ? `<span class="chip" style="border-color: color-mix(in oklab, var(--ok) 55%, var(--line)); color: color-mix(in oklab, var(--ok) 70%, var(--text));">Accepted</span>`
+      : o.status === "rejected"
+        ? `<span class="chip" style="border-color: color-mix(in oklab, var(--bad) 55%, var(--line)); color: color-mix(in oklab, var(--bad) 70%, var(--text));">Rejected</span>`
+        : `<span class="chip">Pending</span>`;
+
+    return `
+      <div class="item">
+        <div class="avatar" aria-hidden="true"></div>
+        <div class="meta">
+          <div class="top">
+            <div>
+              <b>${escapeHtml(o.sellerName)}</b>
+              <div class="small muted" style="margin-top:4px">
+                ${includeRequestTitle && r ? `For: <b>${escapeHtml(r.title)}</b> • ` : ""}
+                Price: <b>${money(o.price)}</b> • ${fmtAgo(o.createdAt)}
+              </div>
+            </div>
+            <div class="chips" style="justify-content:flex-end">
+              ${statusChip}
+              <span class="chip">${escapeHtml(o.condition)}</span>
+            </div>
+          </div>
+
+          <div class="small" style="margin-top:10px">
+            ${escapeHtml(o.message || "")}
+          </div>
+
+          <div class="chips">
+            <span class="chip">Phone: ${escapeHtml(o.phone || "—")}</span>
+          </div>
+
+          ${state.role === "buyer" ? `
+            <div class="actions" style="margin-top:10px">
+              <button class="btn primary" data-act="acceptOffer" data-oid="${o.id}">✅ Accept</button>
+              <button class="btn" data-act="rejectOffer" data-oid="${o.id}">❌ Reject</button>
+            </div>
+          ` : ""}
+        </div>
+      </div>
+    `;
+  };
+
+  const renderAll = () => {
+    renderHeader();
+    updateKPIs();
+    renderFeed();
+    renderRolePanel();
+    computeOfferBadge();
+    bindFeedActions();
+  };
+
+  // ---------- Actions ----------
+  const openNewRequestForm = (existing) => {
+    const isEdit = !!existing;
+    const r = existing || {
+      title: "", details: "", category: "Electronics", location: "Abu Dhabi",
+      budget: "", urgency: "week", condition: "any",
+      mustHaves: [], niceToHaves: []
+    };
+
+    modal.open(isEdit ? "Edit request" : "New request", `
+      <div class="row">
+        <div class="field" style="flex:2 1 260px">
+          <label>Title *</label>
+          <input id="r_title" value="${escapeHtml(r.title)}" placeholder="e.g., iPhone 15 Pro 256GB" />
+        </div>
+        <div class="field">
+          <label>Category *</label>
+          <select id="r_cat">
+            ${["Electronics","Cars","Home","Fashion","Services","Other"].map(c => `<option ${c===r.category?"selected":""}>${c}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Location *</label>
+          <select id="r_loc">
+            ${["Abu Dhabi","Dubai","Sharjah","Ajman","Ras Al Khaimah","Fujairah","Umm Al Quwain"].map(l => `<option ${l===r.location?"selected":""}>${l}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field">
+          <label>Budget (AED) *</label>
+          <input id="r_budget" type="number" min="0" value="${escapeHtml(r.budget)}" placeholder="e.g., 4200" />
+        </div>
+        <div class="field">
+          <label>Urgency</label>
+          <select id="r_urg">
+            ${[
+              ["today","Today"],
+              ["week","This week"],
+              ["month","This month"],
+              ["none","No urgency"]
+            ].map(([v,t]) => `<option value="${v}" ${v===r.urgency?"selected":""}>${t}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field">
+          <label>Preferred condition</label>
+          <select id="r_cond">
+            ${[
+              ["any","Any"],
+              ["new","New"],
+              ["used","Used"]
+            ].map(([v,t]) => `<option value="${v}" ${v===r.condition?"selected":""}>${t}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Details *</label>
+        <textarea id="r_details" placeholder="Add clear details to attract the right sellers...">${escapeHtml(r.details)}</textarea>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Must-haves (comma separated)</label>
+          <input id="r_must" value="${escapeHtml((r.mustHaves||[]).join(", "))}" placeholder="e.g., GCC specs, No cracks, Battery 90%+" />
+        </div>
+        <div class="field">
+          <label>Nice-to-haves (comma separated)</label>
+          <input id="r_nice" value="${escapeHtml((r.niceToHaves||[]).join(", "))}" placeholder="e.g., Box, Delivery, Receipt" />
+        </div>
+      </div>
+
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn" id="cancelBtn">Cancel</button>
+        <button class="btn primary" id="saveReqBtn">${isEdit ? "Save changes" : "Create request"}</button>
+      </div>
+
+      <div class="hint" style="margin-top:10px">
+        Demo note: This stores everything in <span class="mono">localStorage</span> only.
+      </div>
+    `);
+
+    $("#cancelBtn").onclick = () => modal.close();
+    $("#saveReqBtn").onclick = () => {
+      const title = ($("#r_title").value || "").trim();
+      const details = ($("#r_details").value || "").trim();
+      const category = $("#r_cat").value;
+      const location = $("#r_loc").value;
+      const budget = Number($("#r_budget").value || 0);
+      const urgency = $("#r_urg").value;
+      const condition = $("#r_cond").value;
+
+      const must = ($("#r_must").value || "").split(",").map(s => s.trim()).filter(Boolean);
+      const nice = ($("#r_nice").value || "").split(",").map(s => s.trim()).filter(Boolean);
+
+      if (!title || !details || !category || !location || !(budget > 0)) {
+        toast("Please fill Title, Details, Category, Location, and Budget");
+        return;
+      }
+
+      if (isEdit){
+        const idx = state.requests.findIndex(x => x.id === existing.id);
+        if (idx === -1) return toast("Request not found");
+        state.requests[idx] = {
+          ...state.requests[idx],
+          title, details, category, location, budget, urgency, condition,
+          mustHaves: must, niceToHaves: nice
+        };
+        save(state);
+        renderAll();
+        modal.close();
+        toast("Request updated");
+      } else {
+        const req = {
+          id: uid(),
+          title, details, category, location, budget, urgency, condition,
+          mustHaves: must, niceToHaves: nice,
+          createdAt: nowIso(),
+          createdBy: "me",
+          status: "open",
+          views: 0,
+          sellerCount: 0
+        };
+        state.requests.unshift(req);
+        save(state);
+        renderAll();
+        modal.close();
+        toast("Request created");
+      }
+    };
+  };
+
+  const openRequestView = (id) => {
+    const r = state.requests.find(x => x.id === id);
+    if (!r) return toast("Request not found");
+
+    // simulate views
+    r.views = (r.views || 0) + 1;
+    save(state);
+    updateKPIs();
+
+    const offerCount = offersForRequest(id).length;
+    const canOffer = state.role === "seller" && r.status === "open";
+    const isMine = r.createdBy === "me";
+    const canSeeOffers = state.role === "buyer" && isMine;
+
+    modal.open("Request details", `
+      <div class="row" style="align-items:flex-start">
+        <div style="flex: 1 1 340px">
+          <div class="chip">${escapeHtml(r.category)}</div>
+          <h2 style="margin:10px 0 6px; font-size:20px">${escapeHtml(r.title)}</h2>
+          <div class="muted small">
+            Location: <b>${escapeHtml(r.location)}</b> • Budget: <b>${money(r.budget)}</b> • Posted ${fmtAgo(r.createdAt)} • Views: <b>${r.views||0}</b>
+          </div>
+          <div class="chips" style="margin-top:10px">
+            ${chipStatus(r.status)}
+            ${chipUrgency(r.urgency)}
+            <span class="chip">Condition: ${escapeHtml(r.condition)}</span>
+            <span class="chip">Offers: ${offerCount}</span>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="small" style="line-height:1.6">
+            ${escapeHtml(r.details).replaceAll("\n","<br>")}
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="chips">
+            ${(r.mustHaves||[]).map(x => `<span class="chip">Must: ${escapeHtml(x)}</span>`).join("")}
+            ${(r.niceToHaves||[]).map(x => `<span class="chip">Nice: ${escapeHtml(x)}</span>`).join("")}
+          </div>
+        </div>
+
+        <div style="flex: 1 1 260px">
+          <div class="card" style="border-radius:14px; box-shadow:none">
+            <div class="hd"><h3 style="margin:0">Actions</h3></div>
+            <div class="bd">
+              ${canOffer ? `<button class="btn primary" style="width:100%" data-act="offer" data-id="${r.id}">💬 Make an offer</button>` : ""}
+              ${state.role === "seller" ? `<button class="btn" style="width:100%; margin-top:8px" data-act="fav" data-id="${r.id}">${isFav(r.id) ? "⭐ Unfavorite" : "☆ Favorite"}</button>` : ""}
+              ${canSeeOffers ? `<button class="btn" style="width:100%; margin-top:8px" data-act="offers" data-id="${r.id}">📥 View offers <span class="badge">${offerCount}</span></button>` : ""}
+              ${state.role === "buyer" && isMine ? `
+                <button class="btn" style="width:100%; margin-top:8px" data-act="edit" data-id="${r.id}">✏️ Edit</button>
+                <button class="btn" style="width:100%; margin-top:8px" data-act="close" data-id="${r.id}">${r.status==="open" ? "✅ Close request" : "🔓 Re-open request"}</button>
+                <button class="btn danger" style="width:100%; margin-top:8px" data-act="del" data-id="${r.id}">🗑️ Delete</button>
+              ` : ""}
+              <div class="hint" style="margin-top:10px">
+                In a real app: this panel could show verification, escrow, meetup spots, etc.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+    bindModalActions();
+    renderFeed();
+  };
+
+  const openOfferForm = (requestId) => {
+    const r = state.requests.find(x => x.id === requestId);
+    if (!r) return toast("Request not found");
+    if (r.status !== "open") return toast("This request is closed");
+
+    modal.open("Make an offer", `
+      <div class="hint">You are responding as a seller. The buyer will see your offer (demo: stored locally).</div>
+      <div class="divider"></div>
+
+      <div class="row">
+        <div class="field" style="flex:2 1 240px">
+          <label>Your display name *</label>
+          <input id="o_name" value="Seller (You)" />
+        </div>
+        <div class="field">
+          <label>Phone / contact *</label>
+          <input id="o_phone" value="+971 5X XXX XXXX" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Price (AED) *</label>
+          <input id="o_price" type="number" min="0" placeholder="e.g., 3990" />
+        </div>
+        <div class="field">
+          <label>Condition</label>
+          <select id="o_cond">
+            <option>New</option>
+            <option selected>Used - Excellent</option>
+            <option>Used - Good</option>
+            <option>Used - Fair</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Message *</label>
+        <textarea id="o_msg" placeholder="Include what's included, defects, delivery/meetup info..."></textarea>
+      </div>
+
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn" id="o_cancel">Cancel</button>
+        <button class="btn primary" id="o_send">Send offer</button>
+      </div>
+
+      <div class="divider"></div>
+      <div class="card" style="border-radius:14px; box-shadow:none">
+        <div class="hd"><h3 style="margin:0">Request you are responding to</h3></div>
+        <div class="bd">
+          <b>${escapeHtml(r.title)}</b>
+          <div class="muted small">${escapeHtml(r.location)} • Budget ${money(r.budget)} • ${escapeHtml(r.category)}</div>
+        </div>
+      </div>
+    `);
+
+    $("#o_cancel").onclick = () => modal.close();
+    $("#o_send").onclick = () => {
+      const sellerName = ($("#o_name").value || "").trim();
+      const phone = ($("#o_phone").value || "").trim();
+      const price = Number($("#o_price").value || 0);
+      const condition = $("#o_cond").value;
+      const message = ($("#o_msg").value || "").trim();
+
+      if (!sellerName || !phone || !(price > 0) || !message) {
+        toast("Please fill name, contact, price, and message");
+        return;
+      }
+
+      const offer = {
+        id: uid(),
+        requestId,
+        sellerId: "me_seller",
+        sellerName,
+        phone,
+        price,
+        condition,
+        message,
+        createdAt: nowIso(),
+        status: "pending"
+      };
+
+      state.offers.unshift(offer);
+      save(state);
+      renderAll();
+      modal.close();
+      toast("Offer sent");
+
+      // Mark as "new" for buyer badge logic (buyer badge uses lastSeenOffersAt)
+      computeOfferBadge();
+    };
+  };
+
+  const openOffersList = (requestId) => {
+    const r = state.requests.find(x => x.id === requestId);
+    if (!r) return toast("Request not found");
+
+    const offers = offersForRequest(requestId).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+    modal.open("Offers for your request", `
+      <div class="hint">Accepting an offer will mark others as rejected (demo behavior).</div>
+      <div class="divider"></div>
+      <div class="card" style="border-radius:14px; box-shadow:none; margin-bottom:12px">
+        <div class="hd"><h3 style="margin:0">Request</h3></div>
+        <div class="bd">
+          <b>${escapeHtml(r.title)}</b>
+          <div class="muted small">${escapeHtml(r.location)} • Budget ${money(r.budget)} • Status: <b>${escapeHtml(r.status)}</b></div>
+        </div>
+      </div>
+
+      <div class="list">
+        ${offers.length ? offers.map(o => offerRowHTML(o, false)).join("") : `<div class="hint">No offers yet.</div>`}
+      </div>
+    `);
+
+    // When buyer opens offers list, we can mark seen timestamp as now (optional)
+    if (state.role === "buyer") {
+      state.lastSeenOffersAt = nowIso();
+      save(state);
+      computeOfferBadge();
+    }
+    bindModalActions();
+  };
+
+  const acceptOffer = (offerId) => {
+    const o = state.offers.find(x => x.id === offerId);
+    if (!o) return toast("Offer not found");
+    const r = state.requests.find(x => x.id === o.requestId);
+    if (!r) return toast("Request not found");
+
+    // Only buyer for own request
+    if (!(state.role === "buyer" && r.createdBy === "me")) return toast("Not allowed");
+
+    // Accept chosen, reject others for same request
+    state.offers.forEach(x => {
+      if (x.requestId === o.requestId) x.status = (x.id === o.id) ? "accepted" : "rejected";
+    });
+    r.status = "closed";
+    save(state);
+    renderAll();
+    toast("Offer accepted. Request closed.");
+    openOffersList(o.requestId);
+  };
+
+  const rejectOffer = (offerId) => {
+    const o = state.offers.find(x => x.id === offerId);
+    if (!o) return toast("Offer not found");
+    const r = state.requests.find(x => x.id === o.requestId);
+    if (!r) return toast("Request not found");
+    if (!(state.role === "buyer" && r.createdBy === "me")) return toast("Not allowed");
+
+    o.status = "rejected";
+    save(state);
+    renderAll();
+    toast("Offer rejected");
+    openOffersList(o.requestId);
+  };
+
+  const toggleFavorite = (requestId) => {
+    const i = state.favorites.indexOf(requestId);
+    if (i >= 0) state.favorites.splice(i,1);
+    else state.favorites.push(requestId);
+    save(state);
+    renderAll();
+    toast(i>=0 ? "Removed from favorites" : "Added to favorites");
+  };
+
+  const deleteRequest = (requestId) => {
+    const r = state.requests.find(x => x.id === requestId);
+    if (!r) return toast("Request not found");
+    if (!(state.role === "buyer" && r.createdBy === "me")) return toast("Not allowed");
+    if (!confirm("Delete this request? This will also remove its offers.")) return;
+
+    state.requests = state.requests.filter(x => x.id !== requestId);
+    state.offers = state.offers.filter(o => o.requestId !== requestId);
+    state.favorites = state.favorites.filter(id => id !== requestId);
+    save(state);
+    renderAll();
+    toast("Request deleted");
+    modal.close();
+  };
+
+  const toggleCloseRequest = (requestId) => {
+    const r = state.requests.find(x => x.id === requestId);
+    if (!r) return toast("Request not found");
+    if (!(state.role === "buyer" && r.createdBy === "me")) return toast("Not allowed");
+
+    r.status = (r.status === "open") ? "closed" : "open";
+    save(state);
+    renderAll();
+    toast(r.status === "open" ? "Request reopened" : "Request closed");
+  };
+
+  // ---------- Binding actions ----------
+  const handleAction = (act, id, oid) => {
+    if (act === "view") openRequestView(id);
+    if (act === "offer") openOfferForm(id);
+    if (act === "fav") toggleFavorite(id);
+    if (act === "edit") {
+      const r = state.requests.find(x => x.id === id);
+      if (!r) return toast("Request not found");
+      openNewRequestForm(r);
+    }
+    if (act === "close") toggleCloseRequest(id);
+    if (act === "del") deleteRequest(id);
+    if (act === "offers") openOffersList(id);
+    if (act === "acceptOffer") acceptOffer(oid);
+    if (act === "rejectOffer") rejectOffer(oid);
+  };
+
+  const bindFeedActions = () => {
+    $("#feed").querySelectorAll("[data-act]").forEach(btn => {
+      btn.onclick = (e) => {
+        const act = btn.dataset.act;
+        const id = btn.dataset.id;
+        handleAction(act, id, null);
+      };
+    });
+  };
+
+  const bindModalActions = () => {
+    $("#modalBody").querySelectorAll("[data-act]").forEach(btn => {
+      btn.onclick = () => {
+        const act = btn.dataset.act;
+        const id = btn.dataset.id;
+        const oid = btn.dataset.oid;
+        handleAction(act, id, oid);
+      };
+    });
+  };
+
+  // ---------- Export / Import ----------
+  const exportJSON = () => {
+    const data = JSON.stringify(state, null, 2);
+    modal.open("Export JSON", `
+      <div class="hint">Copy this JSON to save your demo data.</div>
+      <div class="divider"></div>
+      <textarea class="mono" style="min-height:280px">${escapeHtml(data)}</textarea>
+      <div class="row" style="justify-content:flex-end; margin-top:10px">
+        <button class="btn primary" id="copyJsonBtn">📋 Copy</button>
+      </div>
+    `);
+    $("#copyJsonBtn").onclick = async () => {
+      try{
+        await navigator.clipboard.writeText(data);
+        toast("Copied to clipboard");
+      } catch {
+        toast("Copy failed (browser blocked).");
+      }
+    };
+  };
+
+  const importJSON = () => {
+    modal.open("Import JSON", `
+      <div class="hint">Paste JSON previously exported. This will overwrite current data.</div>
+      <div class="divider"></div>
+      <textarea id="importArea" class="mono" style="min-height:280px" placeholder="{ ... }"></textarea>
+      <div class="row" style="justify-content:flex-end; margin-top:10px">
+        <button class="btn" id="importCancel">Cancel</button>
+        <button class="btn primary" id="importDo">Import</button>
+      </div>
+    `);
+
+    $("#importCancel").onclick = () => modal.close();
+    $("#importDo").onclick = () => {
+      const txt = ($("#importArea").value || "").trim();
+      if (!txt) return toast("Paste JSON first");
+      try{
+        const obj = JSON.parse(txt);
+        if (!obj || !Array.isArray(obj.requests) || !Array.isArray(obj.offers)) {
+          toast("Invalid JSON format for this demo");
+          return;
+        }
+        state = seedIfEmpty(obj); // if empty, will seed; otherwise uses your data
+        save(state);
+        renderAll();
+        modal.close();
+        toast("Imported");
+      } catch(e){
+        toast("Invalid JSON");
+      }
+    };
+  };
+
+  // ---------- Reset ----------
+  const resetDemo = () => {
+    if (!confirm("Reset demo data? This removes requests/offers/favorites.")) return;
+    localStorage.removeItem(LS_KEY);
+    state = load();
+    save(state);
+    renderAll();
+    toast("Reset complete");
+  };
+
+  // ---------- Global bindings ----------
+  $("#modalCloseBtn").onclick = () => modal.close();
+  $("#modalBack").addEventListener("click", (e) => {
+    if (e.target.id === "modalBack") modal.close();
+  });
+
+  $("#newRequestBtn").onclick = () => openNewRequestForm();
+  $("#switchRoleBtn").onclick = () => setRole(state.role === "buyer" ? "seller" : "buyer");
+
+  $("#themeBtn").onclick = () => {
+    const cur = document.documentElement.dataset.theme === "light" ? "light" : "dark";
+    const next = cur === "light" ? "dark" : "light";
+    localStorage.setItem(LS_THEME, next);
+    applyTheme();
+    toast(`Theme: ${next}`);
+  };
+
+  $("#exportBtn").onclick = exportJSON;
+  $("#importBtn").onclick = importJSON;
+  $("#resetBtn").onclick = resetDemo;
+
+  $("#refreshBtn").onclick = () => { renderAll(); toast("Refreshed"); };
+
+  $("#clearFiltersBtn").onclick = () => {
+    $("#q").value = "";
+    $("#cat").value = "";
+    $("#status").value = "";
+    $("#loc").value = "";
+    $("#maxBudget").value = "";
+    $("#sort").value = "newest";
+    renderAll();
+    toast("Filters cleared");
+  };
+
+  // Re-render on filter change
+  ["q","cat","status","loc","maxBudget","sort"].forEach(id => {
+    const el = document.getElementById(id);
+    const evt = id === "q" ? "input" : "change";
+    el.addEventListener(evt, () => renderFeed());
+  });
+
+  // Initial render
+  renderAll();
+})();
+</script>
+</body>
+</html>
