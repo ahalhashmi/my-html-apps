@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Drag Simulator (Portrait)</title>
+  <style>
+    :root{
+      --bg:#070A12;
+      --panel:#0E1424;
+      --text:#EAF0FF;
+      --muted:#98A6C7;
+      --accent:#59D6FF;
+      --good:#3CFF9A;
+      --warn:#FFCE4A;
+      --bad:#FF4C6A;
+      --line:rgba(255,255,255,.10);
+      --shadow:0 14px 40px rgba(0,0,0,.45);
+      --radius:16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    html,body{ height:100%; margin:0; color:var(--text); font-family:var(--sans); background:radial-gradient(1200px 900px at 50% 10%, #0B1330 0%, var(--bg) 55%, #05060B 100%); }
+    body{ overflow:hidden; touch-action:none; }
+
+    .app{ height:100%; max-width:900px; margin:0 auto; padding:10px; display:flex; flex-direction:column; gap:10px; }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .cardHeader{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background:rgba(255,255,255,.02);
+    }
+    .title{ font-weight:900; letter-spacing:.3px; font-size:14px; display:flex; align-items:center; gap:8px; }
+    .badge{
+      font-family:var(--mono);
+      font-size:11px;
+      color:rgba(255,255,255,.85);
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      padding:2px 7px;
+      border-radius:999px;
+      white-space:nowrap;
+    }
+    .muted{ color:var(--muted); font-size:12px; }
+    .mono{ font-family:var(--mono); font-variant-numeric: tabular-nums; }
+
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      border-radius:999px;
+      padding:10px 12px;
+      font-weight:800;
+      font-size:13px;
+      line-height:1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      user-select:none;
+      -webkit-user-select:none;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .btn:active{ transform:translateY(1px); }
+    .btnPrimary{ background:linear-gradient(180deg, rgba(89,214,255,.25), rgba(89,214,255,.10)); border-color:rgba(89,214,255,.35); }
+    .btnGood{ background:linear-gradient(180deg, rgba(60,255,154,.25), rgba(60,255,154,.10)); border-color:rgba(60,255,154,.35); }
+    .btnBad{ background:linear-gradient(180deg, rgba(255,76,106,.25), rgba(255,76,106,.10)); border-color:rgba(255,76,106,.35); }
+
+    .pillRow{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
+
+    label{ font-size:11px; color:rgba(255,255,255,.75); display:block; margin-bottom:6px; }
+    select, input[type="number"], input[type="text"]{
+      width:100%;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 10px;
+      border-radius:12px;
+      font-size:14px;
+      outline:none;
+      font-family:var(--sans);
+    }
+
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .scroll{ overflow:auto; -webkit-overflow-scrolling: touch; min-height:0; padding-right:4px; }
+    .scroll::-webkit-scrollbar{ width:6px; }
+    .scroll::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.12); border-radius:999px; }
+
+    .page{ flex:1; min-height:0; display:none; }
+    .page.active{ display:flex; flex-direction:column; gap:10px; }
+
+    /* HOME */
+    .homeHero{ padding:12px; display:flex; gap:10px; align-items:flex-start; justify-content:space-between; }
+    .heroLeft{ display:flex; flex-direction:column; gap:6px; }
+    .heroTitle{ font-size:16px; font-weight:900; letter-spacing:.2px; }
+    .heroSub{ color:rgba(255,255,255,.78); font-size:12px; line-height:1.35; max-width:520px; }
+
+    .seg{ display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--line); background:rgba(255,255,255,.02); }
+    .segBtn{
+      flex:1; padding:10px 10px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      color:rgba(255,255,255,.86);
+      font-weight:900; font-size:12px;
+      text-align:center; cursor:pointer;
+      user-select:none; -webkit-user-select:none;
+    }
+    .segBtn.active{
+      background:linear-gradient(180deg, rgba(89,214,255,.22), rgba(255,255,255,.03));
+      border-color:rgba(89,214,255,.35);
+      color:var(--text);
+    }
+    .pane{ display:none; }
+    .pane.active{ display:block; }
+
+    .gearTable{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    .gearHead, .gearRow{
+      display:grid;
+      grid-template-columns: 48px 1fr;
+      gap:8px;
+      align-items:center;
+      padding:8px 10px;
+    }
+    .gearHead{
+      background:rgba(255,255,255,.04);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      font-size:11px;
+      color:rgba(255,255,255,.75);
+    }
+    .gearRow{ border-bottom:1px solid rgba(255,255,255,.06); }
+    .gearRow:last-child{ border-bottom:none; }
+    .gearRow .g{ font-family:var(--mono); font-weight:900; text-align:center; color:rgba(255,255,255,.9); }
+    .gearRow input{ font-family:var(--mono); letter-spacing:.2px; padding:8px 9px; border-radius:10px; font-size:12px; }
+
+    .leader{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12px;
+      overflow:hidden;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+    }
+    .leader th, .leader td{ padding:8px 8px; border-bottom:1px solid rgba(255,255,255,.06); text-align:left; vertical-align:top; }
+    .leader th{ font-size:11px; color:rgba(255,255,255,.75); background:rgba(255,255,255,.04); }
+    .leader tr:last-child td{ border-bottom:none; }
+    .right{ text-align:right; }
+
+    /* RACE */
+    .raceWrap{ flex:1; min-height:0; display:grid; grid-template-rows: 1fr auto; gap:10px; }
+    .view{ position:relative; min-height:0; overflow:hidden; border-radius:var(--radius); }
+    canvas#road{ width:100%; height:100%; display:block; background:linear-gradient(180deg, #04060C 0%, #070A12 55%, #02030A 100%); }
+
+    .hud{ position:absolute; inset:0; padding:10px; pointer-events:none; display:flex; flex-direction:column; gap:10px; }
+
+    .topCluster{
+      display:flex; align-items:flex-start; justify-content:center;
+      pointer-events:none;
+    }
+    .treeWrap{
+      background:rgba(0,0,0,.34);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      padding:10px 12px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .tree{ display:grid; grid-template-columns:18px 18px; gap:6px 10px; align-items:center; }
+    .light{
+      width:18px; height:18px; border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,.20);
+    }
+    .light.on.pre{ background:rgba(100,180,255,.95); border-color:rgba(140,210,255,.7); box-shadow:0 0 18px rgba(100,180,255,.55); }
+    .light.on.stage{ background:rgba(120,220,255,.95); border-color:rgba(160,240,255,.7); box-shadow:0 0 18px rgba(120,220,255,.55); }
+    .light.on.amb{ background:rgba(255,206,74,.98); border-color:rgba(255,206,74,.75); box-shadow:0 0 18px rgba(255,206,74,.55); }
+    .light.on.grn{ background:rgba(60,255,154,.98); border-color:rgba(60,255,154,.75); box-shadow:0 0 20px rgba(60,255,154,.55); }
+    .light.on.red{ background:rgba(255,76,106,.98); border-color:rgba(255,76,106,.75); box-shadow:0 0 20px rgba(255,76,106,.55); }
+
+    .statusBox{ display:flex; flex-direction:column; gap:2px; min-width:150px; }
+    .statusBig{ font-family:var(--mono); font-size:14px; font-weight:900; letter-spacing:.2px; }
+    .statusSmall{ font-family:var(--mono); font-size:12px; color:rgba(255,255,255,.80); }
+
+    /* Telemetry overlay */
+    .telemetry{
+      margin:0 auto;
+      width:min(92%, 460px);
+      background:rgba(0,0,0,.32);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      padding:10px 12px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .tLine{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      gap:14px;
+      padding:3px 0;
+      white-space:nowrap;
+    }
+    .tKey{
+      font-size:11px;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.72);
+      flex:0 0 auto;
+    }
+    .tVal{
+      font-family:var(--mono);
+      font-weight:900;
+      font-size:18px;
+      line-height:1.15;
+      color:rgba(255,255,255,.95);
+      flex:0 0 auto;
+      text-align:right;
+      min-width: 210px;
+    }
+    .tVal.small{ font-size:15px; min-width:210px; color:rgba(255,255,255,.88); }
+
+    /* RPM strip under telemetry (on track) */
+    .rpmStrip{
+      margin:0 auto;
+      width:min(92%, 460px);
+      background:rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      padding:10px 12px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.30);
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .rpmTop{
+      display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+      white-space:nowrap;
+    }
+    .rpmTop .left, .rpmTop .right{ font-family:var(--mono); font-weight:900; }
+    .rpmTop .left{ font-size:14px; }
+    .rpmTop .right{ font-size:14px; color:rgba(255,255,255,.92); text-align:right; }
+    .rpmBarOuter{
+      height:12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+      position:relative;
+    }
+    .rpmBarInner{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, rgba(60,255,154,.95), rgba(255,206,74,.95), rgba(255,76,106,.95));
+      border-radius:999px;
+    }
+    .rpmTick{
+      position:absolute; top:-2px; bottom:-2px; width:2px;
+      background:rgba(255,255,255,.20);
+      opacity:.5;
+    }
+    .rpmTick.redline{ background:rgba(255,76,106,.70); opacity:.9; }
+
+    /* Controls: single stretched drive card */
+    .raceControls{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    .raceControls .cardBody{ padding:10px; display:flex; flex-direction:column; gap:10px; min-height:0; }
+
+    .controlPads{ display:grid; grid-template-columns: 1.2fr .8fr; gap:10px; align-items:stretch; }
+    .pedal{
+      height:150px;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:8px;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.10);
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      box-shadow: inset 0 -20px 40px rgba(0,0,0,.35);
+      user-select:none; -webkit-user-select:none;
+    }
+    .pedal.throttle{
+      background:linear-gradient(180deg, rgba(60,255,154,.16), rgba(255,255,255,.03));
+      border-color:rgba(60,255,154,.22);
+    }
+    .pedalLabel{ font-weight:900; letter-spacing:.8px; font-size:14px; text-transform:uppercase; }
+
+    .shifter{ display:grid; grid-template-rows: 1fr; gap:10px; }
+    .shiftBtn{
+      height:150px;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.10);
+      background:linear-gradient(180deg, rgba(89,214,255,.14), rgba(255,255,255,.03));
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:8px;
+      font-weight:900;
+      font-size:18px;
+      user-select:none; -webkit-user-select:none;
+    }
+    .shiftBtn:active{ transform:translateY(1px); }
+    .shiftBtn.disabled{
+      opacity:.35;
+      filter:saturate(.6);
+      pointer-events:none;
+    }
+
+    /* RPM details inside Drive card */
+    .driveRpmRow{
+      display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+      font-family:var(--mono);
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .driveRpmRow .small{ font-size:12px; color:rgba(255,255,255,.78); font-weight:800; }
+    .driveRpmRow .big{ font-size:16px; }
+    .driveRpmBarOuter{
+      height:12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+      position:relative;
+    }
+    .driveRpmBarInner{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, rgba(60,255,154,.95), rgba(255,206,74,.95), rgba(255,76,106,.95));
+      border-radius:999px;
+    }
+    .driveRpmTick{
+      position:absolute; top:-2px; bottom:-2px; width:2px;
+      background:rgba(255,255,255,.20);
+      opacity:.5;
+    }
+    .driveRpmTick.redline{ background:rgba(255,76,106,.70); opacity:.9; }
+
+    .toast{
+      position:absolute;
+      left:50%;
+      bottom:12px;
+      transform:translateX(-50%);
+      background:rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      color:rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
+      pointer-events:none;
+      opacity:0;
+      transition:opacity .18s ease, transform .18s ease;
+      box-shadow:var(--shadow);
+      max-width:92%;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .toast.show{ opacity:1; transform:translateX(-50%) translateY(-2px); }
+
+    @media (max-height: 740px){
+      .pedal,.shiftBtn{ height:132px; }
+      .tVal{ font-size:16px; min-width:190px; }
+      .telemetry,.rpmStrip{ width:min(92%, 440px); }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HOME PAGE -->
+  <div id="homePage" class="page active">
+    <div class="card">
+      <div class="cardHeader">
+        <div class="title">🏁 Drag Simulator <span class="badge">Home</span></div>
+        <div class="pillRow">
+          <button id="btnGoRace" class="btn btnGood">Race</button>
+          <button id="btnNewSession" class="btn btnPrimary">New</button>
+          <button id="btnEndSession" class="btn btnGood">End & save</button>
+          <button id="btnResetLB" class="btn btnBad">Reset LB</button>
+        </div>
+      </div>
+
+      <div class="homeHero">
+        <div class="heroLeft">
+          <div class="heroTitle">Setup</div>
+          <div class="heroSub">
+            Green timing is randomized. Throttle before green → <span class="mono">DQ</span>.
+          </div>
+        </div>
+        <div class="muted mono" id="simHz">dt 0.016s</div>
+      </div>
+
+      <div class="seg">
+        <div id="tabSetup" class="segBtn active">Setup</div>
+        <div id="tabGears" class="segBtn">Gearing</div>
+        <div id="tabLB" class="segBtn">LB</div>
+      </div>
+
+      <div class="scroll" style="padding:10px; min-height:0;">
+        <div id="paneSetup" class="pane active">
+          <div class="grid2">
+            <div>
+              <label>Distance</label>
+              <select id="distanceSel"></select>
+            </div>
+            <div>
+              <label>Car</label>
+              <select id="carSel"></select>
+            </div>
+          </div>
+
+          <div class="grid2" style="margin-top:10px;">
+            <div>
+              <label>Preset</label>
+              <select id="presetSel"></select>
+            </div>
+            <div>
+              <label>Tree</label>
+              <select id="treeType">
+                <option value="sportsman">Sportsman</option>
+                <option value="pro">Pro</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid2" style="margin-top:10px;">
+            <div>
+              <label>Final drive</label>
+              <input id="finalDrive" type="number" step="0.01" min="1.0" max="8.0" />
+            </div>
+            <div>
+              <label>Shift cut (s)</label>
+              <input id="shiftTime" type="number" step="0.01" min="0.05" max="0.40" />
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px;">
+            <button id="btnApply" class="btn btnPrimary">Apply</button>
+            <button id="btnRevert" class="btn">Revert</button>
+          </div>
+
+          <div class="card" style="margin-top:10px;">
+            <div class="cardHeader">
+              <div class="title">📌</div>
+              <div class="badge mono" id="setupBadge">—</div>
+            </div>
+            <div style="padding:10px;" class="muted" id="setupSummary">—</div>
+          </div>
+        </div>
+
+        <div id="paneGears" class="pane">
+          <div class="gearTable">
+            <div class="gearHead">
+              <div style="text-align:center;">Gear</div>
+              <div>Ratio</div>
+            </div>
+            <div id="gearRows"></div>
+          </div>
+
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px;">
+            <button id="btnApply2" class="btn btnPrimary">Apply</button>
+            <button id="btnRevert2" class="btn">Revert</button>
+          </div>
+        </div>
+
+        <div id="paneLB" class="pane">
+          <table class="leader">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Car</th>
+                <th class="right">Dist</th>
+                <th class="right">Time</th>
+                <th class="right">Trap</th>
+                <th class="right">Date</th>
+              </tr>
+            </thead>
+            <tbody id="lbBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RACE PAGE -->
+  <div id="racePage" class="page">
+    <div class="card">
+      <div class="cardHeader">
+        <div class="title">🚦 Race <span class="badge mono" id="raceBadge">—</span></div>
+        <div class="pillRow">
+          <button id="btnHome" class="btn">Home</button>
+          <button id="btnStage" class="btn btnGood">Stage</button>
+          <button id="btnEndSaveTop" class="btn btnGood">End & save</button>
+          <button id="btnNextRun" class="btn btnPrimary">Next</button>
+        </div>
+      </div>
+      <div style="padding:8px 12px; display:flex; gap:10px; align-items:center; justify-content:space-between;">
+        <div class="muted mono" id="carMetaTop">—</div>
+        <div class="muted mono" id="raceTip">—</div>
+      </div>
+    </div>
+
+    <div class="raceWrap">
+      <div class="card view">
+        <canvas id="road"></canvas>
+
+        <div class="hud">
+          <div class="topCluster">
+            <div class="treeWrap">
+              <div class="tree">
+                <div id="L_pre"  class="light"></div><div id="R_pre"  class="light"></div>
+                <div id="L_stage" class="light"></div><div id="R_stage" class="light"></div>
+                <div id="L_a1"   class="light"></div><div id="R_a1"   class="light"></div>
+                <div id="L_a2"   class="light"></div><div id="R_a2"   class="light"></div>
+                <div id="L_a3"   class="light"></div><div id="R_a3"   class="light"></div>
+                <div id="L_grn"  class="light"></div><div id="R_grn"  class="light"></div>
+                <div id="L_red"  class="light"></div><div id="R_red"  class="light"></div>
+              </div>
+              <div class="statusBox">
+                <div class="statusBig" id="runState">SETUP</div>
+                <div class="statusSmall" id="runHint">Stage</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="telemetry">
+            <div class="tLine">
+              <div class="tKey">TIME</div>
+              <div class="tVal" id="timeRead">0.000 s</div>
+            </div>
+            <div class="tLine">
+              <div class="tKey">Δ BEST</div>
+              <div class="tVal" id="deltaRead">—</div>
+            </div>
+            <div class="tLine">
+              <div class="tKey">REACTION</div>
+              <div class="tVal" id="rtRead">—</div>
+            </div>
+            <div class="tLine">
+              <div class="tKey">SPEED</div>
+              <div class="tVal" id="speedNowRead">0.0 km/h</div>
+            </div>
+            <div class="tLine">
+              <div class="tKey">BEST</div>
+              <div class="tVal small" id="bestRead">—</div>
+            </div>
+            <div class="tLine">
+              <div class="tKey">TRAP</div>
+              <div class="tVal small" id="trapRead">—</div>
+            </div>
+          </div>
+
+          <!-- On-track RPM strip -->
+          <div class="rpmStrip">
+            <div class="rpmTop">
+              <div class="left" id="rpmLeft">RPM 0000</div>
+              <div class="right" id="rpmRight">G 0</div>
+            </div>
+            <div class="rpmBarOuter" aria-label="RPM bar">
+              <div class="rpmBarInner" id="rpmBar"></div>
+              <div class="rpmTick" style="left:25%"></div>
+              <div class="rpmTick" style="left:50%"></div>
+              <div class="rpmTick" style="left:75%"></div>
+              <div class="rpmTick redline" id="rpmRedTick" style="left:90%"></div>
+            </div>
+          </div>
+
+          <div class="toast" id="toast"></div>
+        </div>
+      </div>
+
+      <!-- Single stretched Drive card -->
+      <div class="raceControls">
+        <div class="card">
+          <div class="cardHeader">
+            <div class="title">🕹️ Drive</div>
+            <div class="badge mono" id="driveMeta">—</div>
+          </div>
+          <div class="cardBody">
+            <div class="controlPads">
+              <div class="pedal throttle" id="throttlePad">
+                <div class="pedalLabel">THROTTLE</div>
+              </div>
+              <div class="shifter">
+                <div class="shiftBtn" id="shiftUp">SHIFT</div>
+              </div>
+            </div>
+
+            <div class="driveRpmRow">
+              <div class="small" id="driveGear">G 0</div>
+              <div class="big" id="driveRpm">RPM 0000</div>
+              <div class="small" id="driveSpeed">0.0 km/h</div>
+            </div>
+            <div class="driveRpmBarOuter" aria-label="RPM bar (drive)">
+              <div class="driveRpmBarInner" id="driveRpmBar"></div>
+              <div class="driveRpmTick" style="left:25%"></div>
+              <div class="driveRpmTick" style="left:50%"></div>
+              <div class="driveRpmTick" style="left:75%"></div>
+              <div class="driveRpmTick redline" id="driveRpmRedTick" style="left:90%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+(() => {
+  const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
+  const lerp = (a,b,t)=>a+(b-a)*t;
+  const smoothstep = (a,b,x)=>{
+    const t = clamp((x-a)/(b-a),0,1);
+    return t*t*(3-2*t);
+  };
+  const fmt1 = (n)=>Number.isFinite(n)?n.toFixed(1):"—";
+  const nowStr = ()=>new Date().toISOString().slice(0,10);
+  const escapeHtml = (s)=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const RUN = { SETUP:"SETUP", STAGED:"STAGED", TREE:"TREE", GREEN:"GREEN", RUNNING:"RUN", FINISHED:"FINISH", DQ:"DQ" };
+
+  const DISTANCES = [
+    { id:"eighth",   name:"1/8", meters:201.168 },
+    { id:"thousand", name:"1000ft",  meters:304.800 },
+    { id:"quarter",  name:"1/4", meters:402.336 },
+    { id:"half",     name:"1/2", meters:804.672 },
+    { id:"mile",     name:"1mi", meters:1609.344 },
+  ];
+
+  // Note: Tesla Model S Plaid values are tuned for plausible real-world behavior (very strong low-speed thrust, 1-speed),
+  // within this simplified physics model (no traction control, max grip assumed).
+  const CARS = [
+    {
+      id:"mustang6",
+      name:"V8 Manual (6MT)",
+      tagline:"446 PS • 540 Nm",
+      massKg:1808,
+      powerKW:328,
+      peakPowerRpm:7250,
+      peakTorqueNm:540,
+      peakTorqueRpm:5100,
+      redlineRpm:7500,
+      idleRpm:900,
+      drivetrainEff:0.90,
+      wheelRadiusM:0.335,
+      CdA:0.36*2.20,
+      Crr:0.015,
+      gears:[3.237,2.104,1.422,1.000,0.814,0.622],
+      finalDrive:3.73,
+      shiftCutS:0.18,
+      launchTargetRpm:4200,
+      presets:{
+        eighth:{name:"1/8 (short FD)",finalDrive:4.05,gears:null},
+        thousand:{name:"1000ft (mid FD)",finalDrive:3.90,gears:null},
+        quarter:{name:"1/4 (OEM)",finalDrive:3.73,gears:null},
+        half:{name:"1/2 (tall FD)",finalDrive:3.55,gears:null},
+        mile:{name:"1mi (taller)",finalDrive:3.31,gears:null},
+        default:{name:"Default (OEM)",finalDrive:3.73,gears:null},
+      }
+    },
+    {
+      id:"mustang10",
+      name:"V8 Auto (10AT)",
+      tagline:"446 PS • close ratios",
+      massKg:1836,
+      powerKW:328,
+      peakPowerRpm:7250,
+      peakTorqueNm:540,
+      peakTorqueRpm:5100,
+      redlineRpm:7500,
+      idleRpm:900,
+      drivetrainEff:0.92,
+      wheelRadiusM:0.335,
+      CdA:0.36*2.20,
+      Crr:0.015,
+      gears:[4.70,2.99,2.15,1.77,1.52,1.28,1.00,0.85,0.69,0.64],
+      finalDrive:3.55,
+      shiftCutS:0.12,
+      launchTargetRpm:3000,
+      presets:{
+        eighth:{name:"1/8 (short FD)",finalDrive:3.90,gears:null},
+        thousand:{name:"1000ft (mid FD)",finalDrive:3.70,gears:null},
+        quarter:{name:"1/4 (OEM)",finalDrive:3.55,gears:null},
+        half:{name:"1/2 (tall FD)",finalDrive:3.31,gears:null},
+        mile:{name:"1mi (taller)",finalDrive:3.15,gears:null},
+        default:{name:"Default (OEM)",finalDrive:3.55,gears:null},
+      }
+    },
+    {
+      id:"gt3pdk",
+      name:"GT3 PDK (7DCT)",
+      tagline:"510 PS • 311 km/h",
+      massKg:1479,
+      powerKW:375,
+      peakPowerRpm:8500,
+      peakTorqueNm:450,
+      peakTorqueRpm:6250,
+      redlineRpm:9000,
+      idleRpm:950,
+      drivetrainEff:0.92,
+      wheelRadiusM:0.343,
+      CdA:0.72,
+      Crr:0.013,
+      gears:[3.75,2.38,1.72,1.34,1.11,0.96,0.84],
+      finalDrive:4.54,
+      shiftCutS:0.10,
+      launchTargetRpm:5200,
+      presets:{
+        eighth:{name:"1/8 (short FD)",finalDrive:4.85,gears:null},
+        thousand:{name:"1000ft (mid FD)",finalDrive:4.65,gears:null},
+        quarter:{name:"1/4 (OEM)",finalDrive:4.54,gears:null},
+        half:{name:"1/2 (tall FD)",finalDrive:4.20,gears:null},
+        mile:{name:"1mi (taller)",finalDrive:3.90,gears:null},
+        default:{name:"Default (OEM)",finalDrive:4.54,gears:null},
+      }
+    },
+    {
+      id:"plaid",
+      name:"Tesla Model S Plaid",
+      tagline:"~760 kW • 1-speed",
+      massKg:2160,
+      powerKW:760,
+      peakPowerRpm:14000,           // motor equivalent
+      peakTorqueNm:1100,            // effective combined at low speed
+      peakTorqueRpm:0,
+      redlineRpm:16000,
+      idleRpm:0,
+      drivetrainEff:0.92,
+      wheelRadiusM:0.345,
+      CdA:0.50,                     // low CdA
+      Crr:0.012,
+      gears:[1.00],                 // single-speed modeled as 1.0 with final drive
+      finalDrive:9.20,              // effective reduction
+      shiftCutS:0.00,
+      launchTargetRpm:0,
+      // EV torque curve parameters (custom)
+      ev: {
+        baseTorqueNm: 1100,         // strong off-the-line
+        torqueFadeKmh: 210,         // torque starts tapering
+        powerCapKW: 760,            // power limit at higher speed
+        rpmMax: 16000
+      },
+      presets:{
+        eighth:{name:"Default",finalDrive:9.20,gears:[1.00]},
+        thousand:{name:"Default",finalDrive:9.20,gears:[1.00]},
+        quarter:{name:"Default",finalDrive:9.20,gears:[1.00]},
+        half:{name:"Default",finalDrive:9.20,gears:[1.00]},
+        mile:{name:"Default",finalDrive:9.20,gears:[1.00]},
+        default:{name:"Default",finalDrive:9.20,gears:[1.00]},
+      }
+    }
+  ];
+
+  const physics = { rho:1.225, g:9.81 };
+
+  const el = (id)=>document.getElementById(id);
+
+  // pages
+  const homePage = el("homePage");
+  const racePage = el("racePage");
+
+  // tabs/panes
+  const tabSetup = el("tabSetup"), tabGears = el("tabGears"), tabLB = el("tabLB");
+  const paneSetup = el("paneSetup"), paneGears = el("paneGears"), paneLB = el("paneLB");
+
+  // home inputs
+  const distanceSel = el("distanceSel");
+  const carSel = el("carSel");
+  const presetSel = el("presetSel");
+  const finalDriveIn = el("finalDrive");
+  const shiftTimeIn = el("shiftTime");
+  const treeTypeSel = el("treeType");
+  const gearRows = el("gearRows");
+
+  // home buttons
+  const btnGoRace = el("btnGoRace");
+  const btnNewSession = el("btnNewSession");
+  const btnEndSession = el("btnEndSession");
+  const btnResetLB = el("btnResetLB");
+  const btnApply = el("btnApply");
+  const btnApply2 = el("btnApply2");
+  const btnRevert = el("btnRevert");
+  const btnRevert2 = el("btnRevert2");
+
+  // home summary
+  const setupBadge = el("setupBadge");
+  const setupSummary = el("setupSummary");
+  const simHz = el("simHz");
+
+  // leaderboard
+  const lbBody = el("lbBody");
+
+  // race buttons
+  const btnHome = el("btnHome");
+  const btnStage = el("btnStage");
+  const btnEndSaveTop = el("btnEndSaveTop");
+  const btnNextRun = el("btnNextRun");
+
+  // drive inputs
+  const throttlePad = el("throttlePad");
+  const shiftUp = el("shiftUp");
+
+  // race overlay
+  const runState = el("runState");
+  const runHint = el("runHint");
+  const timeRead = el("timeRead");
+  const deltaRead = el("deltaRead");
+  const rtRead = el("rtRead");
+  const speedNowRead = el("speedNowRead");
+  const bestRead = el("bestRead");
+  const trapRead = el("trapRead");
+  const raceBadge = el("raceBadge");
+  const carMetaTop = el("carMetaTop");
+  const raceTip = el("raceTip");
+  const toast = el("toast");
+
+  // rpm strip (on-track)
+  const rpmLeft = el("rpmLeft");
+  const rpmRight = el("rpmRight");
+  const rpmBar = el("rpmBar");
+  const rpmRedTick = el("rpmRedTick");
+
+  // drive card rpm
+  const driveMeta = el("driveMeta");
+  const driveGear = el("driveGear");
+  const driveRpm = el("driveRpm");
+  const driveSpeed = el("driveSpeed");
+  const driveRpmBar = el("driveRpmBar");
+  const driveRpmRedTick = el("driveRpmRedTick");
+
+  // tree lights
+  const L = { pre:el("L_pre"), stage:el("L_stage"), a1:el("L_a1"), a2:el("L_a2"), a3:el("L_a3"), grn:el("L_grn"), red:el("L_red") };
+  const R = { pre:el("R_pre"), stage:el("R_stage"), a1:el("R_a1"), a2:el("R_a2"), a3:el("R_a3"), grn:el("R_grn"), red:el("R_red") };
+
+  // canvas
+  const road = el("road");
+  const ctx = road.getContext("2d");
+
+  /* Leaderboard storage */
+  const LB_KEY = "dragSim.leaderboard.v4";
+  const loadLB = ()=>{ try { return JSON.parse(localStorage.getItem(LB_KEY) || "[]"); } catch { return []; } };
+  const saveLB = (arr)=>localStorage.setItem(LB_KEY, JSON.stringify(arr));
+  let leaderboard = loadLB();
+
+  function renderLB(){
+    const rows = [...leaderboard].sort((a,b)=>a.timeS-b.timeS).slice(0,50);
+    lbBody.innerHTML = rows.map((r,i)=>`
+      <tr>
+        <td class="mono">${i+1}</td>
+        <td>${escapeHtml(r.name)}</td>
+        <td>${escapeHtml(r.car)}</td>
+        <td class="right mono">${escapeHtml(r.distanceName)}</td>
+        <td class="right mono">${r.timeS.toFixed(3)}s</td>
+        <td class="right mono">${r.trapKmh.toFixed(1)}</td>
+        <td class="right mono">${escapeHtml(r.date)}</td>
+      </tr>
+    `).join("");
+  }
+
+  /* Config/session/vehicle */
+  let cfg = {
+    distance: DISTANCES[2],
+    car: CARS[0],
+    gears: [],
+    finalDrive: 3.73,
+    shiftCutS: 0.18,
+    treeType: "sportsman",
+  };
+
+  let session = { runs:[], bestTimeS:Infinity, bestTrapKmh:NaN, bestRun:null };
+
+  let state = RUN.SETUP;
+
+  let veh = {
+    x:0, v:0, a:0,
+    gearIndex:-1,
+    rpm:0,
+    throttle:0,
+    shifting:0,
+    dq:false,
+    finished:false,
+    elapsed:0,
+    trapV:0,
+    // reaction timing
+    greenAt: null,
+    throttleFirstAt: null,
+    rt: null,
+  };
+
+  let tree = { t:0, delay:0, started:false, green:false };
+
+  /* Engine/forces */
+  function engineTorqueNmICE(car, rpm, throttle){
+    rpm = clamp(rpm, car.idleRpm, car.redlineRpm*1.2);
+    const tAtPower = (car.powerKW*9550)/car.peakPowerRpm;
+
+    const low = smoothstep(car.idleRpm, 2000, rpm);
+    const baseLow = lerp(0.55, 0.88, low);
+    const rise = smoothstep(2000, car.peakTorqueRpm, rpm);
+    const mid = lerp(baseLow, 1.00, rise);
+
+    const fall1 = smoothstep(car.peakTorqueRpm, car.peakPowerRpm, rpm);
+    const t1 = lerp(car.peakTorqueNm, tAtPower, fall1);
+
+    const tAtRed = tAtPower * 0.90;
+    const fall2 = smoothstep(car.peakPowerRpm, car.redlineRpm, rpm);
+    const t2 = lerp(tAtPower, tAtRed, fall2);
+
+    let t = car.peakTorqueNm * mid;
+    if (rpm >= car.peakTorqueRpm && rpm <= car.peakPowerRpm) t = t1;
+    if (rpm > car.peakPowerRpm) t = t2;
+
+    t *= clamp(throttle,0,1);
+
+    if (rpm >= car.redlineRpm){
+      const over = clamp((rpm-car.redlineRpm)/400,0,1);
+      t *= lerp(0.35,0.10,over);
+    }
+    return t;
+  }
+
+  function engineTorqueNmEV(car, v, rpm, throttle){
+    const ev = car.ev;
+    // strong torque at low speed, tapered after torqueFadeKmh
+    const kmh = v*3.6;
+    const fade = smoothstep(ev.torqueFadeKmh, ev.torqueFadeKmh + 120, kmh); // 0..1
+    let T = lerp(ev.baseTorqueNm, ev.baseTorqueNm*0.35, fade);
+
+    // also apply power cap at higher speed: P = T*w  => T = P/w
+    const w = Math.max(1, (rpm * 2*Math.PI)/60);
+    const Tcap = (ev.powerCapKW*1000) / w;
+    T = Math.min(T, Tcap);
+
+    return T * clamp(throttle,0,1);
+  }
+
+  function wheelForceN(car, v, rpm, throttle, gearRatio, finalDrive){
+    let Te;
+    if (car.ev){
+      Te = engineTorqueNmEV(car, v, rpm, throttle);
+    } else {
+      Te = engineTorqueNmICE(car, rpm, throttle);
+    }
+    const Tw = Te * gearRatio * finalDrive * car.drivetrainEff;
+    return Tw / car.wheelRadiusM;
+  }
+
+  function aeroDragN(car, v){ return 0.5*physics.rho*car.CdA*v*v; }
+  function rollingN(car){ return car.Crr*car.massKg*physics.g; }
+  function couplingFactor(v){ return smoothstep(0.0, 12.0, v); }
+
+  /* Tree */
+  function clearTree(){
+    Object.values(L).forEach(x=>x.className="light");
+    Object.values(R).forEach(x=>x.className="light");
+  }
+  function setLight(elm,on,cls){ elm.className="light"+(on?(" on "+cls):""); }
+
+  function greenDelayS(){
+    // Sportsman: sequential 0.5s ambers -> green at 1.5
+    // Pro: all ambers then 0.4s to green
+    return (cfg.treeType==="sportsman") ? 1.5 : 0.4;
+  }
+
+  function updateTreeVisual(){
+    setLight(L.pre,  state!==RUN.SETUP, "pre");   setLight(R.pre,  state!==RUN.SETUP, "pre");
+    setLight(L.stage, state===RUN.STAGED||state===RUN.TREE||state===RUN.GREEN||state===RUN.RUNNING, "stage");
+    setLight(R.stage, state===RUN.STAGED||state===RUN.TREE||state===RUN.GREEN||state===RUN.RUNNING, "stage");
+
+    if (state===RUN.TREE||state===RUN.GREEN||state===RUN.RUNNING||state===RUN.FINISHED||state===RUN.DQ){
+      const t = tree.t;
+      if (cfg.treeType==="sportsman"){
+        setLight(L.a1, t>=0.0, "amb"); setLight(R.a1, t>=0.0, "amb");
+        setLight(L.a2, t>=0.5, "amb"); setLight(R.a2, t>=0.5, "amb");
+        setLight(L.a3, t>=1.0, "amb"); setLight(R.a3, t>=1.0, "amb");
+        setLight(L.grn, t>=1.5 && !veh.dq, "grn"); setLight(R.grn, t>=1.5 && !veh.dq, "grn");
+      } else {
+        setLight(L.a1, t>=0.0, "amb"); setLight(R.a1, t>=0.0, "amb");
+        setLight(L.a2, t>=0.0, "amb"); setLight(R.a2, t>=0.0, "amb");
+        setLight(L.a3, t>=0.0, "amb"); setLight(R.a3, t>=0.0, "amb");
+        setLight(L.grn, t>=0.4 && !veh.dq, "grn"); setLight(R.grn, t>=0.4 && !veh.dq, "grn");
+      }
+    } else {
+      setLight(L.a1,false,""); setLight(R.a1,false,"");
+      setLight(L.a2,false,""); setLight(R.a2,false,"");
+      setLight(L.a3,false,""); setLight(R.a3,false,"");
+      setLight(L.grn,false,""); setLight(R.grn,false,"");
+    }
+
+    setLight(L.red, veh.dq, "red");
+    setLight(R.red, veh.dq, "red");
+  }
+
+  /* Toast */
+  let toastTimer = 0;
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add("show");
+    toastTimer = 1.4;
+  }
+
+  /* UI populate */
+  DISTANCES.forEach(d=>{
+    const opt=document.createElement("option");
+    opt.value=d.id;
+    opt.textContent=`${d.name} (${d.meters.toFixed(0)}m)`;
+    distanceSel.appendChild(opt);
+  });
+  CARS.forEach(c=>{
+    const opt=document.createElement("option");
+    opt.value=c.id;
+    opt.textContent=c.name;
+    carSel.appendChild(opt);
+  });
+
+  const getSelectedCar = ()=>CARS.find(c=>c.id===carSel.value) || CARS[0];
+  const getSelectedDistance = ()=>DISTANCES.find(d=>d.id===distanceSel.value) || DISTANCES[2];
+
+  function buildGearInputs(gearCount){
+    gearRows.innerHTML="";
+    for (let i=0;i<gearCount;i++){
+      const row=document.createElement("div");
+      row.className="gearRow";
+      row.innerHTML=`
+        <div class="g">${i+1}</div>
+        <input id="g_${i}" type="number" step="0.001" min="0.200" max="12.000" />
+      `;
+      gearRows.appendChild(row);
+    }
+  }
+
+  function buildPresetList(){
+    presetSel.innerHTML="";
+    const car=getSelectedCar();
+    const dist=getSelectedDistance();
+    const k=dist.id;
+    const presets=[
+      {key:"default",...car.presets.default},
+      {key:k,...(car.presets[k]||car.presets.default)}
+    ];
+    const seen=new Set();
+    const uniq=[];
+    for (const p of presets){
+      const id=p.key+"|"+p.name;
+      if (!seen.has(id)){ seen.add(id); uniq.push(p); }
+    }
+    uniq.forEach(p=>{
+      const opt=document.createElement("option");
+      opt.value=p.key;
+      opt.textContent=p.name;
+      presetSel.appendChild(opt);
+    });
+  }
+
+  function loadPresetIntoInputs({car, distId, presetKey}){
+    const preset = (presetKey==="default") ? car.presets.default : (car.presets[distId]||car.presets.default);
+    const gears = preset.gears ? preset.gears.slice() : car.gears.slice();
+    const fd = preset.finalDrive ?? car.finalDrive;
+
+    finalDriveIn.value = fd.toFixed(2);
+    shiftTimeIn.value = (car.shiftCutS).toFixed(2);
+    for (let i=0;i<gears.length;i++){
+      const inp=el(`g_${i}`);
+      if (inp) inp.value = gears[i].toFixed(3);
+    }
+  }
+
+  function readInputsToCfg(){
+    const car=getSelectedCar();
+    const dist=getSelectedDistance();
+
+    const gears=[];
+    for (let i=0;i<car.gears.length;i++){
+      const v=parseFloat(el(`g_${i}`).value);
+      if (!Number.isFinite(v) || v<=0) return {ok:false, msg:`Bad ratio G${i+1}`};
+      gears.push(v);
+    }
+    for (let i=1;i<gears.length;i++){
+      if (gears[i] >= gears[i-1]) return {ok:false, msg:`Ratios must descend`};
+    }
+
+    const fd=parseFloat(finalDriveIn.value);
+    if (!Number.isFinite(fd) || fd<0.8 || fd>12.0) return {ok:false, msg:"Bad final drive"};
+
+    const sc=parseFloat(shiftTimeIn.value);
+    if (!Number.isFinite(sc) || sc<0.00 || sc>0.40) return {ok:false, msg:"Bad shift cut"};
+
+    cfg.distance = dist;
+    cfg.car = car;
+    cfg.gears = gears;
+    cfg.finalDrive = fd;
+    cfg.shiftCutS = sc;
+    cfg.treeType = treeTypeSel.value;
+
+    return {ok:true};
+  }
+
+  function applyConfigToBadges(){
+    const d = cfg.distance;
+    const c = cfg.car;
+    setupBadge.textContent = `${d.name} • ${c.name}`;
+    setupSummary.textContent =
+      `${c.tagline}. ${c.massKg}kg. FD ${cfg.finalDrive.toFixed(2)}. G${cfg.gears.length}. Tree ${cfg.treeType}.`;
+    raceBadge.textContent = `${d.name} • ${c.name}`;
+    carMetaTop.textContent = `${d.meters.toFixed(0)}m • FD ${cfg.finalDrive.toFixed(2)} • ${cfg.treeType}`;
+    raceTip.textContent = c.ev ? `Plaid` : `Launch ${c.launchTargetRpm}rpm`;
+    driveMeta.textContent = `${c.ev ? "1spd" : (cfg.gears.length+"spd")} • ${d.name}`;
+    // rpm red tick positions
+    rpmRedTick.style.left = "90%";
+    driveRpmRedTick.style.left = "90%";
+  }
+
+  /* Run control */
+  function resetRun(){
+    veh.x=0; veh.v=0; veh.a=0;
+    veh.gearIndex=-1;
+    veh.rpm = cfg.car.ev ? 0 : cfg.car.idleRpm;
+    veh.throttle=0;
+    veh.shifting=0;
+    veh.dq=false;
+    veh.finished=false;
+    veh.elapsed=0;
+    veh.trapV=0;
+
+    veh.greenAt = null;
+    veh.throttleFirstAt = null;
+    veh.rt = null;
+
+    tree.t=0; tree.delay=0; tree.started=false; tree.green=false;
+
+    state=RUN.SETUP;
+    runState.textContent="SETUP";
+    runHint.textContent="Stage";
+    trapRead.textContent="—";
+
+    clearTree();
+    updateTreeVisual();
+    roadPhase = 0;
+    rtRead.textContent = "—";
+  }
+
+  function stageStart(){
+    const res = readInputsToCfg();
+    if (!res.ok){ showToast(res.msg); return; }
+    applyConfigToBadges();
+
+    veh.gearIndex=0;
+    veh.rpm = cfg.car.ev ? 0 : Math.max(cfg.car.idleRpm, 1400);
+    veh.x=0; veh.v=0; veh.a=0;
+    veh.elapsed=0;
+    veh.trapV=0;
+    veh.dq=false;
+    veh.finished=false;
+    veh.shifting=0;
+    veh.throttle=0;
+
+    veh.greenAt = null;
+    veh.throttleFirstAt = null;
+    veh.rt = null;
+    rtRead.textContent = "—";
+
+    state=RUN.STAGED;
+    runState.textContent="STAGED";
+    runHint.textContent="Hold";
+
+    tree.delay = 0.25 + Math.random()*1.05;
+    tree.t=0;
+    tree.started=false;
+    tree.green=false;
+
+    clearTree();
+    updateTreeVisual();
+    roadPhase = 0;
+  }
+
+  function startTreeSequence(){
+    state=RUN.TREE;
+    runState.textContent="TREE";
+    runHint.textContent="Wait green";
+    tree.started=true;
+    tree.t=0;
+    tree.green=false;
+  }
+
+  function toGreenIfReady(){
+    const gDelay = greenDelayS();
+    if (tree.t >= gDelay){
+      tree.green=true;
+      if (!veh.dq){
+        state=RUN.GREEN;
+        runState.textContent="GREEN";
+        runHint.textContent="GO";
+        veh.greenAt = veh.elapsed; // run timer starts on movement; keep separate below
+        // we store green moment in "greenMomentWall" using a separate variable:
+        greenMomentWall = performance.now()/1000;
+      }
+    }
+  }
+
+  function finishRun(){
+    veh.finished=true;
+    state=RUN.FINISHED;
+    runState.textContent="FINISH";
+    runHint.textContent=`${fmt1(veh.trapV*3.6)}`;
+    trapRead.textContent=`${fmt1(veh.trapV*3.6)} km/h`;
+
+    if (!veh.dq){
+      const run = { timeS:veh.elapsed, trapKmh:veh.trapV*3.6, rt:veh.rt };
+      session.runs.push(run);
+      if (veh.elapsed < session.bestTimeS){
+        session.bestTimeS = veh.elapsed;
+        session.bestTrapKmh = veh.trapV*3.6;
+        session.bestRun = run;
+      }
+      bestRead.textContent = `${session.bestTimeS.toFixed(3)} s`;
+      showToast(`Run ${veh.elapsed.toFixed(3)}s`);
+    }
+  }
+
+  /* Input */
+  let greenMomentWall = null;
+
+  function setThrottle(on){
+    veh.throttle = on ? 1 : 0;
+
+    if ((state===RUN.STAGED || state===RUN.TREE) && veh.throttle>0 && !tree.green){
+      veh.dq=true;
+      state=RUN.DQ;
+      runState.textContent="DQ";
+      runHint.textContent="Jump";
+      showToast("DQ");
+    }
+
+    if (tree.green && !veh.dq && (state===RUN.GREEN || state===RUN.TREE) && veh.throttle>0){
+      // reaction time: first throttle after green
+      if (veh.throttleFirstAt === null && greenMomentWall !== null){
+        const tNow = performance.now()/1000;
+        veh.throttleFirstAt = tNow;
+        veh.rt = Math.max(0, tNow - greenMomentWall);
+        rtRead.textContent = `${veh.rt.toFixed(3)} s`;
+      }
+
+      state=RUN.RUNNING;
+      runState.textContent="RUN";
+      runHint.textContent="";
+    }
+  }
+
+  function shift(){
+    if (veh.dq || veh.finished) return;
+    if (!(state===RUN.RUNNING || state===RUN.GREEN)) return;
+
+    const maxG = cfg.gears.length;
+    if (maxG <= 1) return;
+
+    const newIndex = clamp(veh.gearIndex + 1, 0, maxG-1);
+    if (newIndex === veh.gearIndex) return;
+
+    veh.gearIndex = newIndex;
+    veh.shifting = cfg.shiftCutS;
+
+    const wheelRpm = (veh.v / (2*Math.PI*cfg.car.wheelRadiusM)) * 60;
+    const coupled = wheelRpm * cfg.gears[veh.gearIndex] * cfg.finalDrive;
+    veh.rpm = cfg.car.ev ? coupled : Math.max(cfg.car.idleRpm, coupled);
+
+    showToast("Shift");
+  }
+
+  function bindHold(element, onDown, onUp){
+    let pressed=false;
+    const down=(e)=>{ e.preventDefault(); pressed=true; onDown(); };
+    const up=(e)=>{ e.preventDefault(); if(!pressed) return; pressed=false; onUp(); };
+    element.addEventListener("pointerdown", down, {passive:false});
+    element.addEventListener("pointerup", up, {passive:false});
+    element.addEventListener("pointercancel", up, {passive:false});
+    element.addEventListener("pointerleave", up, {passive:false});
+  }
+
+  bindHold(throttlePad, ()=>setThrottle(true), ()=>setThrottle(false));
+  shiftUp.addEventListener("pointerdown",(e)=>{ e.preventDefault(); shift(); },{passive:false});
+
+  /* Road rendering (movement tied to actual distance; stopped when not staged/tree/green/run/finish) */
+  let dt = 1/60;
+  simHz.textContent = `dt ${dt.toFixed(3)}s`;
+
+  let roadPhase = 0;
+  const dashSpacingM = 14.0;
+
+  function resizeCanvas(){
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    const rect = road.getBoundingClientRect();
+    road.width = Math.floor(rect.width * dpr);
+    road.height = Math.floor(rect.height * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener("resize", resizeCanvas, {passive:true});
+  resizeCanvas();
+
+  function drawRoad(){
+    const w = road.getBoundingClientRect().width;
+    const h = road.getBoundingClientRect().height;
+    ctx.clearRect(0,0,w,h);
+
+    const g = ctx.createRadialGradient(w*0.5, h*0.1, 10, w*0.5, h*0.1, h*1.1);
+    g.addColorStop(0, "rgba(89,214,255,.10)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,w,h);
+
+    const topY = h*0.22;
+    const botY = h*1.02;
+    const topW = w*0.08;
+    const botW = w*1.08;
+    const cx = w*0.5;
+
+    ctx.beginPath();
+    ctx.moveTo(cx-topW/2, topY);
+    ctx.lineTo(cx+topW/2, topY);
+    ctx.lineTo(cx+botW/2, botY);
+    ctx.lineTo(cx-botW/2, botY);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(255,255,255,.03)";
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255,255,255,.14)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx-topW/2, topY); ctx.lineTo(cx-botW/2, botY);
+    ctx.moveTo(cx+topW/2, topY); ctx.lineTo(cx+botW/2, botY);
+    ctx.stroke();
+
+    const phaseDrive = (state===RUN.RUN || state===RUN.GREEN || state===RUN.TREE || state===RUN.FINISH || state===RUN.DQ || state===RUN.STAGED);
+    if (phaseDrive) roadPhase = (roadPhase + (veh.v * dt) / dashSpacingM) % 1;
+
+    const phase = roadPhase;
+
+    const dashCount = 14;
+    for (let i=0;i<dashCount;i++){
+      const t = (i / dashCount + phase) % 1;
+      const py = lerp(topY, botY, t*t);
+      const dashLen = lerp(6, 42, t);
+      const dashW = lerp(1.5, 4.5, t);
+      ctx.strokeStyle = `rgba(255,255,255,${lerp(0.06, 0.22, t)})`;
+      ctx.lineWidth = dashW;
+      ctx.beginPath();
+      ctx.moveTo(cx, py - dashLen/2);
+      ctx.lineTo(cx, py + dashLen/2);
+      ctx.stroke();
+    }
+
+    const speed = veh.v;
+    const dashRate = clamp(speed / 55, 0, 1);
+    const bars = 14;
+    const barAlpha = 0.06 + 0.22*dashRate;
+    for (let i=0;i<bars;i++){
+      const t = (i / bars + (phase*0.7)) % 1;
+      const py = lerp(topY, botY, Math.pow(t, 1.6));
+      const spread = lerp(topW*0.8, botW*0.55, t);
+      const lw = lerp(1, 6, t);
+
+      ctx.strokeStyle = `rgba(89,214,255,${barAlpha * (0.15 + 0.85*t)})`;
+      ctx.lineWidth = lw;
+      ctx.beginPath();
+      ctx.moveTo(cx - spread*0.35, py);
+      ctx.lineTo(cx - spread*0.55, py + lerp(3, 22, t));
+      ctx.stroke();
+
+      ctx.strokeStyle = `rgba(60,255,154,${barAlpha * (0.12 + 0.75*t)})`;
+      ctx.beginPath();
+      ctx.moveTo(cx + spread*0.35, py);
+      ctx.lineTo(cx + spread*0.55, py + lerp(3, 22, t));
+      ctx.stroke();
+    }
+
+    const v = ctx.createRadialGradient(cx, h*0.6, h*0.1, cx, h*0.6, h*0.85);
+    v.addColorStop(0, "rgba(0,0,0,0)");
+    v.addColorStop(1, "rgba(0,0,0,.55)");
+    ctx.fillStyle = v;
+    ctx.fillRect(0,0,w,h);
+  }
+
+  /* HUD update */
+  function updateRPMUI(){
+    const car = cfg.car;
+    const red = car.redlineRpm || 16000;
+    const rpm = clamp(veh.rpm, 0, red*1.05);
+    const pct = red>0 ? clamp(rpm/red, 0, 1) : 0;
+
+    rpmLeft.textContent = `RPM ${Math.round(rpm).toString().padStart(4,"0")}`;
+    rpmRight.textContent = `G ${veh.gearIndex>=0 ? (veh.gearIndex+1) : 0}`;
+    rpmBar.style.width = `${pct*100}%`;
+
+    driveGear.textContent = `G ${veh.gearIndex>=0 ? (veh.gearIndex+1) : 0}`;
+    driveRpm.textContent = `RPM ${Math.round(rpm).toString().padStart(4,"0")}`;
+    driveSpeed.textContent = `${(veh.v*3.6).toFixed(1)} km/h`;
+    driveRpmBar.style.width = `${pct*100}%`;
+
+    // shift button disabled when single-gear
+    if (cfg.gears.length <= 1) shiftUp.classList.add("disabled");
+    else shiftUp.classList.remove("disabled");
+  }
+
+  function updateHUD(){
+    timeRead.textContent = `${veh.elapsed.toFixed(3)} s`;
+
+    const kmh = veh.v * 3.6;
+    speedNowRead.textContent = `${kmh.toFixed(1)} km/h`;
+
+    if (Number.isFinite(session.bestTimeS) && session.bestTimeS < Infinity){
+      bestRead.textContent = `${session.bestTimeS.toFixed(3)} s`;
+      if ((state===RUN.RUN || state===RUN.GREEN) && !veh.dq){
+        const d = veh.elapsed - session.bestTimeS;
+        const sign = d>=0 ? "+" : "−";
+        deltaRead.textContent = `${sign}${Math.abs(d).toFixed(3)} s`;
+      } else {
+        deltaRead.textContent = "—";
+      }
+    } else {
+      bestRead.textContent = "—";
+      deltaRead.textContent = "—";
+    }
+
+    updateRPMUI();
+
+    if (toastTimer>0){
+      toastTimer -= dt;
+      if (toastTimer<=0) toast.classList.remove("show");
+    }
+  }
+
+  /* Physics step */
+  function stepPhysics(dt){
+    if (state===RUN.STAGED){
+      tree.delay -= dt;
+      if (tree.delay<=0 && !tree.started) startTreeSequence();
+    } else if (state===RUN.TREE || state===RUN.GREEN || state===RUN.RUN){
+      if (tree.started && !tree.green){
+        tree.t += dt;
+        toGreenIfReady();
+      }
+      if (tree.green && state===RUN.TREE && !veh.dq) state=RUN.GREEN;
+    }
+
+    if (veh.dq) veh.throttle = 0;
+
+    const inGear = veh.gearIndex>=0;
+    const gr = inGear ? cfg.gears[veh.gearIndex] : 0;
+
+    const wheelRpm = (veh.v/(2*Math.PI*cfg.car.wheelRadiusM))*60;
+    const coupledRpm = inGear ? wheelRpm*gr*cfg.finalDrive : (cfg.car.ev ? 0 : cfg.car.idleRpm);
+
+    let driveForce = 0;
+
+    if (veh.shifting>0){
+      veh.shifting = Math.max(0, veh.shifting-dt);
+      veh.rpm = lerp(veh.rpm, coupledRpm, 1-Math.exp(-dt*10));
+      driveForce = 0;
+    } else if (inGear && (state===RUN.RUN || state===RUN.GREEN) && !veh.finished && !veh.dq){
+      const cf = couplingFactor(veh.v);
+      if (cfg.car.ev){
+        veh.rpm = lerp(veh.rpm, coupledRpm, 1-Math.exp(-dt*14));
+      } else {
+        const target = lerp(cfg.car.launchTargetRpm, coupledRpm, cf);
+        const rpmFollow = lerp(target, coupledRpm, clamp(cf+0.10,0,1));
+        veh.rpm = lerp(veh.rpm, rpmFollow, 1-Math.exp(-dt*12));
+      }
+      driveForce = wheelForceN(cfg.car, veh.v, veh.rpm, veh.throttle, gr, cfg.finalDrive);
+    } else {
+      veh.rpm = lerp(veh.rpm, Math.max(cfg.car.idleRpm||0, coupledRpm), 1-Math.exp(-dt*8));
+    }
+
+    const drag = aeroDragN(cfg.car, veh.v);
+    const roll = rollingN(cfg.car);
+    let net = driveForce - drag - roll;
+    if (veh.v<=0 && net<0) net=0;
+
+    veh.a = net / cfg.car.massKg;
+    veh.v = Math.max(0, veh.v + veh.a*dt);
+    veh.x += veh.v*dt;
+
+    if ((state===RUN.GREEN || state===RUN.RUN) && tree.green && !veh.finished && !veh.dq){
+      veh.elapsed += dt;
+    }
+
+    if (!veh.finished && !veh.dq && veh.x >= cfg.distance.meters){
+      veh.trapV = veh.v;
+      finishRun();
+    }
+
+    updateTreeVisual();
+    updateHUD();
+  }
+
+  /* Navigation */
+  function showHome(){ homePage.classList.add("active"); racePage.classList.remove("active"); }
+  function showRace(){ homePage.classList.remove("active"); racePage.classList.add("active"); resizeCanvas(); }
+
+  /* Tabs */
+  function setTab(which){
+    const tabs = [[tabSetup,paneSetup],[tabGears,paneGears],[tabLB,paneLB]];
+    tabs.forEach(([t,p])=>{
+      const active = (t===which);
+      t.classList.toggle("active", active);
+      p.classList.toggle("active", active);
+    });
+  }
+  tabSetup.addEventListener("click", ()=>setTab(tabSetup));
+  tabGears.addEventListener("click", ()=>setTab(tabGears));
+  tabLB.addEventListener("click", ()=>setTab(tabLB));
+
+  /* Buttons */
+  btnGoRace.addEventListener("click", ()=>{
+    const res = readInputsToCfg();
+    if (!res.ok){ showToast(res.msg); return; }
+    applyConfigToBadges();
+    showRace();
+    showToast("Ready");
+  });
+
+  btnHome.addEventListener("click", showHome);
+
+  function applyAndBadge(){
+    const res = readInputsToCfg();
+    if (!res.ok){ showToast(res.msg); return false; }
+    applyConfigToBadges();
+    showToast("Applied");
+    return true;
+  }
+  btnApply.addEventListener("click", applyAndBadge);
+  btnApply2.addEventListener("click", applyAndBadge);
+
+  btnRevert.addEventListener("click", ()=>{
+    const car=getSelectedCar(), dist=getSelectedDistance();
+    loadPresetIntoInputs({car, distId:dist.id, presetKey:presetSel.value});
+    showToast("Reverted");
+  });
+  btnRevert2.addEventListener("click", ()=>{
+    const car=getSelectedCar(), dist=getSelectedDistance();
+    loadPresetIntoInputs({car, distId:dist.id, presetKey:presetSel.value});
+    showToast("Reverted");
+  });
+
+  btnStage.addEventListener("click", stageStart);
+
+  btnNextRun.addEventListener("click", ()=>{
+    resetRun();
+    applyConfigToBadges();
+    stageStart();
+  });
+
+  btnNewSession.addEventListener("click", ()=>{
+    session = { runs:[], bestTimeS:Infinity, bestTrapKmh:NaN, bestRun:null };
+    bestRead.textContent="—";
+    deltaRead.textContent="—";
+    trapRead.textContent="—";
+    rtRead.textContent="—";
+    showToast("New");
+    resetRun();
+  });
+
+  function endAndSaveSession(){
+    if (!session.runs.length || !Number.isFinite(session.bestTimeS)){
+      showToast("No runs");
+      return;
+    }
+    const name = prompt("Name:", "Player");
+    if (!name){ showToast("Cancelled"); return; }
+
+    leaderboard.push({
+      name: name.trim().slice(0,24),
+      car: cfg.car.name,
+      distanceName: cfg.distance.name,
+      timeS: session.bestTimeS,
+      trapKmh: session.bestTrapKmh,
+      date: nowStr()
+    });
+    saveLB(leaderboard);
+    renderLB();
+    showToast("Saved");
+  }
+
+  btnEndSession.addEventListener("click", endAndSaveSession);
+  btnEndSaveTop.addEventListener("click", endAndSaveSession);
+
+  btnResetLB.addEventListener("click", ()=>{
+    if (!confirm("Reset LB?")) return;
+    leaderboard = [];
+    saveLB(leaderboard);
+    renderLB();
+    showToast("Cleared");
+  });
+
+  /* Selection change */
+  function onSelectionChanged(){
+    const car=getSelectedCar();
+    const dist=getSelectedDistance();
+
+    buildGearInputs(car.gears.length);
+    buildPresetList();
+    presetSel.value="default";
+    loadPresetIntoInputs({car, distId:dist.id, presetKey:"default"});
+
+    cfg.car = car;
+    cfg.distance = dist;
+    cfg.gears = car.gears.slice();
+    cfg.finalDrive = car.finalDrive;
+    cfg.shiftCutS = car.shiftCutS;
+    cfg.treeType = treeTypeSel.value;
+
+    applyConfigToBadges();
+    resetRun();
+  }
+
+  carSel.addEventListener("change", onSelectionChanged);
+  distanceSel.addEventListener("change", ()=>{
+    buildPresetList();
+    presetSel.value="default";
+    const car=getSelectedCar();
+    const dist=getSelectedDistance();
+    loadPresetIntoInputs({car, distId:dist.id, presetKey:"default"});
+    applyConfigToBadges();
+    resetRun();
+  });
+  presetSel.addEventListener("change", ()=>{
+    const car=getSelectedCar(), dist=getSelectedDistance();
+    loadPresetIntoInputs({car, distId:dist.id, presetKey:presetSel.value});
+    showToast("Preset");
+  });
+
+  /* Loop */
+  let last = performance.now();
+  function loop(t){
+    const frame = (t-last)/1000;
+    last = t;
+
+    const steps = Math.min(6, Math.max(1, Math.round(frame/dt)));
+    for (let i=0;i<steps;i++) stepPhysics(dt);
+
+    drawRoad();
+    requestAnimationFrame(loop);
+  }
+
+  /* Init */
+  function init(){
+    renderLB();
+
+    distanceSel.value="quarter";
+    carSel.value="mustang6";
+    onSelectionChanged();
+
+    readInputsToCfg();
+    applyConfigToBadges();
+    resetRun();
+
+    requestAnimationFrame(loop);
+  }
+  init();
+})();
+</script>
+</body>
+</html>
