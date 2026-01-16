@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>RSVP Speed Reader</title>
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --panel:#12141b;
+      --panel2:#0f1117;
+      --text:#eaf0ff;
+      --muted:#a7b0c4;
+      --accent:#4f7cff;
+      --danger:#ff4f6d;
+      --border:rgba(255,255,255,0.10);
+      --shadow:0 10px 30px rgba(0,0,0,0.35);
+      --radius:16px;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background:linear-gradient(180deg, #090a0f, #0b0c10 35%, #090a0f);
+      color:var(--text);
+      font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    /* Layout */
+    .app{
+      min-height:100%;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      padding:12px;
+      max-width:900px;
+      margin:0 auto;
+    }
+
+    .topbar{
+      background:rgba(18,20,27,0.78);
+      backdrop-filter: blur(10px);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .group{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .label{
+      font-size:12px;
+      color:var(--muted);
+      letter-spacing:0.2px;
+    }
+
+    .pill{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      background:rgba(15,17,23,0.9);
+      border:1px solid var(--border);
+      border-radius:14px;
+    }
+
+    input[type="range"]{
+      width:min(280px, 70vw);
+      accent-color: var(--accent);
+    }
+
+    .btn{
+      -webkit-tap-highlight-color: transparent;
+      border:none;
+      border-radius:14px;
+      padding:12px 14px;
+      background:rgba(15,17,23,0.9);
+      color:var(--text);
+      border:1px solid var(--border);
+      font-weight:600;
+      font-size:14px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      user-select:none;
+    }
+    .btn:active{ transform:scale(0.98); }
+    .btn.primary{
+      background:linear-gradient(180deg, rgba(79,124,255,0.95), rgba(79,124,255,0.75));
+      border-color:rgba(79,124,255,0.6);
+    }
+    .btn.danger{
+      background:rgba(255,79,109,0.15);
+      border-color:rgba(255,79,109,0.35);
+      color:#ffdbe2;
+    }
+    .btn.small{
+      padding:10px 12px;
+      font-size:13px;
+      border-radius:12px;
+    }
+
+    .text-area{
+      flex:1;
+      background:rgba(18,20,27,0.78);
+      backdrop-filter: blur(10px);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    textarea{
+      width:100%;
+      flex:1;
+      min-height:220px;
+      resize:none;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(15,17,23,0.9);
+      color:var(--text);
+      padding:12px 12px;
+      font-size:15px;
+      line-height:1.4;
+      outline:none;
+    }
+    textarea::placeholder{ color:rgba(167,176,196,0.6); }
+
+    .hint{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+
+    /* Toggle */
+    .toggle{
+      display:flex;
+      gap:8px;
+      background:rgba(15,17,23,0.9);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:6px;
+    }
+    .toggle button{
+      -webkit-tap-highlight-color: transparent;
+      border:none;
+      background:transparent;
+      color:var(--muted);
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:700;
+      font-size:13px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .toggle button.active{
+      background:rgba(79,124,255,0.18);
+      color:var(--text);
+      border:1px solid rgba(79,124,255,0.35);
+    }
+
+    /* Reader overlay */
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:radial-gradient(1200px 800px at 50% 35%, rgba(79,124,255,0.12), transparent 60%),
+                 linear-gradient(180deg, #07080c, #0b0c10 45%, #07080c);
+      display:none;
+      flex-direction:column;
+      z-index:9999;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    .overlay.show{ display:flex; }
+
+    .overlay-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px 12px 6px;
+    }
+    .overlay-top .status{
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .overlay-top .dot{
+      width:8px;height:8px;border-radius:50%;
+      background:rgba(79,124,255,0.9);
+      box-shadow:0 0 0 6px rgba(79,124,255,0.15);
+    }
+
+    .word-stage{
+      flex:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 10px 16px;
+      text-align:center;
+    }
+    .word{
+      font-weight:800;
+      letter-spacing:0.2px;
+      line-height:1.05;
+      font-size: clamp(44px, 8vw, 92px);
+      padding: 10px 14px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(18,20,27,0.35);
+      backdrop-filter: blur(10px);
+      max-width: 95vw;
+      word-break: break-word;
+    }
+    .word .pivot{
+      color:rgba(79,124,255,0.95);
+      text-shadow: 0 0 18px rgba(79,124,255,0.22);
+    }
+
+    .overlay-bottom{
+      padding: 10px 12px 12px;
+      display:flex;
+      gap:10px;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .overlay-bottom .controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .kbd{
+      font-size:12px;
+      color:var(--muted);
+      padding: 8px 10px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:rgba(15,17,23,0.7);
+    }
+
+    /* iOS: prevent double-tap zoom on buttons */
+    button { touch-action: manipulation; }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="row">
+        <div class="group">
+          <div class="pill">
+            <div>
+              <div class="label">Speed</div>
+              <div style="font-weight:800; font-size:16px;">
+                <span id="wpmLabel">300</span> WPM
+              </div>
+            </div>
+            <input id="wpm" type="range" min="80" max="900" step="10" value="300" />
+          </div>
+
+          <div class="pill">
+            <div>
+              <div class="label">Timing model</div>
+              <div class="toggle" role="tablist" aria-label="Timing model">
+                <button id="modeWord" class="active" type="button" aria-pressed="true">Per word</button>
+                <button id="modeChar" type="button" aria-pressed="false">By length</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <button id="startBtn" class="btn primary" type="button">▶︎ Start</button>
+          <button id="clearBtn" class="btn danger" type="button">Clear</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="group">
+          <div class="pill">
+            <div>
+              <div class="label">Step buttons</div>
+              <div style="font-weight:800; font-size:16px;">
+                <span id="stepLabel">25</span> WPM
+              </div>
+            </div>
+            <input id="step" type="range" min="5" max="100" step="5" value="25" />
+          </div>
+
+          <div class="pill">
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div class="label">Extra pause (punctuation)</div>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <label style="display:flex; gap:8px; align-items:center; font-size:14px;">
+                  <input id="punctPause" type="checkbox" checked />
+                  Enable
+                </label>
+                <span class="hint">Adds a small pause after “, . ! ? : ;”</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <span class="hint">
+            Tip: “By length” is usually nicer: short words flash quickly, long words stay longer (more natural).
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-area">
+      <div class="label">Paste or type your text</div>
+      <textarea id="input" placeholder="Paste any text here (no limit). Then press Start."></textarea>
+      <div class="hint">
+        How it’s timed:
+        <b>Per word</b> = constant delay based on WPM.
+        <b>By length</b> = base delay + extra milliseconds per character (clamped so it doesn’t get crazy).
+      </div>
+    </div>
+  </div>
+
+  <!-- Reader Overlay -->
+  <div id="overlay" class="overlay" aria-hidden="true">
+    <div class="overlay-top">
+      <div class="status">
+        <span class="dot"></span>
+        <span><span id="posLabel">0</span>/<span id="totalLabel">0</span></span>
+        <span class="kbd"><span id="overlayWpmLabel">300</span> WPM</span>
+      </div>
+      <button id="exitBtn" class="btn small danger" type="button">✕</button>
+    </div>
+
+    <div class="word-stage">
+      <div id="word" class="word">Ready</div>
+    </div>
+
+    <div class="overlay-bottom">
+      <div class="controls">
+        <button id="backBtn" class="btn small" type="button">⟵ Back</button>
+        <button id="playPauseBtn" class="btn small primary" type="button">⏸ Pause</button>
+        <button id="fwdBtn" class="btn small" type="button">Next ⟶</button>
+      </div>
+
+      <div class="controls">
+        <button id="slowerBtn" class="btn small" type="button">− Speed</button>
+        <button id="fasterBtn" class="btn small" type="button">+ Speed</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Helpers ----------
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+    // Split text into tokens (words + punctuation kept attached)
+    // This is intentionally simple and robust for phone use.
+    function tokenize(text){
+      // Normalize whitespace
+      const t = (text || "").replace(/\s+/g, " ").trim();
+      if(!t) return [];
+      // Split on spaces, keep punctuation attached to word (good for RSVP)
+      return t.split(" ");
+    }
+
+    function hasStrongPunct(token){
+      return /[.!?]$/.test(token);
+    }
+    function hasSoftPunct(token){
+      return /[,;:]$/.test(token);
+    }
+
+    // Optional: highlight a "pivot" letter (ORP-ish)
+    // We’ll color one letter near 1/3 into the word to help tracking.
+    function renderWord(token){
+      const clean = token || "";
+      // If it's very short, skip highlighting
+      const len = clean.length;
+      if(len < 4) return escapeHtml(clean);
+
+      // Find pivot: approx 1/3 (common RSVP trick)
+      const pivotIndex = clamp(Math.floor(len * 0.35), 1, len - 2);
+
+      const left = clean.slice(0, pivotIndex);
+      const pivot = clean.slice(pivotIndex, pivotIndex + 1);
+      const right = clean.slice(pivotIndex + 1);
+
+      return `${escapeHtml(left)}<span class="pivot">${escapeHtml(pivot)}</span>${escapeHtml(right)}`;
+    }
+
+    function escapeHtml(str){
+      return (str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // ---------- Timing models ----------
+    // Per word: base ms = 60000 / WPM
+    function msPerWord(wpm){
+      return 60000 / Math.max(1, wpm);
+    }
+
+    // By length: base per-word + extra per char, then clamp
+    // Tuned to feel natural on phones:
+    // - base: msPerWord(wpm) * 0.75 (since we add extras)
+    // - extra: 18ms per character (typical-ish)
+    // - clamp to avoid extremes
+    function msByLength(token, wpm){
+      const base = msPerWord(wpm) * 0.75;
+      const extraPerChar = 18;
+      const len = (token || "").length;
+      const raw = base + (len * extraPerChar);
+
+      // Clamp relative to base speed
+      const min = msPerWord(wpm) * 0.55;
+      const max = msPerWord(wpm) * 2.2;
+      return clamp(raw, min, max);
+    }
+
+    // Extra punctuation pauses (optional)
+    function punctBonusMs(token, wpm){
+      if(!punctPause.checked) return 0;
+      const base = msPerWord(wpm);
+      if(hasStrongPunct(token)) return base * 0.8; // . ! ?
+      if(hasSoftPunct(token)) return base * 0.35;  // , ; :
+      return 0;
+    }
+
+    // ---------- State ----------
+    const wpmEl = document.getElementById("wpm");
+    const wpmLabel = document.getElementById("wpmLabel");
+    const overlayWpmLabel = document.getElementById("overlayWpmLabel");
+
+    const stepEl = document.getElementById("step");
+    const stepLabel = document.getElementById("stepLabel");
+
+    const modeWordBtn = document.getElementById("modeWord");
+    const modeCharBtn = document.getElementById("modeChar");
+    let timingMode = "word"; // "word" or "char"
+
+    const punctPause = document.getElementById("punctPause");
+
+    const inputEl = document.getElementById("input");
+    const startBtn = document.getElementById("startBtn");
+    const clearBtn = document.getElementById("clearBtn");
+
+    const overlay = document.getElementById("overlay");
+    const exitBtn = document.getElementById("exitBtn");
+
+    const wordEl = document.getElementById("word");
+    const playPauseBtn = document.getElementById("playPauseBtn");
+    const backBtn = document.getElementById("backBtn");
+    const fwdBtn = document.getElementById("fwdBtn");
+    const slowerBtn = document.getElementById("slowerBtn");
+    const fasterBtn = document.getElementById("fasterBtn");
+
+    const posLabel = document.getElementById("posLabel");
+    const totalLabel = document.getElementById("totalLabel");
+
+    let tokens = [];
+    let idx = 0;
+    let playing = false;
+    let timer = null;
+
+    // ---------- UI wiring ----------
+    function setWpm(val){
+      const wpm = clamp(Number(val) || 300, 50, 1200);
+      wpmEl.value = wpm;
+      wpmLabel.textContent = wpm;
+      overlayWpmLabel.textContent = wpm;
+    }
+    function setStep(val){
+      const s = clamp(Number(val) || 25, 5, 200);
+      stepEl.value = s;
+      stepLabel.textContent = s;
+    }
+
+    wpmEl.addEventListener("input", () => setWpm(wpmEl.value));
+    stepEl.addEventListener("input", () => setStep(stepEl.value));
+
+    modeWordBtn.addEventListener("click", () => {
+      timingMode = "word";
+      modeWordBtn.classList.add("active");
+      modeCharBtn.classList.remove("active");
+      modeWordBtn.setAttribute("aria-pressed","true");
+      modeCharBtn.setAttribute("aria-pressed","false");
+    });
+
+    modeCharBtn.addEventListener("click", () => {
+      timingMode = "char";
+      modeCharBtn.classList.add("active");
+      modeWordBtn.classList.remove("active");
+      modeCharBtn.setAttribute("aria-pressed","true");
+      modeWordBtn.setAttribute("aria-pressed","false");
+    });
+
+    clearBtn.addEventListener("click", () => {
+      inputEl.value = "";
+      inputEl.focus();
+    });
+
+    startBtn.addEventListener("click", () => {
+      tokens = tokenize(inputEl.value);
+      if(tokens.length === 0){
+        alert("Paste some text first.");
+        return;
+      }
+      idx = 0;
+      openOverlay();
+      renderCurrent();
+      play();
+    });
+
+    exitBtn.addEventListener("click", closeOverlay);
+
+    playPauseBtn.addEventListener("click", () => {
+      if(playing) pause();
+      else play();
+    });
+
+    backBtn.addEventListener("click", () => {
+      pause();
+      idx = Math.max(0, idx - 1);
+      renderCurrent();
+    });
+
+    fwdBtn.addEventListener("click", () => {
+      pause();
+      idx = Math.min(tokens.length - 1, idx + 1);
+      renderCurrent();
+    });
+
+    slowerBtn.addEventListener("click", () => {
+      const step = Number(stepEl.value) || 25;
+      setWpm((Number(wpmEl.value) || 300) - step);
+    });
+
+    fasterBtn.addEventListener("click", () => {
+      const step = Number(stepEl.value) || 25;
+      setWpm((Number(wpmEl.value) || 300) + step);
+    });
+
+    // Swipe/Touch: tap word to play/pause
+    wordEl.addEventListener("click", () => {
+      if(playing) pause();
+      else play();
+    });
+
+    // Prevent screen sleep (best-effort): not reliable on iOS Safari,
+    // but keeping activity (timer) usually helps.
+
+    // ---------- Overlay control ----------
+    function openOverlay(){
+      overlay.classList.add("show");
+      overlay.setAttribute("aria-hidden","false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeOverlay(){
+      pause();
+      overlay.classList.remove("show");
+      overlay.setAttribute("aria-hidden","true");
+      document.body.style.overflow = "";
+    }
+
+    // ---------- Playback ----------
+    function renderCurrent(){
+      const total = tokens.length;
+      totalLabel.textContent = total;
+      posLabel.textContent = total ? (idx + 1) : 0;
+
+      const token = tokens[idx] ?? "";
+      wordEl.innerHTML = renderWord(token);
+    }
+
+    function nextTick(){
+      if(!playing) return;
+
+      renderCurrent();
+
+      const wpm = Number(wpmEl.value) || 300;
+      const token = tokens[idx] ?? "";
+
+      let delay;
+      if(timingMode === "char"){
+        delay = msByLength(token, wpm);
+      }else{
+        delay = msPerWord(wpm);
+      }
+      delay += punctBonusMs(token, wpm);
+
+      // Schedule next
+      timer = setTimeout(() => {
+        idx++;
+        if(idx >= tokens.length){
+          // End
+          pause();
+          // Show last state + gentle end label
+          idx = tokens.length - 1;
+          renderCurrent();
+          playPauseBtn.textContent = "↺ Restart";
+          playPauseBtn.classList.add("primary");
+          playPauseBtn.onclick = () => {
+            // restore normal handler
+            playPauseBtn.onclick = null;
+            playPauseBtn.textContent = "⏸ Pause";
+            idx = 0;
+            renderCurrent();
+            play();
+          };
+          return;
+        }
+        nextTick();
+      }, Math.max(10, delay));
+    }
+
+    function play(){
+      if(tokens.length === 0) return;
+      playing = true;
+      playPauseBtn.textContent = "⏸ Pause";
+      // Clear any special restart override if set
+      if(playPauseBtn.onclick){
+        playPauseBtn.onclick = null;
+      }
+      clearTimeout(timer);
+      nextTick();
+    }
+
+    function pause(){
+      playing = false;
+      clearTimeout(timer);
+      playPauseBtn.textContent = "▶︎ Play";
+    }
+
+    // Keyboard support (desktop testing)
+    window.addEventListener("keydown", (e) => {
+      if(!overlay.classList.contains("show")) return;
+      if(e.code === "Space"){
+        e.preventDefault();
+        if(playing) pause(); else play();
+      }
+      if(e.code === "ArrowRight"){
+        e.preventDefault();
+        pause();
+        idx = Math.min(tokens.length - 1, idx + 1);
+        renderCurrent();
+      }
+      if(e.code === "ArrowLeft"){
+        e.preventDefault();
+        pause();
+        idx = Math.max(0, idx - 1);
+        renderCurrent();
+      }
+      if(e.code === "Escape"){
+        e.preventDefault();
+        closeOverlay();
+      }
+    });
+
+    // ---------- Init ----------
+    setWpm(300);
+    setStep(25);
+  </script>
+</body>
+</html>
