@@ -105,18 +105,11 @@
       min-height: 42px;
     }
 
-    button:active{
-      transform: translateY(1px);
-    }
+    button:active{ transform: translateY(1px); }
 
     .btnAccent{
       border-color: rgba(125, 211, 252, .35);
       box-shadow: 0 0 0 2px rgba(125,211,252,.10) inset;
-    }
-
-    .btnDanger{
-      border-color: rgba(251, 113, 133, .35);
-      box-shadow: 0 0 0 2px rgba(251,113,133,.10) inset;
     }
 
     .stats{
@@ -134,16 +127,19 @@
       justify-content: center;
     }
 
+    /* ✅ FIX: lock the board to a stable square size on iPhone Safari */
     .board{
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      max-height: calc(100dvh - 240px);
+      width: min(560px, calc(100vw - 28px), calc(100dvh - 260px));
+      height: min(560px, calc(100vw - 28px), calc(100dvh - 260px));
+
       border-radius: 16px;
       overflow: hidden;
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.03);
+
       display: grid;
       grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr); /* force equal row heights */
       user-select: none;
       -webkit-user-select: none;
       touch-action: manipulation;
@@ -279,7 +275,6 @@
   </div>
 
   <script>
-    // Knight Journey (single-file)
     const N = 8;
 
     const boardEl = document.getElementById("board");
@@ -296,10 +291,9 @@
       [-1, -2], [-2, -1], [-2,  1], [-1,  2],
     ];
 
-    // State
     let visited = Array.from({length:N}, () => Array(N).fill(false));
     let steps = Array.from({length:N}, () => Array(N).fill(0));
-    let path = []; // array of {x,y}
+    let path = [];
     let showHints = false;
 
     function inBounds(x,y){ return x>=0 && x<N && y>=0 && y<N; }
@@ -330,23 +324,20 @@
     }
 
     function clearHintClasses(){
-      const sqs = boardEl.querySelectorAll(".sq.legal");
-      sqs.forEach(el => el.classList.remove("legal"));
+      boardEl.querySelectorAll(".sq.legal").forEach(el => el.classList.remove("legal"));
     }
 
     function render(){
-      // Update square classes and content without rebuilding the grid
       clearHintClasses();
 
       const current = path[path.length - 1];
 
       for (let y=0; y<N; y++){
         for (let x=0; x<N; x++){
-          const id = `sq-${x}-${y}`;
-          const el = document.getElementById(id);
+          const el = document.getElementById(`sq-${x}-${y}`);
 
           el.classList.toggle("visited", visited[y][x]);
-          el.classList.toggle("current", current && current.x===x && current.y===y);
+          el.classList.toggle("current", !!current && current.x===x && current.y===y);
 
           const stepBadge = el.querySelector(".step");
           const stepNum = steps[y][x];
@@ -358,31 +349,22 @@
           }
 
           const knightEl = el.querySelector(".knight");
-          if (current && current.x===x && current.y===y){
-            knightEl.style.display = "block";
-          } else {
-            knightEl.style.display = "none";
-          }
+          knightEl.style.display = (current && current.x===x && current.y===y) ? "block" : "none";
         }
       }
 
       if (showHints && current){
-        const moves = legalMovesFrom(current);
-        for (const m of moves){
+        for (const m of legalMovesFrom(current)){
           document.getElementById(`sq-${m.x}-${m.y}`).classList.add("legal");
         }
       }
 
       updateStats();
 
-      // Win condition
       if (path.length === 64){
         setMessage("✅ You did it! All 64 squares visited exactly once.", "ok");
-      } else {
-        // If stuck (no legal moves) and not finished
-        if (current && legalMovesFrom(current).length === 0){
-          setMessage("⚠️ No legal moves left. Try Undo or Reset.", "bad");
-        }
+      } else if (current && legalMovesFrom(current).length === 0){
+        setMessage("⚠️ No legal moves left. Try Undo or Reset.", "bad");
       }
     }
 
@@ -424,10 +406,11 @@
       setMessage("");
 
       const [sx, sy] = startCornerEl.value.split(",").map(Number);
-      // Note: we store visited by [y][x]
+
       visited[sy][sx] = true;
       steps[sy][sx] = 1;
       path.push({x:sx, y:sy});
+
       render();
     }
 
@@ -440,23 +423,18 @@
       const last = path.pop();
       visited[last.y][last.x] = false;
       steps[last.y][last.x] = 0;
-
-      // Renumber: only last step removed, so fine to just keep earlier numbers
-      // but steps should stay consistent -> already fine.
       render();
     }
 
     function tryMoveTo(x,y){
       const current = path[path.length - 1];
-      const to = {x,y};
-
       if (!current) return;
 
       if (visited[y][x]){
         setMessage("That square is already visited.", "bad");
         return;
       }
-      if (!isKnightMove(current, to)){
+      if (!isKnightMove(current, {x,y})){
         setMessage("Illegal move. Knights move 2+1 in an L shape.", "bad");
         return;
       }
@@ -478,7 +456,6 @@
         return;
       }
 
-      // Optional: if hints are on, only allow taps on legal squares (better UX)
       if (showHints){
         const current = path[path.length - 1];
         const moves = legalMovesFrom(current);
@@ -492,7 +469,6 @@
       tryMoveTo(x,y);
     }
 
-    // Buttons
     resetBtn.addEventListener("click", resetGame);
     undoBtn.addEventListener("click", undo);
     hintBtn.addEventListener("click", () => {
@@ -501,10 +477,9 @@
       setMessage(showHints ? "Legal moves highlighted." : "");
       render();
     });
-
     startCornerEl.addEventListener("change", resetGame);
 
-    // Prevent double-tap zoom on iOS as much as possible
+    // Reduce iOS double-tap zoom annoyance
     let lastTouchEnd = 0;
     document.addEventListener("touchend", function (event) {
       const now = Date.now();
@@ -512,7 +487,6 @@
       lastTouchEnd = now;
     }, { passive: false });
 
-    // Init
     buildBoard();
     resetGame();
   </script>
