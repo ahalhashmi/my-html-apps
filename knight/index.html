@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>Knight Journey</title>
+  <style>
+    :root{
+      --bg: #0b0f14;
+      --panel: #121923;
+      --text: #eaf2ff;
+      --muted: rgba(234,242,255,.7);
+      --accent: #7dd3fc;
+      --danger: #fb7185;
+
+      --light: #d9d9d9;
+      --dark: #6b7280;
+
+      --visited: rgba(125, 211, 252, .32);
+      --current: rgba(167, 243, 208, .35);
+      --legal: rgba(250, 204, 21, .25);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      background: radial-gradient(1200px 700px at 50% -10%, #162033 0%, var(--bg) 55%);
+      color: var(--text);
+      font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      overscroll-behavior: none;
+    }
+
+    .wrap{
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom) 14px;
+      gap: 12px;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    header{
+      width: min(560px, 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .titleRow{
+      display:flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    h1{
+      font-size: 20px;
+      margin: 0;
+      letter-spacing: .2px;
+    }
+    .sub{
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .panel{
+      width: min(560px, 100%);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 14px;
+      padding: 10px;
+      backdrop-filter: blur(8px);
+    }
+
+    .controls{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .row{
+      display:flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button, select{
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(18, 25, 35, .72);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      line-height: 1;
+      width: 100%;
+      min-height: 42px;
+    }
+
+    button:active{
+      transform: translateY(1px);
+    }
+
+    .btnAccent{
+      border-color: rgba(125, 211, 252, .35);
+      box-shadow: 0 0 0 2px rgba(125,211,252,.10) inset;
+    }
+
+    .btnDanger{
+      border-color: rgba(251, 113, 133, .35);
+      box-shadow: 0 0 0 2px rgba(251,113,133,.10) inset;
+    }
+
+    .stats{
+      display:flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .boardWrap{
+      width: min(560px, 100%);
+      display:flex;
+      justify-content: center;
+    }
+
+    .board{
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-height: calc(100dvh - 240px);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    .sq{
+      position: relative;
+      display:flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(12px, 3.2vw, 16px);
+      font-weight: 600;
+      border: 1px solid rgba(0,0,0,.08);
+    }
+    .sq.light{ background: linear-gradient(180deg, rgba(217,217,217,.95), rgba(217,217,217,.86)); color:#0b0f14; }
+    .sq.dark { background: linear-gradient(180deg, rgba(107,114,128,.95), rgba(107,114,128,.86)); color:#0b0f14; }
+
+    .sq.visited::after{
+      content:"";
+      position:absolute; inset:0;
+      background: var(--visited);
+      pointer-events:none;
+    }
+    .sq.current::after{
+      content:"";
+      position:absolute; inset:0;
+      background: var(--current);
+      pointer-events:none;
+      box-shadow: 0 0 0 2px rgba(167,243,208,.55) inset;
+    }
+    .sq.legal::after{
+      content:"";
+      position:absolute; inset:0;
+      background: var(--legal);
+      pointer-events:none;
+      box-shadow: 0 0 0 2px rgba(250,204,21,.35) inset;
+    }
+
+    .step{
+      position:absolute;
+      bottom: 6px;
+      right: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      opacity: .9;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.35);
+      color: #fff;
+    }
+
+    .knight{
+      font-size: clamp(20px, 6vw, 28px);
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
+      pointer-events:none;
+    }
+
+    .msg{
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 18px;
+    }
+    .msg.ok{ color: rgba(167,243,208,.95); }
+    .msg.bad{ color: rgba(251,113,133,.95); }
+
+    .help{
+      width: min(560px, 100%);
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+      padding-bottom: 6px;
+    }
+    .help b{ color: var(--text); }
+    .kbd{
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(18,25,35,.6);
+      color: var(--text);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="titleRow">
+        <h1>Knight Journey</h1>
+        <div style="font-size:12px;color:var(--muted)">iPhone-ready</div>
+      </div>
+      <p class="sub">Move the knight to visit all 64 squares exactly once. Tap a highlighted “legal” square to move.</p>
+
+      <div class="panel">
+        <div class="controls">
+          <div class="row">
+            <select id="startCorner" aria-label="Start corner">
+              <option value="0,0">Start: Top-Left</option>
+              <option value="7,0">Start: Top-Right</option>
+              <option value="0,7">Start: Bottom-Left</option>
+              <option value="7,7">Start: Bottom-Right</option>
+            </select>
+          </div>
+          <div class="row">
+            <button id="resetBtn" class="btnAccent">Reset</button>
+          </div>
+          <div class="row">
+            <button id="undoBtn">Undo</button>
+          </div>
+          <div class="row">
+            <button id="hintBtn">Show legal moves</button>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div>Visited: <span id="visitedCount">1</span>/64</div>
+          <div>Moves: <span id="moveCount">0</span></div>
+        </div>
+
+        <div id="msg" class="msg"></div>
+      </div>
+    </header>
+
+    <div class="boardWrap">
+      <div id="board" class="board" role="grid" aria-label="Chess board"></div>
+    </div>
+
+    <div class="help">
+      <b>Rules:</b> Knight moves in an “L” shape: 2 squares in one direction + 1 perpendicular. You <b>cannot</b> land on a visited square.<br>
+      <b>Tip:</b> Use <span class="kbd">Show legal moves</span> to highlight allowed squares from your current position.
+    </div>
+  </div>
+
+  <script>
+    // Knight Journey (single-file)
+    const N = 8;
+
+    const boardEl = document.getElementById("board");
+    const startCornerEl = document.getElementById("startCorner");
+    const resetBtn = document.getElementById("resetBtn");
+    const undoBtn = document.getElementById("undoBtn");
+    const hintBtn = document.getElementById("hintBtn");
+    const visitedCountEl = document.getElementById("visitedCount");
+    const moveCountEl = document.getElementById("moveCount");
+    const msgEl = document.getElementById("msg");
+
+    const knightDeltas = [
+      [ 1,  2], [ 2,  1], [ 2, -1], [ 1, -2],
+      [-1, -2], [-2, -1], [-2,  1], [-1,  2],
+    ];
+
+    // State
+    let visited = Array.from({length:N}, () => Array(N).fill(false));
+    let steps = Array.from({length:N}, () => Array(N).fill(0));
+    let path = []; // array of {x,y}
+    let showHints = false;
+
+    function inBounds(x,y){ return x>=0 && x<N && y>=0 && y<N; }
+
+    function isKnightMove(from, to){
+      const dx = Math.abs(from.x - to.x);
+      const dy = Math.abs(from.y - to.y);
+      return (dx===1 && dy===2) || (dx===2 && dy===1);
+    }
+
+    function legalMovesFrom(pos){
+      const moves = [];
+      for (const [dx,dy] of knightDeltas){
+        const x = pos.x + dx, y = pos.y + dy;
+        if (inBounds(x,y) && !visited[y][x]) moves.push({x,y});
+      }
+      return moves;
+    }
+
+    function setMessage(text, type=""){
+      msgEl.textContent = text || "";
+      msgEl.className = "msg" + (type ? " " + type : "");
+    }
+
+    function updateStats(){
+      visitedCountEl.textContent = String(path.length);
+      moveCountEl.textContent = String(Math.max(0, path.length - 1));
+    }
+
+    function clearHintClasses(){
+      const sqs = boardEl.querySelectorAll(".sq.legal");
+      sqs.forEach(el => el.classList.remove("legal"));
+    }
+
+    function render(){
+      // Update square classes and content without rebuilding the grid
+      clearHintClasses();
+
+      const current = path[path.length - 1];
+
+      for (let y=0; y<N; y++){
+        for (let x=0; x<N; x++){
+          const id = `sq-${x}-${y}`;
+          const el = document.getElementById(id);
+
+          el.classList.toggle("visited", visited[y][x]);
+          el.classList.toggle("current", current && current.x===x && current.y===y);
+
+          const stepBadge = el.querySelector(".step");
+          const stepNum = steps[y][x];
+          if (stepNum > 0){
+            stepBadge.textContent = stepNum;
+            stepBadge.style.display = "inline-block";
+          } else {
+            stepBadge.style.display = "none";
+          }
+
+          const knightEl = el.querySelector(".knight");
+          if (current && current.x===x && current.y===y){
+            knightEl.style.display = "block";
+          } else {
+            knightEl.style.display = "none";
+          }
+        }
+      }
+
+      if (showHints && current){
+        const moves = legalMovesFrom(current);
+        for (const m of moves){
+          document.getElementById(`sq-${m.x}-${m.y}`).classList.add("legal");
+        }
+      }
+
+      updateStats();
+
+      // Win condition
+      if (path.length === 64){
+        setMessage("✅ You did it! All 64 squares visited exactly once.", "ok");
+      } else {
+        // If stuck (no legal moves) and not finished
+        if (current && legalMovesFrom(current).length === 0){
+          setMessage("⚠️ No legal moves left. Try Undo or Reset.", "bad");
+        }
+      }
+    }
+
+    function buildBoard(){
+      boardEl.innerHTML = "";
+      for (let y=0; y<N; y++){
+        for (let x=0; x<N; x++){
+          const sq = document.createElement("div");
+          sq.id = `sq-${x}-${y}`;
+          sq.className = "sq " + (((x+y)%2===0) ? "light" : "dark");
+          sq.setAttribute("role", "gridcell");
+          sq.dataset.x = String(x);
+          sq.dataset.y = String(y);
+
+          const knight = document.createElement("div");
+          knight.className = "knight";
+          knight.textContent = "♞";
+          knight.style.display = "none";
+
+          const step = document.createElement("div");
+          step.className = "step";
+          step.style.display = "none";
+
+          sq.appendChild(knight);
+          sq.appendChild(step);
+
+          sq.addEventListener("click", onSquareTap, {passive:true});
+          boardEl.appendChild(sq);
+        }
+      }
+    }
+
+    function resetGame(){
+      visited = Array.from({length:N}, () => Array(N).fill(false));
+      steps   = Array.from({length:N}, () => Array(N).fill(0));
+      path = [];
+      showHints = false;
+      hintBtn.textContent = "Show legal moves";
+      setMessage("");
+
+      const [sx, sy] = startCornerEl.value.split(",").map(Number);
+      // Note: we store visited by [y][x]
+      visited[sy][sx] = true;
+      steps[sy][sx] = 1;
+      path.push({x:sx, y:sy});
+      render();
+    }
+
+    function undo(){
+      if (path.length <= 1){
+        setMessage("Nothing to undo.", "bad");
+        return;
+      }
+      setMessage("");
+      const last = path.pop();
+      visited[last.y][last.x] = false;
+      steps[last.y][last.x] = 0;
+
+      // Renumber: only last step removed, so fine to just keep earlier numbers
+      // but steps should stay consistent -> already fine.
+      render();
+    }
+
+    function tryMoveTo(x,y){
+      const current = path[path.length - 1];
+      const to = {x,y};
+
+      if (!current) return;
+
+      if (visited[y][x]){
+        setMessage("That square is already visited.", "bad");
+        return;
+      }
+      if (!isKnightMove(current, to)){
+        setMessage("Illegal move. Knights move 2+1 in an L shape.", "bad");
+        return;
+      }
+
+      setMessage("");
+      visited[y][x] = true;
+      steps[y][x] = path.length + 1;
+      path.push({x,y});
+      render();
+    }
+
+    function onSquareTap(e){
+      const el = e.currentTarget;
+      const x = Number(el.dataset.x);
+      const y = Number(el.dataset.y);
+
+      if (path.length === 64){
+        setMessage("Puzzle already completed. Reset to play again.", "ok");
+        return;
+      }
+
+      // Optional: if hints are on, only allow taps on legal squares (better UX)
+      if (showHints){
+        const current = path[path.length - 1];
+        const moves = legalMovesFrom(current);
+        const isLegal = moves.some(m => m.x===x && m.y===y);
+        if (!isLegal){
+          setMessage("Tap a highlighted legal square.", "bad");
+          return;
+        }
+      }
+
+      tryMoveTo(x,y);
+    }
+
+    // Buttons
+    resetBtn.addEventListener("click", resetGame);
+    undoBtn.addEventListener("click", undo);
+    hintBtn.addEventListener("click", () => {
+      showHints = !showHints;
+      hintBtn.textContent = showHints ? "Hide legal moves" : "Show legal moves";
+      setMessage(showHints ? "Legal moves highlighted." : "");
+      render();
+    });
+
+    startCornerEl.addEventListener("change", resetGame);
+
+    // Prevent double-tap zoom on iOS as much as possible
+    let lastTouchEnd = 0;
+    document.addEventListener("touchend", function (event) {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) event.preventDefault();
+      lastTouchEnd = now;
+    }, { passive: false });
+
+    // Init
+    buildBoard();
+    resetGame();
+  </script>
+</body>
+</html>
