@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Film Scan Fixer (Single File)</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --card:#121824;
+      --card2:#0f1520;
+      --text:#e9eef7;
+      --muted:#a9b4c7;
+      --accent:#4da3ff;
+      --line:#223049;
+      --danger:#ff5a6b;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:linear-gradient(180deg,#070a0f, #0b0f14 30%, #0b0f14);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      background:rgba(11,15,20,.85);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(34,48,73,.6);
+      padding:12px 14px;
+    }
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .title{
+      font-size:15px; font-weight:700; letter-spacing:.2px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .pill{
+      font-size:12px; color:var(--muted);
+      padding:4px 8px; border:1px solid rgba(34,48,73,.8);
+      border-radius:999px; background:rgba(18,24,36,.6);
+    }
+    main{padding:14px; max-width:980px; margin:0 auto;}
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media(min-width:900px){
+      .grid{grid-template-columns: 1.2fr .8fr;}
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(18,24,36,.9), rgba(15,21,32,.9));
+      border:1px solid rgba(34,48,73,.7);
+      border-radius:16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      overflow:hidden;
+    }
+    .card h2{
+      margin:0;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+      letter-spacing:.35px;
+      padding:12px 12px 0 12px;
+      text-transform:uppercase;
+    }
+
+    .stage{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    canvas{
+      width:100%;
+      height:auto;
+      background:#05070b;
+      border-radius:14px;
+      border:1px solid rgba(34,48,73,.6);
+      touch-action: manipulation;
+    }
+
+    .controls{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .btn{
+      appearance:none;
+      border:1px solid rgba(34,48,73,.9);
+      background:rgba(18,24,36,.75);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:700;
+      font-size:14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:44px;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(77,163,255,.25), rgba(77,163,255,.12));
+      border-color: rgba(77,163,255,.6);
+    }
+    .btn.danger{
+      background: linear-gradient(180deg, rgba(255,90,107,.18), rgba(255,90,107,.08));
+      border-color: rgba(255,90,107,.55);
+    }
+    .btn:active{transform: translateY(1px)}
+    .btnRow{display:flex; gap:10px; flex-wrap:wrap}
+    .btnRow .btn{flex:1}
+
+    input[type="file"]{
+      width:100%;
+      min-height:44px;
+      padding:10px;
+      border-radius:12px;
+      border:1px dashed rgba(34,48,73,.8);
+      background:rgba(15,21,32,.55);
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    select{
+      width:100%;
+      min-height:44px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(34,48,73,.8);
+      background:rgba(15,21,32,.65);
+      color:var(--text);
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .slider{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:8px 10px;
+      align-items:center;
+    }
+    .slider label{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .slider .val{
+      font-variant-numeric: tabular-nums;
+      font-size:12px;
+      color:var(--text);
+      opacity:.85;
+      min-width:52px;
+      text-align:right;
+    }
+    input[type="range"]{
+      grid-column: 1 / -1;
+      width:100%;
+      accent-color: var(--accent);
+      height: 34px; /* bigger touch target */
+    }
+
+    .hint{
+      padding:0 12px 12px 12px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+    .mini{
+      font-size:12px;
+      color:var(--muted);
+      opacity:.95;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      transform:translateX(-50%);
+      background:rgba(18,24,36,.95);
+      border:1px solid rgba(34,48,73,.8);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:700;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .2s ease, transform .2s ease;
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+    }
+    .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="row" style="justify-content:space-between;">
+      <div class="title">
+        Film Scan Fixer
+        <span class="pill">iPhone-ready • single HTML</span>
+      </div>
+      <div class="pill" id="statusPill">No image loaded</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <section class="card">
+        <h2>Preview</h2>
+        <div class="stage">
+          <canvas id="c" width="1200" height="800" aria-label="Preview canvas"></canvas>
+          <div class="btnRow">
+            <button class="btn primary" id="btnDownload">Download</button>
+            <button class="btn" id="btnFit">Fit</button>
+            <button class="btn danger" id="btnReset">Reset</button>
+          </div>
+          <div class="mini" id="imgInfo">Tip: upload a scan (negative or positive). Choose a preset, then fine-tune.</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Controls</h2>
+        <div class="controls">
+          <input id="file" type="file" accept="image/*" />
+          <div>
+            <div class="mini" style="margin:2px 0 8px 0;">Preset</div>
+            <select id="preset">
+              <option value="auto">Auto (best guess)</option>
+              <option value="colorNeg">Color Negative (orange/brown mask)</option>
+              <option value="bwNeg">B&W Negative</option>
+              <option value="slide">Slide / Positive (no invert)</option>
+              <option value="alreadyInverted">Already inverted (just enhance)</option>
+              <option value="oldFade">Old film (faded colors)</option>
+              <option value="strongMask">Color neg (strong mask / very brown)</option>
+            </select>
+          </div>
+
+          <div class="slider">
+            <label for="invert">Invert</label><div class="val" id="v_invert">Auto</div>
+            <input id="invert" type="range" min="0" max="2" step="1" value="2" />
+            <div class="mini" style="grid-column: 1 / -1; margin-top:-6px;">
+              0 = Off • 1 = On • 2 = Auto
+            </div>
+          </div>
+
+          <div class="slider">
+            <label for="mask">Orange Mask</label><div class="val" id="v_mask">0.55</div>
+            <input id="mask" type="range" min="0" max="1" step="0.01" value="0.55" />
+          </div>
+
+          <div class="slider">
+            <label for="exposure">Exposure</label><div class="val" id="v_exposure">0.00</div>
+            <input id="exposure" type="range" min="-2" max="2" step="0.01" value="0" />
+          </div>
+
+          <div class="slider">
+            <label for="contrast">Contrast</label><div class="val" id="v_contrast">1.10</div>
+            <input id="contrast" type="range" min="0.5" max="2" step="0.01" value="1.10" />
+          </div>
+
+          <div class="slider">
+            <label for="gamma">Gamma</label><div class="val" id="v_gamma">1.00</div>
+            <input id="gamma" type="range" min="0.5" max="2" step="0.01" value="1.00" />
+          </div>
+
+          <div class="slider">
+            <label for="saturation">Saturation</label><div class="val" id="v_saturation">1.10</div>
+            <input id="saturation" type="range" min="0" max="2.5" step="0.01" value="1.10" />
+          </div>
+
+          <div class="slider">
+            <label for="temp">Temperature</label><div class="val" id="v_temp">0</div>
+            <input id="temp" type="range" min="-50" max="50" step="1" value="0" />
+          </div>
+
+          <div class="slider">
+            <label for="tint">Tint</label><div class="val" id="v_tint">0</div>
+            <input id="tint" type="range" min="-50" max="50" step="1" value="0" />
+          </div>
+
+          <div class="slider">
+            <label for="black">Blacks</label><div class="val" id="v_black">0</div>
+            <input id="black" type="range" min="-40" max="40" step="1" value="0" />
+          </div>
+
+          <div class="slider">
+            <label for="white">Whites</label><div class="val" id="v_white">0</div>
+            <input id="white" type="range" min="-40" max="40" step="1" value="0" />
+          </div>
+
+          <div class="slider">
+            <label for="sharpen">Sharpen</label><div class="val" id="v_sharpen">0.00</div>
+            <input id="sharpen" type="range" min="0" max="1" step="0.01" value="0" />
+            <div class="mini" style="grid-column: 1 / -1; margin-top:-6px;">
+              Light unsharp mask (fast). Keep low for grainy film.
+            </div>
+          </div>
+
+          <div class="hint">
+            <b>Workflow tip:</b> If it’s brown/orange negative, use <b>Color Negative</b>, then tweak <b>Orange Mask</b> and <b>Temperature</b>.
+            If it’s already inverted, use <b>Already inverted</b> and adjust contrast/gamma.
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast">Saved</div>
+
+  <script>
+    (() => {
+      const $ = (id) => document.getElementById(id);
+
+      const canvas = $("c");
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+      const file = $("file");
+      const presetSel = $("preset");
+      const statusPill = $("statusPill");
+      const imgInfo = $("imgInfo");
+
+      const btnReset = $("btnReset");
+      const btnDownload = $("btnDownload");
+      const btnFit = $("btnFit");
+
+      const toast = $("toast");
+
+      // UI inputs
+      const inputs = {
+        invert: $("invert"), mask: $("mask"),
+        exposure: $("exposure"), contrast: $("contrast"), gamma: $("gamma"),
+        saturation: $("saturation"), temp: $("temp"), tint: $("tint"),
+        black: $("black"), white: $("white"), sharpen: $("sharpen"),
+      };
+
+      const valEls = {
+        invert: $("v_invert"), mask: $("v_mask"),
+        exposure: $("v_exposure"), contrast: $("v_contrast"), gamma: $("v_gamma"),
+        saturation: $("v_saturation"), temp: $("v_temp"), tint: $("v_tint"),
+        black: $("v_black"), white: $("v_white"), sharpen: $("v_sharpen"),
+      };
+
+      function showToast(msg){
+        toast.textContent = msg;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 1000);
+      }
+
+      let originalImg = null;
+      let originalCanvas = document.createElement("canvas");
+      let octx = originalCanvas.getContext("2d", { willReadFrequently: true });
+
+      // View settings (simple fit)
+      let fitMode = true;
+
+      // Debounce render
+      let renderQueued = false;
+      function queueRender() {
+        if (!originalImg) return;
+        if (renderQueued) return;
+        renderQueued = true;
+        requestAnimationFrame(() => {
+          renderQueued = false;
+          render();
+        });
+      }
+
+      // Helpers
+      const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+      const srgbToLin = (c) => {
+        c = c / 255;
+        return (c <= 0.04045) ? (c / 12.92) : Math.pow((c + 0.055) / 1.055, 2.4);
+      };
+      const linToSrgb255 = (x) => {
+        x = clamp(x, 0, 1);
+        const c = (x <= 0.0031308) ? (12.92 * x) : (1.055 * Math.pow(x, 1 / 2.4) - 0.055);
+        return clamp(Math.round(c * 255), 0, 255);
+      };
+
+      // Presets (approximate; tuned for “brown/orange” negatives)
+      const presetDefs = {
+        auto: () => ({
+          // Auto: assume color negative unless user overrides invert
+          invertMode: 2, // auto
+          mask: 0.55,
+          exposure: 0.05,
+          contrast: 1.12,
+          gamma: 1.00,
+          saturation: 1.12,
+          temp: 6,
+          tint: 0,
+          black: 0,
+          white: 0,
+          sharpen: 0.10,
+        }),
+        colorNeg: () => ({
+          invertMode: 1,
+          mask: 0.58,
+          exposure: 0.08,
+          contrast: 1.15,
+          gamma: 1.00,
+          saturation: 1.18,
+          temp: 8,
+          tint: 1,
+          black: -2,
+          white: 4,
+          sharpen: 0.10,
+        }),
+        strongMask: () => ({
+          invertMode: 1,
+          mask: 0.78,
+          exposure: 0.10,
+          contrast: 1.18,
+          gamma: 0.98,
+          saturation: 1.22,
+          temp: 10,
+          tint: 2,
+          black: -4,
+          white: 6,
+          sharpen: 0.10,
+        }),
+        bwNeg: () => ({
+          invertMode: 1,
+          mask: 0.0,
+          exposure: 0.05,
+          contrast: 1.18,
+          gamma: 0.98,
+          saturation: 0.0,
+          temp: 0,
+          tint: 0,
+          black: -2,
+          white: 4,
+          sharpen: 0.08,
+        }),
+        slide: () => ({
+          invertMode: 0,
+          mask: 0.0,
+          exposure: 0.00,
+          contrast: 1.08,
+          gamma: 1.00,
+          saturation: 1.08,
+          temp: 0,
+          tint: 0,
+          black: 0,
+          white: 0,
+          sharpen: 0.08,
+        }),
+        alreadyInverted: () => ({
+          invertMode: 0,
+          mask: 0.0,
+          exposure: 0.00,
+          contrast: 1.12,
+          gamma: 1.00,
+          saturation: 1.12,
+          temp: 0,
+          tint: 0,
+          black: 0,
+          white: 0,
+          sharpen: 0.10,
+        }),
+        oldFade: () => ({
+          invertMode: 2,
+          mask: 0.45,
+          exposure: 0.08,
+          contrast: 1.05,
+          gamma: 0.95,
+          saturation: 1.28,
+          temp: 4,
+          tint: -2,
+          black: -4,
+          white: 6,
+          sharpen: 0.06,
+        }),
+      };
+
+      function applyPreset(name){
+        const def = (presetDefs[name] || presetDefs.auto)();
+        // Set inputs
+        inputs.invert.value = String(def.invertMode);
+        inputs.mask.value = String(def.mask);
+        inputs.exposure.value = String(def.exposure);
+        inputs.contrast.value = String(def.contrast);
+        inputs.gamma.value = String(def.gamma);
+        inputs.saturation.value = String(def.saturation);
+        inputs.temp.value = String(def.temp);
+        inputs.tint.value = String(def.tint);
+        inputs.black.value = String(def.black);
+        inputs.white.value = String(def.white);
+        inputs.sharpen.value = String(def.sharpen);
+
+        syncValueLabels();
+        queueRender();
+      }
+
+      function syncValueLabels(){
+        const inv = Number(inputs.invert.value);
+        valEls.invert.textContent = inv === 2 ? "Auto" : (inv === 1 ? "On" : "Off");
+        valEls.mask.textContent = Number(inputs.mask.value).toFixed(2);
+        valEls.exposure.textContent = Number(inputs.exposure.value).toFixed(2);
+        valEls.contrast.textContent = Number(inputs.contrast.value).toFixed(2);
+        valEls.gamma.textContent = Number(inputs.gamma.value).toFixed(2);
+        valEls.saturation.textContent = Number(inputs.saturation.value).toFixed(2);
+        valEls.temp.textContent = String(Number(inputs.temp.value));
+        valEls.tint.textContent = String(Number(inputs.tint.value));
+        valEls.black.textContent = String(Number(inputs.black.value));
+        valEls.white.textContent = String(Number(inputs.white.value));
+        valEls.sharpen.textContent = Number(inputs.sharpen.value).toFixed(2);
+      }
+
+      // Auto guess: if average pixel is "brownish/orange" and low overall brightness -> likely negative
+      function guessInvertMode(imgData){
+        // Sample sparse pixels
+        const d = imgData.data;
+        const w = imgData.width, h = imgData.height;
+        let r=0,g=0,b=0, n=0;
+        const stepX = Math.max(8, Math.floor(w / 120));
+        const stepY = Math.max(8, Math.floor(h / 120));
+        for(let y=0; y<h; y+=stepY){
+          for(let x=0; x<w; x+=stepX){
+            const i = (y*w + x) * 4;
+            r += d[i]; g += d[i+1]; b += d[i+2];
+            n++;
+          }
+        }
+        r/=n; g/=n; b/=n;
+        // Brown/orange mask tends to have R and G higher than B, and overall mid brightness.
+        const rgHigh = (r - b) > 25 && (g - b) > 15;
+        // Negatives often look bright-ish but with orange cast; many scans are bright.
+        // We'll simply: if rgHigh -> likely color negative.
+        return rgHigh ? 1 : 0;
+      }
+
+      // Simple unsharp mask (fast, small radius)
+      function unsharpMask(imageData, amount){
+        if (amount <= 0) return imageData;
+        const { width:w, height:h, data:d } = imageData;
+        const out = new Uint8ClampedArray(d.length);
+
+        // 3x3 box blur
+        const idx = (x,y) => (y*w + x) * 4;
+        for(let y=0;y<h;y++){
+          for(let x=0;x<w;x++){
+            let rs=0, gs=0, bs=0, as=0, c=0;
+            for(let ky=-1;ky<=1;ky++){
+              const yy = clamp(y+ky,0,h-1);
+              for(let kx=-1;kx<=1;kx++){
+                const xx = clamp(x+kx,0,w-1);
+                const i = idx(xx,yy);
+                rs += d[i]; gs += d[i+1]; bs += d[i+2]; as += d[i+3];
+                c++;
+              }
+            }
+            const i = idx(x,y);
+            const br = rs/c, bg = gs/c, bb = bs/c;
+            // sharpen: orig + amount*(orig - blur)
+            out[i]   = clamp(d[i]   + amount*(d[i]   - br), 0, 255);
+            out[i+1] = clamp(d[i+1] + amount*(d[i+1] - bg), 0, 255);
+            out[i+2] = clamp(d[i+2] + amount*(d[i+2] - bb), 0, 255);
+            out[i+3] = d[i+3];
+          }
+        }
+        imageData.data.set(out);
+        return imageData;
+      }
+
+      function render(){
+        if (!originalImg) return;
+
+        // Fit canvas to screen (but keep internal resolution reasonable for iPhone)
+        const maxW = 1600; // keep performance
+        const scale = Math.min(1, maxW / originalCanvas.width);
+        const targetW = Math.max(300, Math.round(originalCanvas.width * scale));
+        const targetH = Math.max(300, Math.round(originalCanvas.height * scale));
+
+        canvas.width = targetW;
+        canvas.height = targetH;
+
+        // Draw original into preview size
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(originalCanvas, 0, 0, canvas.width, canvas.height);
+
+        let imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+
+        // Read settings
+        let invertMode = Number(inputs.invert.value); // 0 off, 1 on, 2 auto
+        const maskStrength = Number(inputs.mask.value);
+
+        const exposure = Number(inputs.exposure.value); // -2..2 (stops)
+        const contrast = Number(inputs.contrast.value);
+        const gamma = Number(inputs.gamma.value);
+        const sat = Number(inputs.saturation.value);
+        const temp = Number(inputs.temp.value); // -50..50
+        const tint = Number(inputs.tint.value); // -50..50
+        const blacks = Number(inputs.black.value); // -40..40
+        const whites = Number(inputs.white.value); // -40..40
+        const sharpen = Number(inputs.sharpen.value);
+
+        // Decide auto invert if requested
+        if (invertMode === 2) {
+          invertMode = guessInvertMode(imgData);
+        }
+
+        // Temperature/tint multipliers (simple)
+        // temp + warms (more R less B), temp - cools
+        const t = temp / 50;
+        const ti = tint / 50;
+        // These multipliers are intentionally mild
+        let rMul = 1 + 0.18*t + 0.06*ti;
+        let gMul = 1 - 0.02*t - 0.06*ti;
+        let bMul = 1 - 0.18*t + 0.06*ti;
+
+        // Exposure multiplier in linear
+        const expMul = Math.pow(2, exposure);
+
+        // Levels adjustments (simple black/white shifts in 0..255 space)
+        const blackShift = blacks;   // negative = lift blacks? We'll interpret: + raises blacks (crush), - lowers (lift)
+        const whiteShift = whites;   // + pushes whites brighter, - reduces highlights
+        // We'll implement as modifying input range endpoints
+        let inBlack = clamp(0 + blackShift, 0, 80);
+        let inWhite = clamp(255 + whiteShift, 175, 255);
+
+        // Orange mask removal approximation for color negatives:
+        // For inverted color neg, after inversion you often need to correct channel bias.
+        // We'll do: apply a matrix nudging down R and G relative to B, scaled by maskStrength.
+        const maskR = 1.0 - 0.22*maskStrength;
+        const maskG = 1.0 - 0.12*maskStrength;
+        const maskB = 1.0 + 0.10*maskStrength;
+
+        const d = imgData.data;
+
+        for(let i=0;i<d.length;i+=4){
+          let r = d[i], g = d[i+1], b = d[i+2];
+
+          // Invert if needed
+          if (invertMode === 1){
+            r = 255 - r; g = 255 - g; b = 255 - b;
+          }
+
+          // Levels input remap
+          r = (r - inBlack) * (255 / Math.max(1, (inWhite - inBlack)));
+          g = (g - inBlack) * (255 / Math.max(1, (inWhite - inBlack)));
+          b = (b - inBlack) * (255 / Math.max(1, (inWhite - inBlack)));
+
+          r = clamp(r, 0, 255); g = clamp(g, 0, 255); b = clamp(b, 0, 255);
+
+          // Convert to linear for exposure/gamma-ish ops
+          let rl = srgbToLin(r);
+          let gl = srgbToLin(g);
+          let bl = srgbToLin(b);
+
+          // Exposure
+          rl *= expMul; gl *= expMul; bl *= expMul;
+
+          // Orange mask correction (only really relevant when we're dealing with inverted negatives)
+          // Apply always but user can set mask=0.
+          rl *= maskR; gl *= maskG; bl *= maskB;
+
+          // White balance
+          rl *= rMul; gl *= gMul; bl *= bMul;
+
+          // Contrast around mid-gray in linear space
+          // Mid in linear (approx) = srgb 0.5 => linear ~0.214; but we’ll use 0.18 as “middle gray”
+          const mid = 0.18;
+          rl = (rl - mid) * contrast + mid;
+          gl = (gl - mid) * contrast + mid;
+          bl = (bl - mid) * contrast + mid;
+
+          // Gamma (apply in linear, inverse-like)
+          // gamma>1 darkens midtones a bit, gamma<1 brightens
+          rl = Math.pow(clamp(rl,0,1), 1/gamma);
+          gl = Math.pow(clamp(gl,0,1), 1/gamma);
+          bl = Math.pow(clamp(bl,0,1), 1/gamma);
+
+          // Convert back to sRGB 0..255
+          r = linToSrgb255(rl);
+          g = linToSrgb255(gl);
+          b = linToSrgb255(bl);
+
+          // Saturation (in sRGB space, quick and stable)
+          if (sat !== 1){
+            const l = 0.2126*r + 0.7152*g + 0.0722*b;
+            r = clamp(l + (r - l)*sat, 0, 255);
+            g = clamp(l + (g - l)*sat, 0, 255);
+            b = clamp(l + (b - l)*sat, 0, 255);
+          }
+
+          d[i] = r; d[i+1] = g; d[i+2] = b;
+        }
+
+        // Sharpen last
+        imgData = unsharpMask(imgData, sharpen);
+
+        ctx.putImageData(imgData, 0, 0);
+
+        statusPill.textContent = "Ready";
+      }
+
+      function resetAll(){
+        presetSel.value = "auto";
+        applyPreset("auto");
+      }
+
+      // Load image
+      file.addEventListener("change", async (e) => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+
+        const url = URL.createObjectURL(f);
+        const img = new Image();
+        img.decoding = "async";
+        img.onload = () => {
+          originalImg = img;
+
+          // Store original pixels at a reasonable max (keep details but avoid huge memory)
+          const maxSide = 3000;
+          let w = img.naturalWidth, h = img.naturalHeight;
+          const s = Math.min(1, maxSide / Math.max(w, h));
+          w = Math.max(1, Math.round(w*s));
+          h = Math.max(1, Math.round(h*s));
+
+          originalCanvas.width = w;
+          originalCanvas.height = h;
+          octx.clearRect(0,0,w,h);
+          octx.drawImage(img, 0, 0, w, h);
+
+          imgInfo.textContent = `Loaded: ${f.name} • ${img.naturalWidth}×${img.naturalHeight} (working: ${w}×${h})`;
+          statusPill.textContent = "Loaded";
+          queueRender();
+          URL.revokeObjectURL(url);
+        };
+        img.onerror = () => {
+          statusPill.textContent = "Load failed";
+          showToast("Could not load image");
+          URL.revokeObjectURL(url);
+        };
+        img.src = url;
+      });
+
+      // Preset selection
+      presetSel.addEventListener("change", () => applyPreset(presetSel.value));
+
+      // Sliders changes
+      Object.values(inputs).forEach((el) => {
+        el.addEventListener("input", () => {
+          syncValueLabels();
+          queueRender();
+        });
+      });
+
+      // Buttons
+      btnReset.addEventListener("click", () => {
+        resetAll();
+        showToast("Reset");
+      });
+
+      btnFit.addEventListener("click", () => {
+        fitMode = !fitMode;
+        // (fitMode kept for future enhancements; currently always fits)
+        showToast("Fit");
+        queueRender();
+      });
+
+      btnDownload.addEventListener("click", () => {
+        if (!originalImg) { showToast("Load an image first"); return; }
+
+        // Export at current preview resolution (fast). If you need full-res export, tell me.
+        canvas.toBlob((blob) => {
+          if (!blob) { showToast("Export failed"); return; }
+          const a = document.createElement("a");
+          const url = URL.createObjectURL(blob);
+          a.href = url;
+          a.download = "film_fixed.png";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          showToast("Downloaded");
+        }, "image/png");
+      });
+
+      // Init
+      syncValueLabels();
+      applyPreset("auto");
+    })();
+  </script>
+</body>
+</html>
