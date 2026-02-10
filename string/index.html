@@ -33,14 +33,6 @@
     label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
     input[type="range"]{ width:100%; }
     input[type="file"]{ width:100%; }
-    select{
-      width:100%;
-      border-radius:14px; padding:12px 12px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      color: var(--text);
-      font-weight:600;
-    }
     .btn{
       appearance:none; border:1px solid rgba(255,255,255,.10);
       background: rgba(31,111,235,.95);
@@ -101,8 +93,8 @@
 <div class="wrap">
   <h1>Portrait String Art Generator (Digital Preview + Nail Sequence)</h1>
   <div class="small">
-    Upload a photo → center-crop into a circle → adjust nails + filters → preview “black thread on white” →
-    Generate a step-by-step nail sequence. Nail <b>0</b> starts at <b>12 o’clock</b> and counts clockwise.
+    Upload a photo → it’s center-cropped into a circle → adjust nails + image filters → preview the “black thread on white” look →
+    Generate a step-by-step nail sequence to recreate it physically. Nail <b>0</b> starts at <b>12 o’clock</b> and counts clockwise.
   </div>
 
   <div class="grid" style="margin-top:12px;">
@@ -111,24 +103,10 @@
       <label>1) Upload photo</label>
       <input id="file" type="file" accept="image/*" />
 
-      <div class="pill">Tip: Drag on the <b>Crop</b> canvas to reposition. Use Zoom slider for sizing.</div>
+      <div class="pill">Tip: Drag on the <b>Crop</b> canvas to reposition. Pinch/scroll is not reliable in iOS, so use the Zoom slider.</div>
 
       <label>Zoom (crop)</label>
       <input id="zoom" type="range" min="1" max="3" step="0.01" value="1.3" />
-
-      <div class="hr"></div>
-
-      <label>Preset</label>
-      <select id="preset">
-        <option value="default">Default (Balanced)</option>
-        <option value="fast">Fast Preview</option>
-        <option value="detail">More Detail</option>
-        <option value="high">High Complexity</option>
-      </select>
-
-      <div class="row" style="margin-top:10px;">
-        <button id="resetBtn" class="btn2" disabled>Reset to Default</button>
-      </div>
 
       <div class="hr"></div>
 
@@ -137,12 +115,12 @@
       <div class="stat"><span>Nails</span><span id="nailsVal">180</span></div>
 
       <label>Lines (thread segments)</label>
-      <input id="lines" type="range" min="50" max="8000" step="10" value="1400" />
+      <input id="lines" type="range" min="50" max="4000" step="10" value="1400" />
       <div class="stat"><span>Lines</span><span id="linesVal">1400</span></div>
 
       <label>Thread strength (darkness per line)</label>
       <input id="alpha" type="range" min="0.01" max="0.25" step="0.005" value="0.07" />
-      <div class="stat"><span>Alpha</span><span id="alphaVal">0.070</span></div>
+      <div class="stat"><span>Alpha</span><span id="alphaVal">0.07</span></div>
 
       <label>Line thickness (preview + final render)</label>
       <input id="thick" type="range" min="0.5" max="3.0" step="0.1" value="1.2" />
@@ -177,7 +155,7 @@
       </div>
 
       <div class="hint">
-        Presets just set sliders quickly. You can still fine-tune after picking a preset.
+        Preview is a fast simulation. Generate uses the same logic but runs longer and outputs the exact nail order.
       </div>
 
       <div class="stat" style="margin-top:12px;">
@@ -199,7 +177,7 @@
         <div>
           <label style="margin-top:0;">String Art Preview (black thread on white)</label>
           <canvas id="preview" width="900" height="900"></canvas>
-          <div class="small">Preview of the result using your settings.</div>
+          <div class="small">This shows what the result could look like with your nails + lines settings.</div>
         </div>
       </div>
 
@@ -209,6 +187,7 @@
       <textarea id="output" class="mono" placeholder="After generating, you’ll see steps like: 0 → 58 → 12 → ..."></textarea>
       <div class="small">
         Nail indices are <b>0..N-1</b>, where <b>0</b> is at 12 o’clock and counting is clockwise.
+        For a physical build, place nails evenly on a circle and follow the sequence, wrapping thread from nail to nail.
       </div>
     </div>
   </div>
@@ -224,9 +203,6 @@
   const prevCtx = prevCanvas.getContext('2d', { willReadFrequently:true });
 
   const zoomEl = document.getElementById('zoom');
-  const presetEl = document.getElementById('preset');
-  const resetBtn = document.getElementById('resetBtn');
-
   const nailsEl = document.getElementById('nails');
   const linesEl = document.getElementById('lines');
   const alphaEl = document.getElementById('alpha');
@@ -250,29 +226,11 @@
   const progressEl = document.getElementById('progress');
   const outputEl = document.getElementById('output');
 
-  // ====== Defaults + Presets
-  const DEFAULTS = Object.freeze({
-    zoom: 1.3,
-    nails: 180,
-    lines: 1400,
-    alpha: 0.07,
-    thick: 1.2,
-    bright: 0,
-    contrast: 10
-  });
-
-  const PRESETS = {
-    default: { ...DEFAULTS },
-    fast:    { zoom: 1.25, nails: 120, lines: 600,  alpha: 0.08, thick: 1.2, bright: 0,  contrast: 8  },
-    detail:  { zoom: 1.35, nails: 220, lines: 2500, alpha: 0.06, thick: 1.1, bright: 0,  contrast: 14 },
-    high:    { zoom: 1.40, nails: 300, lines: 5000, alpha: 0.05, thick: 1.0, bright: -2, contrast: 18 }
-  };
-
   // ====== State
   let img = null;
   let imgReady = false;
 
-  // crop control
+  // crop control (simple drag + zoom)
   let offsetX = 0, offsetY = 0;
   let isDragging = false;
   let lastX = 0, lastY = 0;
@@ -280,12 +238,18 @@
   let stopFlag = false;
   let lastGeneratedSequence = null;
 
-  // internal working size for math
-  const WORK = 260;
+  // internal working size for math (keep it modest for iPhone speed)
+  const WORK = 260; // computational resolution
   const workCanvas = document.createElement('canvas');
   workCanvas.width = WORK;
   workCanvas.height = WORK;
   const workCtx = workCanvas.getContext('2d', { willReadFrequently:true });
+
+  // a canvas for accumulating "thread darkness" in the WORK space
+  const accCanvas = document.createElement('canvas');
+  accCanvas.width = WORK;
+  accCanvas.height = WORK;
+  const accCtx = accCanvas.getContext('2d', { willReadFrequently:true });
 
   // ====== UI helpers
   function setStatus(s){ statusEl.textContent = s; }
@@ -293,10 +257,7 @@
   function setEnabled(enabled){
     previewBtn.disabled = !enabled;
     generateBtn.disabled = !enabled;
-    resetBtn.disabled = !enabled;
-    presetEl.disabled = !enabled;
   }
-  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
 
   function updateLabels(){
     nailsVal.textContent = nailsEl.value;
@@ -306,20 +267,6 @@
     brightVal.textContent = brightEl.value;
     contrastVal.textContent = contrastEl.value;
   }
-
-  function applySettings(s){
-    // enforce slider limits (esp lines up to 8000)
-    zoomEl.value = String(clamp(s.zoom, 1, 3));
-    nailsEl.value = String(clamp(s.nails, 4, 360));
-    linesEl.value = String(clamp(s.lines, 50, 8000));
-    alphaEl.value = String(clamp(s.alpha, 0.01, 0.25));
-    thickEl.value = String(clamp(s.thick, 0.5, 3.0));
-    brightEl.value = String(clamp(s.bright, -60, 60));
-    contrastEl.value = String(clamp(s.contrast, -60, 60));
-    updateLabels();
-    drawCrop();
-  }
-
   [nailsEl, linesEl, alphaEl, thickEl, brightEl, contrastEl].forEach(el=>{
     el.addEventListener('input', updateLabels);
   });
@@ -331,7 +278,7 @@
     const pins = new Array(n);
     for(let i=0;i<n;i++){
       const t = (i / n) * Math.PI * 2;
-      const ang = -Math.PI/2 + t;
+      const ang = -Math.PI/2 + t; // start at 12 o'clock, clockwise
       pins[i] = { x: cx + radius*Math.cos(ang), y: cy + radius*Math.sin(ang) };
     }
     return pins;
@@ -344,10 +291,12 @@
     cropCtx.fillStyle = '#fff';
     cropCtx.fillRect(0,0,w,h);
 
+    // circle mask
     const cx = w/2, cy = h/2;
     const R = w*0.43;
 
     if(!img){
+      // placeholder
       cropCtx.save();
       cropCtx.strokeStyle = '#ccc';
       cropCtx.lineWidth = 4;
@@ -369,6 +318,7 @@
     cropCtx.clip();
 
     const z = Number(zoomEl.value);
+    // fit the image so the smaller dimension covers the circle diameter
     const baseScale = Math.max((2*R)/img.width, (2*R)/img.height);
     const scale = baseScale * z;
 
@@ -381,6 +331,7 @@
     cropCtx.drawImage(img, dx, dy, dw, dh);
     cropCtx.restore();
 
+    // circle outline
     cropCtx.save();
     cropCtx.strokeStyle = 'rgba(0,0,0,.2)';
     cropCtx.lineWidth = 4;
@@ -414,31 +365,41 @@
     lastX = p.x; lastY = p.y;
     drawCrop();
   });
-  cropCanvas.addEventListener('pointerup', ()=>{ isDragging = false; });
-  cropCanvas.addEventListener('pointercancel', ()=>{ isDragging = false; });
+  cropCanvas.addEventListener('pointerup', ()=>{
+    isDragging = false;
+  });
+  cropCanvas.addEventListener('pointercancel', ()=>{
+    isDragging = false;
+  });
 
   zoomEl.addEventListener('input', drawCrop);
 
-  // ====== Build target darkness map (WORK)
+  // ====== Build target darkness map in WORK resolution
+  // Output: Float32Array darkness in [0..1], where 1 = black desired, 0 = white desired
   function buildTargetDarkness(){
+    // draw circle-cropped image into workCanvas at current crop position + filters
     const w = WORK, h = WORK;
     workCtx.clearRect(0,0,w,h);
     workCtx.fillStyle = '#fff';
     workCtx.fillRect(0,0,w,h);
 
+    // Map the crop canvas into work canvas with the same circle crop
+    // We'll just render from cropCanvas, then apply filters in pixel space (brightness/contrast) and convert to grayscale.
     workCtx.drawImage(cropCanvas, 0, 0, w, h);
 
     const imgData = workCtx.getImageData(0,0,w,h);
     const d = imgData.data;
 
-    const b = Number(brightEl.value);
-    const c = Number(contrastEl.value);
+    const b = Number(brightEl.value);     // -60..60
+    const c = Number(contrastEl.value);   // -60..60
+    // contrast factor: common simple formula
     const cf = (259 * (c + 255)) / (255 * (259 - c));
 
     const out = new Float32Array(w*h);
 
+    // circle mask in WORK space
     const cx = w/2, cy = h/2;
-    const R = w*0.43;
+    const R = w*0.43; // consistent with crop
     const R2 = R*R;
 
     for(let y=0;y<h;y++){
@@ -446,34 +407,43 @@
         const idx = (y*w + x);
         const i4 = idx*4;
 
+        // mask outside circle: force white
         const dx = x - cx, dy = y - cy;
         if(dx*dx + dy*dy > R2){
+          d[i4]=255; d[i4+1]=255; d[i4+2]=255; d[i4+3]=255;
           out[idx] = 0;
           continue;
         }
 
+        // brightness/contrast on RGB
         let r = d[i4], g = d[i4+1], bl = d[i4+2];
 
         r = cf*(r - 128) + 128 + b;
         g = cf*(g - 128) + 128 + b;
         bl = cf*(bl - 128) + 128 + b;
 
-        r = r<0?0:r>255?255:r;
-        g = g<0?0:g>255?255:g;
-        bl = bl<0?0:bl>255?255:bl;
+        r = Math.max(0, Math.min(255, r));
+        g = Math.max(0, Math.min(255, g));
+        bl = Math.max(0, Math.min(255, bl));
 
-        const gray = 0.2126*r + 0.7152*g + 0.0722*bl;
+        // grayscale (luma)
+        const gray = 0.2126*r + 0.7152*g + 0.0722*bl; // 0..255
+        // desired darkness: white -> 0, black -> 1
         out[idx] = (255 - gray) / 255;
       }
     }
     return out;
   }
 
-  // ====== Line scoring + apply
+  // ====== Utility: sample points along line and accumulate a score
+  // We keep a "current darkness" map in Float32Array accDark [0..1]
+  // When adding a line with alpha, newDark = 1 - (1 - oldDark) * (1 - alpha) along the stroke.
+  // Score picks the line that increases darkness where target needs it.
   function lineScore(p0, p1, target, accDark, alpha, w, h){
+    // Sample along the line (Bresenham-ish sampling).
     const dx = p1.x - p0.x, dy = p1.y - p0.y;
     const dist = Math.hypot(dx, dy);
-    const steps = Math.max(8, Math.floor(dist));
+    const steps = Math.max(8, Math.floor(dist)); // approx 1 sample per pixel
     const sx = dx / steps, sy = dy / steps;
 
     let x = p0.x, y = p0.y;
@@ -485,10 +455,18 @@
         const idx = yi*w + xi;
         const t = target[idx];
         const cur = accDark[idx];
-        const need = t - cur;
-        const add = alpha * (1 - cur);
-        if(need > 0) score += need * add;
-        else score += need * add * 0.35;
+        // if target wants dark and current is still light, helpful.
+        const need = t - cur; // positive means we need more dark
+        if(need > 0){
+          // expected added darkness from this stroke at this pixel:
+          const add = alpha * (1 - cur);
+          // reward proportional to need and how much we can add:
+          score += need * add;
+        } else {
+          // small penalty if we darken where we shouldn't
+          const add = alpha * (1 - cur);
+          score += need * add * 0.35; // need is negative, so penalty
+        }
       }
       x += sx; y += sy;
     }
@@ -507,37 +485,43 @@
       if(xi>=0 && xi<w && yi>=0 && yi<h){
         const idx = yi*w + xi;
         const cur = accDark[idx];
+        // blend black with alpha over white background in "darkness space"
+        // new = 1 - (1-cur)*(1-alpha)
         accDark[idx] = 1 - (1 - cur) * (1 - alpha);
       }
       x += sx; y += sy;
     }
   }
 
-  // ====== Render
-  function renderAccToPreview(accDark){
+  // Render accumulated darkness (WORK) to preview canvas
+  function renderAccToPreview(accDark, pins){
     const w = prevCanvas.width, h = prevCanvas.height;
     prevCtx.clearRect(0,0,w,h);
     prevCtx.fillStyle = '#fff';
     prevCtx.fillRect(0,0,w,h);
 
+    // upscale the WORK darkness map to preview canvas as a "soft preview"
+    // We'll paint pixels (fast enough at WORK 260) by scaling
     const scale = w / WORK;
 
+    // draw "thread buildup" as grayscale based on darkness
+    // (white background, darker where accDark is higher)
     for(let y=0;y<WORK;y++){
       for(let x=0;x<WORK;x++){
         const d = accDark[y*WORK + x];
-        const g = Math.round(255 * (1 - d));
+        const g = Math.round(255 * (1 - d)); // 255 white -> 0 black
         prevCtx.fillStyle = `rgb(${g},${g},${g})`;
         prevCtx.fillRect(x*scale, y*scale, scale+0.2, scale+0.2);
       }
     }
 
-    // pins (subtle)
+    // Optional: draw pin dots (subtle)
     prevCtx.save();
     prevCtx.globalAlpha = 0.35;
     prevCtx.fillStyle = 'rgba(0,0,0,.6)';
-    const n = Number(nailsEl.value);
-    const pins = computePins(n, w*0.43, w/2, h/2);
-    for(const p of pins){
+    const cx = w/2, cy = h/2, R = w*0.43;
+    const pp = computePins(Number(nailsEl.value), R, cx, cy);
+    for(const p of pp){
       prevCtx.beginPath();
       prevCtx.arc(p.x, p.y, 2.1, 0, Math.PI*2);
       prevCtx.fill();
@@ -545,6 +529,7 @@
     prevCtx.restore();
   }
 
+  // Render the final sequence as actual lines on preview canvas (crisper)
   function renderSequenceAsLines(sequence){
     const w = prevCanvas.width, h = prevCanvas.height;
     prevCtx.clearRect(0,0,w,h);
@@ -570,6 +555,7 @@
     }
     prevCtx.restore();
 
+    // pins
     prevCtx.save();
     prevCtx.globalAlpha = 0.35;
     prevCtx.fillStyle = 'rgba(0,0,0,.6)';
@@ -581,7 +567,7 @@
     prevCtx.restore();
   }
 
-  // ====== Generator
+  // Main generator: greedy selection of next nail
   async function generateSequence({previewOnly=false}){
     stopFlag = false;
     stopBtn.disabled = false;
@@ -596,33 +582,54 @@
     setStatus(previewOnly ? 'Building preview…' : 'Generating sequence…');
     setProgress(0);
 
+    // Build pins in WORK space
     const pins = computePins(n, WORK*0.43, WORK/2, WORK/2);
-    const target = buildTargetDarkness();
-    const accDark = new Float32Array(WORK*WORK);
 
+    // Target darkness from filtered crop
+    const target = buildTargetDarkness();
+
+    // Initialize accumulated darkness as all white (0 darkness)
+    const accDark = new Float32Array(WORK*WORK); // zeros
+
+    // Start at nail 0 (12 o'clock)
     let current = 0;
     const sequence = [current];
+
+    // To avoid tiny back-and-forth loops, prevent immediate repeat
     let prev = -1;
 
+    // For performance: candidate sampling step based on nail count
+    // (try all when n <= 220; otherwise sample)
     const sampleAll = n <= 220;
-    const sampleStep = sampleAll ? 1 : Math.ceil(n / 220);
+    const sampleStep = sampleAll ? 1 : Math.ceil(n / 220); // keep <= ~220 candidates
 
-    const runLines = previewOnly ? Math.min(700, Math.max(150, Math.floor(totalLines * 0.25))) : totalLines;
-    const chunk = previewOnly ? 14 : 10;
+    // In preview mode, run fewer lines for speed, but still respect lines slider somewhat
+    const runLines = previewOnly ? Math.min(500, Math.max(120, Math.floor(totalLines * 0.35))) : totalLines;
+
+    // Chunked loop to keep UI responsive
+    const chunk = previewOnly ? 12 : 10;
 
     for(let k=0;k<runLines;k++){
       if(stopFlag) break;
 
+      // choose best next nail
       let best = -1;
       let bestScore = -1e9;
 
+      // iterate candidates
       for(let j=0;j<n;j+=sampleStep){
         if(j === current) continue;
-        if(j === prev) continue;
+        if(j === prev) continue; // avoid immediate backtrack
+        // discourage very short jumps (optional)
+        // but keep it mild so details can form
         const sc = lineScore(pins[current], pins[j], target, accDark, alpha, WORK, WORK);
-        if(sc > bestScore){ bestScore = sc; best = j; }
+        if(sc > bestScore){
+          bestScore = sc;
+          best = j;
+        }
       }
 
+      // fallback: if sampling missed, try full scan for one step
       if(best < 0){
         for(let j=0;j<n;j++){
           if(j===current || j===prev) continue;
@@ -633,35 +640,45 @@
 
       if(best < 0) break;
 
+      // apply line
       applyLineToDarkness(pins[current], pins[best], accDark, alpha, WORK, WORK);
 
       prev = current;
       current = best;
       sequence.push(current);
 
+      // update progress
       if(k % chunk === 0){
         setProgress((k / runLines) * 100);
 
+        // update preview canvas occasionally
         if(previewOnly){
           renderAccToPreview(accDark);
-        } else if(k % 200 === 0){
+        } else if(k % 120 === 0){
+          // show partial as lines for better intuition
           renderSequenceAsLines(sequence);
         }
 
+        // yield
         await new Promise(r => setTimeout(r, 0));
       }
     }
 
+    // final render
     setProgress(100);
-    if(stopFlag) setStatus('Stopped.');
-    else setStatus(previewOnly ? 'Preview ready.' : 'Sequence ready.');
+    if(stopFlag){
+      setStatus('Stopped.');
+    } else {
+      setStatus(previewOnly ? 'Preview ready.' : 'Sequence ready.');
+    }
 
     if(previewOnly){
+      // crisp render of preview using sequence lines
       renderSequenceAsLines(sequence);
-      stopBtn.disabled = true;
       return;
     }
 
+    // output sequence
     lastGeneratedSequence = sequence;
 
     const header =
@@ -670,11 +687,11 @@
 Nails: ${n}
 Lines: ${sequence.length - 1}
 Nail 0: 12 o'clock (top), clockwise increasing
-Preset: ${presetEl.value}
 
 Sequence (nail indices):
 `;
 
+    // show both: compact order and step format
     const compact = sequence.join(' -> ');
     let steps = '\n\nStep-by-step:\n';
     for(let i=0;i<sequence.length-1;i++){
@@ -690,8 +707,9 @@ Sequence (nail indices):
   previewBtn.addEventListener('click', async ()=>{
     if(!imgReady) return;
     try{
-      drawCrop();
+      stopBtn.disabled = false;
       await generateSequence({previewOnly:true});
+      stopBtn.disabled = true;
     }catch(err){
       console.error(err);
       setStatus('Preview error (try fewer nails/lines).');
@@ -702,7 +720,6 @@ Sequence (nail indices):
   generateBtn.addEventListener('click', async ()=>{
     if(!imgReady) return;
     try{
-      drawCrop();
       await generateSequence({previewOnly:false});
     }catch(err){
       console.error(err);
@@ -734,19 +751,8 @@ Sequence (nail indices):
     }, 400);
   });
 
-  // ====== Presets + Reset
-  presetEl.addEventListener('change', ()=>{
-    const key = presetEl.value;
-    const s = PRESETS[key] || PRESETS.default;
-    applySettings(s);
-    setStatus(`Preset applied: ${key}. Update Preview.`);
-  });
-
-  resetBtn.addEventListener('click', ()=>{
-    presetEl.value = 'default';
-    applySettings(PRESETS.default);
-    setStatus('Reset to Default. Update Preview.');
-  });
+  // ====== When sliders change: (do not auto-regenerate every time; use Update Preview)
+  document.getElementById('previewBtn').addEventListener('dblclick', ()=>{}); // no-op
 
   // ====== Image load
   fileEl.addEventListener('change', async (ev)=>{
@@ -764,10 +770,12 @@ Sequence (nail indices):
       img = im;
       imgReady = true;
 
+      // reset crop position
       offsetX = 0; offsetY = 0;
-      presetEl.value = 'default';
-      applySettings(PRESETS.default);
+      zoomEl.value = 1.3;
 
+      drawCrop();
+      // clear preview
       prevCtx.clearRect(0,0,prevCanvas.width, prevCanvas.height);
       prevCtx.fillStyle = '#fff';
       prevCtx.fillRect(0,0,prevCanvas.width, prevCanvas.height);
@@ -786,14 +794,33 @@ Sequence (nail indices):
     im.src = url;
   });
 
+  // ====== Crop redraw when filters change (visual only)
+  [brightEl, contrastEl].forEach(el=>{
+    el.addEventListener('input', ()=>{
+      // filters apply in buildTargetDarkness; crop preview stays as photo for positioning
+      // (keeps crop UX simple)
+    });
+  });
+
   // ====== Initial draw
-  applySettings(PRESETS.default);
   drawCrop();
   prevCtx.fillStyle = '#fff';
   prevCtx.fillRect(0,0,prevCanvas.width, prevCanvas.height);
 
-  // ====== Quality of life
+  // ====== Quick safety: suggest lighter settings if too heavy
+  nailsEl.addEventListener('change', ()=>{
+    const n = Number(nailsEl.value);
+    if(n > 260){
+      setStatus('High nail count: preview may be slower.');
+    }
+  });
+
+  // ====== keyboard-friendly for output selection
   outputEl.addEventListener('focus', ()=>{ outputEl.select(); });
+
+  // ====== Update preview button should also re-render crop to match latest position
+  previewBtn.addEventListener('click', ()=>{ drawCrop(); });
+  generateBtn.addEventListener('click', ()=>{ drawCrop(); });
 
 })();
 </script>
