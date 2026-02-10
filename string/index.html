@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Portrait String Art (Nails + Thread) – iPhone HTML App</title>
+  <style>
+    :root { --bg:#0b0c10; --panel:#111318; --text:#e9eef7; --muted:#aab3c5; --line:#2a2f3a; --btn:#1f6feb; }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    body{
+      margin:0; background:linear-gradient(180deg,#090a0e,#0b0c10);
+      color:var(--text); font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial;
+      padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom) 12px;
+    }
+    h1{ font-size:18px; margin:10px 0 6px; }
+    .wrap{ max-width: 980px; margin:0 auto; }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media (min-width: 900px){
+      .grid{ grid-template-columns: 380px 1fr; align-items:start; }
+    }
+    .card{
+      background:rgba(17,19,24,.92);
+      border:1px solid rgba(42,47,58,.9);
+      border-radius:16px;
+      padding:12px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+    }
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
+    input[type="range"]{ width:100%; }
+    input[type="file"]{ width:100%; }
+    .btn{
+      appearance:none; border:1px solid rgba(255,255,255,.10);
+      background: rgba(31,111,235,.95);
+      color:white; padding:12px 14px; border-radius:14px;
+      font-weight:600; width:100%;
+    }
+    .btn:disabled{ opacity:.5; }
+    .btn2{
+      appearance:none; border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color:var(--text); padding:12px 14px; border-radius:14px;
+      font-weight:600; width:100%;
+    }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .small{ font-size:12px; color:var(--muted); line-height:1.35; }
+    .hr{ height:1px; background: rgba(42,47,58,.9); margin:12px 0; }
+    .canvasWrap{
+      display:grid; gap:12px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 900px){
+      .canvasWrap{ grid-template-columns: 1fr 1fr; }
+    }
+    canvas{
+      width:100%; aspect-ratio:1/1;
+      border-radius:18px; background:#fff;
+      border:1px solid rgba(42,47,58,.9);
+      touch-action: none;
+    }
+    .stat{
+      display:flex; justify-content:space-between; gap:8px;
+      font-size:12px; color:var(--muted);
+      padding:8px 10px; border-radius:12px;
+      background: rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      margin-top:10px;
+    }
+    textarea{
+      width:100%; min-height:180px; resize:vertical;
+      border-radius:14px; padding:10px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      font-size:12px; color:var(--muted);
+      margin:6px 0 0;
+    }
+    .hint{ font-size:12px; color:var(--muted); margin-top:8px; }
+    .row2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Portrait String Art Generator (Digital Preview + Nail Sequence)</h1>
+  <div class="small">
+    Upload a photo → it’s center-cropped into a circle → adjust nails + image filters → preview the “black thread on white” look →
+    Generate a step-by-step nail sequence to recreate it physically. Nail <b>0</b> starts at <b>12 o’clock</b> and counts clockwise.
+  </div>
+
+  <div class="grid" style="margin-top:12px;">
+    <!-- Controls -->
+    <div class="card">
+      <label>1) Upload photo</label>
+      <input id="file" type="file" accept="image/*" />
+
+      <div class="pill">Tip: Drag on the <b>Crop</b> canvas to reposition. Pinch/scroll is not reliable in iOS, so use the Zoom slider.</div>
+
+      <label>Zoom (crop)</label>
+      <input id="zoom" type="range" min="1" max="3" step="0.01" value="1.3" />
+
+      <div class="hr"></div>
+
+      <label>2) Nails count (min 4)</label>
+      <input id="nails" type="range" min="4" max="360" step="1" value="180" />
+      <div class="stat"><span>Nails</span><span id="nailsVal">180</span></div>
+
+      <label>Lines (thread segments)</label>
+      <input id="lines" type="range" min="50" max="4000" step="10" value="1400" />
+      <div class="stat"><span>Lines</span><span id="linesVal">1400</span></div>
+
+      <label>Thread strength (darkness per line)</label>
+      <input id="alpha" type="range" min="0.01" max="0.25" step="0.005" value="0.07" />
+      <div class="stat"><span>Alpha</span><span id="alphaVal">0.07</span></div>
+
+      <label>Line thickness (preview + final render)</label>
+      <input id="thick" type="range" min="0.5" max="3.0" step="0.1" value="1.2" />
+      <div class="stat"><span>Thickness</span><span id="thickVal">1.2</span></div>
+
+      <div class="hr"></div>
+
+      <label>3) Image filtering</label>
+      <div class="row2">
+        <div>
+          <label style="margin-top:0;">Brightness</label>
+          <input id="bright" type="range" min="-60" max="60" step="1" value="0" />
+          <div class="stat"><span>Value</span><span id="brightVal">0</span></div>
+        </div>
+        <div>
+          <label style="margin-top:0;">Contrast</label>
+          <input id="contrast" type="range" min="-60" max="60" step="1" value="10" />
+          <div class="stat"><span>Value</span><span id="contrastVal">10</span></div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="row" style="gap:10px;">
+        <button id="previewBtn" class="btn2" disabled>Update Preview</button>
+        <button id="generateBtn" class="btn" disabled>Generate Sequence</button>
+      </div>
+
+      <div class="row" style="gap:10px; margin-top:10px;">
+        <button id="stopBtn" class="btn2" disabled>Stop</button>
+        <button id="downloadBtn" class="btn2" disabled>Download .txt</button>
+      </div>
+
+      <div class="hint">
+        Preview is a fast simulation. Generate uses the same logic but runs longer and outputs the exact nail order.
+      </div>
+
+      <div class="stat" style="margin-top:12px;">
+        <span>Status</span><span id="status">Load a photo</span>
+      </div>
+      <div class="stat">
+        <span>Progress</span><span id="progress">0%</span>
+      </div>
+    </div>
+
+    <!-- Canvases + Output -->
+    <div class="card">
+      <div class="canvasWrap">
+        <div>
+          <label style="margin-top:0;">Crop (circle)</label>
+          <canvas id="crop" width="900" height="900"></canvas>
+          <div class="small">Drag to reposition inside the circle. Outside the circle is ignored.</div>
+        </div>
+        <div>
+          <label style="margin-top:0;">String Art Preview (black thread on white)</label>
+          <canvas id="preview" width="900" height="900"></canvas>
+          <div class="small">This shows what the result could look like with your nails + lines settings.</div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <label>Generated nail sequence</label>
+      <textarea id="output" class="mono" placeholder="After generating, you’ll see steps like: 0 → 58 → 12 → ..."></textarea>
+      <div class="small">
+        Nail indices are <b>0..N-1</b>, where <b>0</b> is at 12 o’clock and counting is clockwise.
+        For a physical build, place nails evenly on a circle and follow the sequence, wrapping thread from nail to nail.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ====== Elements
+  const fileEl = document.getElementById('file');
+  const cropCanvas = document.getElementById('crop');
+  const prevCanvas = document.getElementById('preview');
+  const cropCtx = cropCanvas.getContext('2d', { willReadFrequently:true });
+  const prevCtx = prevCanvas.getContext('2d', { willReadFrequently:true });
+
+  const zoomEl = document.getElementById('zoom');
+  const nailsEl = document.getElementById('nails');
+  const linesEl = document.getElementById('lines');
+  const alphaEl = document.getElementById('alpha');
+  const thickEl = document.getElementById('thick');
+  const brightEl = document.getElementById('bright');
+  const contrastEl = document.getElementById('contrast');
+
+  const nailsVal = document.getElementById('nailsVal');
+  const linesVal = document.getElementById('linesVal');
+  const alphaVal = document.getElementById('alphaVal');
+  const thickVal = document.getElementById('thickVal');
+  const brightVal = document.getElementById('brightVal');
+  const contrastVal = document.getElementById('contrastVal');
+
+  const previewBtn = document.getElementById('previewBtn');
+  const generateBtn = document.getElementById('generateBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+
+  const statusEl = document.getElementById('status');
+  const progressEl = document.getElementById('progress');
+  const outputEl = document.getElementById('output');
+
+  // ====== State
+  let img = null;
+  let imgReady = false;
+
+  // crop control (simple drag + zoom)
+  let offsetX = 0, offsetY = 0;
+  let isDragging = false;
+  let lastX = 0, lastY = 0;
+
+  let stopFlag = false;
+  let lastGeneratedSequence = null;
+
+  // internal working size for math (keep it modest for iPhone speed)
+  const WORK = 260; // computational resolution
+  const workCanvas = document.createElement('canvas');
+  workCanvas.width = WORK;
+  workCanvas.height = WORK;
+  const workCtx = workCanvas.getContext('2d', { willReadFrequently:true });
+
+  // a canvas for accumulating "thread darkness" in the WORK space
+  const accCanvas = document.createElement('canvas');
+  accCanvas.width = WORK;
+  accCanvas.height = WORK;
+  const accCtx = accCanvas.getContext('2d', { willReadFrequently:true });
+
+  // ====== UI helpers
+  function setStatus(s){ statusEl.textContent = s; }
+  function setProgress(p){ progressEl.textContent = `${p.toFixed(0)}%`; }
+  function setEnabled(enabled){
+    previewBtn.disabled = !enabled;
+    generateBtn.disabled = !enabled;
+  }
+
+  function updateLabels(){
+    nailsVal.textContent = nailsEl.value;
+    linesVal.textContent = linesEl.value;
+    alphaVal.textContent = Number(alphaEl.value).toFixed(3);
+    thickVal.textContent = Number(thickEl.value).toFixed(1);
+    brightVal.textContent = brightEl.value;
+    contrastVal.textContent = contrastEl.value;
+  }
+  [nailsEl, linesEl, alphaEl, thickEl, brightEl, contrastEl].forEach(el=>{
+    el.addEventListener('input', updateLabels);
+  });
+  updateLabels();
+
+  // ====== Geometry: nails evenly spaced on a circle.
+  // Nail 0 at 12 o'clock, then clockwise.
+  function computePins(n, radius, cx, cy){
+    const pins = new Array(n);
+    for(let i=0;i<n;i++){
+      const t = (i / n) * Math.PI * 2;
+      const ang = -Math.PI/2 + t; // start at 12 o'clock, clockwise
+      pins[i] = { x: cx + radius*Math.cos(ang), y: cy + radius*Math.sin(ang) };
+    }
+    return pins;
+  }
+
+  // ====== Crop rendering
+  function drawCrop(){
+    const w = cropCanvas.width, h = cropCanvas.height;
+    cropCtx.clearRect(0,0,w,h);
+    cropCtx.fillStyle = '#fff';
+    cropCtx.fillRect(0,0,w,h);
+
+    // circle mask
+    const cx = w/2, cy = h/2;
+    const R = w*0.43;
+
+    if(!img){
+      // placeholder
+      cropCtx.save();
+      cropCtx.strokeStyle = '#ccc';
+      cropCtx.lineWidth = 4;
+      cropCtx.beginPath();
+      cropCtx.arc(cx,cy,R,0,Math.PI*2);
+      cropCtx.stroke();
+      cropCtx.restore();
+
+      cropCtx.fillStyle = '#555';
+      cropCtx.font = '28px system-ui, -apple-system';
+      cropCtx.textAlign = 'center';
+      cropCtx.fillText('Upload a photo', cx, cy);
+      return;
+    }
+
+    cropCtx.save();
+    cropCtx.beginPath();
+    cropCtx.arc(cx,cy,R,0,Math.PI*2);
+    cropCtx.clip();
+
+    const z = Number(zoomEl.value);
+    // fit the image so the smaller dimension covers the circle diameter
+    const baseScale = Math.max((2*R)/img.width, (2*R)/img.height);
+    const scale = baseScale * z;
+
+    const dw = img.width * scale;
+    const dh = img.height * scale;
+
+    const dx = cx - dw/2 + offsetX;
+    const dy = cy - dh/2 + offsetY;
+
+    cropCtx.drawImage(img, dx, dy, dw, dh);
+    cropCtx.restore();
+
+    // circle outline
+    cropCtx.save();
+    cropCtx.strokeStyle = 'rgba(0,0,0,.2)';
+    cropCtx.lineWidth = 4;
+    cropCtx.beginPath();
+    cropCtx.arc(cx,cy,R,0,Math.PI*2);
+    cropCtx.stroke();
+    cropCtx.restore();
+  }
+
+  function getPointerPos(ev, canvas){
+    const rect = canvas.getBoundingClientRect();
+    const touch = ev.touches ? ev.touches[0] : ev;
+    return {
+      x: (touch.clientX - rect.left) * (canvas.width / rect.width),
+      y: (touch.clientY - rect.top) * (canvas.height / rect.height),
+    };
+  }
+
+  cropCanvas.addEventListener('pointerdown', (ev)=>{
+    if(!img) return;
+    isDragging = true;
+    cropCanvas.setPointerCapture(ev.pointerId);
+    const p = getPointerPos(ev, cropCanvas);
+    lastX = p.x; lastY = p.y;
+  });
+  cropCanvas.addEventListener('pointermove', (ev)=>{
+    if(!img || !isDragging) return;
+    const p = getPointerPos(ev, cropCanvas);
+    offsetX += (p.x - lastX);
+    offsetY += (p.y - lastY);
+    lastX = p.x; lastY = p.y;
+    drawCrop();
+  });
+  cropCanvas.addEventListener('pointerup', ()=>{
+    isDragging = false;
+  });
+  cropCanvas.addEventListener('pointercancel', ()=>{
+    isDragging = false;
+  });
+
+  zoomEl.addEventListener('input', drawCrop);
+
+  // ====== Build target darkness map in WORK resolution
+  // Output: Float32Array darkness in [0..1], where 1 = black desired, 0 = white desired
+  function buildTargetDarkness(){
+    // draw circle-cropped image into workCanvas at current crop position + filters
+    const w = WORK, h = WORK;
+    workCtx.clearRect(0,0,w,h);
+    workCtx.fillStyle = '#fff';
+    workCtx.fillRect(0,0,w,h);
+
+    // Map the crop canvas into work canvas with the same circle crop
+    // We'll just render from cropCanvas, then apply filters in pixel space (brightness/contrast) and convert to grayscale.
+    workCtx.drawImage(cropCanvas, 0, 0, w, h);
+
+    const imgData = workCtx.getImageData(0,0,w,h);
+    const d = imgData.data;
+
+    const b = Number(brightEl.value);     // -60..60
+    const c = Number(contrastEl.value);   // -60..60
+    // contrast factor: common simple formula
+    const cf = (259 * (c + 255)) / (255 * (259 - c));
+
+    const out = new Float32Array(w*h);
+
+    // circle mask in WORK space
+    const cx = w/2, cy = h/2;
+    const R = w*0.43; // consistent with crop
+    const R2 = R*R;
+
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const idx = (y*w + x);
+        const i4 = idx*4;
+
+        // mask outside circle: force white
+        const dx = x - cx, dy = y - cy;
+        if(dx*dx + dy*dy > R2){
+          d[i4]=255; d[i4+1]=255; d[i4+2]=255; d[i4+3]=255;
+          out[idx] = 0;
+          continue;
+        }
+
+        // brightness/contrast on RGB
+        let r = d[i4], g = d[i4+1], bl = d[i4+2];
+
+        r = cf*(r - 128) + 128 + b;
+        g = cf*(g - 128) + 128 + b;
+        bl = cf*(bl - 128) + 128 + b;
+
+        r = Math.max(0, Math.min(255, r));
+        g = Math.max(0, Math.min(255, g));
+        bl = Math.max(0, Math.min(255, bl));
+
+        // grayscale (luma)
+        const gray = 0.2126*r + 0.7152*g + 0.0722*bl; // 0..255
+        // desired darkness: white -> 0, black -> 1
+        out[idx] = (255 - gray) / 255;
+      }
+    }
+    return out;
+  }
+
+  // ====== Utility: sample points along line and accumulate a score
+  // We keep a "current darkness" map in Float32Array accDark [0..1]
+  // When adding a line with alpha, newDark = 1 - (1 - oldDark) * (1 - alpha) along the stroke.
+  // Score picks the line that increases darkness where target needs it.
+  function lineScore(p0, p1, target, accDark, alpha, w, h){
+    // Sample along the line (Bresenham-ish sampling).
+    const dx = p1.x - p0.x, dy = p1.y - p0.y;
+    const dist = Math.hypot(dx, dy);
+    const steps = Math.max(8, Math.floor(dist)); // approx 1 sample per pixel
+    const sx = dx / steps, sy = dy / steps;
+
+    let x = p0.x, y = p0.y;
+    let score = 0;
+
+    for(let i=0;i<=steps;i++){
+      const xi = x|0, yi = y|0;
+      if(xi>=0 && xi<w && yi>=0 && yi<h){
+        const idx = yi*w + xi;
+        const t = target[idx];
+        const cur = accDark[idx];
+        // if target wants dark and current is still light, helpful.
+        const need = t - cur; // positive means we need more dark
+        if(need > 0){
+          // expected added darkness from this stroke at this pixel:
+          const add = alpha * (1 - cur);
+          // reward proportional to need and how much we can add:
+          score += need * add;
+        } else {
+          // small penalty if we darken where we shouldn't
+          const add = alpha * (1 - cur);
+          score += need * add * 0.35; // need is negative, so penalty
+        }
+      }
+      x += sx; y += sy;
+    }
+    return score;
+  }
+
+  function applyLineToDarkness(p0, p1, accDark, alpha, w, h){
+    const dx = p1.x - p0.x, dy = p1.y - p0.y;
+    const dist = Math.hypot(dx, dy);
+    const steps = Math.max(8, Math.floor(dist));
+    const sx = dx / steps, sy = dy / steps;
+
+    let x = p0.x, y = p0.y;
+    for(let i=0;i<=steps;i++){
+      const xi = x|0, yi = y|0;
+      if(xi>=0 && xi<w && yi>=0 && yi<h){
+        const idx = yi*w + xi;
+        const cur = accDark[idx];
+        // blend black with alpha over white background in "darkness space"
+        // new = 1 - (1-cur)*(1-alpha)
+        accDark[idx] = 1 - (1 - cur) * (1 - alpha);
+      }
+      x += sx; y += sy;
+    }
+  }
+
+  // Render accumulated darkness (WORK) to preview canvas
+  function renderAccToPreview(accDark, pins){
+    const w = prevCanvas.width, h = prevCanvas.height;
+    prevCtx.clearRect(0,0,w,h);
+    prevCtx.fillStyle = '#fff';
+    prevCtx.fillRect(0,0,w,h);
+
+    // upscale the WORK darkness map to preview canvas as a "soft preview"
+    // We'll paint pixels (fast enough at WORK 260) by scaling
+    const scale = w / WORK;
+
+    // draw "thread buildup" as grayscale based on darkness
+    // (white background, darker where accDark is higher)
+    for(let y=0;y<WORK;y++){
+      for(let x=0;x<WORK;x++){
+        const d = accDark[y*WORK + x];
+        const g = Math.round(255 * (1 - d)); // 255 white -> 0 black
+        prevCtx.fillStyle = `rgb(${g},${g},${g})`;
+        prevCtx.fillRect(x*scale, y*scale, scale+0.2, scale+0.2);
+      }
+    }
+
+    // Optional: draw pin dots (subtle)
+    prevCtx.save();
+    prevCtx.globalAlpha = 0.35;
+    prevCtx.fillStyle = 'rgba(0,0,0,.6)';
+    const cx = w/2, cy = h/2, R = w*0.43;
+    const pp = computePins(Number(nailsEl.value), R, cx, cy);
+    for(const p of pp){
+      prevCtx.beginPath();
+      prevCtx.arc(p.x, p.y, 2.1, 0, Math.PI*2);
+      prevCtx.fill();
+    }
+    prevCtx.restore();
+  }
+
+  // Render the final sequence as actual lines on preview canvas (crisper)
+  function renderSequenceAsLines(sequence){
+    const w = prevCanvas.width, h = prevCanvas.height;
+    prevCtx.clearRect(0,0,w,h);
+    prevCtx.fillStyle = '#fff';
+    prevCtx.fillRect(0,0,w,h);
+
+    const n = Number(nailsEl.value);
+    const pins = computePins(n, w*0.43, w/2, h/2);
+
+    prevCtx.save();
+    prevCtx.strokeStyle = '#000';
+    prevCtx.globalAlpha = Number(alphaEl.value);
+    prevCtx.lineWidth = Number(thickEl.value);
+    prevCtx.lineCap = 'round';
+
+    for(let i=0;i<sequence.length-1;i++){
+      const a = pins[sequence[i]];
+      const b = pins[sequence[i+1]];
+      prevCtx.beginPath();
+      prevCtx.moveTo(a.x, a.y);
+      prevCtx.lineTo(b.x, b.y);
+      prevCtx.stroke();
+    }
+    prevCtx.restore();
+
+    // pins
+    prevCtx.save();
+    prevCtx.globalAlpha = 0.35;
+    prevCtx.fillStyle = 'rgba(0,0,0,.6)';
+    for(const p of pins){
+      prevCtx.beginPath();
+      prevCtx.arc(p.x, p.y, 2.1, 0, Math.PI*2);
+      prevCtx.fill();
+    }
+    prevCtx.restore();
+  }
+
+  // Main generator: greedy selection of next nail
+  async function generateSequence({previewOnly=false}){
+    stopFlag = false;
+    stopBtn.disabled = false;
+    downloadBtn.disabled = true;
+    outputEl.value = '';
+    lastGeneratedSequence = null;
+
+    const n = Number(nailsEl.value);
+    const totalLines = Number(linesEl.value);
+    const alpha = Number(alphaEl.value);
+
+    setStatus(previewOnly ? 'Building preview…' : 'Generating sequence…');
+    setProgress(0);
+
+    // Build pins in WORK space
+    const pins = computePins(n, WORK*0.43, WORK/2, WORK/2);
+
+    // Target darkness from filtered crop
+    const target = buildTargetDarkness();
+
+    // Initialize accumulated darkness as all white (0 darkness)
+    const accDark = new Float32Array(WORK*WORK); // zeros
+
+    // Start at nail 0 (12 o'clock)
+    let current = 0;
+    const sequence = [current];
+
+    // To avoid tiny back-and-forth loops, prevent immediate repeat
+    let prev = -1;
+
+    // For performance: candidate sampling step based on nail count
+    // (try all when n <= 220; otherwise sample)
+    const sampleAll = n <= 220;
+    const sampleStep = sampleAll ? 1 : Math.ceil(n / 220); // keep <= ~220 candidates
+
+    // In preview mode, run fewer lines for speed, but still respect lines slider somewhat
+    const runLines = previewOnly ? Math.min(500, Math.max(120, Math.floor(totalLines * 0.35))) : totalLines;
+
+    // Chunked loop to keep UI responsive
+    const chunk = previewOnly ? 12 : 10;
+
+    for(let k=0;k<runLines;k++){
+      if(stopFlag) break;
+
+      // choose best next nail
+      let best = -1;
+      let bestScore = -1e9;
+
+      // iterate candidates
+      for(let j=0;j<n;j+=sampleStep){
+        if(j === current) continue;
+        if(j === prev) continue; // avoid immediate backtrack
+        // discourage very short jumps (optional)
+        // but keep it mild so details can form
+        const sc = lineScore(pins[current], pins[j], target, accDark, alpha, WORK, WORK);
+        if(sc > bestScore){
+          bestScore = sc;
+          best = j;
+        }
+      }
+
+      // fallback: if sampling missed, try full scan for one step
+      if(best < 0){
+        for(let j=0;j<n;j++){
+          if(j===current || j===prev) continue;
+          const sc = lineScore(pins[current], pins[j], target, accDark, alpha, WORK, WORK);
+          if(sc > bestScore){ bestScore=sc; best=j; }
+        }
+      }
+
+      if(best < 0) break;
+
+      // apply line
+      applyLineToDarkness(pins[current], pins[best], accDark, alpha, WORK, WORK);
+
+      prev = current;
+      current = best;
+      sequence.push(current);
+
+      // update progress
+      if(k % chunk === 0){
+        setProgress((k / runLines) * 100);
+
+        // update preview canvas occasionally
+        if(previewOnly){
+          renderAccToPreview(accDark);
+        } else if(k % 120 === 0){
+          // show partial as lines for better intuition
+          renderSequenceAsLines(sequence);
+        }
+
+        // yield
+        await new Promise(r => setTimeout(r, 0));
+      }
+    }
+
+    // final render
+    setProgress(100);
+    if(stopFlag){
+      setStatus('Stopped.');
+    } else {
+      setStatus(previewOnly ? 'Preview ready.' : 'Sequence ready.');
+    }
+
+    if(previewOnly){
+      // crisp render of preview using sequence lines
+      renderSequenceAsLines(sequence);
+      return;
+    }
+
+    // output sequence
+    lastGeneratedSequence = sequence;
+
+    const header =
+`Portrait String Art – Nail Sequence
+-----------------------------------
+Nails: ${n}
+Lines: ${sequence.length - 1}
+Nail 0: 12 o'clock (top), clockwise increasing
+
+Sequence (nail indices):
+`;
+
+    // show both: compact order and step format
+    const compact = sequence.join(' -> ');
+    let steps = '\n\nStep-by-step:\n';
+    for(let i=0;i<sequence.length-1;i++){
+      steps += `${String(i+1).padStart(4,' ')}: ${sequence[i]} -> ${sequence[i+1]}\n`;
+    }
+
+    outputEl.value = header + compact + steps;
+    downloadBtn.disabled = false;
+    stopBtn.disabled = true;
+  }
+
+  // ====== Buttons
+  previewBtn.addEventListener('click', async ()=>{
+    if(!imgReady) return;
+    try{
+      stopBtn.disabled = false;
+      await generateSequence({previewOnly:true});
+      stopBtn.disabled = true;
+    }catch(err){
+      console.error(err);
+      setStatus('Preview error (try fewer nails/lines).');
+      stopBtn.disabled = true;
+    }
+  });
+
+  generateBtn.addEventListener('click', async ()=>{
+    if(!imgReady) return;
+    try{
+      await generateSequence({previewOnly:false});
+    }catch(err){
+      console.error(err);
+      setStatus('Generation error (try fewer nails/lines).');
+      stopBtn.disabled = true;
+    }
+  });
+
+  stopBtn.addEventListener('click', ()=>{
+    stopFlag = true;
+    setStatus('Stopping…');
+  });
+
+  downloadBtn.addEventListener('click', ()=>{
+    if(!lastGeneratedSequence) return;
+    const n = Number(nailsEl.value);
+    const lines = lastGeneratedSequence.length - 1;
+
+    const text = outputEl.value || '';
+    const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `string_art_sequence_${n}nails_${lines}lines.txt`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 400);
+  });
+
+  // ====== When sliders change: (do not auto-regenerate every time; use Update Preview)
+  document.getElementById('previewBtn').addEventListener('dblclick', ()=>{}); // no-op
+
+  // ====== Image load
+  fileEl.addEventListener('change', async (ev)=>{
+    const f = ev.target.files && ev.target.files[0];
+    if(!f) return;
+
+    setStatus('Loading image…');
+    setProgress(0);
+
+    const url = URL.createObjectURL(f);
+    const im = new Image();
+    im.decoding = 'async';
+    im.onload = ()=>{
+      URL.revokeObjectURL(url);
+      img = im;
+      imgReady = true;
+
+      // reset crop position
+      offsetX = 0; offsetY = 0;
+      zoomEl.value = 1.3;
+
+      drawCrop();
+      // clear preview
+      prevCtx.clearRect(0,0,prevCanvas.width, prevCanvas.height);
+      prevCtx.fillStyle = '#fff';
+      prevCtx.fillRect(0,0,prevCanvas.width, prevCanvas.height);
+
+      setStatus('Image loaded. Update Preview.');
+      setProgress(0);
+      setEnabled(true);
+      stopBtn.disabled = true;
+      downloadBtn.disabled = true;
+    };
+    im.onerror = ()=>{
+      setStatus('Failed to load image.');
+      imgReady = false;
+      setEnabled(false);
+    };
+    im.src = url;
+  });
+
+  // ====== Crop redraw when filters change (visual only)
+  [brightEl, contrastEl].forEach(el=>{
+    el.addEventListener('input', ()=>{
+      // filters apply in buildTargetDarkness; crop preview stays as photo for positioning
+      // (keeps crop UX simple)
+    });
+  });
+
+  // ====== Initial draw
+  drawCrop();
+  prevCtx.fillStyle = '#fff';
+  prevCtx.fillRect(0,0,prevCanvas.width, prevCanvas.height);
+
+  // ====== Quick safety: suggest lighter settings if too heavy
+  nailsEl.addEventListener('change', ()=>{
+    const n = Number(nailsEl.value);
+    if(n > 260){
+      setStatus('High nail count: preview may be slower.');
+    }
+  });
+
+  // ====== keyboard-friendly for output selection
+  outputEl.addEventListener('focus', ()=>{ outputEl.select(); });
+
+  // ====== Update preview button should also re-render crop to match latest position
+  previewBtn.addEventListener('click', ()=>{ drawCrop(); });
+  generateBtn.addEventListener('click', ()=>{ drawCrop(); });
+
+})();
+</script>
+</body>
+</html>
