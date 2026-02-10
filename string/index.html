@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Portrait String Art – iPhone (Presets + Preprocessing)</title>
+  <title>Portrait String Art – iPhone (Shape + BW Presets + Print Template)</title>
   <style>
     :root { --panel:#111318; --text:#e9eef7; --muted:#aab3c5; --line:#2a2f3a; --btn:#1f6feb; }
     *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -14,10 +14,10 @@
       padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom) 12px;
     }
     h1{ font-size:18px; margin:10px 0 6px; }
-    .wrap{ max-width: 980px; margin:0 auto; }
+    .wrap{ max-width: 1020px; margin:0 auto; }
     .small{ font-size:12px; color:var(--muted); line-height:1.35; }
     .grid{ display:grid; grid-template-columns:1fr; gap:12px; margin-top:12px; }
-    @media (min-width: 900px){ .grid{ grid-template-columns:380px 1fr; } }
+    @media (min-width: 900px){ .grid{ grid-template-columns:400px 1fr; } }
     .card{
       background:rgba(17,19,24,.92);
       border:1px solid rgba(42,47,58,.9);
@@ -37,6 +37,7 @@
       font-weight:700;
     }
     .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .btn{
       appearance:none; border:1px solid rgba(255,255,255,.10);
       background: rgba(31,111,235,.95);
@@ -87,42 +88,61 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Portrait String Art Generator (Presets + Image Preprocessing)</h1>
+  <h1>Portrait String Art Generator (Shape + BW Presets + Print Template)</h1>
   <div class="small">
-    Upload → circle-crop → choose a <b>preprocessing preset</b> (you’ll see it applied on the real image preview) →
-    preview string art → generate nail sequence. Nail <b>0</b> = 12 o’clock, clockwise.
+    Choose <b>shape</b> (circle/square) → upload → crop by dragging → choose an <b>image preset</b> (including B&W presets) →
+    preview string art → generate nail sequence. Pin indexing:
+    <b>Circle</b>: pin 0 at 12 o’clock, clockwise. <b>Square</b>: pin 0 at top-left corner, clockwise around edges.
   </div>
 
   <div class="grid">
     <!-- Controls -->
     <div class="card">
+      <label>0) Shape</label>
+      <select id="shape" disabled>
+        <option value="circle">Circle</option>
+        <option value="square">Square</option>
+      </select>
+
       <label>1) Upload photo</label>
       <input id="file" type="file" accept="image/*" />
-      <div class="pill">Drag on the left canvas to reposition inside the circle. Use Zoom slider to resize.</div>
+      <div class="pill">Drag on the Photo Preview to reposition. Use Zoom slider to resize.</div>
 
       <label>Zoom (crop)</label>
       <input id="zoom" type="range" min="1" max="3" step="0.01" value="1.3" />
 
       <div class="hr"></div>
 
-      <label>2) Image preprocessing preset (applies to the photo preview + generation)</label>
+      <label>2) Image preset (applies to photo preview + generation)</label>
       <select id="preset" disabled>
-        <option value="default">Default (Balanced Portrait)</option>
-        <option value="high_contrast">High Contrast (Bold)</option>
-        <option value="soft">Soft / Smooth</option>
-        <option value="edges">Edges Emphasis (Sketchy)</option>
-        <option value="face_focus">Face Focus (Center + Skin tones)</option>
-        <option value="dark_bg">Dark Background Suppression</option>
+        <optgroup label="Color presets">
+          <option value="default">Default (Balanced Portrait)</option>
+          <option value="high_contrast">High Contrast (Bold)</option>
+          <option value="soft">Soft / Smooth</option>
+          <option value="edges">Edges Emphasis (Sketchy)</option>
+          <option value="face_focus">Face Focus (Center + Lift)</option>
+          <option value="dark_bg">Dark Background Suppression</option>
+        </optgroup>
+        <optgroup label="B&W presets">
+          <option value="bw_balanced">B&W Balanced</option>
+          <option value="bw_high_contrast">B&W High Contrast</option>
+          <option value="bw_soft">B&W Soft</option>
+          <option value="bw_edges">B&W Edges (Ink)</option>
+          <option value="bw_posterize">B&W Posterize (4 levels)</option>
+          <option value="bw_threshold">B&W Threshold (binary)</option>
+        </optgroup>
       </select>
 
-      <div class="row" style="margin-top:10px;">
-        <button id="resetBtn" class="btn2" disabled>Reset to Default</button>
+      <div class="row2" style="margin-top:10px;">
+        <button id="resetBtn" class="btn2" disabled>Reset Default</button>
+        <button id="templateBtn" class="btn2" disabled>Download Pin Template (A2)</button>
       </div>
+      <div class="small">Template is high-res A2 @ 300 DPI (PNG) with numbered pin dots.</div>
 
       <div class="hr"></div>
 
       <label>3) Nails count (min 4)</label>
-      <input id="nails" type="range" min="4" max="360" step="1" value="180" />
+      <input id="nails" type="range" min="4" max="480" step="1" value="180" />
       <div class="stat"><span>Nails</span><span id="nailsVal">180</span></div>
 
       <label>Lines (thread segments)</label>
@@ -146,7 +166,7 @@
 
       <div class="row" style="gap:10px; margin-top:10px;">
         <button id="stopBtn" class="btn2" disabled>Stop</button>
-        <button id="downloadBtn" class="btn2" disabled>Download .txt</button>
+        <button id="downloadBtn" class="btn2" disabled>Download Sequence .txt</button>
       </div>
 
       <div class="stat" style="margin-top:12px;">
@@ -161,14 +181,14 @@
     <div class="card">
       <div class="canvasWrap">
         <div>
-          <label style="margin-top:0;">Photo Preview (circle crop + preset applied)</label>
+          <label style="margin-top:0;">Photo Preview (crop + preset applied)</label>
           <canvas id="photo" width="900" height="900"></canvas>
-          <div class="small">This is the real image after preprocessing. The string generator uses this result.</div>
+          <div class="small">This is the processed image used by the string generator.</div>
         </div>
         <div>
           <label style="margin-top:0;">String Art Preview (black thread on white)</label>
           <canvas id="preview" width="900" height="900"></canvas>
-          <div class="small">Preview of the thread build-up using your settings.</div>
+          <div class="small">Preview of thread build-up using your current settings.</div>
         </div>
       </div>
 
@@ -177,7 +197,7 @@
       <label>Generated nail sequence</label>
       <textarea id="output" placeholder="After generating, you’ll see steps like: 0 → 58 → 12 → ..."></textarea>
       <div class="small">
-        Nail indices are <b>0..N-1</b>, where <b>0</b> is at 12 o’clock and counting is clockwise.
+        Tip: Try a B&W preset for more accurate thread shading.
       </div>
     </div>
   </div>
@@ -187,19 +207,16 @@
 (() => {
   // ===== Elements
   const fileEl = document.getElementById('file');
-  const photoCanvas = document.getElementById('photo');
-  const previewCanvas = document.getElementById('preview');
-  const photoCtx = photoCanvas.getContext('2d', { willReadFrequently:true });
-  const prevCtx  = previewCanvas.getContext('2d', { willReadFrequently:true });
-
-  const zoomEl   = document.getElementById('zoom');
+  const shapeEl = document.getElementById('shape');
   const presetEl = document.getElementById('preset');
   const resetBtn = document.getElementById('resetBtn');
+  const templateBtn = document.getElementById('templateBtn');
 
-  const nailsEl  = document.getElementById('nails');
-  const linesEl  = document.getElementById('lines');
-  const alphaEl  = document.getElementById('alpha');
-  const thickEl  = document.getElementById('thick');
+  const zoomEl = document.getElementById('zoom');
+  const nailsEl = document.getElementById('nails');
+  const linesEl = document.getElementById('lines');
+  const alphaEl = document.getElementById('alpha');
+  const thickEl = document.getElementById('thick');
 
   const nailsVal = document.getElementById('nailsVal');
   const linesVal = document.getElementById('linesVal');
@@ -215,8 +232,14 @@
   const progressEl = document.getElementById('progress');
   const outputEl   = document.getElementById('output');
 
-  // ===== Defaults (also the "Default preset")
+  const photoCanvas = document.getElementById('photo');
+  const previewCanvas = document.getElementById('preview');
+  const photoCtx = photoCanvas.getContext('2d', { willReadFrequently:true });
+  const prevCtx  = previewCanvas.getContext('2d', { willReadFrequently:true });
+
+  // ===== Defaults
   const DEFAULTS = Object.freeze({
+    shape: 'circle',
     zoom: 1.3,
     preset: 'default',
     nails: 180,
@@ -240,12 +263,15 @@
 
   // computational resolution
   const WORK = 260;
-
-  // Work canvas for building target map from the *preprocessed photoCanvas*
   const workCanvas = document.createElement('canvas');
   workCanvas.width = WORK;
   workCanvas.height = WORK;
   const workCtx = workCanvas.getContext('2d', { willReadFrequently:true });
+
+  // ===== Helpers
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const sat = (v)=> v<0?0 : v>255?255 : v;
+  const luma = (r,g,b)=> 0.2126*r + 0.7152*g + 0.0722*b;
 
   function setStatus(s){ statusEl.textContent = s; }
   function setProgress(p){ progressEl.textContent = `${p.toFixed(0)}%`; }
@@ -255,6 +281,8 @@
     generateBtn.disabled = !on;
     resetBtn.disabled = !on;
     presetEl.disabled = !on;
+    shapeEl.disabled = !on;
+    templateBtn.disabled = !on;
   }
 
   function updateLabels(){
@@ -266,9 +294,8 @@
   [nailsEl, linesEl, alphaEl, thickEl].forEach(el => el.addEventListener('input', updateLabels));
   updateLabels();
 
-  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
-
   function applyDefaults(){
+    shapeEl.value = DEFAULTS.shape;
     zoomEl.value = DEFAULTS.zoom;
     presetEl.value = DEFAULTS.preset;
     nailsEl.value = DEFAULTS.nails;
@@ -276,11 +303,12 @@
     alphaEl.value = DEFAULTS.alpha;
     thickEl.value = DEFAULTS.thick;
     updateLabels();
-    drawPhotoPreview(); // reflects preset
+    drawPhotoPreview();
   }
 
-  // ===== Nails geometry: nail 0 at 12 o'clock, then clockwise.
-  function computePins(n, radius, cx, cy){
+  // ===== Pin layouts
+  // Circle: pin 0 at 12 o'clock, clockwise
+  function computePinsCircle(n, radius, cx, cy){
     const pins = new Array(n);
     for(let i=0;i<n;i++){
       const t = (i / n) * Math.PI * 2;
@@ -290,6 +318,60 @@
     return pins;
   }
 
+  // Square: pin 0 at top-left corner, clockwise along perimeter.
+  // Distribute nails evenly by perimeter length (continuous), so corners are not duplicated.
+  function computePinsSquare(n, left, top, size){
+    const pins = new Array(n);
+    const per = 4*size;
+    for(let i=0;i<n;i++){
+      const t = (i / n) * per; // 0..per
+      let x=left, y=top;
+
+      if(t < size){
+        // top edge: left -> right
+        x = left + t; y = top;
+      } else if(t < 2*size){
+        // right edge: top -> bottom
+        x = left + size; y = top + (t - size);
+      } else if(t < 3*size){
+        // bottom edge: right -> left
+        x = left + size - (t - 2*size); y = top + size;
+      } else {
+        // left edge: bottom -> top
+        x = left; y = top + size - (t - 3*size);
+      }
+      pins[i] = {x, y};
+    }
+    return pins;
+  }
+
+  function getPinsInWorkSpace(){
+    const n = Number(nailsEl.value);
+    const shape = shapeEl.value;
+    if(shape === 'circle'){
+      return computePinsCircle(n, WORK*0.43, WORK/2, WORK/2);
+    } else {
+      const size = WORK*0.86; // match circle diameter (2*0.43)
+      const left = (WORK - size)/2;
+      const top  = (WORK - size)/2;
+      return computePinsSquare(n, left, top, size);
+    }
+  }
+
+  function getPinsInCanvasSpace(canvasW, canvasH){
+    const n = Number(nailsEl.value);
+    const shape = shapeEl.value;
+    if(shape === 'circle'){
+      return computePinsCircle(n, canvasW*0.43, canvasW/2, canvasH/2);
+    } else {
+      const size = canvasW*0.86;
+      const left = (canvasW - size)/2;
+      const top  = (canvasH - size)/2;
+      return computePinsSquare(n, left, top, size);
+    }
+  }
+
+  // ===== Pointer helpers
   function getPointerPos(ev, canvas){
     const rect = canvas.getBoundingClientRect();
     const touch = ev.touches ? ev.touches[0] : ev;
@@ -299,312 +381,342 @@
     };
   }
 
-  // ===== Preprocessing pipeline (applied to photo preview AND used for target map)
-  // We render the raw cropped image into an offscreen buffer, then apply a preset-based transform.
+  // ===== Image preprocessing pipeline
+  function boxBlurInPlace(d, w, h, radius){
+    if(radius <= 0) return;
+    const tmp = new Uint8ClampedArray(d.length);
+    tmp.set(d);
+
+    // horizontal
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        let rs=0, gs=0, bs=0, as=0, count=0;
+        for(let k=-radius;k<=radius;k++){
+          const xx = x + k;
+          if(xx<0||xx>=w) continue;
+          const i = (y*w + xx)*4;
+          rs += tmp[i]; gs += tmp[i+1]; bs += tmp[i+2]; as += tmp[i+3];
+          count++;
+        }
+        const o = (y*w + x)*4;
+        d[o]   = rs/count; d[o+1] = gs/count; d[o+2] = bs/count; d[o+3] = as/count;
+      }
+    }
+    // vertical
+    tmp.set(d);
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        let rs=0, gs=0, bs=0, as=0, count=0;
+        for(let k=-radius;k<=radius;k++){
+          const yy = y + k;
+          if(yy<0||yy>=h) continue;
+          const i = (yy*w + x)*4;
+          rs += tmp[i]; gs += tmp[i+1]; bs += tmp[i+2]; as += tmp[i+3];
+          count++;
+        }
+        const o = (y*w + x)*4;
+        d[o]   = rs/count; d[o+1] = gs/count; d[o+2] = bs/count; d[o+3] = as/count;
+      }
+    }
+  }
+
+  function applyContrastBrightnessInPlace(d, contrast /*-100..100*/, brightness /*-100..100*/){
+    const c = clamp(contrast, -100, 100);
+    const b = clamp(brightness, -100, 100);
+    const cf = (259 * (c + 255)) / (255 * (259 - c));
+    for(let i=0;i<d.length;i+=4){
+      let r = d[i], g = d[i+1], bl = d[i+2];
+      r = cf*(r-128)+128 + b;
+      g = cf*(g-128)+128 + b;
+      bl= cf*(bl-128)+128 + b;
+      d[i]=sat(r); d[i+1]=sat(g); d[i+2]=sat(bl);
+    }
+  }
+
+  function sharpenInPlace(d, w, h, amount=0.6){
+    const orig = new Uint8ClampedArray(d.length);
+    orig.set(d);
+    boxBlurInPlace(d, w, h, 1);
+    for(let i=0;i<d.length;i+=4){
+      const br = d[i], bg = d[i+1], bb = d[i+2];
+      const or = orig[i], og = orig[i+1], ob = orig[i+2];
+      d[i]   = sat(or + (or - br)*amount);
+      d[i+1] = sat(og + (og - bg)*amount);
+      d[i+2] = sat(ob + (ob - bb)*amount);
+      d[i+3] = orig[i+3];
+    }
+  }
+
+  function edgeEmphasisInPlace(d, w, h, strength=0.85){
+    const gray = new Float32Array(w*h);
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const i = (y*w + x)*4;
+        gray[y*w + x] = luma(d[i], d[i+1], d[i+2]);
+      }
+    }
+    const out = new Float32Array(w*h);
+    for(let y=1;y<h-1;y++){
+      for(let x=1;x<w-1;x++){
+        const gx =
+          -gray[(y-1)*w + (x-1)] + gray[(y-1)*w + (x+1)] +
+          -2*gray[y*w + (x-1)]   + 2*gray[y*w + (x+1)] +
+          -gray[(y+1)*w + (x-1)] + gray[(y+1)*w + (x+1)];
+        const gy =
+          -gray[(y-1)*w + (x-1)] -2*gray[(y-1)*w + x] -gray[(y-1)*w + (x+1)] +
+           gray[(y+1)*w + (x-1)] +2*gray[(y+1)*w + x] +gray[(y+1)*w + (x+1)];
+        out[y*w + x] = Math.min(255, Math.hypot(gx, gy));
+      }
+    }
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const i = (y*w + x)*4;
+        const e = out[y*w + x];
+        const factor = 1 - (e/255) * strength; // darken edges
+        d[i]   = sat(d[i] * factor);
+        d[i+1] = sat(d[i+1] * factor);
+        d[i+2] = sat(d[i+2] * factor);
+      }
+    }
+  }
+
+  function suppressDarkBackgroundInPlace(d, threshold=85, lift=1.0){
+    for(let i=0;i<d.length;i+=4){
+      const g = luma(d[i], d[i+1], d[i+2]);
+      if(g < threshold){
+        const add = (threshold - g) * lift;
+        d[i]   = sat(d[i] + add);
+        d[i+1] = sat(d[i+1] + add);
+        d[i+2] = sat(d[i+2] + add);
+      }
+    }
+  }
+
+  function centerEmphasisInPlace(d, w, h, amount=0.14){
+    const cx = w/2, cy = h/2;
+    const maxR = Math.hypot(cx, cy);
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const r = Math.hypot(x-cx, y-cy) / maxR;
+        const gain = 1 + amount*(1 - r) - (amount*0.65)*r;
+        const i = (y*w + x)*4;
+        d[i]   = sat(d[i] * gain);
+        d[i+1] = sat(d[i+1] * gain);
+        d[i+2] = sat(d[i+2] * gain);
+      }
+    }
+  }
+
+  function toGrayscaleInPlace(d){
+    for(let i=0;i<d.length;i+=4){
+      const g = luma(d[i], d[i+1], d[i+2]);
+      const gg = sat(g);
+      d[i]=gg; d[i+1]=gg; d[i+2]=gg;
+    }
+  }
+
+  function posterizeGrayInPlace(d, levels=4){
+    const L = Math.max(2, Math.min(16, levels|0));
+    for(let i=0;i<d.length;i+=4){
+      const g = d[i];
+      const q = Math.round((g/255) * (L-1)) * (255/(L-1));
+      d[i]=q; d[i+1]=q; d[i+2]=q;
+    }
+  }
+
+  function thresholdGrayInPlace(d, t=140){
+    const thr = clamp(t, 0, 255);
+    for(let i=0;i<d.length;i+=4){
+      const g = d[i];
+      const v = g >= thr ? 255 : 0;
+      d[i]=v; d[i+1]=v; d[i+2]=v;
+    }
+  }
+
   function applyPresetToImageData(imgData, preset){
     const d = imgData.data;
     const w = imgData.width, h = imgData.height;
 
-    // Helpers
-    const sat = (v)=> v<0?0 : v>255?255 : v;
-    const luma = (r,g,b)=> 0.2126*r + 0.7152*g + 0.0722*b;
-
-    // Quick blur (box blur) for "soft" presets
-    function boxBlur(radius){
-      if(radius <= 0) return;
-      const tmp = new Uint8ClampedArray(d.length);
-      tmp.set(d);
-
-      // horizontal
-      for(let y=0;y<h;y++){
-        for(let x=0;x<w;x++){
-          let rs=0, gs=0, bs=0, as=0, count=0;
-          for(let k=-radius;k<=radius;k++){
-            const xx = x + k;
-            if(xx<0||xx>=w) continue;
-            const i = (y*w + xx)*4;
-            rs += tmp[i]; gs += tmp[i+1]; bs += tmp[i+2]; as += tmp[i+3];
-            count++;
-          }
-          const o = (y*w + x)*4;
-          d[o]   = rs/count;
-          d[o+1] = gs/count;
-          d[o+2] = bs/count;
-          d[o+3] = as/count;
-        }
-      }
-      // vertical
-      tmp.set(d);
-      for(let y=0;y<h;y++){
-        for(let x=0;x<w;x++){
-          let rs=0, gs=0, bs=0, as=0, count=0;
-          for(let k=-radius;k<=radius;k++){
-            const yy = y + k;
-            if(yy<0||yy>=h) continue;
-            const i = (yy*w + x)*4;
-            rs += tmp[i]; gs += tmp[i+1]; bs += tmp[i+2]; as += tmp[i+3];
-            count++;
-          }
-          const o = (y*w + x)*4;
-          d[o]   = rs/count;
-          d[o+1] = gs/count;
-          d[o+2] = bs/count;
-          d[o+3] = as/count;
-        }
-      }
+    // Color presets (keep color output)
+    if(preset === 'default'){
+      applyContrastBrightnessInPlace(d, 22, 0);
+      sharpenInPlace(d, w, h, 0.55);
+      centerEmphasisInPlace(d, w, h, 0.12);
+      return imgData;
+    }
+    if(preset === 'high_contrast'){
+      applyContrastBrightnessInPlace(d, 40, -5);
+      sharpenInPlace(d, w, h, 0.75);
+      centerEmphasisInPlace(d, w, h, 0.10);
+      return imgData;
+    }
+    if(preset === 'soft'){
+      boxBlurInPlace(d, w, h, 2);
+      applyContrastBrightnessInPlace(d, 10, 5);
+      centerEmphasisInPlace(d, w, h, 0.08);
+      return imgData;
+    }
+    if(preset === 'edges'){
+      applyContrastBrightnessInPlace(d, 25, 0);
+      sharpenInPlace(d, w, h, 0.55);
+      edgeEmphasisInPlace(d, w, h, 0.95);
+      return imgData;
+    }
+    if(preset === 'face_focus'){
+      applyContrastBrightnessInPlace(d, 18, 8);
+      centerEmphasisInPlace(d, w, h, 0.22);
+      suppressDarkBackgroundInPlace(d, 75, 0.95);
+      sharpenInPlace(d, w, h, 0.45);
+      return imgData;
+    }
+    if(preset === 'dark_bg'){
+      applyContrastBrightnessInPlace(d, 18, 10);
+      suppressDarkBackgroundInPlace(d, 90, 1.0);
+      sharpenInPlace(d, w, h, 0.35);
+      return imgData;
     }
 
-    // Contrast + brightness helpers
-    function applyContrastBrightness(contrast /*-100..100*/, brightness /*-100..100*/){
-      const c = clamp(contrast, -100, 100);
-      const b = clamp(brightness, -100, 100);
-      const cf = (259 * (c + 255)) / (255 * (259 - c));
-      for(let i=0;i<d.length;i+=4){
-        let r = d[i], g = d[i+1], b0 = d[i+2];
-        r = cf*(r-128)+128 + b;
-        g = cf*(g-128)+128 + b;
-        b0= cf*(b0-128)+128 + b;
-        d[i]   = sat(r);
-        d[i+1] = sat(g);
-        d[i+2] = sat(b0);
-      }
+    // B&W presets (convert to grayscale + recipe)
+    if(preset === 'bw_balanced'){
+      applyContrastBrightnessInPlace(d, 20, 0);
+      sharpenInPlace(d, w, h, 0.45);
+      centerEmphasisInPlace(d, w, h, 0.12);
+      toGrayscaleInPlace(d);
+      return imgData;
+    }
+    if(preset === 'bw_high_contrast'){
+      applyContrastBrightnessInPlace(d, 55, -6);
+      sharpenInPlace(d, w, h, 0.65);
+      toGrayscaleInPlace(d);
+      return imgData;
+    }
+    if(preset === 'bw_soft'){
+      boxBlurInPlace(d, w, h, 2);
+      applyContrastBrightnessInPlace(d, 12, 6);
+      toGrayscaleInPlace(d);
+      return imgData;
+    }
+    if(preset === 'bw_edges'){
+      applyContrastBrightnessInPlace(d, 28, 0);
+      sharpenInPlace(d, w, h, 0.55);
+      toGrayscaleInPlace(d);
+      // edges on grayscale image
+      edgeEmphasisInPlace(d, w, h, 0.95);
+      // push contrast after edges
+      applyContrastBrightnessInPlace(d, 35, 0);
+      return imgData;
+    }
+    if(preset === 'bw_posterize'){
+      applyContrastBrightnessInPlace(d, 30, 0);
+      toGrayscaleInPlace(d);
+      posterizeGrayInPlace(d, 4);
+      // slight sharpen helps poster edges
+      sharpenInPlace(d, w, h, 0.25);
+      return imgData;
+    }
+    if(preset === 'bw_threshold'){
+      applyContrastBrightnessInPlace(d, 35, 0);
+      toGrayscaleInPlace(d);
+      thresholdGrayInPlace(d, 145);
+      return imgData;
     }
 
-    // Unsharp mask-ish: blur then add back detail
-    function sharpen(amount=0.6){
-      // Copy original
-      const orig = new Uint8ClampedArray(d.length);
-      orig.set(d);
-
-      // blur in-place lightly
-      boxBlur(1);
-
-      // d now is blurred; orig is original
-      for(let i=0;i<d.length;i+=4){
-        const br = d[i], bg = d[i+1], bb = d[i+2];
-        const or = orig[i], og = orig[i+1], ob = orig[i+2];
-        d[i]   = sat(or + (or - br)*amount);
-        d[i+1] = sat(og + (og - bg)*amount);
-        d[i+2] = sat(ob + (ob - bb)*amount);
-        d[i+3] = orig[i+3];
-      }
-    }
-
-    // Edge emphasis: simple Sobel on grayscale, then mix into image
-    function edgeEmphasis(strength=0.75){
-      const gray = new Float32Array(w*h);
-      for(let y=0;y<h;y++){
-        for(let x=0;x<w;x++){
-          const i = (y*w + x)*4;
-          gray[y*w + x] = luma(d[i], d[i+1], d[i+2]);
-        }
-      }
-      const out = new Float32Array(w*h);
-      for(let y=1;y<h-1;y++){
-        for(let x=1;x<w-1;x++){
-          const gx =
-            -gray[(y-1)*w + (x-1)] + gray[(y-1)*w + (x+1)] +
-            -2*gray[y*w + (x-1)]   + 2*gray[y*w + (x+1)] +
-            -gray[(y+1)*w + (x-1)] + gray[(y+1)*w + (x+1)];
-          const gy =
-            -gray[(y-1)*w + (x-1)] -2*gray[(y-1)*w + x] -gray[(y-1)*w + (x+1)] +
-             gray[(y+1)*w + (x-1)] +2*gray[(y+1)*w + x] +gray[(y+1)*w + (x+1)];
-          const mag = Math.min(255, Math.hypot(gx, gy));
-          out[y*w + x] = mag;
-        }
-      }
-      // Mix edges by darkening along edges (good for thread)
-      for(let y=0;y<h;y++){
-        for(let x=0;x<w;x++){
-          const i = (y*w + x)*4;
-          const e = out[y*w + x]; // 0..255
-          const factor = 1 - (e/255) * strength; // darken where edges strong
-          d[i]   = sat(d[i] * factor);
-          d[i+1] = sat(d[i+1] * factor);
-          d[i+2] = sat(d[i+2] * factor);
-        }
-      }
-    }
-
-    // Background suppression: push very dark areas to white-ish, keep mid-tone facial structure
-    function suppressDarkBackground(threshold=70, lift=90){
-      for(let i=0;i<d.length;i+=4){
-        const g = luma(d[i], d[i+1], d[i+2]);
-        if(g < threshold){
-          const add = (threshold - g) * (lift/100);
-          d[i]   = sat(d[i] + add);
-          d[i+1] = sat(d[i+1] + add);
-          d[i+2] = sat(d[i+2] + add);
-        }
-      }
-    }
-
-    // Center emphasis: brighten center slightly, darken edges slightly (vignette correction)
-    function centerEmphasis(amount=0.18){
-      const cx = w/2, cy = h/2;
-      const maxR = Math.hypot(cx, cy);
-      for(let y=0;y<h;y++){
-        for(let x=0;x<w;x++){
-          const r = Math.hypot(x-cx, y-cy) / maxR; // 0 center -> 1 corner
-          const gain = 1 + amount*(1 - r) - (amount*0.65)*r;
-          const i = (y*w + x)*4;
-          d[i]   = sat(d[i] * gain);
-          d[i+1] = sat(d[i+1] * gain);
-          d[i+2] = sat(d[i+2] * gain);
-        }
-      }
-    }
-
-    // --- Preset recipes ---
-    // Important: These modify the original photo preview (color).
-    switch(preset){
-      case 'high_contrast':
-        applyContrastBrightness(40, -5);
-        sharpen(0.75);
-        centerEmphasis(0.10);
-        break;
-
-      case 'soft':
-        boxBlur(2);
-        applyContrastBrightness(10, 5);
-        centerEmphasis(0.08);
-        break;
-
-      case 'edges':
-        applyContrastBrightness(25, 0);
-        sharpen(0.55);
-        edgeEmphasis(0.95);
-        break;
-
-      case 'face_focus':
-        // Slightly lift mid-tones + center boost, reduce background darkness
-        applyContrastBrightness(18, 8);
-        centerEmphasis(0.22);
-        suppressDarkBackground(75, 95);
-        sharpen(0.45);
-        break;
-
-      case 'dark_bg':
-        applyContrastBrightness(18, 10);
-        suppressDarkBackground(90, 100);
-        sharpen(0.35);
-        break;
-
-      case 'default':
-      default:
-        applyContrastBrightness(22, 0);
-        sharpen(0.55);
-        centerEmphasis(0.12);
-        break;
-    }
-
+    // fallback
+    applyContrastBrightnessInPlace(d, 22, 0);
+    sharpenInPlace(d, w, h, 0.55);
+    toGrayscaleInPlace(d);
     return imgData;
   }
 
-  // ===== Draw photo preview (circle crop + preset applied)
+  // ===== Photo preview draw (crop + preset)
   function drawPhotoPreview(){
     const w = photoCanvas.width, h = photoCanvas.height;
     photoCtx.clearRect(0,0,w,h);
     photoCtx.fillStyle = '#fff';
     photoCtx.fillRect(0,0,w,h);
 
-    const cx = w/2, cy = h/2;
-    const R = w*0.43;
-
     if(!img){
+      // placeholder
       photoCtx.save();
       photoCtx.strokeStyle = '#ccc';
       photoCtx.lineWidth = 4;
-      photoCtx.beginPath();
-      photoCtx.arc(cx,cy,R,0,Math.PI*2);
-      photoCtx.stroke();
+      if(shapeEl.value === 'circle'){
+        const cx=w/2, cy=h/2, R=w*0.43;
+        photoCtx.beginPath(); photoCtx.arc(cx,cy,R,0,Math.PI*2); photoCtx.stroke();
+      } else {
+        const size=w*0.86, left=(w-size)/2, top=(h-size)/2;
+        photoCtx.strokeRect(left, top, size, size);
+      }
       photoCtx.restore();
 
       photoCtx.fillStyle = '#555';
       photoCtx.font = '28px system-ui, -apple-system';
       photoCtx.textAlign = 'center';
-      photoCtx.fillText('Upload a photo', cx, cy);
+      photoCtx.fillText('Upload a photo', w/2, h/2);
       return;
     }
 
-    // draw raw crop into an offscreen buffer at full canvas res
+    // buffer
     const buf = document.createElement('canvas');
     buf.width = w; buf.height = h;
     const bctx = buf.getContext('2d', { willReadFrequently:true });
 
-    // circle clip for drawing
     bctx.fillStyle = '#fff';
     bctx.fillRect(0,0,w,h);
+
+    // define crop region (circle or square)
+    const size = w*0.86;
+    const left = (w - size)/2;
+    const top  = (h - size)/2;
+
     bctx.save();
-    bctx.beginPath();
-    bctx.arc(cx,cy,R,0,Math.PI*2);
-    bctx.clip();
+    if(shapeEl.value === 'circle'){
+      const cx=w/2, cy=h/2, R=w*0.43;
+      bctx.beginPath(); bctx.arc(cx,cy,R,0,Math.PI*2); bctx.clip();
+    } else {
+      bctx.beginPath(); bctx.rect(left, top, size, size); bctx.clip();
+    }
 
     const z = Number(zoomEl.value);
-    const baseScale = Math.max((2*R)/img.width, (2*R)/img.height);
+
+    // base scale to cover crop area
+    const baseScale = Math.max(size/img.width, size/img.height);
     const scale = baseScale * z;
 
     const dw = img.width * scale;
     const dh = img.height * scale;
+
+    const cx = w/2, cy = h/2;
     const dx = cx - dw/2 + offsetX;
     const dy = cy - dh/2 + offsetY;
 
     bctx.drawImage(img, dx, dy, dw, dh);
     bctx.restore();
 
-    // apply preset on the whole buffer (but it’s already circle-masked)
+    // apply preset
     const imgData = bctx.getImageData(0,0,w,h);
     const processed = applyPresetToImageData(imgData, presetEl.value);
     photoCtx.putImageData(processed, 0, 0);
 
-    // circle outline
+    // outline
     photoCtx.save();
     photoCtx.strokeStyle = 'rgba(0,0,0,.22)';
     photoCtx.lineWidth = 4;
-    photoCtx.beginPath();
-    photoCtx.arc(cx,cy,R,0,Math.PI*2);
-    photoCtx.stroke();
+    if(shapeEl.value === 'circle'){
+      photoCtx.beginPath(); photoCtx.arc(w/2,h/2,w*0.43,0,Math.PI*2); photoCtx.stroke();
+    } else {
+      photoCtx.strokeRect(left, top, size, size);
+    }
     photoCtx.restore();
   }
 
-  // ===== Interaction: drag to reposition on photo canvas
-  photoCanvas.addEventListener('pointerdown', (ev)=>{
-    if(!img) return;
-    isDragging = true;
-    photoCanvas.setPointerCapture(ev.pointerId);
-    const p = getPointerPos(ev, photoCanvas);
-    lastX = p.x; lastY = p.y;
-  });
-  photoCanvas.addEventListener('pointermove', (ev)=>{
-    if(!img || !isDragging) return;
-    const p = getPointerPos(ev, photoCanvas);
-    offsetX += (p.x - lastX);
-    offsetY += (p.y - lastY);
-    lastX = p.x; lastY = p.y;
-    drawPhotoPreview();
-  });
-  photoCanvas.addEventListener('pointerup', ()=>{ isDragging = false; });
-  photoCanvas.addEventListener('pointercancel', ()=>{ isDragging = false; });
-
-  zoomEl.addEventListener('input', drawPhotoPreview);
-  presetEl.addEventListener('change', ()=>{
-    drawPhotoPreview();
-    setStatus(`Preset applied: ${presetEl.value}. Update String Preview.`);
-  });
-  resetBtn.addEventListener('click', ()=>{
-    offsetX = 0; offsetY = 0;
-    applyDefaults();
-    setStatus('Reset to Default. Update String Preview.');
-  });
-
-  // ===== Build target darkness map from the *processed photoCanvas*
+  // ===== Build target darkness map from the processed photo canvas
   function buildTargetDarkness(){
     const w = WORK, h = WORK;
     workCtx.clearRect(0,0,w,h);
     workCtx.fillStyle = '#fff';
     workCtx.fillRect(0,0,w,h);
 
-    // Downscale processed photo preview
     workCtx.drawImage(photoCanvas, 0, 0, w, h);
 
     const imgData = workCtx.getImageData(0,0,w,h);
@@ -612,7 +724,10 @@
 
     const out = new Float32Array(w*h);
 
-    // circle mask
+    const size = w*0.86;
+    const left = (w - size)/2;
+    const top  = (h - size)/2;
+
     const cx = w/2, cy = h/2;
     const R = w*0.43;
     const R2 = R*R;
@@ -621,28 +736,31 @@
       for(let x=0;x<w;x++){
         const idx = y*w + x;
         const i4 = idx*4;
-        const dx = x - cx, dy = y - cy;
-        if(dx*dx + dy*dy > R2){
-          out[idx] = 0;
-          continue;
+
+        // mask outside shape to white
+        if(shapeEl.value === 'circle'){
+          const dx = x - cx, dy = y - cy;
+          if(dx*dx + dy*dy > R2){ out[idx]=0; continue; }
+        } else {
+          if(x < left || x > left+size || y < top || y > top+size){ out[idx]=0; continue; }
         }
+
         const r = d[i4], g = d[i4+1], b = d[i4+2];
-        const gray = 0.2126*r + 0.7152*g + 0.0722*b;
-        out[idx] = (255 - gray) / 255; // darkness desired
+        const gray = luma(r,g,b);
+        out[idx] = (255 - gray) / 255; // desired darkness
       }
     }
     return out;
   }
 
-  // ===== Line score/apply (same as before)
+  // ===== String line scoring/apply
   function lineScore(p0, p1, target, accDark, alpha, w, h){
     const dx = p1.x - p0.x, dy = p1.y - p0.y;
     const dist = Math.hypot(dx, dy);
     const steps = Math.max(8, Math.floor(dist));
     const sx = dx / steps, sy = dy / steps;
 
-    let x = p0.x, y = p0.y;
-    let score = 0;
+    let x = p0.x, y = p0.y, score = 0;
 
     for(let i=0;i<=steps;i++){
       const xi = x|0, yi = y|0;
@@ -695,11 +813,11 @@
       }
     }
 
+    // pins
+    const pins = getPinsInCanvasSpace(w,h);
     prevCtx.save();
     prevCtx.globalAlpha = 0.35;
-    prevCtx.fillStyle = 'rgba(0,0,0,.6)';
-    const n = Number(nailsEl.value);
-    const pins = computePins(n, w*0.43, w/2, h/2);
+    prevCtx.fillStyle = 'rgba(0,0,0,.65)';
     for(const p of pins){
       prevCtx.beginPath();
       prevCtx.arc(p.x, p.y, 2.1, 0, Math.PI*2);
@@ -714,8 +832,7 @@
     prevCtx.fillStyle = '#fff';
     prevCtx.fillRect(0,0,w,h);
 
-    const n = Number(nailsEl.value);
-    const pins = computePins(n, w*0.43, w/2, h/2);
+    const pins = getPinsInCanvasSpace(w,h);
 
     prevCtx.save();
     prevCtx.strokeStyle = '#000';
@@ -735,7 +852,7 @@
 
     prevCtx.save();
     prevCtx.globalAlpha = 0.35;
-    prevCtx.fillStyle = 'rgba(0,0,0,.6)';
+    prevCtx.fillStyle = 'rgba(0,0,0,.65)';
     for(const p of pins){
       prevCtx.beginPath();
       prevCtx.arc(p.x, p.y, 2.1, 0, Math.PI*2);
@@ -744,7 +861,6 @@
     prevCtx.restore();
   }
 
-  // ===== Generator
   async function generateSequence({previewOnly=false}){
     stopFlag = false;
     stopBtn.disabled = false;
@@ -759,28 +875,30 @@
     setStatus(previewOnly ? 'Building string preview…' : 'Generating nail sequence…');
     setProgress(0);
 
-    // IMPORTANT: ensure photo preview is up-to-date (preset + crop)
+    // ensure photo preview is up-to-date
     drawPhotoPreview();
 
-    const pins = computePins(n, WORK*0.43, WORK/2, WORK/2);
+    const pins = getPinsInWorkSpace();
     const target = buildTargetDarkness();
     const accDark = new Float32Array(WORK*WORK);
 
+    // start index
+    // circle: 0 at top; square: 0 at top-left (already by pin function)
     let current = 0;
-    const sequence = [current];
     let prev = -1;
+    const sequence = [current];
 
+    // sampling for speed (iPhone)
     const sampleAll = n <= 220;
     const sampleStep = sampleAll ? 1 : Math.ceil(n / 220);
 
-    const runLines = previewOnly ? Math.min(800, Math.max(180, Math.floor(totalLines * 0.22))) : totalLines;
-    const chunk = previewOnly ? 16 : 10;
+    const runLines = previewOnly ? Math.min(900, Math.max(200, Math.floor(totalLines * 0.22))) : totalLines;
+    const chunk = previewOnly ? 18 : 10;
 
     for(let k=0;k<runLines;k++){
       if(stopFlag) break;
 
-      let best = -1;
-      let bestScore = -1e9;
+      let best = -1, bestScore = -1e9;
 
       for(let j=0;j<n;j+=sampleStep){
         if(j === current) continue;
@@ -810,7 +928,7 @@
 
         if(previewOnly){
           renderAccToPreview(accDark);
-        } else if(k % 220 === 0){
+        } else if(k % 260 === 0){
           renderSequenceAsLines(sequence);
         }
 
@@ -833,10 +951,14 @@
     const header =
 `Portrait String Art – Nail Sequence
 -----------------------------------
+Shape: ${shapeEl.value}
 Preset: ${presetEl.value}
 Nails: ${n}
 Lines: ${sequence.length - 1}
-Nail 0: 12 o'clock (top), clockwise increasing
+
+Pin indexing:
+- Circle: pin 0 at 12 o'clock, clockwise
+- Square: pin 0 at top-left corner, clockwise
 
 Sequence (nail indices):
 `;
@@ -852,7 +974,178 @@ Sequence (nail indices):
     stopBtn.disabled = true;
   }
 
-  // ===== Buttons
+  // ===== Print template (A2 @ 300 DPI) — PNG
+  async function downloadTemplateA2(){
+    // A2 @ 300dpi: 4961 x 7016 px (portrait)
+    const W = 4961, H = 7016;
+
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+
+    // background
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0,0,W,H);
+
+    // layout box (big square region centered, leaving margins for numbering)
+    const margin = Math.round(W * 0.08); // ~8%
+    const maxSide = Math.min(W - 2*margin, H - 2*margin - Math.round(H*0.06));
+    const side = maxSide;
+    const left = Math.round((W - side)/2);
+    const top  = Math.round((H - side)/2);
+
+    // title
+    ctx.fillStyle = '#000';
+    ctx.font = `${Math.round(H*0.018)}px system-ui, -apple-system, Arial`;
+    ctx.textAlign = 'center';
+    ctx.fillText(`Pin Template — ${shapeEl.value.toUpperCase()} — Nails: ${Number(nailsEl.value)}`, W/2, Math.round(top*0.55));
+
+    // shape outline
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 4;
+
+    if(shapeEl.value === 'circle'){
+      const cx = W/2;
+      const cy = top + side/2;
+      const R = side/2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI*2);
+      ctx.stroke();
+
+      // pins on circumference, with small outward label offset
+      const pins = computePinsCircle(Number(nailsEl.value), R, cx, cy);
+      const dotR = 7;
+      const labelDist = 26; // outward from dot
+      const fontSize = clamp(Math.round(22 + (Number(nailsEl.value) <= 120 ? 6 : 0)), 18, 28);
+
+      ctx.font = `${fontSize}px ui-monospace, Menlo, Consolas, monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for(let i=0;i<pins.length;i++){
+        const p = pins[i];
+        // dot
+        ctx.fillStyle = '#000';
+        ctx.beginPath(); ctx.arc(p.x, p.y, dotR, 0, Math.PI*2); ctx.fill();
+
+        // direction from center
+        const vx = p.x - cx, vy = p.y - cy;
+        const len = Math.hypot(vx, vy) || 1;
+        const nx = vx/len, ny = vy/len;
+
+        const tx = p.x + nx*labelDist;
+        const ty = p.y + ny*labelDist;
+
+        ctx.fillText(String(i), tx, ty);
+      }
+
+    } else {
+      // square
+      ctx.strokeRect(left, top, side, side);
+
+      const pins = computePinsSquare(Number(nailsEl.value), left, top, side);
+      const dotR = 7;
+      const fontSize = clamp(Math.round(22 + (Number(nailsEl.value) <= 120 ? 6 : 0)), 18, 28);
+
+      ctx.font = `${fontSize}px ui-monospace, Menlo, Consolas, monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // label offset outward from nearest edge
+      const labelDist = 26;
+
+      for(let i=0;i<pins.length;i++){
+        const p = pins[i];
+
+        ctx.fillStyle = '#000';
+        ctx.beginPath(); ctx.arc(p.x, p.y, dotR, 0, Math.PI*2); ctx.fill();
+
+        // Determine which edge it's closest to (for outward offset)
+        const dl = Math.abs(p.x - left);
+        const dr = Math.abs(p.x - (left + side));
+        const dt = Math.abs(p.y - top);
+        const db = Math.abs(p.y - (top + side));
+
+        let ox=0, oy=0;
+        const m = Math.min(dl, dr, dt, db);
+        if(m === dt) { ox=0; oy=-labelDist; }
+        else if(m === dr) { ox=labelDist; oy=0; }
+        else if(m === db) { ox=0; oy=labelDist; }
+        else { ox=-labelDist; oy=0; }
+
+        ctx.fillText(String(i), p.x + ox, p.y + oy);
+      }
+    }
+
+    // footer info
+    ctx.font = `${Math.round(H*0.013)}px system-ui, -apple-system, Arial`;
+    ctx.fillStyle = '#000';
+    ctx.textAlign = 'center';
+    ctx.fillText('Print at 100% scale on A2. Place nails on the dots. Pin numbers indicate the sequence index.', W/2, Math.round(H - margin*0.55));
+
+    // download PNG
+    c.toBlob((blob)=>{
+      if(!blob) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `pin_template_A2_300dpi_${shapeEl.value}_${Number(nailsEl.value)}nails.png`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{
+        URL.revokeObjectURL(a.href);
+        a.remove();
+      }, 400);
+    }, 'image/png');
+  }
+
+  // ===== UI events
+  photoCanvas.addEventListener('pointerdown', (ev)=>{
+    if(!img) return;
+    isDragging = true;
+    photoCanvas.setPointerCapture(ev.pointerId);
+    const p = getPointerPos(ev, photoCanvas);
+    lastX = p.x; lastY = p.y;
+  });
+  photoCanvas.addEventListener('pointermove', (ev)=>{
+    if(!img || !isDragging) return;
+    const p = getPointerPos(ev, photoCanvas);
+    offsetX += (p.x - lastX);
+    offsetY += (p.y - lastY);
+    lastX = p.x; lastY = p.y;
+    drawPhotoPreview();
+  });
+  photoCanvas.addEventListener('pointerup', ()=>{ isDragging = false; });
+  photoCanvas.addEventListener('pointercancel', ()=>{ isDragging = false; });
+
+  zoomEl.addEventListener('input', drawPhotoPreview);
+  presetEl.addEventListener('change', ()=>{
+    drawPhotoPreview();
+    setStatus(`Preset applied: ${presetEl.value}. Update String Preview.`);
+  });
+  shapeEl.addEventListener('change', ()=>{
+    // reset crop offsets for sanity when switching shape
+    offsetX = 0; offsetY = 0;
+    drawPhotoPreview();
+    setStatus(`Shape set to ${shapeEl.value}. Update String Preview.`);
+  });
+
+  resetBtn.addEventListener('click', ()=>{
+    offsetX = 0; offsetY = 0;
+    applyDefaults();
+    setStatus('Reset to Default. Update String Preview.');
+  });
+
+  templateBtn.addEventListener('click', async ()=>{
+    try{
+      setStatus('Preparing A2 template…');
+      await downloadTemplateA2();
+      setStatus('Template downloaded.');
+    }catch(e){
+      console.error(e);
+      setStatus('Template error (try again).');
+    }
+  });
+
   previewBtn.addEventListener('click', async ()=>{
     if(!imgReady) return;
     try{ await generateSequence({previewOnly:true}); }
@@ -879,13 +1172,12 @@ Sequence (nail indices):
     const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `string_art_sequence_${presetEl.value}_${n}nails_${lines}lines.txt`;
+    a.download = `string_art_sequence_${shapeEl.value}_${presetEl.value}_${n}nails_${lines}lines.txt`;
     document.body.appendChild(a);
     a.click();
     setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 400);
   });
 
-  // ===== Image load
   fileEl.addEventListener('change', (ev)=>{
     const f = ev.target.files && ev.target.files[0];
     if(!f) return;
@@ -902,20 +1194,22 @@ Sequence (nail indices):
       imgReady = true;
 
       offsetX = 0; offsetY = 0;
-      presetEl.disabled = false;
 
+      // enable UI
+      setEnabled(true);
+
+      // defaults
       applyDefaults();
 
-      // clear string preview
+      // clear preview canvas
       prevCtx.clearRect(0,0,previewCanvas.width, previewCanvas.height);
       prevCtx.fillStyle = '#fff';
       prevCtx.fillRect(0,0,previewCanvas.width, previewCanvas.height);
 
-      setEnabled(true);
       stopBtn.disabled = true;
       downloadBtn.disabled = true;
 
-      setStatus('Image loaded. Pick preset if needed, then Update String Preview.');
+      setStatus('Image loaded. Choose shape/preset, then Update String Preview.');
     };
     im.onerror = ()=>{
       setStatus('Failed to load image.');
@@ -925,11 +1219,12 @@ Sequence (nail indices):
     im.src = url;
   });
 
-  // ===== Init
+  // init (disabled until image loaded)
   applyDefaults();
   drawPhotoPreview();
   prevCtx.fillStyle = '#fff';
   prevCtx.fillRect(0,0,previewCanvas.width, previewCanvas.height);
+  setEnabled(false);
 
 })();
 </script>
