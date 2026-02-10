@@ -3,25 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Portrait String Art (Nails + Thread) – iPhone HTML App</title>
+  <title>Portrait String Art – iPhone (Presets + Preprocessing)</title>
   <style>
-    :root { --bg:#0b0c10; --panel:#111318; --text:#e9eef7; --muted:#aab3c5; --line:#2a2f3a; --btn:#1f6feb; }
+    :root { --panel:#111318; --text:#e9eef7; --muted:#aab3c5; --line:#2a2f3a; --btn:#1f6feb; }
     *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     body{
       margin:0; background:linear-gradient(180deg,#090a0e,#0b0c10);
-      color:var(--text); font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial;
+      color:var(--text);
+      font-family:-apple-system,system-ui,Segoe UI,Roboto,Arial;
       padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom) 12px;
     }
     h1{ font-size:18px; margin:10px 0 6px; }
     .wrap{ max-width: 980px; margin:0 auto; }
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:12px;
-    }
-    @media (min-width: 900px){
-      .grid{ grid-template-columns: 380px 1fr; align-items:start; }
-    }
+    .small{ font-size:12px; color:var(--muted); line-height:1.35; }
+    .grid{ display:grid; grid-template-columns:1fr; gap:12px; margin-top:12px; }
+    @media (min-width: 900px){ .grid{ grid-template-columns:380px 1fr; } }
     .card{
       background:rgba(17,19,24,.92);
       border:1px solid rgba(42,47,58,.9);
@@ -29,47 +25,32 @@
       padding:12px;
       box-shadow: 0 12px 30px rgba(0,0,0,.35);
     }
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
-    input[type="range"]{ width:100%; }
     input[type="file"]{ width:100%; }
+    input[type="range"]{ width:100%; }
     select{
       width:100%;
       border-radius:14px; padding:12px 12px;
       border:1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.04);
       color: var(--text);
-      font-weight:600;
+      font-weight:700;
     }
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     .btn{
       appearance:none; border:1px solid rgba(255,255,255,.10);
       background: rgba(31,111,235,.95);
       color:white; padding:12px 14px; border-radius:14px;
-      font-weight:600; width:100%;
+      font-weight:700; width:100%;
     }
-    .btn:disabled{ opacity:.5; }
     .btn2{
       appearance:none; border:1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.06);
       color:var(--text); padding:12px 14px; border-radius:14px;
-      font-weight:600; width:100%;
+      font-weight:700; width:100%;
     }
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
-    .small{ font-size:12px; color:var(--muted); line-height:1.35; }
+    .btn:disabled,.btn2:disabled{ opacity:.5; }
     .hr{ height:1px; background: rgba(42,47,58,.9); margin:12px 0; }
-    .canvasWrap{
-      display:grid; gap:12px;
-      grid-template-columns: 1fr;
-    }
-    @media (min-width: 900px){
-      .canvasWrap{ grid-template-columns: 1fr 1fr; }
-    }
-    canvas{
-      width:100%; aspect-ratio:1/1;
-      border-radius:18px; background:#fff;
-      border:1px solid rgba(42,47,58,.9);
-      touch-action: none;
-    }
     .stat{
       display:flex; justify-content:space-between; gap:8px;
       font-size:12px; color:var(--muted);
@@ -78,12 +59,21 @@
       border:1px solid rgba(255,255,255,.08);
       margin-top:10px;
     }
+    .canvasWrap{ display:grid; gap:12px; grid-template-columns:1fr; }
+    @media (min-width: 900px){ .canvasWrap{ grid-template-columns:1fr 1fr; } }
+    canvas{
+      width:100%; aspect-ratio:1/1;
+      border-radius:18px; background:#fff;
+      border:1px solid rgba(42,47,58,.9);
+      touch-action:none;
+    }
     textarea{
       width:100%; min-height:180px; resize:vertical;
       border-radius:14px; padding:10px;
       border:1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.04);
       color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
     }
     .pill{
       display:inline-flex; align-items:center; gap:8px;
@@ -93,37 +83,36 @@
       font-size:12px; color:var(--muted);
       margin:6px 0 0;
     }
-    .hint{ font-size:12px; color:var(--muted); margin-top:8px; }
-    .row2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
   </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Portrait String Art Generator (Digital Preview + Nail Sequence)</h1>
+  <h1>Portrait String Art Generator (Presets + Image Preprocessing)</h1>
   <div class="small">
-    Upload a photo → center-crop into a circle → adjust nails + filters → preview “black thread on white” →
-    Generate a step-by-step nail sequence. Nail <b>0</b> starts at <b>12 o’clock</b> and counts clockwise.
+    Upload → circle-crop → choose a <b>preprocessing preset</b> (you’ll see it applied on the real image preview) →
+    preview string art → generate nail sequence. Nail <b>0</b> = 12 o’clock, clockwise.
   </div>
 
-  <div class="grid" style="margin-top:12px;">
+  <div class="grid">
     <!-- Controls -->
     <div class="card">
       <label>1) Upload photo</label>
       <input id="file" type="file" accept="image/*" />
-
-      <div class="pill">Tip: Drag on the <b>Crop</b> canvas to reposition. Use Zoom slider for sizing.</div>
+      <div class="pill">Drag on the left canvas to reposition inside the circle. Use Zoom slider to resize.</div>
 
       <label>Zoom (crop)</label>
       <input id="zoom" type="range" min="1" max="3" step="0.01" value="1.3" />
 
       <div class="hr"></div>
 
-      <label>Preset</label>
-      <select id="preset">
-        <option value="default">Default (Balanced)</option>
-        <option value="fast">Fast Preview</option>
-        <option value="detail">More Detail</option>
-        <option value="high">High Complexity</option>
+      <label>2) Image preprocessing preset (applies to the photo preview + generation)</label>
+      <select id="preset" disabled>
+        <option value="default">Default (Balanced Portrait)</option>
+        <option value="high_contrast">High Contrast (Bold)</option>
+        <option value="soft">Soft / Smooth</option>
+        <option value="edges">Edges Emphasis (Sketchy)</option>
+        <option value="face_focus">Face Focus (Center + Skin tones)</option>
+        <option value="dark_bg">Dark Background Suppression</option>
       </select>
 
       <div class="row" style="margin-top:10px;">
@@ -132,7 +121,7 @@
 
       <div class="hr"></div>
 
-      <label>2) Nails count (min 4)</label>
+      <label>3) Nails count (min 4)</label>
       <input id="nails" type="range" min="4" max="360" step="1" value="180" />
       <div class="stat"><span>Nails</span><span id="nailsVal">180</span></div>
 
@@ -150,34 +139,14 @@
 
       <div class="hr"></div>
 
-      <label>3) Image filtering</label>
-      <div class="row2">
-        <div>
-          <label style="margin-top:0;">Brightness</label>
-          <input id="bright" type="range" min="-60" max="60" step="1" value="0" />
-          <div class="stat"><span>Value</span><span id="brightVal">0</span></div>
-        </div>
-        <div>
-          <label style="margin-top:0;">Contrast</label>
-          <input id="contrast" type="range" min="-60" max="60" step="1" value="10" />
-          <div class="stat"><span>Value</span><span id="contrastVal">10</span></div>
-        </div>
-      </div>
-
-      <div class="hr"></div>
-
       <div class="row" style="gap:10px;">
-        <button id="previewBtn" class="btn2" disabled>Update Preview</button>
+        <button id="previewBtn" class="btn2" disabled>Update String Preview</button>
         <button id="generateBtn" class="btn" disabled>Generate Sequence</button>
       </div>
 
       <div class="row" style="gap:10px; margin-top:10px;">
         <button id="stopBtn" class="btn2" disabled>Stop</button>
         <button id="downloadBtn" class="btn2" disabled>Download .txt</button>
-      </div>
-
-      <div class="hint">
-        Presets just set sliders quickly. You can still fine-tune after picking a preset.
       </div>
 
       <div class="stat" style="margin-top:12px;">
@@ -192,21 +161,21 @@
     <div class="card">
       <div class="canvasWrap">
         <div>
-          <label style="margin-top:0;">Crop (circle)</label>
-          <canvas id="crop" width="900" height="900"></canvas>
-          <div class="small">Drag to reposition inside the circle. Outside the circle is ignored.</div>
+          <label style="margin-top:0;">Photo Preview (circle crop + preset applied)</label>
+          <canvas id="photo" width="900" height="900"></canvas>
+          <div class="small">This is the real image after preprocessing. The string generator uses this result.</div>
         </div>
         <div>
           <label style="margin-top:0;">String Art Preview (black thread on white)</label>
           <canvas id="preview" width="900" height="900"></canvas>
-          <div class="small">Preview of the result using your settings.</div>
+          <div class="small">Preview of the thread build-up using your settings.</div>
         </div>
       </div>
 
       <div class="hr"></div>
 
       <label>Generated nail sequence</label>
-      <textarea id="output" class="mono" placeholder="After generating, you’ll see steps like: 0 → 58 → 12 → ..."></textarea>
+      <textarea id="output" placeholder="After generating, you’ll see steps like: 0 → 58 → 12 → ..."></textarea>
       <div class="small">
         Nail indices are <b>0..N-1</b>, where <b>0</b> is at 12 o’clock and counting is clockwise.
       </div>
@@ -216,117 +185,101 @@
 
 <script>
 (() => {
-  // ====== Elements
+  // ===== Elements
   const fileEl = document.getElementById('file');
-  const cropCanvas = document.getElementById('crop');
-  const prevCanvas = document.getElementById('preview');
-  const cropCtx = cropCanvas.getContext('2d', { willReadFrequently:true });
-  const prevCtx = prevCanvas.getContext('2d', { willReadFrequently:true });
+  const photoCanvas = document.getElementById('photo');
+  const previewCanvas = document.getElementById('preview');
+  const photoCtx = photoCanvas.getContext('2d', { willReadFrequently:true });
+  const prevCtx  = previewCanvas.getContext('2d', { willReadFrequently:true });
 
-  const zoomEl = document.getElementById('zoom');
+  const zoomEl   = document.getElementById('zoom');
   const presetEl = document.getElementById('preset');
   const resetBtn = document.getElementById('resetBtn');
 
-  const nailsEl = document.getElementById('nails');
-  const linesEl = document.getElementById('lines');
-  const alphaEl = document.getElementById('alpha');
-  const thickEl = document.getElementById('thick');
-  const brightEl = document.getElementById('bright');
-  const contrastEl = document.getElementById('contrast');
+  const nailsEl  = document.getElementById('nails');
+  const linesEl  = document.getElementById('lines');
+  const alphaEl  = document.getElementById('alpha');
+  const thickEl  = document.getElementById('thick');
 
   const nailsVal = document.getElementById('nailsVal');
   const linesVal = document.getElementById('linesVal');
   const alphaVal = document.getElementById('alphaVal');
   const thickVal = document.getElementById('thickVal');
-  const brightVal = document.getElementById('brightVal');
-  const contrastVal = document.getElementById('contrastVal');
 
-  const previewBtn = document.getElementById('previewBtn');
+  const previewBtn  = document.getElementById('previewBtn');
   const generateBtn = document.getElementById('generateBtn');
-  const stopBtn = document.getElementById('stopBtn');
+  const stopBtn     = document.getElementById('stopBtn');
   const downloadBtn = document.getElementById('downloadBtn');
 
-  const statusEl = document.getElementById('status');
+  const statusEl   = document.getElementById('status');
   const progressEl = document.getElementById('progress');
-  const outputEl = document.getElementById('output');
+  const outputEl   = document.getElementById('output');
 
-  // ====== Defaults + Presets
+  // ===== Defaults (also the "Default preset")
   const DEFAULTS = Object.freeze({
     zoom: 1.3,
+    preset: 'default',
     nails: 180,
     lines: 1400,
     alpha: 0.07,
-    thick: 1.2,
-    bright: 0,
-    contrast: 10
+    thick: 1.2
   });
 
-  const PRESETS = {
-    default: { ...DEFAULTS },
-    fast:    { zoom: 1.25, nails: 120, lines: 600,  alpha: 0.08, thick: 1.2, bright: 0,  contrast: 8  },
-    detail:  { zoom: 1.35, nails: 220, lines: 2500, alpha: 0.06, thick: 1.1, bright: 0,  contrast: 14 },
-    high:    { zoom: 1.40, nails: 300, lines: 5000, alpha: 0.05, thick: 1.0, bright: -2, contrast: 18 }
-  };
-
-  // ====== State
+  // ===== State
   let img = null;
   let imgReady = false;
 
-  // crop control
+  // crop controls
   let offsetX = 0, offsetY = 0;
   let isDragging = false;
   let lastX = 0, lastY = 0;
 
+  // generation controls
   let stopFlag = false;
   let lastGeneratedSequence = null;
 
-  // internal working size for math
+  // computational resolution
   const WORK = 260;
+
+  // Work canvas for building target map from the *preprocessed photoCanvas*
   const workCanvas = document.createElement('canvas');
   workCanvas.width = WORK;
   workCanvas.height = WORK;
   const workCtx = workCanvas.getContext('2d', { willReadFrequently:true });
 
-  // ====== UI helpers
   function setStatus(s){ statusEl.textContent = s; }
   function setProgress(p){ progressEl.textContent = `${p.toFixed(0)}%`; }
-  function setEnabled(enabled){
-    previewBtn.disabled = !enabled;
-    generateBtn.disabled = !enabled;
-    resetBtn.disabled = !enabled;
-    presetEl.disabled = !enabled;
+
+  function setEnabled(on){
+    previewBtn.disabled = !on;
+    generateBtn.disabled = !on;
+    resetBtn.disabled = !on;
+    presetEl.disabled = !on;
   }
-  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
 
   function updateLabels(){
     nailsVal.textContent = nailsEl.value;
     linesVal.textContent = linesEl.value;
     alphaVal.textContent = Number(alphaEl.value).toFixed(3);
     thickVal.textContent = Number(thickEl.value).toFixed(1);
-    brightVal.textContent = brightEl.value;
-    contrastVal.textContent = contrastEl.value;
   }
-
-  function applySettings(s){
-    // enforce slider limits (esp lines up to 8000)
-    zoomEl.value = String(clamp(s.zoom, 1, 3));
-    nailsEl.value = String(clamp(s.nails, 4, 360));
-    linesEl.value = String(clamp(s.lines, 50, 8000));
-    alphaEl.value = String(clamp(s.alpha, 0.01, 0.25));
-    thickEl.value = String(clamp(s.thick, 0.5, 3.0));
-    brightEl.value = String(clamp(s.bright, -60, 60));
-    contrastEl.value = String(clamp(s.contrast, -60, 60));
-    updateLabels();
-    drawCrop();
-  }
-
-  [nailsEl, linesEl, alphaEl, thickEl, brightEl, contrastEl].forEach(el=>{
-    el.addEventListener('input', updateLabels);
-  });
+  [nailsEl, linesEl, alphaEl, thickEl].forEach(el => el.addEventListener('input', updateLabels));
   updateLabels();
 
-  // ====== Geometry: nails evenly spaced on a circle.
-  // Nail 0 at 12 o'clock, then clockwise.
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+  function applyDefaults(){
+    zoomEl.value = DEFAULTS.zoom;
+    presetEl.value = DEFAULTS.preset;
+    nailsEl.value = DEFAULTS.nails;
+    linesEl.value = DEFAULTS.lines;
+    alphaEl.value = DEFAULTS.alpha;
+    thickEl.value = DEFAULTS.thick;
+    updateLabels();
+    drawPhotoPreview(); // reflects preset
+  }
+
+  // ===== Nails geometry: nail 0 at 12 o'clock, then clockwise.
   function computePins(n, radius, cx, cy){
     const pins = new Array(n);
     for(let i=0;i<n;i++){
@@ -335,59 +288,6 @@
       pins[i] = { x: cx + radius*Math.cos(ang), y: cy + radius*Math.sin(ang) };
     }
     return pins;
-  }
-
-  // ====== Crop rendering
-  function drawCrop(){
-    const w = cropCanvas.width, h = cropCanvas.height;
-    cropCtx.clearRect(0,0,w,h);
-    cropCtx.fillStyle = '#fff';
-    cropCtx.fillRect(0,0,w,h);
-
-    const cx = w/2, cy = h/2;
-    const R = w*0.43;
-
-    if(!img){
-      cropCtx.save();
-      cropCtx.strokeStyle = '#ccc';
-      cropCtx.lineWidth = 4;
-      cropCtx.beginPath();
-      cropCtx.arc(cx,cy,R,0,Math.PI*2);
-      cropCtx.stroke();
-      cropCtx.restore();
-
-      cropCtx.fillStyle = '#555';
-      cropCtx.font = '28px system-ui, -apple-system';
-      cropCtx.textAlign = 'center';
-      cropCtx.fillText('Upload a photo', cx, cy);
-      return;
-    }
-
-    cropCtx.save();
-    cropCtx.beginPath();
-    cropCtx.arc(cx,cy,R,0,Math.PI*2);
-    cropCtx.clip();
-
-    const z = Number(zoomEl.value);
-    const baseScale = Math.max((2*R)/img.width, (2*R)/img.height);
-    const scale = baseScale * z;
-
-    const dw = img.width * scale;
-    const dh = img.height * scale;
-
-    const dx = cx - dw/2 + offsetX;
-    const dy = cy - dh/2 + offsetY;
-
-    cropCtx.drawImage(img, dx, dy, dw, dh);
-    cropCtx.restore();
-
-    cropCtx.save();
-    cropCtx.strokeStyle = 'rgba(0,0,0,.2)';
-    cropCtx.lineWidth = 4;
-    cropCtx.beginPath();
-    cropCtx.arc(cx,cy,R,0,Math.PI*2);
-    cropCtx.stroke();
-    cropCtx.restore();
   }
 
   function getPointerPos(ev, canvas){
@@ -399,77 +299,342 @@
     };
   }
 
-  cropCanvas.addEventListener('pointerdown', (ev)=>{
+  // ===== Preprocessing pipeline (applied to photo preview AND used for target map)
+  // We render the raw cropped image into an offscreen buffer, then apply a preset-based transform.
+  function applyPresetToImageData(imgData, preset){
+    const d = imgData.data;
+    const w = imgData.width, h = imgData.height;
+
+    // Helpers
+    const sat = (v)=> v<0?0 : v>255?255 : v;
+    const luma = (r,g,b)=> 0.2126*r + 0.7152*g + 0.0722*b;
+
+    // Quick blur (box blur) for "soft" presets
+    function boxBlur(radius){
+      if(radius <= 0) return;
+      const tmp = new Uint8ClampedArray(d.length);
+      tmp.set(d);
+
+      // horizontal
+      for(let y=0;y<h;y++){
+        for(let x=0;x<w;x++){
+          let rs=0, gs=0, bs=0, as=0, count=0;
+          for(let k=-radius;k<=radius;k++){
+            const xx = x + k;
+            if(xx<0||xx>=w) continue;
+            const i = (y*w + xx)*4;
+            rs += tmp[i]; gs += tmp[i+1]; bs += tmp[i+2]; as += tmp[i+3];
+            count++;
+          }
+          const o = (y*w + x)*4;
+          d[o]   = rs/count;
+          d[o+1] = gs/count;
+          d[o+2] = bs/count;
+          d[o+3] = as/count;
+        }
+      }
+      // vertical
+      tmp.set(d);
+      for(let y=0;y<h;y++){
+        for(let x=0;x<w;x++){
+          let rs=0, gs=0, bs=0, as=0, count=0;
+          for(let k=-radius;k<=radius;k++){
+            const yy = y + k;
+            if(yy<0||yy>=h) continue;
+            const i = (yy*w + x)*4;
+            rs += tmp[i]; gs += tmp[i+1]; bs += tmp[i+2]; as += tmp[i+3];
+            count++;
+          }
+          const o = (y*w + x)*4;
+          d[o]   = rs/count;
+          d[o+1] = gs/count;
+          d[o+2] = bs/count;
+          d[o+3] = as/count;
+        }
+      }
+    }
+
+    // Contrast + brightness helpers
+    function applyContrastBrightness(contrast /*-100..100*/, brightness /*-100..100*/){
+      const c = clamp(contrast, -100, 100);
+      const b = clamp(brightness, -100, 100);
+      const cf = (259 * (c + 255)) / (255 * (259 - c));
+      for(let i=0;i<d.length;i+=4){
+        let r = d[i], g = d[i+1], b0 = d[i+2];
+        r = cf*(r-128)+128 + b;
+        g = cf*(g-128)+128 + b;
+        b0= cf*(b0-128)+128 + b;
+        d[i]   = sat(r);
+        d[i+1] = sat(g);
+        d[i+2] = sat(b0);
+      }
+    }
+
+    // Unsharp mask-ish: blur then add back detail
+    function sharpen(amount=0.6){
+      // Copy original
+      const orig = new Uint8ClampedArray(d.length);
+      orig.set(d);
+
+      // blur in-place lightly
+      boxBlur(1);
+
+      // d now is blurred; orig is original
+      for(let i=0;i<d.length;i+=4){
+        const br = d[i], bg = d[i+1], bb = d[i+2];
+        const or = orig[i], og = orig[i+1], ob = orig[i+2];
+        d[i]   = sat(or + (or - br)*amount);
+        d[i+1] = sat(og + (og - bg)*amount);
+        d[i+2] = sat(ob + (ob - bb)*amount);
+        d[i+3] = orig[i+3];
+      }
+    }
+
+    // Edge emphasis: simple Sobel on grayscale, then mix into image
+    function edgeEmphasis(strength=0.75){
+      const gray = new Float32Array(w*h);
+      for(let y=0;y<h;y++){
+        for(let x=0;x<w;x++){
+          const i = (y*w + x)*4;
+          gray[y*w + x] = luma(d[i], d[i+1], d[i+2]);
+        }
+      }
+      const out = new Float32Array(w*h);
+      for(let y=1;y<h-1;y++){
+        for(let x=1;x<w-1;x++){
+          const gx =
+            -gray[(y-1)*w + (x-1)] + gray[(y-1)*w + (x+1)] +
+            -2*gray[y*w + (x-1)]   + 2*gray[y*w + (x+1)] +
+            -gray[(y+1)*w + (x-1)] + gray[(y+1)*w + (x+1)];
+          const gy =
+            -gray[(y-1)*w + (x-1)] -2*gray[(y-1)*w + x] -gray[(y-1)*w + (x+1)] +
+             gray[(y+1)*w + (x-1)] +2*gray[(y+1)*w + x] +gray[(y+1)*w + (x+1)];
+          const mag = Math.min(255, Math.hypot(gx, gy));
+          out[y*w + x] = mag;
+        }
+      }
+      // Mix edges by darkening along edges (good for thread)
+      for(let y=0;y<h;y++){
+        for(let x=0;x<w;x++){
+          const i = (y*w + x)*4;
+          const e = out[y*w + x]; // 0..255
+          const factor = 1 - (e/255) * strength; // darken where edges strong
+          d[i]   = sat(d[i] * factor);
+          d[i+1] = sat(d[i+1] * factor);
+          d[i+2] = sat(d[i+2] * factor);
+        }
+      }
+    }
+
+    // Background suppression: push very dark areas to white-ish, keep mid-tone facial structure
+    function suppressDarkBackground(threshold=70, lift=90){
+      for(let i=0;i<d.length;i+=4){
+        const g = luma(d[i], d[i+1], d[i+2]);
+        if(g < threshold){
+          const add = (threshold - g) * (lift/100);
+          d[i]   = sat(d[i] + add);
+          d[i+1] = sat(d[i+1] + add);
+          d[i+2] = sat(d[i+2] + add);
+        }
+      }
+    }
+
+    // Center emphasis: brighten center slightly, darken edges slightly (vignette correction)
+    function centerEmphasis(amount=0.18){
+      const cx = w/2, cy = h/2;
+      const maxR = Math.hypot(cx, cy);
+      for(let y=0;y<h;y++){
+        for(let x=0;x<w;x++){
+          const r = Math.hypot(x-cx, y-cy) / maxR; // 0 center -> 1 corner
+          const gain = 1 + amount*(1 - r) - (amount*0.65)*r;
+          const i = (y*w + x)*4;
+          d[i]   = sat(d[i] * gain);
+          d[i+1] = sat(d[i+1] * gain);
+          d[i+2] = sat(d[i+2] * gain);
+        }
+      }
+    }
+
+    // --- Preset recipes ---
+    // Important: These modify the original photo preview (color).
+    switch(preset){
+      case 'high_contrast':
+        applyContrastBrightness(40, -5);
+        sharpen(0.75);
+        centerEmphasis(0.10);
+        break;
+
+      case 'soft':
+        boxBlur(2);
+        applyContrastBrightness(10, 5);
+        centerEmphasis(0.08);
+        break;
+
+      case 'edges':
+        applyContrastBrightness(25, 0);
+        sharpen(0.55);
+        edgeEmphasis(0.95);
+        break;
+
+      case 'face_focus':
+        // Slightly lift mid-tones + center boost, reduce background darkness
+        applyContrastBrightness(18, 8);
+        centerEmphasis(0.22);
+        suppressDarkBackground(75, 95);
+        sharpen(0.45);
+        break;
+
+      case 'dark_bg':
+        applyContrastBrightness(18, 10);
+        suppressDarkBackground(90, 100);
+        sharpen(0.35);
+        break;
+
+      case 'default':
+      default:
+        applyContrastBrightness(22, 0);
+        sharpen(0.55);
+        centerEmphasis(0.12);
+        break;
+    }
+
+    return imgData;
+  }
+
+  // ===== Draw photo preview (circle crop + preset applied)
+  function drawPhotoPreview(){
+    const w = photoCanvas.width, h = photoCanvas.height;
+    photoCtx.clearRect(0,0,w,h);
+    photoCtx.fillStyle = '#fff';
+    photoCtx.fillRect(0,0,w,h);
+
+    const cx = w/2, cy = h/2;
+    const R = w*0.43;
+
+    if(!img){
+      photoCtx.save();
+      photoCtx.strokeStyle = '#ccc';
+      photoCtx.lineWidth = 4;
+      photoCtx.beginPath();
+      photoCtx.arc(cx,cy,R,0,Math.PI*2);
+      photoCtx.stroke();
+      photoCtx.restore();
+
+      photoCtx.fillStyle = '#555';
+      photoCtx.font = '28px system-ui, -apple-system';
+      photoCtx.textAlign = 'center';
+      photoCtx.fillText('Upload a photo', cx, cy);
+      return;
+    }
+
+    // draw raw crop into an offscreen buffer at full canvas res
+    const buf = document.createElement('canvas');
+    buf.width = w; buf.height = h;
+    const bctx = buf.getContext('2d', { willReadFrequently:true });
+
+    // circle clip for drawing
+    bctx.fillStyle = '#fff';
+    bctx.fillRect(0,0,w,h);
+    bctx.save();
+    bctx.beginPath();
+    bctx.arc(cx,cy,R,0,Math.PI*2);
+    bctx.clip();
+
+    const z = Number(zoomEl.value);
+    const baseScale = Math.max((2*R)/img.width, (2*R)/img.height);
+    const scale = baseScale * z;
+
+    const dw = img.width * scale;
+    const dh = img.height * scale;
+    const dx = cx - dw/2 + offsetX;
+    const dy = cy - dh/2 + offsetY;
+
+    bctx.drawImage(img, dx, dy, dw, dh);
+    bctx.restore();
+
+    // apply preset on the whole buffer (but it’s already circle-masked)
+    const imgData = bctx.getImageData(0,0,w,h);
+    const processed = applyPresetToImageData(imgData, presetEl.value);
+    photoCtx.putImageData(processed, 0, 0);
+
+    // circle outline
+    photoCtx.save();
+    photoCtx.strokeStyle = 'rgba(0,0,0,.22)';
+    photoCtx.lineWidth = 4;
+    photoCtx.beginPath();
+    photoCtx.arc(cx,cy,R,0,Math.PI*2);
+    photoCtx.stroke();
+    photoCtx.restore();
+  }
+
+  // ===== Interaction: drag to reposition on photo canvas
+  photoCanvas.addEventListener('pointerdown', (ev)=>{
     if(!img) return;
     isDragging = true;
-    cropCanvas.setPointerCapture(ev.pointerId);
-    const p = getPointerPos(ev, cropCanvas);
+    photoCanvas.setPointerCapture(ev.pointerId);
+    const p = getPointerPos(ev, photoCanvas);
     lastX = p.x; lastY = p.y;
   });
-  cropCanvas.addEventListener('pointermove', (ev)=>{
+  photoCanvas.addEventListener('pointermove', (ev)=>{
     if(!img || !isDragging) return;
-    const p = getPointerPos(ev, cropCanvas);
+    const p = getPointerPos(ev, photoCanvas);
     offsetX += (p.x - lastX);
     offsetY += (p.y - lastY);
     lastX = p.x; lastY = p.y;
-    drawCrop();
+    drawPhotoPreview();
   });
-  cropCanvas.addEventListener('pointerup', ()=>{ isDragging = false; });
-  cropCanvas.addEventListener('pointercancel', ()=>{ isDragging = false; });
+  photoCanvas.addEventListener('pointerup', ()=>{ isDragging = false; });
+  photoCanvas.addEventListener('pointercancel', ()=>{ isDragging = false; });
 
-  zoomEl.addEventListener('input', drawCrop);
+  zoomEl.addEventListener('input', drawPhotoPreview);
+  presetEl.addEventListener('change', ()=>{
+    drawPhotoPreview();
+    setStatus(`Preset applied: ${presetEl.value}. Update String Preview.`);
+  });
+  resetBtn.addEventListener('click', ()=>{
+    offsetX = 0; offsetY = 0;
+    applyDefaults();
+    setStatus('Reset to Default. Update String Preview.');
+  });
 
-  // ====== Build target darkness map (WORK)
+  // ===== Build target darkness map from the *processed photoCanvas*
   function buildTargetDarkness(){
     const w = WORK, h = WORK;
     workCtx.clearRect(0,0,w,h);
     workCtx.fillStyle = '#fff';
     workCtx.fillRect(0,0,w,h);
 
-    workCtx.drawImage(cropCanvas, 0, 0, w, h);
+    // Downscale processed photo preview
+    workCtx.drawImage(photoCanvas, 0, 0, w, h);
 
     const imgData = workCtx.getImageData(0,0,w,h);
     const d = imgData.data;
 
-    const b = Number(brightEl.value);
-    const c = Number(contrastEl.value);
-    const cf = (259 * (c + 255)) / (255 * (259 - c));
-
     const out = new Float32Array(w*h);
 
+    // circle mask
     const cx = w/2, cy = h/2;
     const R = w*0.43;
     const R2 = R*R;
 
     for(let y=0;y<h;y++){
       for(let x=0;x<w;x++){
-        const idx = (y*w + x);
+        const idx = y*w + x;
         const i4 = idx*4;
-
         const dx = x - cx, dy = y - cy;
         if(dx*dx + dy*dy > R2){
           out[idx] = 0;
           continue;
         }
-
-        let r = d[i4], g = d[i4+1], bl = d[i4+2];
-
-        r = cf*(r - 128) + 128 + b;
-        g = cf*(g - 128) + 128 + b;
-        bl = cf*(bl - 128) + 128 + b;
-
-        r = r<0?0:r>255?255:r;
-        g = g<0?0:g>255?255:g;
-        bl = bl<0?0:bl>255?255:bl;
-
-        const gray = 0.2126*r + 0.7152*g + 0.0722*bl;
-        out[idx] = (255 - gray) / 255;
+        const r = d[i4], g = d[i4+1], b = d[i4+2];
+        const gray = 0.2126*r + 0.7152*g + 0.0722*b;
+        out[idx] = (255 - gray) / 255; // darkness desired
       }
     }
     return out;
   }
 
-  // ====== Line scoring + apply
+  // ===== Line score/apply (same as before)
   function lineScore(p0, p1, target, accDark, alpha, w, h){
     const dx = p1.x - p0.x, dy = p1.y - p0.y;
     const dist = Math.hypot(dx, dy);
@@ -513,9 +678,8 @@
     }
   }
 
-  // ====== Render
   function renderAccToPreview(accDark){
-    const w = prevCanvas.width, h = prevCanvas.height;
+    const w = previewCanvas.width, h = previewCanvas.height;
     prevCtx.clearRect(0,0,w,h);
     prevCtx.fillStyle = '#fff';
     prevCtx.fillRect(0,0,w,h);
@@ -531,7 +695,6 @@
       }
     }
 
-    // pins (subtle)
     prevCtx.save();
     prevCtx.globalAlpha = 0.35;
     prevCtx.fillStyle = 'rgba(0,0,0,.6)';
@@ -546,7 +709,7 @@
   }
 
   function renderSequenceAsLines(sequence){
-    const w = prevCanvas.width, h = prevCanvas.height;
+    const w = previewCanvas.width, h = previewCanvas.height;
     prevCtx.clearRect(0,0,w,h);
     prevCtx.fillStyle = '#fff';
     prevCtx.fillRect(0,0,w,h);
@@ -581,7 +744,7 @@
     prevCtx.restore();
   }
 
-  // ====== Generator
+  // ===== Generator
   async function generateSequence({previewOnly=false}){
     stopFlag = false;
     stopBtn.disabled = false;
@@ -593,8 +756,11 @@
     const totalLines = Number(linesEl.value);
     const alpha = Number(alphaEl.value);
 
-    setStatus(previewOnly ? 'Building preview…' : 'Generating sequence…');
+    setStatus(previewOnly ? 'Building string preview…' : 'Generating nail sequence…');
     setProgress(0);
+
+    // IMPORTANT: ensure photo preview is up-to-date (preset + crop)
+    drawPhotoPreview();
 
     const pins = computePins(n, WORK*0.43, WORK/2, WORK/2);
     const target = buildTargetDarkness();
@@ -607,8 +773,8 @@
     const sampleAll = n <= 220;
     const sampleStep = sampleAll ? 1 : Math.ceil(n / 220);
 
-    const runLines = previewOnly ? Math.min(700, Math.max(150, Math.floor(totalLines * 0.25))) : totalLines;
-    const chunk = previewOnly ? 14 : 10;
+    const runLines = previewOnly ? Math.min(800, Math.max(180, Math.floor(totalLines * 0.22))) : totalLines;
+    const chunk = previewOnly ? 16 : 10;
 
     for(let k=0;k<runLines;k++){
       if(stopFlag) break;
@@ -644,7 +810,7 @@
 
         if(previewOnly){
           renderAccToPreview(accDark);
-        } else if(k % 200 === 0){
+        } else if(k % 220 === 0){
           renderSequenceAsLines(sequence);
         }
 
@@ -654,7 +820,7 @@
 
     setProgress(100);
     if(stopFlag) setStatus('Stopped.');
-    else setStatus(previewOnly ? 'Preview ready.' : 'Sequence ready.');
+    else setStatus(previewOnly ? 'String preview ready.' : 'Sequence ready.');
 
     if(previewOnly){
       renderSequenceAsLines(sequence);
@@ -667,10 +833,10 @@
     const header =
 `Portrait String Art – Nail Sequence
 -----------------------------------
+Preset: ${presetEl.value}
 Nails: ${n}
 Lines: ${sequence.length - 1}
 Nail 0: 12 o'clock (top), clockwise increasing
-Preset: ${presetEl.value}
 
 Sequence (nail indices):
 `;
@@ -686,29 +852,17 @@ Sequence (nail indices):
     stopBtn.disabled = true;
   }
 
-  // ====== Buttons
+  // ===== Buttons
   previewBtn.addEventListener('click', async ()=>{
     if(!imgReady) return;
-    try{
-      drawCrop();
-      await generateSequence({previewOnly:true});
-    }catch(err){
-      console.error(err);
-      setStatus('Preview error (try fewer nails/lines).');
-      stopBtn.disabled = true;
-    }
+    try{ await generateSequence({previewOnly:true}); }
+    catch(e){ console.error(e); setStatus('Preview error (try fewer nails/lines).'); stopBtn.disabled = true; }
   });
 
   generateBtn.addEventListener('click', async ()=>{
     if(!imgReady) return;
-    try{
-      drawCrop();
-      await generateSequence({previewOnly:false});
-    }catch(err){
-      console.error(err);
-      setStatus('Generation error (try fewer nails/lines).');
-      stopBtn.disabled = true;
-    }
+    try{ await generateSequence({previewOnly:false}); }
+    catch(e){ console.error(e); setStatus('Generation error (try fewer nails/lines).'); stopBtn.disabled = true; }
   });
 
   stopBtn.addEventListener('click', ()=>{
@@ -725,31 +879,14 @@ Sequence (nail indices):
     const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `string_art_sequence_${n}nails_${lines}lines.txt`;
+    a.download = `string_art_sequence_${presetEl.value}_${n}nails_${lines}lines.txt`;
     document.body.appendChild(a);
     a.click();
-    setTimeout(()=>{
-      URL.revokeObjectURL(a.href);
-      a.remove();
-    }, 400);
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 400);
   });
 
-  // ====== Presets + Reset
-  presetEl.addEventListener('change', ()=>{
-    const key = presetEl.value;
-    const s = PRESETS[key] || PRESETS.default;
-    applySettings(s);
-    setStatus(`Preset applied: ${key}. Update Preview.`);
-  });
-
-  resetBtn.addEventListener('click', ()=>{
-    presetEl.value = 'default';
-    applySettings(PRESETS.default);
-    setStatus('Reset to Default. Update Preview.');
-  });
-
-  // ====== Image load
-  fileEl.addEventListener('change', async (ev)=>{
+  // ===== Image load
+  fileEl.addEventListener('change', (ev)=>{
     const f = ev.target.files && ev.target.files[0];
     if(!f) return;
 
@@ -765,18 +902,20 @@ Sequence (nail indices):
       imgReady = true;
 
       offsetX = 0; offsetY = 0;
-      presetEl.value = 'default';
-      applySettings(PRESETS.default);
+      presetEl.disabled = false;
 
-      prevCtx.clearRect(0,0,prevCanvas.width, prevCanvas.height);
+      applyDefaults();
+
+      // clear string preview
+      prevCtx.clearRect(0,0,previewCanvas.width, previewCanvas.height);
       prevCtx.fillStyle = '#fff';
-      prevCtx.fillRect(0,0,prevCanvas.width, prevCanvas.height);
+      prevCtx.fillRect(0,0,previewCanvas.width, previewCanvas.height);
 
-      setStatus('Image loaded. Update Preview.');
-      setProgress(0);
       setEnabled(true);
       stopBtn.disabled = true;
       downloadBtn.disabled = true;
+
+      setStatus('Image loaded. Pick preset if needed, then Update String Preview.');
     };
     im.onerror = ()=>{
       setStatus('Failed to load image.');
@@ -786,14 +925,11 @@ Sequence (nail indices):
     im.src = url;
   });
 
-  // ====== Initial draw
-  applySettings(PRESETS.default);
-  drawCrop();
+  // ===== Init
+  applyDefaults();
+  drawPhotoPreview();
   prevCtx.fillStyle = '#fff';
-  prevCtx.fillRect(0,0,prevCanvas.width, prevCanvas.height);
-
-  // ====== Quality of life
-  outputEl.addEventListener('focus', ()=>{ outputEl.select(); });
+  prevCtx.fillRect(0,0,previewCanvas.width, previewCanvas.height);
 
 })();
 </script>
