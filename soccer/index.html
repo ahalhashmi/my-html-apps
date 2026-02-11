@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Soccer Match Simulator</title>
+<style>
+  :root{
+    --bg:#0b1020; --card:#121a33; --muted:#93a4c7; --text:#e8eefc; --line:#223058;
+    --good:#2dd4bf; --warn:#fbbf24; --bad:#fb7185; --info:#60a5fa;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#070b16, #0b1020 40%, #070b16); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  header{position:sticky;top:0;z-index:5;background:rgba(7,11,22,.88);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.06)}
+  .wrap{max-width:980px;margin:0 auto;padding:14px 12px}
+  h1{margin:0;font-size:18px;letter-spacing:.2px}
+  .sub{color:var(--muted);font-size:12px;margin-top:2px}
+  .tabs{display:flex;gap:8px;margin-top:10px}
+  .tabbtn{
+    flex:1; border:1px solid rgba(255,255,255,.10); background:rgba(18,26,51,.55);
+    color:var(--text); padding:10px 10px; border-radius:12px; font-weight:700; font-size:13px;
+  }
+  .tabbtn.active{background:rgba(96,165,250,.18); border-color:rgba(96,165,250,.35)}
+  main{padding:14px 12px 30px; max-width:980px; margin:0 auto}
+  .card{background:rgba(18,26,51,.78); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:12px; box-shadow:0 10px 35px rgba(0,0,0,.35)}
+  .row{display:flex; gap:10px; flex-wrap:wrap}
+  .row > *{flex:1}
+  label{display:block;color:var(--muted);font-size:12px;margin:2px 0 6px}
+  input[type="number"], input[type="text"], select{
+    width:100%; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12);
+    background:rgba(7,11,22,.55); color:var(--text); outline:none;
+  }
+  input[type="range"]{width:100%}
+  .btn{
+    border:1px solid rgba(255,255,255,.14); background:rgba(45,212,191,.14);
+    color:var(--text); padding:12px 12px; border-radius:14px; font-weight:800; width:100%;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn.secondary{background:rgba(96,165,250,.12)}
+  .btn.danger{background:rgba(251,113,133,.14)}
+  .small{font-size:12px;color:var(--muted)}
+  .divider{height:1px;background:rgba(255,255,255,.07);margin:12px 0}
+  .gridPlayers{display:grid; grid-template-columns: 1fr; gap:10px; margin-top:10px}
+  @media (min-width:760px){
+    .gridPlayers{grid-template-columns: 1fr 1fr}
+  }
+  .pitem{padding:10px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(7,11,22,.35)}
+  .phead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .tag{font-size:11px;color:var(--muted)}
+  .pill{display:inline-flex; gap:6px; align-items:center; padding:5px 9px; border-radius:999px; border:1px solid rgba(255,255,255,.10); background:rgba(7,11,22,.45); font-size:12px}
+  .pill.good{border-color:rgba(45,212,191,.35); background:rgba(45,212,191,.10)}
+  .pill.warn{border-color:rgba(251,191,36,.35); background:rgba(251,191,36,.10)}
+  .pill.bad{border-color:rgba(251,113,133,.35); background:rgba(251,113,133,.10)}
+  .pill.info{border-color:rgba(96,165,250,.35); background:rgba(96,165,250,.10)}
+  .match{margin-top:10px}
+  .matchHead{display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap}
+  .score{font-size:22px; font-weight:900}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace}
+  .twoCols{display:grid; grid-template-columns: 1fr; gap:10px; margin-top:10px}
+  @media (min-width:900px){ .twoCols{grid-template-columns: 1fr 1fr} }
+  table{width:100%; border-collapse:collapse; overflow:hidden; border-radius:14px}
+  th,td{padding:8px 8px; border-bottom:1px solid rgba(255,255,255,.06); text-align:left; font-size:12px; vertical-align:top}
+  th{color:var(--muted); font-weight:800; background:rgba(7,11,22,.35)}
+  tr:last-child td{border-bottom:none}
+  .muted{color:var(--muted)}
+  .right{ text-align:right }
+  .stickyTools{position:sticky; top:92px; z-index:4}
+  .warnbox{padding:10px;border-radius:14px;border:1px solid rgba(251,191,36,.25);background:rgba(251,191,36,.08);color:#ffe6a6}
+  .okbox{padding:10px;border-radius:14px;border:1px solid rgba(45,212,191,.25);background:rgba(45,212,191,.08);color:#cafff6}
+  .hint{margin-top:8px;font-size:12px;color:var(--muted);line-height:1.4}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Soccer Match Simulator</h1>
+    <div class="sub">Random teams • realistic formations • position drift • xG-based scores</div>
+    <div class="tabs">
+      <button class="tabbtn active" id="tabSetup">Setup</button>
+      <button class="tabbtn" id="tabMatches">Matches</button>
+      <button class="tabbtn" id="tabAnalysis">Player Analysis</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- SETUP -->
+  <section id="pageSetup" class="card">
+    <div class="row">
+      <div>
+        <label for="numMatches">Number of matches to simulate</label>
+        <input id="numMatches" type="number" min="1" max="2000" value="20" />
+        <div class="hint">Tip: 100–500 is fine. Very large numbers will keep matches summary short for performance.</div>
+      </div>
+      <div>
+        <label>Actions</label>
+        <div class="row" style="gap:8px">
+          <button class="btn" id="btnSim">Simulate</button>
+          <button class="btn secondary" id="btnSave">Save Setup</button>
+          <button class="btn danger" id="btnReset">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="warnbox">
+      <div style="font-weight:900;margin-bottom:6px">Rules used</div>
+      <div class="small">
+        • If Role/Side is blank: player is treated as “random / flexible”.<br/>
+        • Skill slider: if everyone is 0, skill is ignored. Otherwise skill gently affects lineup fit and match xG.
+      </div>
+    </div>
+
+    <div class="gridPlayers" id="playersGrid"></div>
+  </section>
+
+  <!-- MATCHES -->
+  <section id="pageMatches" class="card" style="display:none">
+    <div class="stickyTools">
+      <div class="row">
+        <div class="pill info"><span class="mono">Matches:</span> <span id="mCount">0</span></div>
+        <div class="pill"><span class="mono">Avg goals:</span> <span id="avgGoals">0</span></div>
+        <div class="pill"><span class="mono">Last sim:</span> <span id="lastSim">—</span></div>
+      </div>
+      <div class="divider"></div>
+    </div>
+    <div id="matchesList"></div>
+  </section>
+
+  <!-- ANALYSIS -->
+  <section id="pageAnalysis" class="card" style="display:none">
+    <div class="row">
+      <div class="pill good"><span class="mono">W</span>: <span id="sumW">0</span></div>
+      <div class="pill warn"><span class="mono">D</span>: <span id="sumD">0</span></div>
+      <div class="pill bad"><span class="mono">L</span>: <span id="sumL">0</span></div>
+      <div class="pill info"><span class="mono">Players</span>: 22</div>
+    </div>
+    <div class="divider"></div>
+    <div id="analysisTable"></div>
+  </section>
+</main>
+
+<script>
+/* =========================
+   Data + helpers
+========================= */
+const LS_KEY = "soccer_sim_setup_v1";
+
+const ROLE_ORDER = ["GK","DEF","MID","ST"];
+const ROLE_INDEX = { GK:0, DEF:1, MID:2, ST:3 };
+
+function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+function nowStamp(){
+  const d = new Date();
+  return d.toLocaleString(undefined,{hour12:false});
+}
+
+/* Poisson sampler (Knuth) */
+function poisson(lambda){
+  lambda = Math.max(0, lambda);
+  const L = Math.exp(-lambda);
+  let k = 0, p = 1;
+  do { k++; p *= Math.random(); } while (p > L);
+  return k - 1;
+}
+
+/* =========================
+   Formations + slots
+========================= */
+/*
+Each formation returns an array of 11 slots:
+{ role: "GK|DEF|MID|ST", side: "L|C|R|null", label: "LB/CB/etc" }
+*/
+const FORMATIONS = [
+  { name:"4-4-2", def:4, mid:4, st:2 },
+  { name:"4-3-3", def:4, mid:3, st:3 },
+  { name:"4-2-3-1", def:4, mid:5, st:1 },
+  { name:"3-5-2", def:3, mid:5, st:2 },
+  { name:"3-4-3", def:3, mid:4, st:3 },
+  { name:"5-3-2", def:5, mid:3, st:2 },
+  { name:"4-1-4-1", def:4, mid:5, st:1 }
+];
+
+function sideLayout(count){
+  // returns array of side codes of length "count" that look football-ish
+  // For even numbers we use L, C, C, R (or similar). For odd we use L, C, R with extra C.
+  if(count === 1) return ["C"];
+  if(count === 2) return ["L","R"];
+  if(count === 3) return ["L","C","R"];
+  if(count === 4) return ["L","C","C","R"];
+  if(count === 5) return ["L","C","C","C","R"];
+  return Array(count).fill("C");
+}
+
+function slotLabels(role, sides){
+  // provide readable labels for tables
+  // This is cosmetic; sides drive fit.
+  return sides.map((s, i) => {
+    if(role === "DEF"){
+      if(s === "L") return "LB";
+      if(s === "R") return "RB";
+      return (sides.length >= 4 ? (i === 1 ? "LCB" : (i === 2 ? "RCB" : "CB")) : "CB");
+    }
+    if(role === "MID"){
+      if(s === "L") return "LM/LCM";
+      if(s === "R") return "RM/RCM";
+      return "CM";
+    }
+    if(role === "ST"){
+      if(s === "L") return "LS/LW";
+      if(s === "R") return "RS/RW";
+      return "ST";
+    }
+    return role;
+  });
+}
+
+function buildSlots(formation){
+  const slots = [];
+  slots.push({role:"GK", side:null, label:"GK"});
+  const dSides = sideLayout(formation.def);
+  const mSides = sideLayout(formation.mid);
+  const sSides = sideLayout(formation.st);
+
+  const dLabels = slotLabels("DEF", dSides);
+  const mLabels = slotLabels("MID", mSides);
+  const sLabels = slotLabels("ST",  sSides);
+
+  dSides.forEach((side, i)=> slots.push({role:"DEF", side, label:dLabels[i]}));
+  mSides.forEach((side, i)=> slots.push({role:"MID", side, label:mLabels[i]}));
+  sSides.forEach((side, i)=> slots.push({role:"ST",  side, label:sLabels[i]}));
+  return slots;
+}
+
+/* =========================
+   Preference weights
+========================= */
+function roleWeight(preferredRole, slotRole){
+  // If preferredRole is blank -> flexible
+  if(!preferredRole) return 1.0;
+
+  const a = ROLE_INDEX[preferredRole];
+  const b = ROLE_INDEX[slotRole];
+  const dist = Math.abs(a - b);
+
+  // GK special: still possible, but very low for non-GK slots
+  if(preferredRole === "GK" && slotRole !== "GK") return 0.02;
+  if(preferredRole !== "GK" && slotRole === "GK") return 0.04;
+
+  // Adjacent more likely than far
+  if(dist === 0) return 1.0;
+  if(dist === 1) return 0.35;
+  if(dist === 2) return 0.10;
+  return 0.05;
+}
+
+function sideWeight(preferredSide, slotSide, slotRole){
+  // GK has no side; ignore
+  if(slotRole === "GK") return 1.0;
+  // Blank preferred side -> flexible
+  if(!preferredSide) return 1.0;
+
+  if(preferredSide === slotSide) return 1.0;
+  if(preferredSide === "C" || slotSide === "C") return 0.55; // adjacent
+  return 0.20; // opposite L<->R
+}
+
+/* Skill factor: if enabled, map 0..100 to 0.75..1.25 (gentle) */
+function skillFactor(skill, skillEnabled){
+  if(!skillEnabled) return 1.0;
+  const s = clamp(Number(skill)||0, 0, 100);
+  return 0.75 + (s/100)*0.50;
+}
+
+/* =========================
+   Smart-ish formation weighting by team composition
+========================= */
+function formationWeightForTeam(teamPlayers, formation){
+  const counts = { GK:0, DEF:0, MID:0, ST:0, FLEX:0 };
+  for(const p of teamPlayers){
+    if(!p.role) counts.FLEX++;
+    else counts[p.role] = (counts[p.role]||0)+1;
+  }
+  // crude: prefer formations that match role counts but still allow randomness
+  const want = { GK:1, DEF:formation.def, MID:formation.mid, ST:formation.st };
+  let score = 1.0;
+
+  for(const r of ["DEF","MID","ST"]){
+    const have = counts[r] + Math.floor(counts.FLEX * 0.33);
+    const diff = Math.abs(have - want[r]);
+    // smaller diff => higher score
+    score *= 1 / (1 + diff*0.6);
+  }
+
+  // If team has a GK, small boost; if none, still allowed
+  if(counts.GK >= 1) score *= 1.15;
+
+  return score;
+}
+
+function pickFormation(teamPlayers){
+  const weights = FORMATIONS.map(f => formationWeightForTeam(teamPlayers, f));
+  const sum = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random()*sum;
+  for(let i=0;i<FORMATIONS.length;i++){
+    r -= weights[i];
+    if(r <= 0) return FORMATIONS[i];
+  }
+  return FORMATIONS[0];
+}
+
+/* =========================
+   Assignment algorithm
+========================= */
+function assignLineup(teamPlayers, formation, skillEnabled){
+  const slots = buildSlots(formation);
+  const remaining = teamPlayers.map(p => ({...p})); // shallow copy
+
+  const assignments = []; // {slot, player, fit:{roleW,sideW,skillF, totalW}, outOfPosition:boolean}
+
+  for(const slot of slots){
+    // compute weights for each remaining player for this slot
+    const w = remaining.map(p => {
+      const rw = roleWeight(p.role, slot.role);
+      const sw = sideWeight(p.side, slot.side, slot.role);
+      const sf = skillFactor(p.skill, skillEnabled);
+      // small noise to avoid deterministic ties
+      const noise = 0.98 + Math.random()*0.04;
+      const total = rw * sw * sf * noise;
+      return { p, total, rw, sw, sf };
+    });
+
+    // roulette selection
+    let sum = 0;
+    for(const x of w) sum += x.total;
+    // if all weights are ~0 (shouldn't happen), fallback uniform
+    if(sum <= 1e-9){
+      const idx = Math.floor(Math.random()*remaining.length);
+      const p = remaining.splice(idx,1)[0];
+      assignments.push({
+        slot, player:p,
+        fit:{roleW:1, sideW:1, skillF:skillFactor(p.skill, skillEnabled), totalW:1},
+        outOfPosition: (p.role && p.role !== slot.role) || (slot.role==="GK" && p.role!=="GK")
+      });
+      continue;
+    }
+
+    let r = Math.random()*sum;
+    let chosen = w[0];
+    for(const x of w){
+      r -= x.total;
+      if(r <= 0){ chosen = x; break; }
+    }
+    const idx = remaining.findIndex(pp => pp.id === chosen.p.id);
+    const p = remaining.splice(idx,1)[0];
+
+    assignments.push({
+      slot,
+      player: p,
+      fit: { roleW: chosen.rw, sideW: chosen.sw, skillF: chosen.sf, totalW: chosen.total },
+      outOfPosition: (p.role ? (p.role !== slot.role) : false) || (slot.role==="GK" && p.role && p.role!=="GK")
+    });
+  }
+
+  return assignments;
+}
+
+/* =========================
+   Match simulation (xG -> Poisson)
+========================= */
+function computeTeamRatings(assignments){
+  // cohesion from average fit, GK penalty, and (optional) skill already inside fit
+  let fitSum = 0;
+  let gkFit = 1.0;
+
+  // separate attack/defense
+  let attackSum = 0, attackN = 0;
+  let defenseSum = 0, defenseN = 0;
+
+  for(const a of assignments){
+    const baseFit = clamp(a.fit.roleW * a.fit.sideW, 0, 1);
+    fitSum += baseFit;
+
+    if(a.slot.role === "GK"){
+      // GK matters a lot
+      gkFit = a.player.role === "GK" ? 1.0 : 0.55;
+      // if preferred GK but stuck elsewhere, that’s okay; but non-GK in GK is punished
+      if(a.player.role && a.player.role !== "GK") gkFit *= 0.75;
+    }
+
+    const skillF = a.fit.skillF;
+    // treat attacking roles as ST and MID
+    if(a.slot.role === "ST" || a.slot.role === "MID"){
+      attackSum += baseFit * skillF;
+      attackN++;
+    } else if(a.slot.role === "DEF" || a.slot.role === "GK"){
+      defenseSum += baseFit * skillF;
+      defenseN++;
+    }
+  }
+
+  const cohesion = (fitSum / assignments.length);
+  const attack = attackN ? (attackSum / attackN) : 0.8;
+  const defense = defenseN ? (defenseSum / defenseN) : 0.8;
+
+  // apply GK effect to defense heavily
+  const defenseAdj = defense * (0.75 + 0.25*gkFit);
+
+  return {
+    cohesion: clamp(cohesion, 0.35, 1.05),
+    attack: clamp(attack, 0.35, 1.25),
+    defense: clamp(defenseAdj, 0.25, 1.25),
+    gkFit
+  };
+}
+
+function simulateMatch(teamAPlayers, teamBPlayers, skillEnabled){
+  // formation per team
+  const formA = pickFormation(teamAPlayers);
+  const formB = pickFormation(teamBPlayers);
+
+  const assignA = assignLineup(teamAPlayers, formA, skillEnabled);
+  const assignB = assignLineup(teamBPlayers, formB, skillEnabled);
+
+  const rA = computeTeamRatings(assignA);
+  const rB = computeTeamRatings(assignB);
+
+  // xG model
+  const base = 1.20; // typical football baseline per team
+  const varianceA = 0.90 + Math.random()*0.20;
+  const varianceB = 0.90 + Math.random()*0.20;
+
+  // attack vs opponent defense
+  let xGA = base * (rA.attack / (0.65 + 0.55*rB.defense)) * (0.85 + 0.25*rA.cohesion) * varianceA;
+  let xGB = base * (rB.attack / (0.65 + 0.55*rA.defense)) * (0.85 + 0.25*rB.cohesion) * varianceB;
+
+  // If opponent GK is bad, boost xG noticeably
+  xGA *= (1.0 + (1.0 - rB.gkFit)*0.55);
+  xGB *= (1.0 + (1.0 - rA.gkFit)*0.55);
+
+  // clamp to keep believable
+  xGA = clamp(xGA, 0.10, 4.20);
+  xGB = clamp(xGB, 0.10, 4.20);
+
+  const gA = poisson(xGA);
+  const gB = poisson(xGB);
+
+  return {
+    formationA: formA.name,
+    formationB: formB.name,
+    assignmentsA: assignA,
+    assignmentsB: assignB,
+    xGA, xGB,
+    goalsA: gA,
+    goalsB: gB
+  };
+}
+
+/* =========================
+   UI + state
+========================= */
+const els = {
+  tabSetup: document.getElementById("tabSetup"),
+  tabMatches: document.getElementById("tabMatches"),
+  tabAnalysis: document.getElementById("tabAnalysis"),
+  pageSetup: document.getElementById("pageSetup"),
+  pageMatches: document.getElementById("pageMatches"),
+  pageAnalysis: document.getElementById("pageAnalysis"),
+  playersGrid: document.getElementById("playersGrid"),
+  numMatches: document.getElementById("numMatches"),
+  btnSim: document.getElementById("btnSim"),
+  btnSave: document.getElementById("btnSave"),
+  btnReset: document.getElementById("btnReset"),
+  matchesList: document.getElementById("matchesList"),
+  analysisTable: document.getElementById("analysisTable"),
+  mCount: document.getElementById("mCount"),
+  avgGoals: document.getElementById("avgGoals"),
+  lastSim: document.getElementById("lastSim"),
+  sumW: document.getElementById("sumW"),
+  sumD: document.getElementById("sumD"),
+  sumL: document.getElementById("sumL"),
+};
+
+let players = [];     // setup players
+let simResults = [];  // matches
+let analysis = null;  // computed stats
+
+function defaultPlayers(){
+  const arr = [];
+  for(let i=1;i<=22;i++){
+    arr.push({ id:i, name:`P${i}`, role:"", side:"", skill:0 });
+  }
+  return arr;
+}
+
+function loadSetup(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return null;
+    const obj = JSON.parse(raw);
+    if(!obj || !Array.isArray(obj.players) || obj.players.length !== 22) return null;
+    return obj;
+  }catch(e){ return null; }
+}
+
+function saveSetup(){
+  const obj = { players, numMatches: Number(els.numMatches.value)||20 };
+  localStorage.setItem(LS_KEY, JSON.stringify(obj));
+}
+
+function resetAll(){
+  localStorage.removeItem(LS_KEY);
+  players = defaultPlayers();
+  els.numMatches.value = 20;
+  simResults = [];
+  analysis = null;
+  renderPlayers();
+  renderMatches();
+  renderAnalysis();
+}
+
+function setTab(which){
+  const map = {
+    setup: [els.tabSetup, els.pageSetup],
+    matches:[els.tabMatches, els.pageMatches],
+    analysis:[els.tabAnalysis, els.pageAnalysis],
+  };
+  for(const k of Object.keys(map)){
+    map[k][0].classList.toggle("active", k===which);
+    map[k][1].style.display = (k===which) ? "" : "none";
+  }
+}
+
+function makeSelect(options, value){
+  const s = document.createElement("select");
+  for(const opt of options){
+    const o = document.createElement("option");
+    o.value = opt.value;
+    o.textContent = opt.label;
+    s.appendChild(o);
+  }
+  s.value = value;
+  return s;
+}
+
+function renderPlayers(){
+  els.playersGrid.innerHTML = "";
+  players.forEach((p, idx)=>{
+    const div = document.createElement("div");
+    div.className = "pitem";
+
+    const head = document.createElement("div");
+    head.className = "phead";
+    head.innerHTML = `<div style="font-weight:900">Player ${p.id}</div><div class="tag">Defaults to P${p.id}</div>`;
+    div.appendChild(head);
+
+    // Name
+    const nameLab = document.createElement("label");
+    nameLab.textContent = "Name (optional)";
+    const nameIn = document.createElement("input");
+    nameIn.type = "text";
+    nameIn.value = (p.name && p.name.trim()) ? p.name : `P${p.id}`;
+    nameIn.placeholder = `P${p.id}`;
+    nameIn.addEventListener("input", ()=>{
+      const v = nameIn.value.trim();
+      players[idx].name = v ? v : `P${p.id}`;
+    });
+
+    // Role
+    const roleLab = document.createElement("label");
+    roleLab.textContent = "Preferred role (blank = random/flexible)";
+    const roleSel = makeSelect([
+      {value:"", label:"(Random / Flexible)"},
+      {value:"GK", label:"Goalkeeper (GK)"},
+      {value:"DEF", label:"Defender (DEF)"},
+      {value:"MID", label:"Midfielder (MID)"},
+      {value:"ST", label:"Striker (ST)"},
+    ], p.role || "");
+
+    roleSel.addEventListener("change", ()=>{
+      players[idx].role = roleSel.value;
+      // If GK, side is ignored, but keep whatever user selected.
+      renderPlayers(); // quick refresh to disable side UI if GK selected
+    });
+
+    // Side
+    const sideLab = document.createElement("label");
+    sideLab.textContent = "Preferred side (blank = random/flexible)";
+    const sideSel = makeSelect([
+      {value:"", label:"(Random / Flexible)"},
+      {value:"L", label:"Left"},
+      {value:"C", label:"Center"},
+      {value:"R", label:"Right"},
+    ], p.side || "");
+
+    sideSel.disabled = (players[idx].role === "GK");
+    sideSel.addEventListener("change", ()=> players[idx].side = sideSel.value );
+
+    // Skill
+    const skillLab = document.createElement("label");
+    skillLab.textContent = "Skill (0 = ignored if everyone is 0)";
+    const skillRow = document.createElement("div");
+    skillRow.className = "row";
+    skillRow.style.alignItems = "center";
+    skillRow.style.gap = "10px";
+
+    const skillIn = document.createElement("input");
+    skillIn.type = "range";
+    skillIn.min = "0";
+    skillIn.max = "100";
+    skillIn.step = "1";
+    skillIn.value = String(p.skill ?? 0);
+
+    const skillVal = document.createElement("div");
+    skillVal.className = "pill";
+    skillVal.style.justifyContent = "center";
+    skillVal.style.minWidth = "70px";
+    skillVal.innerHTML = `<span class="mono">${skillIn.value}</span>`;
+
+    skillIn.addEventListener("input", ()=>{
+      players[idx].skill = Number(skillIn.value)||0;
+      skillVal.innerHTML = `<span class="mono">${skillIn.value}</span>`;
+    });
+
+    skillRow.appendChild(skillIn);
+    skillRow.appendChild(skillVal);
+
+    div.appendChild(nameLab);
+    div.appendChild(nameIn);
+
+    const r2 = document.createElement("div");
+    r2.className = "row";
+    r2.style.marginTop = "8px";
+
+    const c1 = document.createElement("div");
+    c1.appendChild(roleLab);
+    c1.appendChild(roleSel);
+
+    const c2 = document.createElement("div");
+    c2.appendChild(sideLab);
+    c2.appendChild(sideSel);
+
+    r2.appendChild(c1);
+    r2.appendChild(c2);
+    div.appendChild(r2);
+
+    div.appendChild(skillLab);
+    div.appendChild(skillRow);
+
+    els.playersGrid.appendChild(div);
+  });
+}
+
+/* =========================
+   Simulation + rendering
+========================= */
+function getSkillEnabled(){
+  return players.some(p => (Number(p.skill)||0) > 0);
+}
+
+function normalizePlayerSetup(){
+  // ensure names exist
+  players = players.map((p,i)=>({
+    ...p,
+    name: (p.name && p.name.trim()) ? p.name.trim() : `P${i+1}`,
+    role: p.role || "",
+    side: p.side || "",
+    skill: clamp(Number(p.skill)||0, 0, 100)
+  }));
+}
+
+function runSimulation(){
+  normalizePlayerSetup();
+
+  const N = clamp(Number(els.numMatches.value)||20, 1, 2000);
+  const skillEnabled = getSkillEnabled();
+
+  simResults = [];
+  const start = Date.now();
+
+  // analysis accumulators
+  const stats = {};
+  for(const p of players){
+    stats[p.id] = {
+      id: p.id, name: p.name,
+      played:0, W:0, D:0, L:0,
+      GF:0, GA:0,
+      rolesPlayed:{GK:0, DEF:0, MID:0, ST:0},
+      sidesPlayed:{L:0, C:0, R:0, none:0},
+      outOfPos:0
+    };
+  }
+
+  let totalGoals = 0;
+
+  // If N is huge, keep detailed match logs capped (for UI performance)
+  const MAX_DETAIL = 250;
+
+  for(let m=1;m<=N;m++){
+    const pool = shuffle(players.map(p => ({...p}))); // copy + shuffle
+    const teamA = pool.slice(0,11);
+    const teamB = pool.slice(11,22);
+
+    const res = simulateMatch(teamA, teamB, skillEnabled);
+
+    totalGoals += (res.goalsA + res.goalsB);
+
+    // outcome
+    const outcomeA = res.goalsA > res.goalsB ? "W" : (res.goalsA < res.goalsB ? "L" : "D");
+    const outcomeB = res.goalsB > res.goalsA ? "W" : (res.goalsB < res.goalsA ? "L" : "D");
+
+    // update players stats with "goals for/against while played"
+    function applyTeam(assignments, outcome, gf, ga){
+      for(const a of assignments){
+        const s = stats[a.player.id];
+        s.played++;
+        s[outcome]++;
+        s.GF += gf;
+        s.GA += ga;
+        s.rolesPlayed[a.slot.role]++;
+
+        if(a.slot.role === "GK"){
+          s.sidesPlayed.none++;
+        } else {
+          if(a.slot.side === "L") s.sidesPlayed.L++;
+          else if(a.slot.side === "C") s.sidesPlayed.C++;
+          else if(a.slot.side === "R") s.sidesPlayed.R++;
+          else s.sidesPlayed.none++;
+        }
+
+        // out-of-position tracking
+        let oop = false;
+        if(a.player.role){
+          if(a.slot.role === "GK" && a.player.role !== "GK") oop = true;
+          else if(a.slot.role !== "GK" && a.player.role === "GK") oop = true;
+          else if(a.slot.role !== a.player.role) oop = true;
+        }
+        // side mismatch (only if preferred side is set)
+        if(!oop && a.player.side && a.slot.role !== "GK"){
+          if(a.player.side !== a.slot.side) oop = true;
+        }
+        if(oop) s.outOfPos++;
+      }
+    }
+    applyTeam(res.assignmentsA, outcomeA, res.goalsA, res.goalsB);
+    applyTeam(res.assignmentsB, outcomeB, res.goalsB, res.goalsA);
+
+    if(m <= MAX_DETAIL){
+      simResults.push({
+        idx: m,
+        goalsA: res.goalsA, goalsB: res.goalsB,
+        xGA: res.xGA, xGB: res.xGB,
+        formationA: res.formationA,
+        formationB: res.formationB,
+        A: res.assignmentsA,
+        B: res.assignmentsB
+      });
+    }
+  }
+
+  analysis = { stats, N, totalGoals };
+  const took = Date.now()-start;
+
+  // render
+  els.lastSim.textContent = `${nowStamp()} (${(took/1000).toFixed(2)}s)`;
+  els.mCount.textContent = String(N) + (N > 250 ? " (showing first 250)" : "");
+  els.avgGoals.textContent = (totalGoals / N).toFixed(2);
+
+  renderMatches();
+  renderAnalysis();
+  setTab("matches");
+}
+
+function lineupTable(assignments){
+  const rows = assignments.map(a=>{
+    const pref = (a.player.role ? a.player.role : "—") + (a.player.side ? `/${a.player.side}` : "");
+    const played = a.slot.role + (a.slot.role==="GK" ? "" : `/${a.slot.side}`);
+    const oop = (() => {
+      let flag = false;
+      if(a.player.role && a.player.role !== a.slot.role) flag = true;
+      if(a.player.role === "GK" && a.slot.role !== "GK") flag = true;
+      if(a.player.role !== "GK" && a.slot.role === "GK" && a.player.role) flag = true;
+      if(!flag && a.player.side && a.slot.role !== "GK" && a.player.side !== a.slot.side) flag = true;
+      return flag;
+    })();
+
+    return `<tr>
+      <td><span style="font-weight:800">${escapeHtml(a.player.name)}</span><div class="muted mono">${pref || "—"}</div></td>
+      <td class="mono">${a.slot.label}</td>
+      <td class="mono">${played}</td>
+      <td class="right">${oop ? `<span class="pill warn">OOP</span>` : `<span class="muted">—</span>`}</td>
+    </tr>`;
+  }).join("");
+
+  return `<table>
+    <thead><tr><th>Player</th><th>Slot</th><th>Played</th><th class="right">Fit</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function renderMatches(){
+  if(!simResults || simResults.length === 0){
+    els.matchesList.innerHTML = `<div class="okbox">No matches yet. Go to <b>Setup</b> and press <b>Simulate</b>.</div>`;
+    return;
+  }
+
+  els.matchesList.innerHTML = simResults.map(m=>{
+    const resText = (m.goalsA>m.goalsB) ? "Team A win" : (m.goalsA<m.goalsB ? "Team B win" : "Draw");
+    const pillClass = (m.goalsA>m.goalsB) ? "good" : (m.goalsA<m.goalsB ? "bad" : "warn");
+
+    return `<div class="match pitem">
+      <div class="matchHead">
+        <div>
+          <div class="pill ${pillClass}" style="margin-bottom:8px"><span class="mono">Match ${m.idx}</span> • ${resText}</div>
+          <div class="score">Team A <span class="mono">${m.goalsA}</span> – <span class="mono">${m.goalsB}</span> Team B</div>
+          <div class="small mono">xG A: ${m.xGA.toFixed(2)} • xG B: ${m.xGB.toFixed(2)}</div>
+        </div>
+        <div class="pill info">
+          <span class="mono">Formations</span>&nbsp; A: <b>${m.formationA}</b>&nbsp; B: <b>${m.formationB}</b>
+        </div>
+      </div>
+
+      <div class="twoCols">
+        <div>
+          <div class="pill"><b>Team A</b></div>
+          ${lineupTable(m.A)}
+        </div>
+        <div>
+          <div class="pill"><b>Team B</b></div>
+          ${lineupTable(m.B)}
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderAnalysis(){
+  if(!analysis){
+    els.analysisTable.innerHTML = `<div class="okbox">No analysis yet. Simulate some matches first.</div>`;
+    els.sumW.textContent = "0"; els.sumD.textContent = "0"; els.sumL.textContent = "0";
+    return;
+  }
+  const statsArr = Object.values(analysis.stats);
+
+  // Totals shown are per-player outcomes summed (so they will be N*11 etc). Better show average per player.
+  const totW = statsArr.reduce((a,s)=>a+s.W,0);
+  const totD = statsArr.reduce((a,s)=>a+s.D,0);
+  const totL = statsArr.reduce((a,s)=>a+s.L,0);
+  els.sumW.textContent = String(totW);
+  els.sumD.textContent = String(totD);
+  els.sumL.textContent = String(totL);
+
+  // sort by Win% then Played
+  statsArr.sort((a,b)=>{
+    const aw = a.played ? a.W/a.played : 0;
+    const bw = b.played ? b.W/b.played : 0;
+    if(bw !== aw) return bw - aw;
+    return (b.played - a.played);
+  });
+
+  const rows = statsArr.map(s=>{
+    const winPct = s.played ? (100*s.W/s.played) : 0;
+    const oopPct = s.played ? (100*s.outOfPos/s.played) : 0;
+
+    const roles = `GK:${s.rolesPlayed.GK} DEF:${s.rolesPlayed.DEF} MID:${s.rolesPlayed.MID} ST:${s.rolesPlayed.ST}`;
+    const sides = `L:${s.sidesPlayed.L} C:${s.sidesPlayed.C} R:${s.sidesPlayed.R}`;
+
+    return `<tr>
+      <td><b>${escapeHtml(s.name)}</b><div class="muted mono">P${s.id}</div></td>
+      <td class="mono">${s.played}</td>
+      <td class="mono">${s.W}/${s.D}/${s.L}<div class="muted">${winPct.toFixed(1)}% W</div></td>
+      <td class="mono">${s.GF} / ${s.GA}<div class="muted">GF / GA while played</div></td>
+      <td class="mono"><div>${roles}</div><div class="muted">${sides}</div></td>
+      <td class="mono right">${oopPct.toFixed(1)}%<div class="muted">OOP</div></td>
+    </tr>`;
+  }).join("");
+
+  els.analysisTable.innerHTML = `<table>
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>Played</th>
+        <th>W/D/L</th>
+        <th>Goals</th>
+        <th>Positions played</th>
+        <th class="right">Out of position</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="hint">Note: “Goals” are team goals for/against while the player was on the field (since every match uses all 11 players).</div>`;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* =========================
+   Events
+========================= */
+els.tabSetup.onclick = ()=> setTab("setup");
+els.tabMatches.onclick = ()=> setTab("matches");
+els.tabAnalysis.onclick = ()=> setTab("analysis");
+
+els.btnSave.onclick = ()=>{
+  normalizePlayerSetup();
+  saveSetup();
+  els.btnSave.textContent = "Saved ✓";
+  setTimeout(()=> els.btnSave.textContent = "Save Setup", 900);
+};
+
+els.btnReset.onclick = ()=>{
+  resetAll();
+  setTab("setup");
+};
+
+els.btnSim.onclick = ()=>{
+  // also auto-save setup for convenience
+  normalizePlayerSetup();
+  saveSetup();
+  runSimulation();
+};
+
+(function init(){
+  const loaded = loadSetup();
+  if(loaded){
+    players = loaded.players.map((p,i)=>({
+      id: i+1,
+      name: (p.name && p.name.trim()) ? p.name.trim() : `P${i+1}`,
+      role: p.role || "",
+      side: p.side || "",
+      skill: clamp(Number(p.skill)||0, 0, 100)
+    }));
+    els.numMatches.value = loaded.numMatches || 20;
+  } else {
+    players = defaultPlayers();
+  }
+  renderPlayers();
+  renderMatches();
+  renderAnalysis();
+})();
+</script>
+</body>
+</html>
