@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Find the Different Color</title>
+  <style>
+    :root{
+      --bg:#0b0b0f;
+      --panel:#141420;
+      --text:#f3f3f6;
+      --muted:#b7b7c2;
+      --accent:#7dd3fc;
+      --danger:#ff5a5f;
+      --ok:#22c55e;
+      --gridLine:#ffffff;
+      --safeTop: env(safe-area-inset-top);
+      --safeBottom: env(safe-area-inset-bottom);
+      --safeLeft: env(safe-area-inset-left);
+      --safeRight: env(safe-area-inset-right);
+    }
+
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height:100%; margin:0; background:var(--bg); color:var(--text); font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial, sans-serif; }
+    button, select, input { font: inherit; }
+
+    .app{
+      min-height:100%;
+      padding: calc(14px + var(--safeTop)) calc(14px + var(--safeRight)) calc(14px + var(--safeBottom)) calc(14px + var(--safeLeft));
+      display:flex; flex-direction:column; gap:12px;
+      user-select:none;
+    }
+
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .title{
+      font-weight:800; letter-spacing:.2px;
+      font-size: 18px;
+    }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 999px;
+      padding: 8px 10px;
+      white-space:nowrap;
+    }
+    .pill strong{ font-variant-numeric: tabular-nums; }
+    .muted{ color: var(--muted); }
+    .btn{
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.16);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight:700;
+      touch-action: manipulation;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(125,211,252,.22), rgba(125,211,252,.10));
+      border-color: rgba(125,211,252,.35);
+    }
+    .btn.danger{
+      background: rgba(255,90,95,.12);
+      border-color: rgba(255,90,95,.35);
+    }
+
+    .panel{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .controls{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .control{
+      display:flex; flex-direction:column; gap:6px;
+    }
+    label{
+      font-size: 12px;
+      color: var(--muted);
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    select{
+      width:100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+      outline:none;
+    }
+    .row{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .row .btn{ flex:1; min-width: 120px; }
+
+    .gridWrap{
+      flex:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 6px 0;
+    }
+
+    /* Square board that fits the screen */
+    .board{
+      width: min(92vw, 520px);
+      height: min(92vw, 520px);
+      max-height: calc(100vh - 260px);
+      max-width: calc(100vh - 260px);
+      border-radius: 18px;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      position:relative;
+      touch-action: manipulation;
+    }
+
+    .grid{
+      width:100%;
+      height:100%;
+      display:grid;
+      gap: 0px;
+      background: var(--gridLine);
+    }
+    .cell{
+      background: #444;
+      border: 1px solid var(--gridLine);
+      border-left-width: 0;
+      border-top-width: 0;
+      touch-action: manipulation;
+    }
+    .cell:nth-child(n){
+      /* keep */
+    }
+
+    .overlay{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(0,0,0,.50);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 16px;
+    }
+    .card{
+      width: min(520px, 92vw);
+      background: rgba(20,20,32,.92);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .card h2{
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      letter-spacing:.2px;
+    }
+    .card p{
+      margin: 6px 0 10px 0;
+      color: var(--muted);
+      line-height: 1.35;
+      font-size: 13px;
+    }
+    .scoreBox{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .scoreItem{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .scoreItem .k{ color: var(--muted); font-size: 12px; font-weight:700; }
+    .scoreItem .v{ margin-top:4px; font-size: 16px; font-weight:900; font-variant-numeric: tabular-nums; }
+
+    .flash{
+      position:absolute; inset:0;
+      pointer-events:none;
+      opacity:0;
+      transition: opacity .12s ease;
+      background: rgba(255,90,95,.30);
+    }
+    .flash.on{ opacity:1; }
+
+    .shake{
+      animation: shake .22s linear;
+    }
+    @keyframes shake{
+      0%{ transform: translateX(0); }
+      25%{ transform: translateX(-6px); }
+      50%{ transform: translateX(6px); }
+      75%{ transform: translateX(-4px); }
+      100%{ transform: translateX(0); }
+    }
+
+    .footerNote{
+      font-size: 12px;
+      color: rgba(255,255,255,.55);
+      text-align:center;
+      margin-top: -6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title">Find the Different Color</div>
+      <div class="row" style="gap:8px; justify-content:flex-end;">
+        <button id="btnHome" class="btn">Home</button>
+        <button id="btnRestart" class="btn primary">Restart</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="controls">
+        <div class="control">
+          <label for="gridSize">Grid size</label>
+          <select id="gridSize">
+            <option value="3">3 × 3</option>
+            <option value="4">4 × 4</option>
+            <option value="5">5 × 5</option>
+            <option value="6" selected>6 × 6</option>
+            <option value="7">7 × 7</option>
+            <option value="8">8 × 8</option>
+          </select>
+        </div>
+        <div class="control">
+          <label for="mode">Mode</label>
+          <select id="mode">
+            <option value="endless" selected>Endless (time to fail)</option>
+            <option value="timed">Timed (reach max level)</option>
+          </select>
+        </div>
+        <div class="control" id="timeControl">
+          <label for="timeLimit">Time limit</label>
+          <select id="timeLimit">
+            <option value="30">30 seconds</option>
+            <option value="60" selected>60 seconds</option>
+            <option value="90">90 seconds</option>
+            <option value="120">120 seconds</option>
+          </select>
+        </div>
+        <div class="control">
+          <label>Best</label>
+          <div class="pill" style="justify-content:space-between;">
+            <span class="muted" id="bestLabel">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <div class="pill"><span class="muted">Level</span> <strong id="level">1</strong></div>
+        <div class="pill"><span class="muted" id="timeLabel">Time</span> <strong id="time">0.0</strong></div>
+        <div class="pill"><span class="muted">Delta</span> <strong id="delta">—</strong></div>
+      </div>
+    </div>
+
+    <div class="gridWrap">
+      <div class="board" id="board">
+        <div class="grid" id="grid"></div>
+        <div class="flash" id="flash"></div>
+
+        <div class="overlay" id="overlay">
+          <div class="card">
+            <h2 id="overlayTitle">Ready?</h2>
+            <p id="overlayText">
+              Tap the one square that has a slightly different color. Each level gets harder.
+            </p>
+
+            <div class="scoreBox" id="lastScoreBox" style="display:none;">
+              <div class="scoreItem">
+                <div class="k">Last level</div>
+                <div class="v" id="lastLevel">—</div>
+              </div>
+              <div class="scoreItem">
+                <div class="k" id="lastTimeK">Last time</div>
+                <div class="v" id="lastTime">—</div>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:12px;">
+              <button id="btnStart" class="btn primary">Start</button>
+              <button id="btnHow" class="btn">How it works</button>
+            </div>
+            <p class="footerNote" id="howNote" style="display:none;">
+              Endless: game ends on a wrong tap. Timed: wrong tap costs 2 seconds (you keep going).
+              Grid lines switch to black/white automatically depending on the color brightness.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footerNote">Tip: add to Home Screen for full-screen play on iPhone.</div>
+  </div>
+
+<script>
+(() => {
+  // ---------- Utilities ----------
+  const $ = (id) => document.getElementById(id);
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  function randInt(a, b){ // inclusive
+    return Math.floor(Math.random() * (b - a + 1)) + a;
+  }
+
+  function rgbToCss(rgb){ return `rgb(${rgb.r},${rgb.g},${rgb.b})`; }
+
+  function luminance(rgb){
+    // perceived brightness (0..255-ish)
+    return 0.2126*rgb.r + 0.7152*rgb.g + 0.0722*rgb.b;
+  }
+
+  function formatSeconds(s){
+    s = Math.max(0, s);
+    if (s < 10) return s.toFixed(1);
+    return s.toFixed(0);
+  }
+
+  // Create a base color and a "different" color by nudging channels with a small delta.
+  function makeColors(delta){
+    // Keep base away from extremes a bit so differences stay visible and safe.
+    const base = {
+      r: randInt(25, 230),
+      g: randInt(25, 230),
+      b: randInt(25, 230)
+    };
+
+    // Pick direction (+/-) and apply delta with slight per-channel variation
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    const vr = delta + randInt(-2, 2);
+    const vg = delta + randInt(-2, 2);
+    const vb = delta + randInt(-2, 2);
+
+    const diff = {
+      r: clamp(base.r + dir * vr, 0, 255),
+      g: clamp(base.g + dir * vg, 0, 255),
+      b: clamp(base.b + dir * vb, 0, 255)
+    };
+
+    // If accidentally identical (rare), push a bit
+    if (base.r === diff.r && base.g === diff.g && base.b === diff.b){
+      diff.r = clamp(diff.r + (dir*3), 0, 255);
+    }
+
+    return { base, diff };
+  }
+
+  // Difficulty curve: starts easy and gets harder.
+  // We use a delta in RGB units. Lower = harder.
+  function computeDelta(level, size){
+    // Bigger grids should start slightly easier
+    const start = clamp(38 - (size-3)*2, 22, 38); // 3x3 ~38, 8x8 ~28
+    // Exponential-ish decay + floor
+    const floor = 5; // minimum delta (very hard)
+    const decay = 0.92; // per level
+    const d = Math.round(start * Math.pow(decay, level-1));
+    return clamp(d, floor, start);
+  }
+
+  function bestKey(mode, size, timeLimit){
+    return mode === "timed"
+      ? `best:v1:timed:${size}:${timeLimit}`
+      : `best:v1:endless:${size}`;
+  }
+
+  function loadBest(mode, size, timeLimit){
+    try{
+      const raw = localStorage.getItem(bestKey(mode, size, timeLimit));
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){
+      return null;
+    }
+  }
+
+  function saveBest(mode, size, timeLimit, best){
+    try{
+      localStorage.setItem(bestKey(mode, size, timeLimit), JSON.stringify(best));
+    }catch(e){}
+  }
+
+  // ---------- State ----------
+  const gridEl = $("grid");
+  const boardEl = $("board");
+  const overlayEl = $("overlay");
+  const overlayTitleEl = $("overlayTitle");
+  const overlayTextEl = $("overlayText");
+  const lastScoreBoxEl = $("lastScoreBox");
+  const lastLevelEl = $("lastLevel");
+  const lastTimeEl = $("lastTime");
+  const lastTimeKEl = $("lastTimeK");
+  const howNoteEl = $("howNote");
+  const flashEl = $("flash");
+
+  const gridSizeEl = $("gridSize");
+  const modeEl = $("mode");
+  const timeLimitEl = $("timeLimit");
+  const timeControlEl = $("timeControl");
+  const bestLabelEl = $("bestLabel");
+
+  const levelEl = $("level");
+  const timeLabelEl = $("timeLabel");
+  const timeEl = $("time");
+  const deltaEl = $("delta");
+
+  const btnStart = $("btnStart");
+  const btnHow = $("btnHow");
+  const btnRestart = $("btnRestart");
+  const btnHome = $("btnHome");
+
+  let state = {
+    running: false,
+    mode: "endless",
+    size: 6,
+    timeLimit: 60, // for timed
+    level: 1,
+    correctIndex: 0,
+    base: {r:0,g:0,b:0},
+    diff: {r:0,g:0,b:0},
+    delta: 0,
+    startTs: 0,
+    lastTickTs: 0,
+    elapsed: 0,   // endless
+    remaining: 60,// timed
+    raf: 0,
+  };
+
+  // ---------- UI Wiring ----------
+  function updateTimeControlVisibility(){
+    const isTimed = modeEl.value === "timed";
+    timeControlEl.style.display = isTimed ? "flex" : "none";
+    timeLabelEl.textContent = isTimed ? "Remaining" : "Time";
+  }
+
+  function updateBestLabel(){
+    const mode = modeEl.value;
+    const size = parseInt(gridSizeEl.value, 10);
+    const tl = parseInt(timeLimitEl.value, 10);
+    const best = loadBest(mode, size, tl);
+
+    if (!best){
+      bestLabelEl.textContent = "No record yet";
+      return;
+    }
+
+    if (mode === "timed"){
+      bestLabelEl.textContent = `L${best.level} in ${best.timeLimit}s`;
+    } else {
+      bestLabelEl.textContent = `L${best.level} in ${best.seconds.toFixed(1)}s`;
+    }
+  }
+
+  function setOverlay(show, title="", text=""){
+    overlayEl.style.display = show ? "flex" : "none";
+    if (show){
+      overlayTitleEl.textContent = title;
+      overlayTextEl.textContent = text;
+    }
+  }
+
+  function showLastScore(level, timeText, timeK){
+    lastScoreBoxEl.style.display = "grid";
+    lastLevelEl.textContent = String(level);
+    lastTimeEl.textContent = timeText;
+    lastTimeKEl.textContent = timeK;
+  }
+
+  function hideLastScore(){
+    lastScoreBoxEl.style.display = "none";
+  }
+
+  function flashBad(){
+    flashEl.classList.add("on");
+    setTimeout(() => flashEl.classList.remove("on"), 120);
+    boardEl.classList.add("shake");
+    setTimeout(() => boardEl.classList.remove("shake"), 220);
+  }
+
+  // ---------- Game Core ----------
+  function buildGrid(){
+    const n = state.size;
+    const total = n * n;
+
+    gridEl.innerHTML = "";
+    gridEl.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+    gridEl.style.gridTemplateRows = `repeat(${n}, 1fr)`;
+
+    // Grid line color based on base luminance
+    const lum = luminance(state.base);
+    const line = lum > 150 ? "rgba(0,0,0,.75)" : "rgba(255,255,255,.85)";
+    document.documentElement.style.setProperty("--gridLine", line);
+
+    for (let i=0; i<total; i++){
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.dataset.i = String(i);
+      cell.style.background = (i === state.correctIndex) ? rgbToCss(state.diff) : rgbToCss(state.base);
+
+      // Make borders only between cells (avoid double-thick edges)
+      // We'll rely on border + background to show lines.
+      gridEl.appendChild(cell);
+    }
+  }
+
+  function nextLevel(){
+    state.delta = computeDelta(state.level, state.size);
+    const { base, diff } = makeColors(state.delta);
+    state.base = base;
+    state.diff = diff;
+
+    const total = state.size * state.size;
+    state.correctIndex = randInt(0, total-1);
+
+    levelEl.textContent = String(state.level);
+    deltaEl.textContent = String(state.delta);
+
+    buildGrid();
+  }
+
+  function startRun(){
+    state.mode = modeEl.value;
+    state.size = parseInt(gridSizeEl.value, 10);
+    state.timeLimit = parseInt(timeLimitEl.value, 10);
+
+    state.running = true;
+    state.level = 1;
+    state.elapsed = 0;
+
+    const now = performance.now();
+    state.startTs = now;
+    state.lastTickTs = now;
+
+    if (state.mode === "timed"){
+      state.remaining = state.timeLimit;
+      timeLabelEl.textContent = "Remaining";
+      timeEl.textContent = formatSeconds(state.remaining);
+    } else {
+      timeLabelEl.textContent = "Time";
+      timeEl.textContent = formatSeconds(0);
+    }
+
+    hideLastScore();
+    setOverlay(false);
+
+    nextLevel();
+    tick();
+  }
+
+  function endRun(reason){
+    if (!state.running) return;
+    state.running = false;
+    cancelAnimationFrame(state.raf);
+
+    const size = state.size;
+    const mode = state.mode;
+    const tl = state.timeLimit;
+
+    // Score calculation
+    if (mode === "endless"){
+      const seconds = state.elapsed;
+      const reachedLevel = state.level;
+
+      // Save best: higher level wins, tiebreak lower time
+      const best = loadBest(mode, size, tl);
+      const candidate = { level: reachedLevel, seconds: seconds };
+
+      let isNewBest = false;
+      if (!best) isNewBest = true;
+      else if (candidate.level > best.level) isNewBest = true;
+      else if (candidate.level === best.level && candidate.seconds < best.seconds) isNewBest = true;
+
+      if (isNewBest) saveBest(mode, size, tl, candidate);
+
+      updateBestLabel();
+
+      const title = reason === "home" ? "Paused" : "Game Over";
+      setOverlay(true, title, "Endless mode ends on a wrong tap. Try again and beat your best!");
+      showLastScore(reachedLevel, `${seconds.toFixed(1)}s`, "Last time");
+
+    } else {
+      // timed: reachedLevel is current level - 1 if time ran out after building next?
+      const reachedLevel = state.level;
+      const used = state.timeLimit; // fixed
+      const best = loadBest(mode, size, tl);
+      const candidate = { level: reachedLevel, timeLimit: state.timeLimit };
+
+      let isNewBest = false;
+      if (!best) isNewBest = true;
+      else if (candidate.level > best.level) isNewBest = true;
+
+      if (isNewBest) saveBest(mode, size, tl, candidate);
+
+      updateBestLabel();
+
+      const title = reason === "home" ? "Paused" : "Time!";
+      setOverlay(true, title, "Timed mode: reach the highest level before time runs out.");
+      showLastScore(reachedLevel, `${used}s`, "Time limit");
+    }
+  }
+
+  function tick(){
+    if (!state.running) return;
+    const now = performance.now();
+    const dt = (now - state.lastTickTs) / 1000;
+    state.lastTickTs = now;
+
+    if (state.mode === "timed"){
+      state.remaining -= dt;
+      if (state.remaining <= 0){
+        state.remaining = 0;
+        timeEl.textContent = formatSeconds(state.remaining);
+        endRun("timeout");
+        return;
+      }
+      timeEl.textContent = formatSeconds(state.remaining);
+    } else {
+      state.elapsed += dt;
+      timeEl.textContent = formatSeconds(state.elapsed);
+    }
+
+    state.raf = requestAnimationFrame(tick);
+  }
+
+  function onTapCell(index){
+    if (!state.running) return;
+
+    if (index === state.correctIndex){
+      state.level += 1;
+      nextLevel();
+      return;
+    }
+
+    // Wrong tap behavior
+    if (state.mode === "endless"){
+      flashBad();
+      endRun("wrong");
+    } else {
+      // timed: penalty
+      flashBad();
+      state.remaining = Math.max(0, state.remaining - 2);
+      timeEl.textContent = formatSeconds(state.remaining);
+      if (state.remaining <= 0){
+        endRun("timeout");
+      }
+    }
+  }
+
+  // Event delegation for speed
+  gridEl.addEventListener("pointerdown", (e) => {
+    const t = e.target;
+    if (!(t instanceof HTMLElement)) return;
+    if (!t.classList.contains("cell")) return;
+    e.preventDefault();
+    const idx = parseInt(t.dataset.i, 10);
+    onTapCell(idx);
+  }, { passive:false });
+
+  // Prevent double-tap zoom on iOS (best effort)
+  let lastTouchEnd = 0;
+  document.addEventListener("touchend", (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) e.preventDefault();
+    lastTouchEnd = now;
+  }, { passive:false });
+
+  // Controls
+  modeEl.addEventListener("change", () => {
+    updateTimeControlVisibility();
+    updateBestLabel();
+    // Update overlay text if showing
+    if (overlayEl.style.display !== "none"){
+      overlayTextEl.textContent = "Tap the one square that has a slightly different color. Each level gets harder.";
+    }
+  });
+
+  gridSizeEl.addEventListener("change", updateBestLabel);
+  timeLimitEl.addEventListener("change", updateBestLabel);
+
+  btnStart.addEventListener("click", startRun);
+  btnRestart.addEventListener("click", () => {
+    endRun("restart");
+    setOverlay(true, "Ready?", "Tap the one square that has a slightly different color. Each level gets harder.");
+    hideLastScore();
+  });
+
+  btnHome.addEventListener("click", () => {
+    endRun("home");
+    setOverlay(true, "Ready?", "Tap the one square that has a slightly different color. Each level gets harder.");
+  });
+
+  btnHow.addEventListener("click", () => {
+    howNoteEl.style.display = (howNoteEl.style.display === "none") ? "block" : "none";
+  });
+
+  // Init
+  updateTimeControlVisibility();
+  updateBestLabel();
+  setOverlay(true, "Ready?", "Tap the one square that has a slightly different color. Each level gets harder.");
+  deltaEl.textContent = "—";
+
+  // Build an idle grid preview
+  state.size = parseInt(gridSizeEl.value, 10);
+  state.level = 1;
+  state.delta = computeDelta(1, state.size);
+  const c = makeColors(state.delta);
+  state.base = c.base; state.diff = c.diff;
+  state.correctIndex = randInt(0, state.size*state.size - 1);
+  buildGrid();
+})();
+</script>
+</body>
+</html>
