@@ -97,8 +97,8 @@
     .board{
       width: min(92vw, 520px);
       height: min(92vw, 520px);
-      max-height: calc(100vh - 300px);
-      max-width: calc(100vh - 300px);
+      max-height: calc(100vh - 320px);
+      max-width: calc(100vh - 320px);
       border-radius: 18px;
       overflow:hidden;
       border: 1px solid rgba(255,255,255,.14);
@@ -142,6 +142,7 @@
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       padding: 16px;
+      z-index: 10;
     }
     .card{
       width: min(520px, 92vw);
@@ -175,6 +176,7 @@
       opacity:0;
       transition: opacity .12s ease;
       background: rgba(255,90,95,.30);
+      z-index: 5;
     }
     .flash.on{ opacity:1; }
 
@@ -274,7 +276,7 @@
               <button id="btnHow" class="btn">How it works</button>
             </div>
             <p class="footerNote" id="howNote" style="display:none;">
-              Endless: wrong tap reveals the correct square for 2 seconds (tap to skip), then score.
+              Endless: wrong tap reveals the correct square for 2 seconds (tap the grid to skip), then score.
               Timed: wrong tap costs 2 seconds (no reveal).
               Seed range: 0 to 2,147,483,647. Use the same seed on multiple devices to get the same game.
             </p>
@@ -295,8 +297,7 @@
   function luminance(rgb){ return 0.2126*rgb.r + 0.7152*rgb.g + 0.0722*rgb.b; }
   function formatSeconds(s){ s = Math.max(0, s); return (s < 10) ? s.toFixed(1) : s.toFixed(0); }
 
-  // ---------- Deterministic RNG (seeded) ----------
-  // mulberry32: fast, good enough for games; deterministic across devices.
+  // ---------- Deterministic RNG ----------
   function mulberry32(seed){
     let t = seed >>> 0;
     return function(){
@@ -306,26 +307,42 @@
       return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
     };
   }
-
   function makeRng(seedValue){
-    // seed=0 -> use Math.random (fully random)
-    if (!seedValue) return { rand: Math.random, seeded: false, seed: 0 };
-    // keep in 0..2^32-1 for mulberry32
+    if (!seedValue) return { rand: Math.random, seed: 0 };
     const s = (seedValue >>> 0);
-    return { rand: mulberry32(s), seeded: true, seed: s };
+    return { rand: mulberry32(s), seed: s };
+  }
+  function randInt(rng, a, b){ return Math.floor(rng.rand() * (b - a + 1)) + a; }
+
+  // Guarantee different color never equals base:
+  // We enforce at least MIN_CHANNEL_DIFF in at least one channel.
+  const MIN_CHANNEL_DIFF = 2; // absolute channel difference >= 2 ensures not identical
+  function ensureDifferent(base, diff){
+    // If identical, force a bump
+    if (base.r === diff.r && base.g === diff.g && base.b === diff.b){
+      diff.r = clamp(diff.r + (diff.r < 254 ? MIN_CHANNEL_DIFF : -MIN_CHANNEL_DIFF), 0, 255);
+      return diff;
+    }
+    // If all channels too close AND could become visually identical for some displays, we still keep delta floor in difficulty.
+    return diff;
   }
 
-  function randInt(rng, a, b){ // inclusive
-    return Math.floor(rng.rand() * (b - a + 1)) + a;
+  // Difficulty curve with a HARD FLOOR so it never becomes "same color"
+  function computeDelta(level, size){
+    const start = clamp(38 - (size-3)*2, 22, 38);
+    const floor = 6; // keep at >=6 so it remains distinguishable and never collapses to equality
+    const decay = 0.92;
+    const d = Math.round(start * Math.pow(decay, level-1));
+    return clamp(d, floor, start);
   }
 
-  // Create base color and "different" color by nudging channels with a delta.
   function makeColors(rng, delta){
     const base = {
       r: randInt(rng, 25, 230),
       g: randInt(rng, 25, 230),
       b: randInt(rng, 25, 230),
     };
+
     const dir = (rng.rand() < 0.5) ? -1 : 1;
     const vr = delta + randInt(rng, -2, 2);
     const vg = delta + randInt(rng, -2, 2);
@@ -336,26 +353,16 @@
       g: clamp(base.g + dir * vg, 0, 255),
       b: clamp(base.b + dir * vb, 0, 255),
     };
-    if (base.r === diff.r && base.g === diff.g && base.b === diff.b){
-      diff.r = clamp(diff.r + (dir * 3), 0, 255);
-    }
-    return { base, diff };
+
+    return { base, diff: ensureDifferent(base, diff) };
   }
 
-  function computeDelta(level, size){
-    const start = clamp(38 - (size-3)*2, 22, 38);
-    const floor = 5;
-    const decay = 0.92;
-    const d = Math.round(start * Math.pow(decay, level-1));
-    return clamp(d, floor, start);
-  }
-
-  // Best keys include seed (so seeded games don't overwrite random bests)
+  // Best keys include seed
   function bestKey(mode, size, timeLimit, seed){
     const seedTag = seed ? `seed:${seed}` : "seed:0";
     return mode === "timed"
-      ? `best:v2:timed:${size}:${timeLimit}:${seedTag}`
-      : `best:v2:endless:${size}:${seedTag}`;
+      ? `best:v3:timed:${size}:${timeLimit}:${seedTag}`
+      : `best:v3:endless:${size}:${seedTag}`;
   }
   function loadBest(mode, size, timeLimit, seed){
     try{
@@ -401,9 +408,9 @@
   // ---------- State ----------
   let state = {
     running: false,
-    revealing: false,      // reveal-in-progress after loss
+    revealing: false,
+    scoreReady: false,       // prevents immediate score pop
     revealTimer: 0,
-    revealUntil: 0,
 
     mode: "endless",
     size: 6,
@@ -415,7 +422,6 @@
     diff: {r:0,g:0,b:0},
     delta: 0,
 
-    startTs: 0,
     lastTickTs: 0,
     elapsed: 0,
     remaining: 60,
@@ -459,7 +465,6 @@
   function currentSeedValue(){
     const v = parseInt(seedEl.value || "0", 10);
     if (!Number.isFinite(v) || v < 0) return 0;
-    // Recommended range: 0..2,147,483,647 (fits signed 32-bit)
     return clamp(v, 0, 2147483647);
   }
 
@@ -524,44 +529,8 @@
     buildGrid();
   }
 
-  // ---------- Game lifecycle ----------
-  function startRun(){
-    state.mode = modeEl.value;
-    state.size = parseInt(gridSizeEl.value, 10);
-    state.timeLimit = parseInt(timeLimitEl.value, 10);
-
-    state.seed = currentSeedValue();
-    state.rng = makeRng(state.seed);
-
-    state.running = true;
-    state.revealing = false;
-    clearTimeout(state.revealTimer);
-
-    state.level = 1;
-    state.elapsed = 0;
-
-    const now = performance.now();
-    state.startTs = now;
-    state.lastTickTs = now;
-
-    if (state.mode === "timed"){
-      state.remaining = state.timeLimit;
-      timeLabelEl.textContent = "Remaining";
-      timeEl.textContent = formatSeconds(state.remaining);
-    } else {
-      timeLabelEl.textContent = "Time";
-      timeEl.textContent = formatSeconds(0);
-    }
-
-    hideLastScore();
-    setOverlay(false);
-    nextLevel();
-    tick();
-    updateBestLabel();
-  }
-
+  // ---------- Score ----------
   function showScore(reason){
-    // called after reveal (or instantly if skipped)
     const size = state.size;
     const mode = state.mode;
     const tl = state.timeLimit;
@@ -603,39 +572,49 @@
     }
   }
 
-  function endRun(reason){
-    if (!state.running && !state.revealing) return;
-
-    // Stop main tick
+  // ---------- Reveal flow (fix) ----------
+  function beginRevealThenScore(){
+    // Only for endless wrong tap
     state.running = false;
     cancelAnimationFrame(state.raf);
 
-    // Reveal behavior only for endless wrong tap
+    state.revealing = true;
+    state.scoreReady = false;
+    setRevealOutline(true);
+
+    // Ensure overlay is hidden during reveal
+    setOverlay(false);
+
+    // After 2s, show score (unless skipped)
+    clearTimeout(state.revealTimer);
+    state.revealTimer = setTimeout(() => {
+      if (!state.revealing) return;
+      state.revealing = false;
+      setRevealOutline(false);
+      showScore("wrong");
+    }, 2000);
+
+    // Small delay so the same tap that caused the loss doesn't instantly skip the reveal.
+    setTimeout(() => { state.scoreReady = true; }, 120);
+  }
+
+  function endRun(reason){
     if (reason === "wrong" && state.mode === "endless"){
-      state.revealing = true;
-      setRevealOutline(true);
-
-      // If user taps during reveal, skip immediately
-      state.revealUntil = performance.now() + 2000;
-
-      clearTimeout(state.revealTimer);
-      state.revealTimer = setTimeout(() => {
-        if (!state.revealing) return;
-        state.revealing = false;
-        setRevealOutline(false);
-        showScore("wrong");
-      }, 2000);
-
+      beginRevealThenScore();
       return;
     }
 
-    // Timed or other exits: no reveal
+    // no reveal for timed or other exits
+    state.running = false;
     state.revealing = false;
+    state.scoreReady = true;
     clearTimeout(state.revealTimer);
+    cancelAnimationFrame(state.raf);
     setRevealOutline(false);
     showScore(reason);
   }
 
+  // ---------- Tick ----------
   function tick(){
     if (!state.running) return;
     const now = performance.now();
@@ -655,13 +634,75 @@
       state.elapsed += dt;
       timeEl.textContent = formatSeconds(state.elapsed);
     }
-
     state.raf = requestAnimationFrame(tick);
   }
 
+  // ---------- Start/Restart ----------
+  function startRun(){
+    state.mode = modeEl.value;
+    state.size = parseInt(gridSizeEl.value, 10);
+    state.timeLimit = parseInt(timeLimitEl.value, 10);
+
+    state.seed = currentSeedValue();
+    state.rng = makeRng(state.seed);
+
+    state.running = true;
+    state.revealing = false;
+    state.scoreReady = false;
+    clearTimeout(state.revealTimer);
+
+    state.level = 1;
+    state.elapsed = 0;
+    state.lastTickTs = performance.now();
+
+    if (state.mode === "timed"){
+      state.remaining = state.timeLimit;
+      timeLabelEl.textContent = "Remaining";
+      timeEl.textContent = formatSeconds(state.remaining);
+    } else {
+      timeLabelEl.textContent = "Time";
+      timeEl.textContent = formatSeconds(0);
+    }
+
+    hideLastScore();
+    setOverlay(false);
+    nextLevel();
+    tick();
+    updateBestLabel();
+  }
+
+  function resetToHome(){
+    state.running = false;
+    state.revealing = false;
+    state.scoreReady = false;
+    clearTimeout(state.revealTimer);
+    cancelAnimationFrame(state.raf);
+    setRevealOutline(false);
+
+    setOverlay(true, "Ready?", "Tap the one square that has a slightly different color. Each level gets harder.");
+    hideLastScore();
+
+    // idle preview
+    state.size = parseInt(gridSizeEl.value, 10);
+    state.level = 1;
+    state.seed = currentSeedValue();
+    state.rng = makeRng(state.seed);
+    state.delta = computeDelta(1, state.size);
+    const c = makeColors(state.rng, state.delta);
+    state.base = c.base; state.diff = c.diff;
+    state.correctIndex = randInt(state.rng, 0, state.size*state.size - 1);
+    deltaEl.textContent = "—";
+    levelEl.textContent = "1";
+    timeEl.textContent = "0.0";
+    buildGrid();
+    updateBestLabel();
+  }
+
+  // ---------- Input handling ----------
   function onTapCell(index){
-    // If reveal is showing, ANY tap skips reveal and shows score immediately
+    // During reveal: any tap on grid should skip to score (but only after scoreReady is true)
     if (state.revealing){
+      if (!state.scoreReady) return;
       state.revealing = false;
       clearTimeout(state.revealTimer);
       setRevealOutline(false);
@@ -677,19 +718,18 @@
       return;
     }
 
-    // Wrong tap behavior
+    // Wrong
+    flashBad();
     if (state.mode === "endless"){
-      flashBad();
       endRun("wrong");
     } else {
-      flashBad();
       state.remaining = Math.max(0, state.remaining - 2);
       timeEl.textContent = formatSeconds(state.remaining);
       if (state.remaining <= 0) endRun("timeout");
     }
   }
 
-  // Event delegation
+  // Event delegation: cells
   gridEl.addEventListener("pointerdown", (e) => {
     const t = e.target;
     if (!(t instanceof HTMLElement)) return;
@@ -699,9 +739,10 @@
     onTapCell(idx);
   }, { passive:false });
 
-  // Also allow tapping anywhere on board (including gaps/borders) to skip reveal
+  // Also allow tapping anywhere on board (including borders) to skip reveal
   boardEl.addEventListener("pointerdown", (e) => {
     if (!state.revealing) return;
+    if (!state.scoreReady) return;
     e.preventDefault();
     state.revealing = false;
     clearTimeout(state.revealTimer);
@@ -709,7 +750,7 @@
     showScore("wrong");
   }, { passive:false });
 
-  // Prevent double-tap zoom on iOS (best effort)
+  // Prevent iOS double-tap zoom
   let lastTouchEnd = 0;
   document.addEventListener("touchend", (e) => {
     const now = Date.now();
@@ -721,52 +762,15 @@
   modeEl.addEventListener("change", () => {
     updateTimeControlVisibility();
     updateBestLabel();
-    if (overlayEl.style.display !== "none"){
-      overlayTextEl.textContent = "Tap the one square that has a slightly different color. Each level gets harder.";
-    }
   });
   gridSizeEl.addEventListener("change", updateBestLabel);
   timeLimitEl.addEventListener("change", updateBestLabel);
-  seedEl.addEventListener("change", () => {
-    // clamp visually
-    seedEl.value = String(currentSeedValue());
-    updateBestLabel();
-  });
-  seedEl.addEventListener("blur", () => {
-    seedEl.value = String(currentSeedValue());
-  });
+  seedEl.addEventListener("change", () => { seedEl.value = String(currentSeedValue()); updateBestLabel(); });
+  seedEl.addEventListener("blur", () => { seedEl.value = String(currentSeedValue()); });
 
   btnStart.addEventListener("click", startRun);
-  btnRestart.addEventListener("click", () => {
-    // Stop everything, go back to ready screen
-    state.running = false;
-    state.revealing = false;
-    clearTimeout(state.revealTimer);
-    cancelAnimationFrame(state.raf);
-    setRevealOutline(false);
-
-    setOverlay(true, "Ready?", "Tap the one square that has a slightly different color. Each level gets harder.");
-    hideLastScore();
-    // Rebuild idle preview with current settings
-    state.size = parseInt(gridSizeEl.value, 10);
-    state.level = 1;
-    state.seed = currentSeedValue();
-    state.rng = makeRng(state.seed);
-    state.delta = computeDelta(1, state.size);
-    const c = makeColors(state.rng, state.delta);
-    state.base = c.base; state.diff = c.diff;
-    state.correctIndex = randInt(state.rng, 0, state.size*state.size - 1);
-    deltaEl.textContent = "—";
-    levelEl.textContent = "1";
-    timeEl.textContent = "0.0";
-    buildGrid();
-    updateBestLabel();
-  });
-
-  btnHome.addEventListener("click", () => {
-    endRun("home");
-    setOverlay(true, "Ready?", "Tap the one square that has a slightly different color. Each level gets harder.");
-  });
+  btnRestart.addEventListener("click", resetToHome);
+  btnHome.addEventListener("click", resetToHome);
 
   btnHow.addEventListener("click", () => {
     howNoteEl.style.display = (howNoteEl.style.display === "none") ? "block" : "none";
@@ -774,20 +778,7 @@
 
   // Init
   updateTimeControlVisibility();
-  updateBestLabel();
-  setOverlay(true, "Ready?", "Tap the one square that has a slightly different color. Each level gets harder.");
-  deltaEl.textContent = "—";
-
-  // Idle preview grid (deterministic if seed != 0 so friends can verify it matches)
-  state.size = parseInt(gridSizeEl.value, 10);
-  state.level = 1;
-  state.seed = currentSeedValue();
-  state.rng = makeRng(state.seed);
-  state.delta = computeDelta(1, state.size);
-  const c = makeColors(state.rng, state.delta);
-  state.base = c.base; state.diff = c.diff;
-  state.correctIndex = randInt(state.rng, 0, state.size*state.size - 1);
-  buildGrid();
+  resetToHome();
 })();
 </script>
 </body>
