@@ -76,7 +76,7 @@
       font-weight:700;
       letter-spacing:.2px;
     }
-    select, input[type="number"], input[type="range"]{
+    select, input[type="number"]{
       width:100%;
       padding: 10px 12px;
       border-radius: 12px;
@@ -84,10 +84,6 @@
       background: rgba(0,0,0,.25);
       color: var(--text);
       outline:none;
-    }
-    input[type="range"]{
-      padding: 10px 10px;
-      height: 42px;
     }
     input[type="number"]{ -moz-appearance:textfield; }
     input[type="number"]::-webkit-outer-spin-button,
@@ -101,8 +97,8 @@
     .board{
       width: min(92vw, 520px);
       height: min(92vw, 520px);
-      max-height: calc(100vh - 360px);
-      max-width: calc(100vh - 360px);
+      max-height: calc(100vh - 320px);
+      max-width: calc(100vh - 320px);
       border-radius: 18px;
       overflow:hidden;
       border: 1px solid rgba(255,255,255,.14);
@@ -127,6 +123,7 @@
       position:relative;
     }
 
+    /* Reveal (correct square) flashing red outline */
     .cell.reveal{
       outline: 4px solid rgba(255,0,0,.95);
       outline-offset: -4px;
@@ -193,7 +190,6 @@
     }
 
     .footerNote{ font-size: 12px; color: rgba(255,255,255,.55); text-align:center; margin-top: -6px; }
-    .mini{ font-size: 12px; color: rgba(255,255,255,.7); font-weight:800; }
   </style>
 </head>
 <body>
@@ -242,11 +238,6 @@
           <label for="seed">Seed (0 = random)</label>
           <input id="seed" type="number" inputmode="numeric" min="0" max="2147483647" step="1" value="0" />
         </div>
-
-        <div class="control" style="grid-column: 1 / span 2;">
-          <label for="difficulty">Difficulty threshold: <span class="mini" id="difficultyLabel">Hard</span></label>
-          <input id="difficulty" type="range" min="0" max="3" step="1" value="1" />
-        </div>
       </div>
 
       <div class="row" style="margin-top:10px;">
@@ -265,7 +256,9 @@
         <div class="overlay" id="overlay">
           <div class="card">
             <h2 id="overlayTitle">Ready?</h2>
-            <p id="overlayText">Tap the one square that has a slightly different color. Each level gets harder.</p>
+            <p id="overlayText">
+              Tap the one square that has a slightly different color. Each level gets harder.
+            </p>
 
             <div class="scoreBox" id="lastScoreBox" style="display:none;">
               <div class="scoreItem">
@@ -285,7 +278,8 @@
             <p class="footerNote" id="howNote" style="display:none;">
               Endless: wrong tap reveals the correct square for 4 seconds (tap the grid to skip), then score.
               Timed: wrong tap costs 2 seconds (no reveal).
-              Seed range: 0 to 2,147,483,647. Use the same seed on multiple devices to get the same game.
+              Grid lines switch to black/white automatically depending on color brightness.
+              Seed range: 0 to 2,147,483,647.
             </p>
           </div>
         </div>
@@ -304,7 +298,7 @@
   function luminance(rgb){ return 0.2126*rgb.r + 0.7152*rgb.g + 0.0722*rgb.b; }
   function formatSeconds(s){ s = Math.max(0, s); return (s < 10) ? s.toFixed(1) : s.toFixed(0); }
 
-  // ---------- Deterministic RNG ----------
+  // ---------- Deterministic RNG (seeded) ----------
   function mulberry32(seed){
     let t = seed >>> 0;
     return function(){
@@ -321,46 +315,8 @@
   }
   function randInt(rng, a, b){ return Math.floor(rng.rand() * (b - a + 1)) + a; }
 
-  // Difficulty mapping:
-  // 0 = Easy (bigger differences, higher floor)
-  // 1 = Hard (your current baseline)
-  // 2 = Very Hard (smaller differences + lower floor)
-  // 3 = Extreme (almost identical at high levels but never identical)
-  const DIFF_PRESETS = [
-    { name: "Easy",      startBase: 52, floor: 12, decay: 0.90 },
-    { name: "Hard",      startBase: 38, floor:  6, decay: 0.92 },
-    { name: "Very Hard", startBase: 32, floor:  4, decay: 0.93 },
-    { name: "Extreme",   startBase: 26, floor:  2, decay: 0.94 },
-  ];
-
-  // Ensure colors are never identical
-  const MIN_CHANNEL_DIFF = 1; // extreme allows very tiny changes but non-zero
-  function ensureDifferent(base, diff){
-    if (base.r === diff.r && base.g === diff.g && base.b === diff.b){
-      // force a 1-step move on a channel that can move
-      if (diff.r < 255) diff.r += MIN_CHANNEL_DIFF;
-      else diff.r -= MIN_CHANNEL_DIFF;
-    }
-    return diff;
-  }
-
-  function currentDifficultyIndex(){
-    const v = parseInt(difficultyEl.value || "1", 10);
-    return clamp(v, 0, 3);
-  }
-
-  function computeDelta(level, size, diffIdx){
-    const preset = DIFF_PRESETS[diffIdx];
-
-    // Larger grids: slightly easier start (add a couple points)
-    const gridAdj = clamp((8 - size) * 1.2, -2, 6); // small grids a tad harder, big grids a tad easier
-    const start = clamp(preset.startBase + gridAdj, preset.floor + 2, 80);
-
-    const d = Math.round(start * Math.pow(preset.decay, level-1));
-    // Hard floor prevents becoming identical (and keeps minimum challenge per difficulty)
-    return clamp(d, preset.floor, start);
-  }
-
+  // ---------- Difficulty (MATCHES YOUR REFERENCE CODE) ----------
+  // Create base/diff colors by nudging channels with delta (plus small per-channel variation).
   function makeColors(rng, delta){
     const base = {
       r: randInt(rng, 25, 230),
@@ -368,9 +324,7 @@
       b: randInt(rng, 25, 230),
     };
 
-    const dir = (rng.rand() < 0.5) ? -1 : 1;
-
-    // Even at extreme, keep *some* change by using delta and small jitter.
+    const dir = rng.rand() < 0.5 ? -1 : 1;
     const vr = delta + randInt(rng, -2, 2);
     const vg = delta + randInt(rng, -2, 2);
     const vb = delta + randInt(rng, -2, 2);
@@ -381,24 +335,39 @@
       b: clamp(base.b + dir * vb, 0, 255),
     };
 
-    return { base, diff: ensureDifferent(base, diff) };
+    // Ensure not identical
+    if (base.r === diff.r && base.g === diff.g && base.b === diff.b){
+      diff.r = clamp(diff.r + (dir*3), 0, 255);
+    }
+    return { base, diff };
   }
 
-  // Best keys include seed + difficulty
-  function bestKey(mode, size, timeLimit, seed, diffIdx){
+  // Difficulty curve from reference:
+  // start = clamp(38 - (size-3)*2, 22, 38)
+  // floor = 5, decay = 0.92
+  function computeDelta(level, size){
+    const start = clamp(38 - (size-3)*2, 22, 38);
+    const floor = 5;
+    const decay = 0.92;
+    const d = Math.round(start * Math.pow(decay, level-1));
+    return clamp(d, floor, start);
+  }
+
+  // ---------- Best keys include seed (so seeded runs don't overwrite random runs) ----------
+  function bestKey(mode, size, timeLimit, seed){
     const seedTag = seed ? `seed:${seed}` : "seed:0";
     return mode === "timed"
-      ? `best:v4:timed:${size}:${timeLimit}:${seedTag}:d${diffIdx}`
-      : `best:v4:endless:${size}:${seedTag}:d${diffIdx}`;
+      ? `best:v5:timed:${size}:${timeLimit}:${seedTag}`
+      : `best:v5:endless:${size}:${seedTag}`;
   }
-  function loadBest(mode, size, timeLimit, seed, diffIdx){
+  function loadBest(mode, size, timeLimit, seed){
     try{
-      const raw = localStorage.getItem(bestKey(mode, size, timeLimit, seed, diffIdx));
+      const raw = localStorage.getItem(bestKey(mode, size, timeLimit, seed));
       return raw ? JSON.parse(raw) : null;
     }catch(e){ return null; }
   }
-  function saveBest(mode, size, timeLimit, seed, diffIdx, best){
-    try{ localStorage.setItem(bestKey(mode, size, timeLimit, seed, diffIdx), JSON.stringify(best)); }
+  function saveBest(mode, size, timeLimit, seed, best){
+    try{ localStorage.setItem(bestKey(mode, size, timeLimit, seed), JSON.stringify(best)); }
     catch(e){}
   }
 
@@ -420,8 +389,6 @@
   const timeLimitEl = $("timeLimit");
   const timeControlEl = $("timeControl");
   const seedEl = $("seed");
-  const difficultyEl = $("difficulty");
-  const difficultyLabelEl = $("difficultyLabel");
 
   const levelEl = $("level");
   const timeLabelEl = $("timeLabel");
@@ -459,7 +426,6 @@
 
     rng: makeRng(0),
     seed: 0,
-    diffIdx: 1,
   };
 
   // ---------- UI helpers ----------
@@ -498,19 +464,15 @@
     return clamp(v, 0, 2147483647);
   }
 
-  function updateDifficultyLabel(){
-    const idx = currentDifficultyIndex();
-    difficultyLabelEl.textContent = DIFF_PRESETS[idx].name;
-  }
-
   function updateBestLabel(){
     const mode = modeEl.value;
     const size = parseInt(gridSizeEl.value, 10);
     const tl = parseInt(timeLimitEl.value, 10);
     const seed = currentSeedValue();
-    const diffIdx = currentDifficultyIndex();
-    const best = loadBest(mode, size, tl, seed, diffIdx);
+
+    const best = loadBest(mode, size, tl, seed);
     if (!best){ bestEl.textContent = "—"; return; }
+
     if (mode === "timed") bestEl.textContent = `L${best.level} / ${best.timeLimit}s`;
     else bestEl.textContent = `L${best.level} / ${best.seconds.toFixed(1)}s`;
   }
@@ -545,7 +507,7 @@
   }
 
   function nextLevel(){
-    state.delta = computeDelta(state.level, state.size, state.diffIdx);
+    state.delta = computeDelta(state.level, state.size);
     const { base, diff } = makeColors(state.rng, state.delta);
     state.base = base;
     state.diff = diff;
@@ -565,13 +527,12 @@
     const mode = state.mode;
     const tl = state.timeLimit;
     const seed = state.seed;
-    const diffIdx = state.diffIdx;
 
     if (mode === "endless"){
       const seconds = state.elapsed;
       const reachedLevel = state.level;
 
-      const best = loadBest(mode, size, tl, seed, diffIdx);
+      const best = loadBest(mode, size, tl, seed);
       const candidate = { level: reachedLevel, seconds: seconds };
 
       let isNewBest = false;
@@ -579,7 +540,7 @@
       else if (candidate.level > best.level) isNewBest = true;
       else if (candidate.level === best.level && candidate.seconds < best.seconds) isNewBest = true;
 
-      if (isNewBest) saveBest(mode, size, tl, seed, diffIdx, candidate);
+      if (isNewBest) saveBest(mode, size, tl, seed, candidate);
 
       updateBestLabel();
       setOverlay(true, reason === "home" ? "Paused" : "Game Over",
@@ -587,14 +548,14 @@
       showLastScore(reachedLevel, `${seconds.toFixed(1)}s`, "Last time");
     } else {
       const reachedLevel = state.level;
-      const best = loadBest(mode, size, tl, seed, diffIdx);
+      const best = loadBest(mode, size, tl, seed);
       const candidate = { level: reachedLevel, timeLimit: state.timeLimit };
 
       let isNewBest = false;
       if (!best) isNewBest = true;
       else if (candidate.level > best.level) isNewBest = true;
 
-      if (isNewBest) saveBest(mode, size, tl, seed, diffIdx, candidate);
+      if (isNewBest) saveBest(mode, size, tl, seed, candidate);
 
       updateBestLabel();
       setOverlay(true, reason === "home" ? "Paused" : "Time!",
@@ -603,8 +564,8 @@
     }
   }
 
-  // ---------- Reveal flow ----------
-  const REVEAL_MS = 4000; // requested: 4 seconds
+  // ---------- Reveal flow (4 seconds) ----------
+  const REVEAL_MS = 4000;
   function beginRevealThenScore(){
     state.running = false;
     cancelAnimationFrame(state.raf);
@@ -622,7 +583,7 @@
       showScore("wrong");
     }, REVEAL_MS);
 
-    // Prevent the *same* loss tap from instantly skipping the reveal.
+    // prevent the same loss tap from instantly skipping
     setTimeout(() => { state.scoreReady = true; }, 150);
   }
 
@@ -631,7 +592,6 @@
       beginRevealThenScore();
       return;
     }
-
     state.running = false;
     state.revealing = false;
     state.scoreReady = true;
@@ -661,6 +621,7 @@
       state.elapsed += dt;
       timeEl.textContent = formatSeconds(state.elapsed);
     }
+
     state.raf = requestAnimationFrame(tick);
   }
 
@@ -672,7 +633,6 @@
 
     state.seed = currentSeedValue();
     state.rng = makeRng(state.seed);
-    state.diffIdx = currentDifficultyIndex();
 
     state.running = true;
     state.revealing = false;
@@ -710,13 +670,13 @@
     setOverlay(true, "Ready?", "Tap the one square that has a slightly different color. Each level gets harder.");
     hideLastScore();
 
+    // idle preview (seeded if seed != 0)
     state.size = parseInt(gridSizeEl.value, 10);
     state.level = 1;
     state.seed = currentSeedValue();
     state.rng = makeRng(state.seed);
-    state.diffIdx = currentDifficultyIndex();
 
-    state.delta = computeDelta(1, state.size, state.diffIdx);
+    state.delta = computeDelta(1, state.size);
     const c = makeColors(state.rng, state.delta);
     state.base = c.base; state.diff = c.diff;
     state.correctIndex = randInt(state.rng, 0, state.size*state.size - 1);
@@ -766,6 +726,7 @@
     onTapCell(idx);
   }, { passive:false });
 
+  // tap anywhere on board during reveal to skip immediately to score
   boardEl.addEventListener("pointerdown", (e) => {
     if (!state.revealing) return;
     if (!state.scoreReady) return;
@@ -784,22 +745,13 @@
     lastTouchEnd = now;
   }, { passive:false });
 
-  // ---------- Controls ----------
+  // Controls
   modeEl.addEventListener("change", () => { updateTimeControlVisibility(); updateBestLabel(); });
   gridSizeEl.addEventListener("change", () => { updateBestLabel(); resetToHome(); });
-  timeLimitEl.addEventListener("change", () => updateBestLabel());
+  timeLimitEl.addEventListener("change", updateBestLabel);
+
   seedEl.addEventListener("change", () => { seedEl.value = String(currentSeedValue()); updateBestLabel(); resetToHome(); });
   seedEl.addEventListener("blur", () => { seedEl.value = String(currentSeedValue()); });
-
-  difficultyEl.addEventListener("input", () => {
-    updateDifficultyLabel();
-    updateBestLabel();
-  });
-  difficultyEl.addEventListener("change", () => {
-    updateDifficultyLabel();
-    updateBestLabel();
-    resetToHome();
-  });
 
   btnStart.addEventListener("click", startRun);
   btnRestart.addEventListener("click", resetToHome);
@@ -811,7 +763,6 @@
 
   // Init
   updateTimeControlVisibility();
-  updateDifficultyLabel();
   resetToHome();
 })();
 </script>
