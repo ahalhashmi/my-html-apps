@@ -1,0 +1,1232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>HALF</title>
+  <style>
+    :root{
+      --bg:#090b12;
+      --panel:rgba(18,22,36,.78);
+      --panel-2:rgba(24,30,50,.92);
+      --line:rgba(255,255,255,.1);
+      --text:#f5f7ff;
+      --muted:#aab2cf;
+      --accent:#6ef1ff;
+      --accent-2:#9a7cff;
+      --good:#6dffb0;
+      --warn:#ffd86d;
+      --bad:#ff7d91;
+      --shadow:0 12px 38px rgba(0,0,0,.35);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+    }
+
+    *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+    html,body{margin:0; height:100%; overflow:hidden; background:radial-gradient(circle at top, #192243 0%, #0c1020 38%, #07090f 100%); color:var(--text); font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;}
+    body{touch-action:none; overscroll-behavior:none;}
+
+    .app{
+      position:fixed;
+      inset:0;
+      padding:calc(10px + var(--safe-top)) calc(10px + var(--safe-right)) calc(10px + var(--safe-bottom)) calc(10px + var(--safe-left));
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(110,241,255,.12), transparent 18%),
+        radial-gradient(circle at 80% 10%, rgba(154,124,255,.12), transparent 20%),
+        linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .topbar{
+      padding:12px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+
+    .title-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .title-wrap{display:flex; align-items:center; gap:10px; min-width:0;}
+    .logo{
+      width:42px; height:42px; border-radius:14px;
+      display:grid; place-items:center;
+      background:linear-gradient(135deg, rgba(110,241,255,.22), rgba(154,124,255,.22));
+      border:1px solid rgba(255,255,255,.1);
+      font-weight:900;
+      letter-spacing:.04em;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 12px 24px rgba(0,0,0,.25);
+    }
+    .title h1{margin:0; font-size:20px; line-height:1; letter-spacing:.08em;}
+    .title p{margin:4px 0 0; font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+    .chip-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+    .chip{
+      padding:8px 11px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.1);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .chip strong{color:var(--text);}
+    .chip.highlight{background:linear-gradient(135deg, rgba(110,241,255,.18), rgba(154,124,255,.18)); color:#fff;}
+
+    .controls-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+
+    .control-block{
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      padding:10px;
+      display:grid;
+      gap:8px;
+    }
+    .label{font-size:12px; color:var(--muted); letter-spacing:.02em;}
+
+    .date-row, .level-row, .action-row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    input[type="date"], input[type="number"]{
+      appearance:none;
+      -webkit-appearance:none;
+      width:100%;
+      min-height:44px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      padding:0 12px;
+      font-size:16px;
+      outline:none;
+    }
+
+    button{
+      border:0;
+      min-height:44px;
+      border-radius:14px;
+      padding:0 14px;
+      color:var(--text);
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      font-weight:700;
+      font-size:14px;
+      letter-spacing:.01em;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    button:active{transform:translateY(1px) scale(.995);}
+    .primary{background:linear-gradient(135deg, rgba(110,241,255,.22), rgba(154,124,255,.26));}
+    .good{background:linear-gradient(135deg, rgba(109,255,176,.2), rgba(95,218,255,.2));}
+    .danger{background:linear-gradient(135deg, rgba(255,125,145,.22), rgba(255,216,109,.18));}
+    .tiny{min-width:44px; padding:0 10px;}
+    .wide{flex:1;}
+
+    .game-shell{
+      position:relative;
+      flex:1;
+      min-height:280px;
+      overflow:hidden;
+      border-radius:28px;
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+    }
+
+    #gameCanvas{
+      width:100%;
+      height:100%;
+      display:block;
+      touch-action:none;
+    }
+
+    .hud-overlay{
+      position:absolute;
+      inset:12px 12px auto 12px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      pointer-events:none;
+      z-index:2;
+    }
+    .mini-panel{
+      padding:10px 12px;
+      border-radius:16px;
+      background:rgba(8,11,20,.48);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+      max-width:68%;
+    }
+    .mini-label{font-size:11px; color:var(--muted); margin-bottom:4px;}
+    .mini-value{font-size:15px; font-weight:800; letter-spacing:.02em;}
+
+    .bottom-sheet{
+      padding:12px;
+      display:grid;
+      gap:10px;
+    }
+    .hint{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.4;
+    }
+
+    .result-card{
+      border-radius:20px;
+      padding:14px;
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.10);
+      display:none;
+      gap:10px;
+    }
+    .result-card.show{display:grid;}
+    .result-top{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+    .badge{
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      white-space:nowrap;
+    }
+    .score-big{font-size:36px; font-weight:900; line-height:1; letter-spacing:-.03em;}
+    .score-sub{color:var(--muted); font-size:13px;}
+
+    .metrics{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:8px;
+    }
+    .metric{
+      border-radius:16px;
+      padding:10px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .metric .k{font-size:11px; color:var(--muted); margin-bottom:4px;}
+    .metric .v{font-size:16px; font-weight:800;}
+
+    .foot-actions{display:flex; gap:8px;}
+
+    .subtle{opacity:.9}
+
+    @media (min-width: 750px){
+      .app{max-width:520px; margin:0 auto;}
+      .controls-grid{grid-template-columns: 1.15fr .95fr;}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="panel topbar">
+      <div class="title-row">
+        <div class="title-wrap">
+          <div class="logo">½</div>
+          <div class="title">
+            <h1>HALF</h1>
+            <p>Swipe once. Split the shape as close to 50 / 50 as possible.</p>
+          </div>
+        </div>
+        <div class="chip highlight" id="seedChip">Seed ready</div>
+      </div>
+
+      <div class="chip-row">
+        <div class="chip"><strong>Offline</strong> seeded generator</div>
+        <div class="chip"><strong>Infinite</strong> levels per date</div>
+        <div class="chip"><strong>Later:</strong> hide date picker for a true daily drop</div>
+      </div>
+
+      <div class="controls-grid">
+        <div class="control-block">
+          <div class="label">Daily seed date</div>
+          <div class="date-row">
+            <input id="dateInput" type="date" />
+            <button id="todayBtn" class="tiny">Today</button>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <div class="label">Level</div>
+          <div class="level-row">
+            <button id="prevLevelBtn" class="tiny">−</button>
+            <input id="levelInput" type="number" inputmode="numeric" min="1" step="1" value="1" />
+            <button id="nextLevelBtn" class="tiny">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-shell panel">
+      <canvas id="gameCanvas"></canvas>
+      <div class="hud-overlay">
+        <div class="mini-panel">
+          <div class="mini-label">Current challenge</div>
+          <div class="mini-value" id="challengeText">Today · Level 1</div>
+        </div>
+        <div class="mini-panel" style="text-align:right;">
+          <div class="mini-label">Best</div>
+          <div class="mini-value" id="bestText">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel bottom-sheet">
+      <div class="hint" id="hintText">Draw one line anywhere across the board. The line extends infinitely. Try to land the shape at an exact 50 / 50 split.</div>
+
+      <div class="result-card" id="resultCard">
+        <div class="result-top">
+          <div>
+            <div class="score-big" id="balanceScore">100.0%</div>
+            <div class="score-sub" id="balanceSub">Balance</div>
+          </div>
+          <div class="badge" id="resultBadge">Perfect</div>
+        </div>
+
+        <div class="metrics">
+          <div class="metric">
+            <div class="k">Split</div>
+            <div class="v" id="splitMetric">50.0 / 50.0</div>
+          </div>
+          <div class="metric">
+            <div class="k">Miss</div>
+            <div class="v" id="missMetric">0.0%</div>
+          </div>
+          <div class="metric">
+            <div class="k">Best</div>
+            <div class="v" id="bestMetric">—</div>
+          </div>
+        </div>
+
+        <div class="foot-actions">
+          <button id="retryBtn" class="wide danger">Retry</button>
+          <button id="shareBtn" class="wide">Share</button>
+          <button id="nextBtn" class="wide good">Next</button>
+        </div>
+      </div>
+
+      <div class="action-row subtle">
+        <button id="regenerateBtn" class="wide primary">Generate level</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+
+      const dateInput = document.getElementById('dateInput');
+      const levelInput = document.getElementById('levelInput');
+      const todayBtn = document.getElementById('todayBtn');
+      const prevLevelBtn = document.getElementById('prevLevelBtn');
+      const nextLevelBtn = document.getElementById('nextLevelBtn');
+      const regenerateBtn = document.getElementById('regenerateBtn');
+      const retryBtn = document.getElementById('retryBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const shareBtn = document.getElementById('shareBtn');
+
+      const seedChip = document.getElementById('seedChip');
+      const challengeText = document.getElementById('challengeText');
+      const bestText = document.getElementById('bestText');
+      const bestMetric = document.getElementById('bestMetric');
+      const hintText = document.getElementById('hintText');
+      const resultCard = document.getElementById('resultCard');
+      const balanceScore = document.getElementById('balanceScore');
+      const balanceSub = document.getElementById('balanceSub');
+      const resultBadge = document.getElementById('resultBadge');
+      const splitMetric = document.getElementById('splitMetric');
+      const missMetric = document.getElementById('missMetric');
+
+      const todayISO = new Date().toISOString().slice(0, 10);
+      dateInput.value = todayISO;
+      levelInput.value = 1;
+
+      const state = {
+        dpr: 1,
+        width: 0,
+        height: 0,
+        board: { x: 0, y: 0, size: 0 },
+        phase: 'ready', // ready | drawing | animating | scored
+        pointerId: null,
+        dragStart: null,
+        dragNow: null,
+        line: null,
+        animationStart: 0,
+        currentDate: todayISO,
+        currentLevel: 1,
+        currentSeed: '',
+        rngSeed: 0,
+        maskCanvas: null,
+        shapeCanvas: null,
+        maskData: null,
+        shapeData: null,
+        totalAreaAlpha: 0,
+        halfA: null,
+        halfB: null,
+        halfOffsets: { ax: 0, ay: 0, bx: 0, by: 0 },
+        result: null,
+        hue: 190,
+        shapeName: '',
+        particles: [],
+      };
+
+      function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+      function lerp(a, b, t) { return a + (b - a) * t; }
+      function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+      function easeOutBack(t) {
+        const c1 = 1.70158;
+        const c3 = c1 + 1;
+        return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+      }
+      function dist(a, b) {
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        return Math.hypot(dx, dy);
+      }
+      function formatPct(v) {
+        return `${v.toFixed(1)}%`;
+      }
+      function pad2(v) {
+        return String(v).padStart(2, '0');
+      }
+      function prettyDate(iso) {
+        const d = new Date(`${iso}T12:00:00`);
+        if (Number.isNaN(d.getTime())) return iso;
+        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+      function haptic(ms = 12) {
+        if (navigator.vibrate) navigator.vibrate(ms);
+      }
+      function xmur3(str) {
+        let h = 1779033703 ^ str.length;
+        for (let i = 0; i < str.length; i++) {
+          h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+          h = (h << 13) | (h >>> 19);
+        }
+        return function() {
+          h = Math.imul(h ^ (h >>> 16), 2246822507);
+          h = Math.imul(h ^ (h >>> 13), 3266489909);
+          return (h ^= h >>> 16) >>> 0;
+        };
+      }
+      function mulberry32(a) {
+        return function() {
+          let t = (a += 0x6D2B79F5);
+          t = Math.imul(t ^ (t >>> 15), t | 1);
+          t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+      function randInt(rng, min, max) {
+        return Math.floor(rng() * (max - min + 1)) + min;
+      }
+      function roundRectPath(ctx, x, y, w, h, r) {
+        const rr = Math.min(r, w * 0.5, h * 0.5);
+        ctx.beginPath();
+        ctx.moveTo(x + rr, y);
+        ctx.arcTo(x + w, y, x + w, y + h, rr);
+        ctx.arcTo(x + w, y + h, x, y + h, rr);
+        ctx.arcTo(x, y + h, x, y, rr);
+        ctx.arcTo(x, y, x + w, y, rr);
+        ctx.closePath();
+      }
+      function drawSmoothBlob(ctx, points) {
+        if (!points.length) return;
+        const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+        const firstMid = mid(points[points.length - 1], points[0]);
+        ctx.beginPath();
+        ctx.moveTo(firstMid.x, firstMid.y);
+        for (let i = 0; i < points.length; i++) {
+          const current = points[i];
+          const next = points[(i + 1) % points.length];
+          const m = mid(current, next);
+          ctx.quadraticCurveTo(current.x, current.y, m.x, m.y);
+        }
+        ctx.closePath();
+      }
+
+      function createShapeSpec(rng, level, size) {
+        const difficulty = Math.min(10, 1 + Math.floor((level - 1) / 4));
+        const margin = size * 0.12;
+        const spec = {
+          type: 'blob',
+          cx: size / 2,
+          cy: size / 2,
+          angle: rng() * Math.PI * 2,
+          level,
+          size,
+          hue: Math.floor(170 + rng() * 140) % 360,
+          name: 'Blob',
+        };
+
+        const choices = ['blob', 'polygon', 'capsule', 'roundedRect', 'peanut'];
+        if (difficulty >= 3) choices.push('donut');
+        if (difficulty >= 6) choices.push('starBlob');
+        spec.type = choices[randInt(rng, 0, choices.length - 1)];
+
+        if (level === 1 && rng() < 0.7) spec.type = 'blob';
+        if (level <= 2 && spec.type === 'donut') spec.type = 'roundedRect';
+
+        switch (spec.type) {
+          case 'blob': {
+            spec.name = 'Blob';
+            const count = randInt(rng, 7, 11 + Math.floor(difficulty / 2));
+            const base = size * (0.24 + rng() * 0.10);
+            spec.points = [];
+            for (let i = 0; i < count; i++) {
+              const a = (i / count) * Math.PI * 2 + (rng() - 0.5) * 0.26;
+              const r = base * (0.78 + rng() * 0.44) * (1 + (difficulty - 1) * 0.015);
+              spec.points.push({ x: Math.cos(a) * r, y: Math.sin(a) * r });
+            }
+            break;
+          }
+          case 'starBlob': {
+            spec.name = 'Pulse';
+            const count = randInt(rng, 8, 12);
+            const base = size * (0.22 + rng() * 0.08);
+            spec.points = [];
+            for (let i = 0; i < count; i++) {
+              const a = (i / count) * Math.PI * 2;
+              const k = i % 2 === 0 ? (1.08 + rng() * 0.22) : (0.55 + rng() * 0.16);
+              const r = base * k;
+              spec.points.push({ x: Math.cos(a) * r, y: Math.sin(a) * r });
+            }
+            break;
+          }
+          case 'polygon': {
+            spec.name = 'Polygon';
+            spec.sides = randInt(rng, 3, Math.min(9, 5 + difficulty));
+            spec.radius = size * (0.22 + rng() * 0.12);
+            spec.jitter = 0.06 + difficulty * 0.008;
+            break;
+          }
+          case 'capsule': {
+            spec.name = 'Capsule';
+            spec.w = size * (0.46 + rng() * 0.28);
+            spec.h = size * (0.18 + rng() * 0.12);
+            if (rng() < 0.35) {
+              const temp = spec.w;
+              spec.w = spec.h * 1.25;
+              spec.h = temp * 0.78;
+            }
+            break;
+          }
+          case 'roundedRect': {
+            spec.name = 'Block';
+            spec.w = size * (0.42 + rng() * 0.24);
+            spec.h = size * (0.30 + rng() * 0.20);
+            spec.radius = size * (0.06 + rng() * 0.10);
+            break;
+          }
+          case 'peanut': {
+            spec.name = 'Peanut';
+            spec.r = size * (0.14 + rng() * 0.05);
+            spec.offset = size * (0.12 + rng() * 0.08);
+            spec.bridge = size * (0.08 + rng() * 0.04);
+            break;
+          }
+          case 'donut': {
+            spec.name = 'Donut';
+            const count = randInt(rng, 8, 12);
+            const base = size * (0.25 + rng() * 0.08);
+            spec.points = [];
+            for (let i = 0; i < count; i++) {
+              const a = (i / count) * Math.PI * 2 + (rng() - 0.5) * 0.20;
+              const r = base * (0.82 + rng() * 0.36);
+              spec.points.push({ x: Math.cos(a) * r, y: Math.sin(a) * r });
+            }
+            spec.holeRx = size * (0.08 + rng() * 0.07);
+            spec.holeRy = size * (0.08 + rng() * 0.07);
+            spec.holeX = (rng() - 0.5) * size * 0.08;
+            spec.holeY = (rng() - 0.5) * size * 0.08;
+            spec.holeAngle = rng() * Math.PI;
+            break;
+          }
+        }
+
+        spec.visualInset = margin;
+        return spec;
+      }
+
+      function buildShapePath(ctx, spec) {
+        ctx.save();
+        ctx.translate(spec.cx, spec.cy);
+        ctx.rotate(spec.angle);
+
+        switch (spec.type) {
+          case 'blob':
+          case 'starBlob':
+          case 'donut': {
+            drawSmoothBlob(ctx, spec.points);
+            if (spec.type === 'donut') {
+              ctx.moveTo(spec.holeX + spec.holeRx, spec.holeY);
+              ctx.ellipse(spec.holeX, spec.holeY, spec.holeRx, spec.holeRy, spec.holeAngle, 0, Math.PI * 2);
+            }
+            break;
+          }
+          case 'polygon': {
+            ctx.beginPath();
+            for (let i = 0; i < spec.sides; i++) {
+              const a = (i / spec.sides) * Math.PI * 2;
+              const r = spec.radius * (1 + Math.sin((i + 1) * 2.17) * spec.jitter);
+              const x = Math.cos(a) * r;
+              const y = Math.sin(a) * r;
+              if (i === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            break;
+          }
+          case 'capsule': {
+            roundRectPath(ctx, -spec.w / 2, -spec.h / 2, spec.w, spec.h, spec.h / 2);
+            break;
+          }
+          case 'roundedRect': {
+            roundRectPath(ctx, -spec.w / 2, -spec.h / 2, spec.w, spec.h, spec.radius);
+            break;
+          }
+          case 'peanut': {
+            ctx.beginPath();
+            ctx.arc(-spec.offset, 0, spec.r, Math.PI * 0.5, Math.PI * 1.5, true);
+            ctx.bezierCurveTo(-spec.offset, -spec.r - spec.bridge, spec.offset, -spec.r - spec.bridge, spec.offset, -spec.r);
+            ctx.arc(spec.offset, 0, spec.r, Math.PI * 1.5, Math.PI * 0.5, true);
+            ctx.bezierCurveTo(spec.offset, spec.r + spec.bridge, -spec.offset, spec.r + spec.bridge, -spec.offset, spec.r);
+            ctx.closePath();
+            break;
+          }
+        }
+
+        ctx.restore();
+      }
+
+      function createOffscreen(w, h) {
+        const c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        return c;
+      }
+
+      function renderShapeCanvases(spec, size) {
+        const maskCanvas = createOffscreen(size, size);
+        const shapeCanvas = createOffscreen(size, size);
+        const mctx = maskCanvas.getContext('2d', { willReadFrequently: true });
+        const sctx = shapeCanvas.getContext('2d', { willReadFrequently: true });
+
+        mctx.clearRect(0, 0, size, size);
+        mctx.fillStyle = '#fff';
+        buildShapePath(mctx, spec);
+        mctx.fill(spec.type === 'donut' ? 'evenodd' : 'nonzero');
+
+        const g = sctx.createLinearGradient(0, 0, size, size);
+        g.addColorStop(0, `hsl(${spec.hue} 90% 68%)`);
+        g.addColorStop(0.55, `hsl(${(spec.hue + 44) % 360} 90% 62%)`);
+        g.addColorStop(1, `hsl(${(spec.hue + 100) % 360} 85% 60%)`);
+
+        sctx.save();
+        buildShapePath(sctx, spec);
+        sctx.clip(spec.type === 'donut' ? 'evenodd' : 'nonzero');
+
+        const glow = sctx.createRadialGradient(size * 0.34, size * 0.30, 8, size * 0.34, size * 0.30, size * 0.54);
+        glow.addColorStop(0, 'rgba(255,255,255,.46)');
+        glow.addColorStop(.4, 'rgba(255,255,255,.10)');
+        glow.addColorStop(1, 'rgba(255,255,255,0)');
+
+        sctx.fillStyle = g;
+        sctx.fillRect(0, 0, size, size);
+        sctx.fillStyle = glow;
+        sctx.fillRect(0, 0, size, size);
+
+        sctx.globalAlpha = 0.18;
+        sctx.strokeStyle = 'rgba(255,255,255,.85)';
+        sctx.lineWidth = Math.max(1.5, size * 0.005);
+        buildShapePath(sctx, spec);
+        sctx.stroke();
+
+        sctx.globalAlpha = 0.10;
+        for (let i = -size; i < size * 2; i += size * 0.09) {
+          sctx.beginPath();
+          sctx.moveTo(i, 0);
+          sctx.lineTo(i - size * 0.55, size);
+          sctx.stroke();
+        }
+        sctx.restore();
+
+        return {
+          maskCanvas,
+          shapeCanvas,
+          maskData: mctx.getImageData(0, 0, size, size),
+          shapeData: sctx.getImageData(0, 0, size, size),
+        };
+      }
+
+      function currentKey(date, level) {
+        return `half.best::${date}::${level}`;
+      }
+      function readBest(date, level) {
+        const raw = localStorage.getItem(currentKey(date, level));
+        if (!raw) return null;
+        try { return JSON.parse(raw); } catch { return null; }
+      }
+      function saveBest(date, level, result) {
+        const existing = readBest(date, level);
+        if (!existing || result.balance > existing.balance) {
+          const payload = {
+            balance: result.balance,
+            splitA: result.ratioA,
+            splitB: result.ratioB,
+            miss: result.miss,
+            label: result.label,
+          };
+          localStorage.setItem(currentKey(date, level), JSON.stringify(payload));
+          return payload;
+        }
+        return existing;
+      }
+
+      function updateBestUI() {
+        const best = readBest(state.currentDate, state.currentLevel);
+        if (!best) {
+          bestText.textContent = '—';
+          bestMetric.textContent = '—';
+          return;
+        }
+        bestText.textContent = `${best.balance.toFixed(1)}%`;
+        bestMetric.textContent = `${best.balance.toFixed(1)}%`;
+      }
+
+      function updateHeaderUI() {
+        challengeText.textContent = `${prettyDate(state.currentDate)} · Level ${state.currentLevel}`;
+        seedChip.textContent = `Seed ${state.currentDate.replaceAll('-', '')}-${state.currentLevel}`;
+        hintText.textContent = `Shape: ${state.shapeName}. One swipe only. The whole line counts, not just your finger path.`;
+        updateBestUI();
+      }
+
+      function generateLevel() {
+        state.currentDate = dateInput.value || todayISO;
+        state.currentLevel = Math.max(1, parseInt(levelInput.value || '1', 10));
+        levelInput.value = state.currentLevel;
+
+        const seedStr = `HALF|${state.currentDate}|L${state.currentLevel}|v1`;
+        const seedFn = xmur3(seedStr);
+        state.rngSeed = seedFn();
+        state.currentSeed = seedStr;
+        const rng = mulberry32(state.rngSeed);
+
+        const size = Math.max(1, Math.floor(state.board.size));
+        const spec = createShapeSpec(rng, state.currentLevel, size);
+        state.hue = spec.hue;
+        state.shapeName = spec.name;
+
+        const rendered = renderShapeCanvases(spec, size);
+        state.maskCanvas = rendered.maskCanvas;
+        state.shapeCanvas = rendered.shapeCanvas;
+        state.maskData = rendered.maskData;
+        state.shapeData = rendered.shapeData;
+        state.totalAreaAlpha = computeTotalAlpha(rendered.maskData);
+
+        state.phase = 'ready';
+        state.dragStart = null;
+        state.dragNow = null;
+        state.line = null;
+        state.halfA = null;
+        state.halfB = null;
+        state.result = null;
+        state.particles = [];
+        resultCard.classList.remove('show');
+
+        updateHeaderUI();
+      }
+
+      function computeTotalAlpha(imageData) {
+        const data = imageData.data;
+        let total = 0;
+        for (let i = 3; i < data.length; i += 4) total += data[i];
+        return total;
+      }
+
+      function resizeCanvas() {
+        state.dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const rect = canvas.getBoundingClientRect();
+        const w = Math.max(1, Math.floor(rect.width));
+        const h = Math.max(1, Math.floor(rect.height));
+        canvas.width = Math.floor(w * state.dpr);
+        canvas.height = Math.floor(h * state.dpr);
+        ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+        state.width = w;
+        state.height = h;
+
+        const size = Math.min(w - 22, h - 22, 440);
+        state.board = {
+          x: Math.round((w - size) / 2),
+          y: Math.round((h - size) / 2),
+          size: Math.round(size),
+        };
+        generateLevel();
+      }
+
+      function getPointerPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      }
+
+      function withinBoard(p, pad = 0) {
+        const b = state.board;
+        return p.x >= b.x - pad && p.x <= b.x + b.size + pad && p.y >= b.y - pad && p.y <= b.y + b.size + pad;
+      }
+
+      function extendLineToBoard(p1, p2) {
+        const b = state.board;
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const ux = dx / len;
+        const uy = dy / len;
+        const big = b.size * 2;
+        return {
+          a: { x: p1.x - ux * big, y: p1.y - uy * big },
+          b: { x: p1.x + ux * big, y: p1.y + uy * big },
+          dx, dy,
+          ux, uy,
+        };
+      }
+
+      function worldLineToLocal(line) {
+        const b = state.board;
+        return {
+          x1: line.p1.x - b.x,
+          y1: line.p1.y - b.y,
+          x2: line.p2.x - b.x,
+          y2: line.p2.y - b.y,
+        };
+      }
+
+      function classifyCut(localLine) {
+        const { data, width, height } = state.maskData;
+        const source = state.shapeData.data;
+        const halfA = createOffscreen(width, height);
+        const halfB = createOffscreen(width, height);
+        const actx = halfA.getContext('2d');
+        const bctx = halfB.getContext('2d');
+        const imgA = actx.createImageData(width, height);
+        const imgB = bctx.createImageData(width, height);
+        const dA = imgA.data;
+        const dB = imgB.data;
+
+        const vx = localLine.x2 - localLine.x1;
+        const vy = localLine.y2 - localLine.y1;
+        let sumA = 0;
+        let sumB = 0;
+
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            const idx = (y * width + x) * 4;
+            const alpha = data[idx + 3];
+            if (!alpha) continue;
+            const px = x + 0.5;
+            const py = y + 0.5;
+            const side = vx * (py - localLine.y1) - vy * (px - localLine.x1);
+            if (side >= 0) {
+              dA[idx] = source[idx];
+              dA[idx + 1] = source[idx + 1];
+              dA[idx + 2] = source[idx + 2];
+              dA[idx + 3] = source[idx + 3];
+              sumA += alpha;
+            } else {
+              dB[idx] = source[idx];
+              dB[idx + 1] = source[idx + 1];
+              dB[idx + 2] = source[idx + 2];
+              dB[idx + 3] = source[idx + 3];
+              sumB += alpha;
+            }
+          }
+        }
+
+        if (sumA === 0 || sumB === 0) return null;
+
+        actx.putImageData(imgA, 0, 0);
+        bctx.putImageData(imgB, 0, 0);
+
+        const ratioA = (sumA / (sumA + sumB)) * 100;
+        const ratioB = 100 - ratioA;
+        const miss = Math.abs(50 - ratioA);
+        const balance = Math.max(0, 100 - miss * 2);
+        let label = 'Try Again';
+        if (miss <= 0.15) label = 'Perfect';
+        else if (miss <= 0.5) label = 'Elite';
+        else if (miss <= 1.2) label = 'Great';
+        else if (miss <= 2.8) label = 'Good';
+        else if (miss <= 5) label = 'Close';
+
+        return { halfA, halfB, ratioA, ratioB, miss, balance, label };
+      }
+
+      function beginAnimation(result, line) {
+        const vx = line.p2.x - line.p1.x;
+        const vy = line.p2.y - line.p1.y;
+        const len = Math.hypot(vx, vy) || 1;
+        const nx = -vy / len;
+        const ny = vx / len;
+        const distance = Math.min(44, state.board.size * 0.13);
+
+        state.halfA = result.halfA;
+        state.halfB = result.halfB;
+        state.result = result;
+        state.halfOffsets = {
+          ax: nx * distance,
+          ay: ny * distance,
+          bx: -nx * distance,
+          by: -ny * distance,
+        };
+        state.animationStart = performance.now();
+        state.phase = 'animating';
+
+        setTimeout(() => {
+          if (state.phase !== 'animating') return;
+          state.phase = 'scored';
+          showResult(result);
+          if (result.miss <= 1.2) spawnParticles(result.miss <= 0.15 ? 26 : 18);
+        }, 700);
+      }
+
+      function showResult(result) {
+        const best = saveBest(state.currentDate, state.currentLevel, result);
+        balanceScore.textContent = `${result.balance.toFixed(1)}%`;
+        balanceSub.textContent = result.label === 'Perfect' ? 'Exact balance' : 'Balance';
+        splitMetric.textContent = `${result.ratioA.toFixed(1)} / ${result.ratioB.toFixed(1)}`;
+        missMetric.textContent = `${result.miss.toFixed(1)}%`;
+        bestMetric.textContent = `${best.balance.toFixed(1)}%`;
+        resultBadge.textContent = result.label;
+        const miss = result.miss;
+        if (miss <= 0.15) resultBadge.style.background = 'linear-gradient(135deg, rgba(109,255,176,.26), rgba(110,241,255,.22))';
+        else if (miss <= 1.2) resultBadge.style.background = 'linear-gradient(135deg, rgba(255,216,109,.22), rgba(110,241,255,.20))';
+        else resultBadge.style.background = 'rgba(255,255,255,.08)';
+        resultCard.classList.add('show');
+        updateBestUI();
+        haptic(result.miss <= 0.5 ? 24 : 12);
+      }
+
+      function spawnParticles(count) {
+        const cx = state.board.x + state.board.size / 2;
+        const cy = state.board.y + state.board.size / 2;
+        for (let i = 0; i < count; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const speed = 1.2 + Math.random() * 2.8;
+          state.particles.push({
+            x: cx,
+            y: cy,
+            vx: Math.cos(a) * speed,
+            vy: Math.sin(a) * speed - 0.8,
+            life: 1,
+            size: 2 + Math.random() * 4,
+            hue: state.hue + (Math.random() * 40 - 20),
+          });
+        }
+      }
+
+      function invalidCutFeedback() {
+        hintText.textContent = 'That line missed the shape. Try a cut that actually crosses it.';
+        haptic(10);
+      }
+
+      function submitCut() {
+        if (!state.dragStart || !state.dragNow) return;
+        if (dist(state.dragStart, state.dragNow) < 18) {
+          state.phase = 'ready';
+          state.dragStart = null;
+          state.dragNow = null;
+          state.pointerId = null;
+          return;
+        }
+        const line = {
+          p1: state.dragStart,
+          p2: state.dragNow,
+        };
+        state.line = line;
+        const local = worldLineToLocal(line);
+        const result = classifyCut(local);
+        state.dragStart = null;
+        state.dragNow = null;
+        state.pointerId = null;
+
+        if (!result) {
+          state.phase = 'ready';
+          invalidCutFeedback();
+          return;
+        }
+        beginAnimation(result, line);
+      }
+
+      canvas.addEventListener('pointerdown', (e) => {
+        if (state.phase !== 'ready') return;
+        const p = getPointerPos(e);
+        if (!withinBoard(p, 8)) return;
+        state.pointerId = e.pointerId;
+        state.dragStart = p;
+        state.dragNow = p;
+        state.phase = 'drawing';
+        hintText.textContent = 'Release to cut.';
+        canvas.setPointerCapture(e.pointerId);
+      });
+
+      canvas.addEventListener('pointermove', (e) => {
+        if (state.phase !== 'drawing' || e.pointerId !== state.pointerId) return;
+        state.dragNow = getPointerPos(e);
+      });
+
+      canvas.addEventListener('pointerup', (e) => {
+        if (state.phase !== 'drawing' || e.pointerId !== state.pointerId) return;
+        state.dragNow = getPointerPos(e);
+        submitCut();
+      });
+
+      canvas.addEventListener('pointercancel', (e) => {
+        if (e.pointerId !== state.pointerId) return;
+        state.phase = 'ready';
+        state.pointerId = null;
+        state.dragStart = null;
+        state.dragNow = null;
+      });
+
+      todayBtn.addEventListener('click', () => {
+        dateInput.value = todayISO;
+        levelInput.value = 1;
+        generateLevel();
+      });
+      prevLevelBtn.addEventListener('click', () => {
+        levelInput.value = Math.max(1, parseInt(levelInput.value || '1', 10) - 1);
+        generateLevel();
+      });
+      nextLevelBtn.addEventListener('click', () => {
+        levelInput.value = Math.max(1, parseInt(levelInput.value || '1', 10) + 1);
+        generateLevel();
+      });
+      dateInput.addEventListener('change', generateLevel);
+      levelInput.addEventListener('change', generateLevel);
+      regenerateBtn.addEventListener('click', generateLevel);
+      retryBtn.addEventListener('click', generateLevel);
+      nextBtn.addEventListener('click', () => {
+        levelInput.value = Math.max(1, parseInt(levelInput.value || '1', 10) + 1);
+        generateLevel();
+      });
+      shareBtn.addEventListener('click', async () => {
+        if (!state.result) return;
+        const text = [
+          `HALF`,
+          `${prettyDate(state.currentDate)} · Level ${state.currentLevel}`,
+          `Split: ${state.result.ratioA.toFixed(1)} / ${state.result.ratioB.toFixed(1)}`,
+          `Balance: ${state.result.balance.toFixed(1)}%`,
+          `Miss: ${state.result.miss.toFixed(1)}%`,
+          `${state.result.label}`,
+        ].join('\n');
+
+        try {
+          if (navigator.share) await navigator.share({ title: 'HALF', text });
+          else if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+            hintText.textContent = 'Result copied to clipboard.';
+          }
+        } catch {
+          // ignore user-cancelled share
+        }
+      });
+
+      window.addEventListener('resize', resizeCanvas);
+      window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 80));
+
+      function drawBackdrop() {
+        const w = state.width;
+        const h = state.height;
+        const g = ctx.createLinearGradient(0, 0, 0, h);
+        g.addColorStop(0, '#0a1022');
+        g.addColorStop(1, '#070910');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, w, h);
+
+        const rg = ctx.createRadialGradient(w * 0.28, h * 0.18, 6, w * 0.28, h * 0.18, w * 0.5);
+        rg.addColorStop(0, 'rgba(110,241,255,.18)');
+        rg.addColorStop(1, 'rgba(110,241,255,0)');
+        ctx.fillStyle = rg;
+        ctx.fillRect(0, 0, w, h);
+
+        const rg2 = ctx.createRadialGradient(w * 0.76, h * 0.10, 6, w * 0.76, h * 0.10, w * 0.48);
+        rg2.addColorStop(0, 'rgba(154,124,255,.15)');
+        rg2.addColorStop(1, 'rgba(154,124,255,0)');
+        ctx.fillStyle = rg2;
+        ctx.fillRect(0, 0, w, h);
+
+        const b = state.board;
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        const bg = ctx.createLinearGradient(0, 0, b.size, b.size);
+        bg.addColorStop(0, 'rgba(255,255,255,.05)');
+        bg.addColorStop(1, 'rgba(255,255,255,.02)');
+        ctx.fillStyle = bg;
+        roundRectPath(ctx, 0, 0, b.size, b.size, 32);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,.08)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.beginPath();
+        roundRectPath(ctx, 10, 10, b.size - 20, b.size - 20, 26);
+        ctx.strokeStyle = 'rgba(255,255,255,.04)';
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255,255,255,.03)';
+        const cells = 6;
+        for (let i = 1; i < cells; i++) {
+          const p = (b.size / cells) * i;
+          ctx.beginPath();
+          ctx.moveTo(p, 12);
+          ctx.lineTo(p, b.size - 12);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(12, p);
+          ctx.lineTo(b.size - 12, p);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawShape() {
+        const b = state.board;
+        if (!state.shapeCanvas) return;
+
+        const shadowBlur = Math.max(16, b.size * 0.045);
+        ctx.save();
+        ctx.shadowBlur = shadowBlur;
+        ctx.shadowColor = `hsla(${state.hue} 100% 70% / .18)`;
+
+        if (state.phase === 'animating' || state.phase === 'scored') {
+          let t = state.phase === 'animating'
+            ? clamp((performance.now() - state.animationStart) / 700, 0, 1)
+            : 1;
+          t = state.phase === 'animating' ? easeOutBack(t) : 1;
+
+          const ax = state.halfOffsets.ax * t;
+          const ay = state.halfOffsets.ay * t;
+          const bx = state.halfOffsets.bx * t;
+          const by = state.halfOffsets.by * t;
+
+          if (state.halfA) ctx.drawImage(state.halfA, b.x + ax, b.y + ay, b.size, b.size);
+          if (state.halfB) ctx.drawImage(state.halfB, b.x + bx, b.y + by, b.size, b.size);
+        } else {
+          ctx.drawImage(state.shapeCanvas, b.x, b.y, b.size, b.size);
+        }
+        ctx.restore();
+      }
+
+      function drawGuideLine() {
+        let p1 = null;
+        let p2 = null;
+        if (state.phase === 'drawing' && state.dragStart && state.dragNow) {
+          p1 = state.dragStart;
+          p2 = state.dragNow;
+        } else if ((state.phase === 'animating' || state.phase === 'scored') && state.line) {
+          p1 = state.line.p1;
+          p2 = state.line.p2;
+        }
+        if (!p1 || !p2) return;
+
+        const extended = extendLineToBoard(p1, p2);
+        ctx.save();
+        ctx.beginPath();
+        roundRectPath(ctx, state.board.x, state.board.y, state.board.size, state.board.size, 32);
+        ctx.clip();
+
+        ctx.strokeStyle = 'rgba(255,255,255,.16)';
+        ctx.lineWidth = 10;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(extended.a.x, extended.a.y);
+        ctx.lineTo(extended.b.x, extended.b.y);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255,255,255,.96)';
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(extended.a.x, extended.a.y);
+        ctx.lineTo(extended.b.x, extended.b.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawCenterHint() {
+        if (state.phase !== 'ready' && state.phase !== 'drawing') return;
+        const b = state.board;
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(255,255,255,.80)';
+        ctx.font = '700 16px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        ctx.fillText('Swipe to cut', b.x + b.size / 2, b.y + b.size - 24);
+        ctx.restore();
+      }
+
+      function drawParticles() {
+        if (!state.particles.length) return;
+        for (let i = state.particles.length - 1; i >= 0; i--) {
+          const p = state.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.03;
+          p.life -= 0.018;
+          if (p.life <= 0) {
+            state.particles.splice(i, 1);
+            continue;
+          }
+          ctx.save();
+          ctx.globalAlpha = p.life;
+          ctx.fillStyle = `hsl(${p.hue} 95% 68%)`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      function render() {
+        drawBackdrop();
+        drawShape();
+        drawGuideLine();
+        drawCenterHint();
+        drawParticles();
+        requestAnimationFrame(render);
+      }
+
+      resizeCanvas();
+      requestAnimationFrame(render);
+    })();
+  </script>
+</body>
+</html>
