@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>Bridge Survival Shooter</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:rgba(6,10,18,.72);
+      --line:rgba(255,255,255,.12);
+      --accent:#5db2ff;
+      --good:#49d07f;
+      --bad:#ff6363;
+      --warn:#ffc35c;
+      --text:#f2f7ff;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:none}
+    html,body{margin:0;height:100%;overflow:hidden;background:#000;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--text)}
+    #game{position:fixed;inset:0;width:100vw;height:100vh;display:block;background:linear-gradient(#311612,#20120d 38%, #3c251d 100%)}
+    .safe-top{padding-top:max(env(safe-area-inset-top),12px)}
+    .safe-bottom{padding-bottom:max(env(safe-area-inset-bottom),12px)}
+    #hud{
+      position:fixed; left:0; right:0; top:0; z-index:4;
+      padding:10px 12px 0;
+      pointer-events:none;
+    }
+    .row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:16px;
+      backdrop-filter: blur(10px);
+      box-shadow:0 10px 30px rgba(0,0,0,.2);
+    }
+    .pill{padding:10px 12px;min-width:0}
+    .label{font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.08em}
+    .value{font-size:24px;font-weight:800;line-height:1.05;margin-top:2px}
+    .tiny{font-size:12px;opacity:.85}
+    #progressWrap{
+      margin-top:10px;
+      height:14px;
+      background:rgba(255,255,255,.09);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;
+      overflow:hidden;
+      backdrop-filter: blur(6px);
+    }
+    #progressBar{height:100%;width:0%;background:linear-gradient(90deg,#54f0ff,#62ff8d)}
+    #bossBarWrap{
+      margin-top:8px;
+      display:none;
+      overflow:hidden;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.15);
+      background:rgba(255,0,0,.11);
+    }
+    #bossBar{height:12px;width:100%;background:linear-gradient(90deg,#ffb6b6,#ff5050)}
+    #bossLabel{font-size:11px;text-transform:uppercase;letter-spacing:.09em;opacity:.9;margin:7px 10px 5px}
+    #centerMessage{
+      position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+      z-index:5;pointer-events:none;text-align:center;
+      text-shadow:0 6px 20px rgba(0,0,0,.5);
+      width:min(88vw,460px);
+    }
+    #centerMessage .big{font-size: clamp(34px, 7vw, 62px); font-weight:900; line-height:.95}
+    #centerMessage .mid{font-size: clamp(13px, 3vw, 18px); opacity:.92; margin-top:10px}
+    #overlay{
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+      z-index:6;padding:20px;background:linear-gradient(rgba(0,0,0,.28),rgba(0,0,0,.56));
+    }
+    #panel{
+      width:min(92vw,460px);
+      padding:18px;
+      border-radius:24px;
+      background:rgba(7,11,18,.82);
+      border:1px solid rgba(255,255,255,.12);
+      backdrop-filter:blur(16px);
+      box-shadow:0 25px 70px rgba(0,0,0,.45);
+    }
+    #panel h1{margin:0 0 10px;font-size:30px;line-height:1;font-weight:900}
+    #panel p{margin:8px 0 0;font-size:14px;line-height:1.45;opacity:.92}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    .stat{padding:12px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+    .stat .k{font-size:11px;opacity:.72;text-transform:uppercase;letter-spacing:.08em}
+    .stat .v{font-size:18px;font-weight:800;margin-top:4px}
+    button{
+      appearance:none;border:0;border-radius:18px;padding:15px 18px;
+      font-size:18px;font-weight:800;color:#06111f;cursor:pointer;
+      background:linear-gradient(180deg,#7ad1ff,#4ea9ff);
+      width:100%;margin-top:16px;box-shadow:0 14px 28px rgba(78,169,255,.28);
+    }
+    button.secondary{
+      background:rgba(255,255,255,.08); color:var(--text); box-shadow:none; border:1px solid rgba(255,255,255,.1);
+    }
+    #controls{
+      position:fixed;left:0;right:0;bottom:0;z-index:4;
+      padding:0 12px 12px;
+      pointer-events:none;
+    }
+    #controlsInner{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+    .touchPad{
+      pointer-events:auto;
+      width:84px;height:84px;border-radius:24px;
+      background:rgba(10,15,26,.38);
+      border:1px solid rgba(255,255,255,.1);
+      backdrop-filter: blur(10px);
+      display:flex;align-items:center;justify-content:center;
+      color:#e9f3ff;font-size:34px;font-weight:900;
+      user-select:none;
+    }
+    #hint{flex:1;text-align:center;opacity:.82;font-size:13px;padding:12px 10px;background:rgba(10,15,26,.28);border-radius:16px;border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px)}
+    .hide{display:none !important}
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="hud" class="safe-top">
+    <div class="row">
+      <div class="card pill" style="flex:1;max-width:42%">
+        <div class="label">Squad</div>
+        <div id="squadValue" class="value">12</div>
+      </div>
+      <div class="card pill" style="flex:1;max-width:28%">
+        <div class="label">Score</div>
+        <div id="scoreValue" class="value">0</div>
+      </div>
+      <div class="card pill" style="flex:1;max-width:28%">
+        <div class="label">Boss</div>
+        <div id="bossStateValue" class="value" style="font-size:18px;margin-top:7px">No</div>
+      </div>
+    </div>
+    <div id="progressWrap"><div id="progressBar"></div></div>
+    <div id="bossBarWrap" class="card">
+      <div id="bossLabel">Boss Convoy</div>
+      <div style="padding:0 10px 10px"><div id="bossBar"></div></div>
+    </div>
+  </div>
+
+  <div id="centerMessage"></div>
+
+  <div id="controls" class="safe-bottom">
+    <div id="controlsInner">
+      <div class="touchPad" id="leftBtn">◀</div>
+      <div id="hint">Drag, tap, or use buttons to steer.</div>
+      <div class="touchPad" id="rightBtn">▶</div>
+    </div>
+  </div>
+
+  <div id="overlay">
+    <div id="panel">
+      <h1>Bridge Survival Shooter</h1>
+      <p>Inspired by the ad style: a squad rushes down a bridge, auto-fires at hordes and armored trucks, and grows by passing through math gates.</p>
+      <div class="grid">
+        <div class="stat"><div class="k">Objective</div><div class="v">Destroy the final convoy</div></div>
+        <div class="stat"><div class="k">Controls</div><div class="v">Drag left or right</div></div>
+        <div class="stat"><div class="k">Tip</div><div class="v">Pick green gates early</div></div>
+        <div class="stat"><div class="k">Tip</div><div class="v">Avoid red trucks alive</div></div>
+      </div>
+      <button id="startBtn">Start Mission</button>
+      <button id="restartBtn" class="secondary hide">Play Again</button>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+
+  const ui = {
+    overlay: document.getElementById('overlay'),
+    panel: document.getElementById('panel'),
+    startBtn: document.getElementById('startBtn'),
+    restartBtn: document.getElementById('restartBtn'),
+    squadValue: document.getElementById('squadValue'),
+    scoreValue: document.getElementById('scoreValue'),
+    bossStateValue: document.getElementById('bossStateValue'),
+    progressBar: document.getElementById('progressBar'),
+    bossBarWrap: document.getElementById('bossBarWrap'),
+    bossBar: document.getElementById('bossBar'),
+    centerMessage: document.getElementById('centerMessage'),
+    leftBtn: document.getElementById('leftBtn'),
+    rightBtn: document.getElementById('rightBtn'),
+  };
+
+  let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+  let lastTs = 0;
+  let running = false;
+  let state = null;
+  let messageTimer = 0;
+  let leftHeld = false;
+  let rightHeld = false;
+  let pointerActive = false;
+  let pointerX = 0;
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const rand = (a = 0, b = 1) => a + Math.random() * (b - a);
+  const irand = (a, b) => Math.floor(rand(a, b + 1));
+  const choose = arr => arr[(Math.random() * arr.length) | 0];
+  const sign = v => v < 0 ? -1 : 1;
+  const fmt = n => {
+    n = Math.max(0, Math.floor(n));
+    if (n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'K';
+    return String(n);
+  };
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(320, window.innerWidth);
+    H = Math.max(480, window.innerHeight);
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function makeState() {
+    return {
+      time: 0,
+      distance: 0,
+      speed: 26,
+      baseSpeed: 26,
+      player: {
+        x: 0,
+        targetX: 0,
+        z: 5.2,
+        radius: 0.24,
+        count: 12,
+        fireCooldown: 0,
+        hitFlash: 0,
+      },
+      score: 0,
+      objects: [],
+      particles: [],
+      tracers: [],
+      floaters: [],
+      nextSpawnZ: 24,
+      totalLength: 1150,
+      bossSpawned: false,
+      bossDefeated: false,
+      finalBossId: null,
+      gameOver: false,
+      win: false,
+      shake: 0,
+      lastGateSection: 0,
+      segmentCounter: 0,
+    };
+  }
+
+  function startGame() {
+    state = makeState();
+    lastTs = 0;
+    running = true;
+    pointerActive = false;
+    leftHeld = false;
+    rightHeld = false;
+    ui.overlay.classList.add('hide');
+    ui.startBtn.classList.remove('hide');
+    ui.restartBtn.classList.add('hide');
+    showMessage('MISSION START', 'Destroy the convoy and keep your squad alive.', 2.2);
+  }
+
+  function showOverlay(title, subtitle, buttonText = 'Play Again') {
+    ui.overlay.classList.remove('hide');
+    ui.panel.querySelector('h1').textContent = title;
+    const p = ui.panel.querySelector('p');
+    p.textContent = subtitle;
+    ui.startBtn.classList.add('hide');
+    ui.restartBtn.classList.remove('hide');
+    ui.restartBtn.textContent = buttonText;
+  }
+
+  function showMessage(big, mid, sec = 1.1) {
+    ui.centerMessage.innerHTML = `<div class="big">${big}</div><div class="mid">${mid}</div>`;
+    messageTimer = sec;
+  }
+
+  function worldToScreen(x, z) {
+    const visible = 115;
+    if (z < 0 || z > visible) return null;
+    const t = 1 - z / visible; // near = 1
+    const horizonY = H * 0.14;
+    const bottomY = H * 0.92;
+    const curve = Math.pow(t, 1.18);
+    const y = lerp(horizonY, bottomY, curve);
+    const halfRoad = lerp(W * 0.105, W * 0.46, Math.pow(t, 0.92));
+    const sx = W * 0.5 + x * halfRoad;
+    const scale = lerp(0.22, 1.75, Math.pow(t, 0.92));
+    return { x: sx, y, scale, halfRoad, t };
+  }
+
+  function addParticles(x, z, color, count, spread = 0.14, speed = 1) {
+    for (let i = 0; i < count; i++) {
+      state.particles.push({
+        x: x + rand(-spread, spread),
+        z: z + rand(-1.2, 1.2),
+        vx: rand(-0.6, 0.6) * speed,
+        vz: rand(-4.5, 1.4) * speed,
+        life: rand(0.35, 0.9),
+        maxLife: 1,
+        size: rand(0.05, 0.14),
+        color,
+      });
+    }
+  }
+
+  function addFloater(text, x, z, color = '#ffffff') {
+    state.floaters.push({ text, x, z, life: 1.25, maxLife: 1.25, color });
+  }
+
+  function spawnGateSection(z) {
+    const sectionId = ++state.lastGateSection;
+    const lanes = [-0.62, 0, 0.62];
+    const laneCount = Math.random() < 0.65 ? 2 : 3;
+    const chosen = lanes.slice();
+    if (laneCount === 2) {
+      if (Math.random() < 0.5) chosen.splice(1, 1);
+      else chosen.splice(Math.random() < 0.5 ? 0 : 2, 1);
+    }
+
+    const goodOps = [
+      () => ({ op: '+', value: irand(8, 24), color: '#49d07f' }),
+      () => ({ op: 'x', value: 2, color: '#59e0a8' }),
+      () => ({ op: '+', value: irand(20, 45), color: '#57e69b' }),
+    ];
+    const riskyOps = [
+      () => ({ op: '-', value: irand(6, 18), color: '#ff6a6a' }),
+      () => ({ op: '/', value: 2, color: '#ff7a66' }),
+      () => ({ op: '-', value: irand(15, 34), color: '#ff605b' }),
+    ];
+
+    const patterns = [];
+    if (laneCount === 2) {
+      patterns.push([goodOps, riskyOps]);
+      patterns.push([riskyOps, goodOps]);
+      patterns.push([goodOps, goodOps]);
+    } else {
+      patterns.push([goodOps, riskyOps, goodOps]);
+      patterns.push([riskyOps, goodOps, riskyOps]);
+      patterns.push([goodOps, riskyOps, riskyOps]);
+      patterns.push([riskyOps, goodOps, goodOps]);
+    }
+    const pattern = choose(patterns);
+
+    for (let i = 0; i < chosen.length; i++) {
+      const spec = choose(pattern[i])();
+      state.objects.push({
+        id: `gate-${sectionId}-${i}`,
+        type: 'gate',
+        sectionId,
+        x: chosen[i],
+        z,
+        width: laneCount === 2 ? 0.4 : 0.34,
+        depth: 0.6,
+        op: spec.op,
+        value: spec.value,
+        label: `${spec.op}${spec.value}`,
+        color: spec.color,
+        passed: false,
+        alive: true,
+      });
+    }
+  }
+
+  function spawnHorde(z, strength = 1) {
+    const count = 1 + (Math.random() < 0.55 ? 1 : 0) + (Math.random() < 0.2 ? 1 : 0);
+    const used = [];
+    for (let i = 0; i < count; i++) {
+      let x = choose([-0.62, 0, 0.62]);
+      let tries = 0;
+      while (used.includes(x) && tries < 6) {
+        x = choose([-0.62, 0, 0.62]);
+        tries++;
+      }
+      used.push(x);
+      const hp = Math.round((18 + state.distance * 0.05 + rand(0, 22)) * strength);
+      state.objects.push({
+        id: 'horde-' + Math.random().toString(36).slice(2),
+        type: 'horde',
+        x,
+        z: z + i * 1.5,
+        hp,
+        maxHp: hp,
+        radius: 0.28,
+        alive: true,
+        damageFactor: 1,
+      });
+    }
+  }
+
+  function spawnTruck(z, boss = false) {
+    const x = boss ? 0 : choose([-0.55, 0, 0.55]);
+    const hp = boss
+      ? Math.round(Math.max(400, state.player.count * 7.5 + 180))
+      : Math.round(70 + state.distance * 0.11 + rand(0, 40));
+    state.objects.push({
+      id: 'truck-' + Math.random().toString(36).slice(2),
+      type: boss ? 'boss' : 'truck',
+      x,
+      z,
+      hp,
+      maxHp: hp,
+      radius: boss ? 0.56 : 0.42,
+      alive: true,
+      damageFactor: boss ? 1.6 : 1.15,
+      turretFlash: 0,
+    });
+    if (boss) state.finalBossId = state.objects[state.objects.length - 1].id;
+  }
+
+  function spawnPickup(z) {
+    state.objects.push({
+      id: 'pickup-' + Math.random().toString(36).slice(2),
+      type: 'pickup',
+      x: choose([-0.62, 0, 0.62]),
+      z,
+      radius: 0.2,
+      effect: choose(['rapid', 'burst']),
+      alive: true,
+    });
+  }
+
+  function ensureSpawns() {
+    while (state.nextSpawnZ < state.distance + 130) {
+      const z = state.nextSpawnZ - state.distance + state.player.z;
+      state.segmentCounter++;
+
+      if (!state.bossSpawned && state.nextSpawnZ >= state.totalLength - 80) {
+        spawnTruck(z + 8, true);
+        state.bossSpawned = true;
+        showMessage('BOSS INBOUND', 'Break the convoy before it reaches you.', 1.6);
+        state.nextSpawnZ += 22;
+        continue;
+      }
+
+      const phase = state.distance / state.totalLength;
+      const r = Math.random();
+
+      if (r < 0.38 || state.segmentCounter % 3 === 1) {
+        spawnGateSection(z);
+      } else if (r < 0.78) {
+        spawnHorde(z + rand(0, 3), 1 + phase * 1.2);
+      } else {
+        spawnTruck(z + rand(1, 4), false);
+        if (Math.random() < 0.35) spawnHorde(z + rand(4, 7), 1 + phase * 0.8);
+      }
+
+      if (phase > 0.22 && Math.random() < 0.16) {
+        spawnPickup(z + rand(2, 6));
+      }
+
+      state.nextSpawnZ += rand(12, 18);
+    }
+  }
+
+  function nearestTarget() {
+    let best = null;
+    let bestScore = Infinity;
+    for (const o of state.objects) {
+      if (!o.alive) continue;
+      if (!(o.type === 'horde' || o.type === 'truck' || o.type === 'boss')) continue;
+      const dz = o.z - state.player.z;
+      if (dz < 3 || dz > 70) continue;
+      const dx = Math.abs(o.x - state.player.x);
+      const score = dz * 1.2 + dx * 18;
+      if (score < bestScore) {
+        bestScore = score;
+        best = o;
+      }
+    }
+    return best;
+  }
+
+  function applyGate(gate) {
+    let prev = state.player.count;
+    if (gate.op === '+') state.player.count += gate.value;
+    else if (gate.op === '-') state.player.count -= gate.value;
+    else if (gate.op === 'x') state.player.count *= gate.value;
+    else if (gate.op === '/') state.player.count = Math.floor(state.player.count / gate.value);
+
+    state.player.count = Math.max(1, Math.floor(state.player.count));
+    const delta = state.player.count - prev;
+    addFloater((delta >= 0 ? '+' : '') + fmt(delta), gate.x, gate.z, delta >= 0 ? '#65f0a0' : '#ff8d8d');
+    addParticles(gate.x, gate.z, delta >= 0 ? '#79f3af' : '#ff8e8e', 18, 0.18, 1.2);
+    state.score += Math.max(0, Math.floor(Math.abs(delta) * 0.6));
+    gate.passed = true;
+    gate.alive = false;
+    state.shake = Math.max(state.shake, Math.min(7, Math.abs(delta) * 0.03));
+  }
+
+  function damagePlayer(amount) {
+    amount = Math.max(1, Math.floor(amount));
+    state.player.count -= amount;
+    state.player.hitFlash = 0.3;
+    state.shake = Math.max(state.shake, 9);
+    addFloater('-' + fmt(amount), state.player.x, state.player.z + 0.4, '#ff8787');
+    addParticles(state.player.x, state.player.z + 0.4, '#ff7f7f', 20, 0.2, 1.4);
+    if (state.player.count <= 0) {
+      state.player.count = 0;
+      state.gameOver = true;
+      running = false;
+      showMessage('MISSION FAILED', 'Your squad was wiped out.', 1.8);
+      setTimeout(() => showOverlay('Mission Failed', 'The bridge was overrun. Pick stronger gates and clear enemies earlier.', 'Retry Mission'), 350);
+    }
+  }
+
+  function enemyDestroyed(o) {
+    o.alive = false;
+    state.score += Math.floor(o.maxHp * (o.type === 'boss' ? 2.5 : 1));
+    addParticles(o.x, o.z, o.type === 'horde' ? '#f0d399' : '#ffb25f', o.type === 'boss' ? 46 : 28, 0.28, 1.8);
+    addFloater('+' + fmt(Math.floor(o.maxHp * 0.5)), o.x, o.z, '#ffd27a');
+    state.player.count += Math.max(1, Math.floor(o.maxHp * (o.type === 'horde' ? 0.08 : 0.05)));
+    if (o.type === 'boss') {
+      state.bossDefeated = true;
+      state.win = true;
+      running = false;
+      showMessage('CONVOY DESTROYED', 'Bridge secured.', 2.2);
+      setTimeout(() => showOverlay('Victory', 'You smashed the final convoy and survived the bridge run.', 'Run Again'), 450);
+    }
+  }
+
+  function update(dt) {
+    if (!state) return;
+
+    state.time += dt;
+    if (messageTimer > 0) {
+      messageTimer -= dt;
+      if (messageTimer <= 0) ui.centerMessage.innerHTML = '';
+    }
+
+    if (state.player.hitFlash > 0) state.player.hitFlash -= dt;
+    if (state.shake > 0) state.shake = Math.max(0, state.shake - dt * 18);
+
+    if (!state.gameOver && !state.win) {
+      state.distance += state.speed * dt;
+      ensureSpawns();
+    }
+
+    const steerSpeed = 4.6;
+    if (pointerActive) {
+      const nx = clamp((pointerX / W - 0.5) * 2.25, -0.78, 0.78);
+      state.player.targetX = nx;
+    } else {
+      if (leftHeld) state.player.targetX -= dt * steerSpeed;
+      if (rightHeld) state.player.targetX += dt * steerSpeed;
+      state.player.targetX = clamp(state.player.targetX, -0.78, 0.78);
+    }
+    state.player.x = lerp(state.player.x, state.player.targetX, 1 - Math.exp(-dt * 9));
+
+    for (const o of state.objects) o.z -= state.speed * dt;
+
+    state.player.fireCooldown -= dt;
+    const rapid = state.time % 12 > 9.6 ? 0.055 : 0.085;
+    if (!state.gameOver && !state.win && state.player.fireCooldown <= 0 && state.player.count > 0) {
+      const target = nearestTarget();
+      if (target) {
+        const shots = Math.max(1, Math.min(14, Math.floor(2 + Math.sqrt(state.player.count) * 0.9)));
+        let totalDamage = 0;
+        for (let i = 0; i < shots; i++) {
+          const spreadX = rand(-0.16, 0.16);
+          const spreadZ = rand(-0.3, 0.35);
+          state.tracers.push({
+            x1: state.player.x + spreadX,
+            z1: state.player.z + 0.45 + Math.random() * 0.25,
+            x2: target.x + rand(-0.09, 0.09),
+            z2: target.z + spreadZ,
+            life: 0.08,
+            maxLife: 0.08,
+          });
+          totalDamage += 1 + state.player.count * 0.08;
+        }
+        target.hp -= totalDamage;
+        addParticles(target.x, target.z, target.type === 'horde' ? '#e7d4a6' : '#ffc17c', Math.min(16, shots), 0.12, 0.8);
+        state.player.fireCooldown = rapid;
+        if (target.hp <= 0) enemyDestroyed(target);
+      }
+    }
+
+    for (const o of state.objects) {
+      if (!o.alive) continue;
+
+      if (o.type === 'gate' && !o.passed) {
+        if (Math.abs(o.x - state.player.x) < o.width * 0.72 && o.z <= state.player.z + 1.25) {
+          applyGate(o);
+        } else if (o.z < state.player.z - 1.6) {
+          o.passed = true;
+          o.alive = false;
+        }
+      }
+
+      if ((o.type === 'horde' || o.type === 'truck' || o.type === 'boss') && o.z <= state.player.z + 1.1) {
+        if (Math.abs(o.x - state.player.x) < o.radius + 0.18) {
+          const loss = Math.ceil(Math.max(6, o.hp) * o.damageFactor * (o.type === 'boss' ? 0.42 : 0.28));
+          damagePlayer(loss);
+          o.alive = false;
+          addParticles(o.x, o.z, '#ff9c69', o.type === 'boss' ? 40 : 24, 0.24, 1.6);
+        } else if (o.z < state.player.z - 2) {
+          o.alive = false;
+        }
+      }
+
+      if (o.type === 'pickup' && o.z <= state.player.z + 0.9 && Math.abs(o.x - state.player.x) < 0.35) {
+        if (o.effect === 'rapid') {
+          state.score += 90;
+          state.player.count += 8;
+          addFloater('RAPID +8', o.x, o.z, '#8be9ff');
+        } else {
+          state.score += 120;
+          state.player.count += 14;
+          addFloater('BURST +14', o.x, o.z, '#c9a7ff');
+        }
+        addParticles(o.x, o.z, o.effect === 'rapid' ? '#9aefff' : '#d7b1ff', 24, 0.16, 1.2);
+        o.alive = false;
+      }
+    }
+
+    for (const p of state.particles) {
+      p.life -= dt;
+      p.x += p.vx * dt;
+      p.z += p.vz * dt;
+      p.vz += 3.5 * dt;
+    }
+    state.particles = state.particles.filter(p => p.life > 0 && p.z > -5 && p.z < 130);
+
+    for (const t of state.tracers) t.life -= dt;
+    state.tracers = state.tracers.filter(t => t.life > 0);
+
+    for (const f of state.floaters) {
+      f.life -= dt;
+      f.z -= dt * 8;
+    }
+    state.floaters = state.floaters.filter(f => f.life > 0);
+
+    state.objects = state.objects.filter(o => o.alive && o.z > -10 && o.z < 140);
+
+    if (!state.bossDefeated && state.bossSpawned) {
+      const boss = state.objects.find(o => o.id === state.finalBossId && o.alive);
+      if (!boss && !state.win && !state.gameOver) {
+        state.win = true;
+        running = false;
+        showMessage('BRIDGE CLEAR', 'No convoy left standing.', 2.2);
+        setTimeout(() => showOverlay('Victory', 'The bridge is secure and your squad made it through.', 'Run Again'), 400);
+      }
+    }
+
+    updateUI();
+  }
+
+  function updateUI() {
+    if (!state) return;
+    ui.squadValue.textContent = fmt(state.player.count);
+    ui.scoreValue.textContent = fmt(state.score);
+    ui.progressBar.style.width = clamp((state.distance / state.totalLength) * 100, 0, 100) + '%';
+
+    const boss = state.objects.find(o => o.id === state.finalBossId && o.alive);
+    if (boss) {
+      ui.bossStateValue.textContent = 'Yes';
+      ui.bossBarWrap.style.display = 'block';
+      ui.bossBar.style.width = clamp((boss.hp / boss.maxHp) * 100, 0, 100) + '%';
+    } else {
+      ui.bossStateValue.textContent = state.bossSpawned ? (state.win ? 'Done' : 'No') : 'No';
+      ui.bossBarWrap.style.display = 'none';
+    }
+  }
+
+  function drawBackground() {
+    ctx.clearRect(0, 0, W, H);
+    const shakeX = (Math.random() - 0.5) * state.shake;
+    const shakeY = (Math.random() - 0.5) * state.shake;
+    ctx.save();
+    ctx.translate(shakeX, shakeY);
+
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#5b2b1f');
+    sky.addColorStop(0.38, '#52261b');
+    sky.addColorStop(1, '#2b150f');
+    ctx.fillStyle = sky;
+    ctx.fillRect(-20, -20, W + 40, H + 40);
+
+    for (let i = 0; i < 22; i++) {
+      const y = (i / 21) * H * 0.65;
+      const alpha = 0.03 + (i / 21) * 0.02;
+      ctx.fillStyle = `rgba(255,220,180,${alpha})`;
+      ctx.beginPath();
+      ctx.ellipse(W * (0.1 + (i % 7) * 0.13), y, W * 0.25, 16 + i * 2.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const horizonY = H * 0.14;
+    const bottomY = H * 0.92;
+    const topHalf = W * 0.105;
+    const bottomHalf = W * 0.46;
+
+    ctx.beginPath();
+    ctx.moveTo(W * 0.5 - topHalf, horizonY);
+    ctx.lineTo(W * 0.5 + topHalf, horizonY);
+    ctx.lineTo(W * 0.5 + bottomHalf, bottomY);
+    ctx.lineTo(W * 0.5 - bottomHalf, bottomY);
+    ctx.closePath();
+    const road = ctx.createLinearGradient(0, horizonY, 0, bottomY);
+    road.addColorStop(0, '#747a7f');
+    road.addColorStop(0.45, '#8d9196');
+    road.addColorStop(1, '#b7babd');
+    ctx.fillStyle = road;
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255,255,255,.15)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 26; i++) {
+      const t = i / 25;
+      const y = lerp(horizonY, bottomY, Math.pow(t, 1.18));
+      const half = lerp(topHalf, bottomHalf, Math.pow(t, 0.92));
+      ctx.beginPath();
+      ctx.moveTo(W * 0.5 - half, y);
+      ctx.lineTo(W * 0.5 + half, y);
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = '#6b4b41';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(W * 0.5 - topHalf - 8, horizonY);
+    ctx.lineTo(W * 0.5 - bottomHalf - 8, bottomY);
+    ctx.moveTo(W * 0.5 + topHalf + 8, horizonY);
+    ctx.lineTo(W * 0.5 + bottomHalf + 8, bottomY);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(255,255,255,.35)';
+    ctx.lineWidth = 4;
+    for (let i = 0; i < 20; i++) {
+      const t = i / 19;
+      const y = lerp(horizonY, bottomY, Math.pow(t, 1.18));
+      const half = lerp(topHalf, bottomHalf, Math.pow(t, 0.92));
+      ctx.beginPath();
+      ctx.moveTo(W * 0.5 - half - 4, y);
+      ctx.lineTo(W * 0.5 - half - 14, y);
+      ctx.moveTo(W * 0.5 + half + 4, y);
+      ctx.lineTo(W * 0.5 + half + 14, y);
+      ctx.stroke();
+    }
+
+    ctx.setLineDash([14, 18]);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(255,255,255,.45)';
+    ctx.beginPath();
+    ctx.moveTo(W * 0.5, horizonY + 14);
+    ctx.lineTo(W * 0.5, bottomY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function drawGate(o) {
+    const p = worldToScreen(o.x, o.z);
+    if (!p) return;
+    const w = 54 * p.scale * (o.width / 0.34);
+    const h = 66 * p.scale;
+    const frameColor = o.color;
+    const glow = ctx.createRadialGradient(p.x, p.y, 4, p.x, p.y, Math.max(w, h));
+    glow.addColorStop(0, frameColor + '99');
+    glow.addColorStop(1, frameColor + '00');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y, w * 1.2, h * 0.9, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = frameColor;
+    ctx.fillRect(p.x - w * 0.48, p.y - h * 0.55, w * 0.12, h * 1.1);
+    ctx.fillRect(p.x + w * 0.36, p.y - h * 0.55, w * 0.12, h * 1.1);
+    ctx.fillRect(p.x - w * 0.48, p.y - h * 0.55, w * 0.96, h * 0.12);
+
+    ctx.fillStyle = 'rgba(255,255,255,.9)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `900 ${Math.max(14, 22 * p.scale)}px system-ui, sans-serif`;
+    ctx.fillText(o.label, p.x, p.y - h * 0.12);
+  }
+
+  function drawHorde(o) {
+    const p = worldToScreen(o.x, o.z);
+    if (!p) return;
+    const size = 24 * p.scale;
+    const members = Math.min(16, Math.max(7, Math.round(o.maxHp / 10)));
+    for (let i = 0; i < members; i++) {
+      const a = i * 2.39996;
+      const r = (i % 4) * size * 0.15;
+      const sx = p.x + Math.cos(a) * r * 1.9 + rand(-0.2,0.2);
+      const sy = p.y + Math.sin(a) * r * 1.2;
+      ctx.fillStyle = i % 3 === 0 ? '#6f5140' : '#9d8e79';
+      ctx.fillRect(sx - size * 0.12, sy - size * 0.22, size * 0.24, size * 0.42);
+      ctx.fillStyle = '#5c463a';
+      ctx.beginPath();
+      ctx.arc(sx, sy - size * 0.26, size * 0.11, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    drawHpBox(p.x, p.y - size * 0.95, o.hp, '#ff5b5b', p.scale);
+  }
+
+  function drawTruck(o) {
+    const p = worldToScreen(o.x, o.z);
+    if (!p) return;
+    const s = p.scale;
+    const w = (o.type === 'boss' ? 88 : 62) * s;
+    const h = (o.type === 'boss' ? 82 : 58) * s;
+
+    ctx.fillStyle = 'rgba(0,0,0,.22)';
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y + h * 0.3, w * 0.55, h * 0.22, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = o.type === 'boss' ? '#8b1010' : '#d93838';
+    roundRect(p.x - w * 0.45, p.y - h * 0.2, w * 0.9, h * 0.52, 10 * s, true);
+    ctx.fillStyle = o.type === 'boss' ? '#2f3a4f' : '#4b5d72';
+    roundRect(p.x - w * 0.25, p.y - h * 0.42, w * 0.5, h * 0.34, 8 * s, true);
+    ctx.fillStyle = '#1b2433';
+    roundRect(p.x - w * 0.17, p.y - h * 0.34, w * 0.34, h * 0.18, 5 * s, true);
+
+    ctx.fillStyle = '#111';
+    ctx.beginPath();
+    ctx.arc(p.x - w * 0.28, p.y + h * 0.28, w * 0.1, 0, Math.PI * 2);
+    ctx.arc(p.x + w * 0.28, p.y + h * 0.28, w * 0.1, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#303030';
+    roundRect(p.x - w * 0.09, p.y - h * 0.7, w * 0.18, h * 0.42, 5 * s, true);
+    ctx.fillStyle = '#8f8f95';
+    roundRect(p.x - w * 0.04, p.y - h * 0.96, w * 0.08, h * 0.42, 4 * s, true);
+    ctx.fillStyle = '#bac7d7';
+    roundRect(p.x - w * 0.055, p.y - h * 1.02, w * 0.11, h * 0.17, 4 * s, true);
+
+    for (let i = 0; i < (o.type === 'boss' ? 7 : 4); i++) {
+      const sx = p.x - w * 0.5 + i * (w / (o.type === 'boss' ? 6 : 3));
+      ctx.strokeStyle = '#2f2f2f';
+      ctx.lineWidth = 2 * s;
+      ctx.beginPath();
+      ctx.moveTo(sx, p.y - h * 0.15);
+      ctx.lineTo(sx - 10 * s, p.y - h * 0.28);
+      ctx.stroke();
+    }
+
+    drawHpBox(p.x, p.y - h * 1.24, o.hp, o.type === 'boss' ? '#ff4e4e' : '#ff5f5f', p.scale * (o.type === 'boss' ? 1.3 : 1));
+  }
+
+  function drawPickup(o) {
+    const p = worldToScreen(o.x, o.z);
+    if (!p) return;
+    const r = 17 * p.scale;
+    ctx.fillStyle = o.effect === 'rapid' ? '#6de5ff' : '#c295ff';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.92)';
+    ctx.font = `900 ${Math.max(12, 15 * p.scale)}px system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(o.effect === 'rapid' ? 'R' : 'B', p.x, p.y + 1);
+  }
+
+  function drawHpBox(x, y, value, color, scale) {
+    const padX = 12 * scale;
+    const padY = 7 * scale;
+    const text = fmt(value);
+    ctx.font = `900 ${Math.max(14, 18 * scale)}px system-ui, sans-serif`;
+    const width = ctx.measureText(text).width + padX * 2;
+    const height = 24 * scale + padY * 0.4;
+    ctx.fillStyle = color;
+    roundRect(x - width / 2, y - height / 2, width, height, 8 * scale, true);
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, x, y + 1);
+  }
+
+  function drawPlayer() {
+    const p = worldToScreen(state.player.x, state.player.z);
+    if (!p) return;
+    const members = Math.max(6, Math.min(18, Math.round(Math.sqrt(state.player.count) * 1.8)));
+    const base = 18 * p.scale;
+
+    ctx.fillStyle = 'rgba(0,0,0,.22)';
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y + base * 1.6, base * 2.4, base * 1.15, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    for (let i = 0; i < members; i++) {
+      const row = Math.floor(Math.sqrt(i));
+      const idx = i - row * row;
+      const spread = (idx - row / 2) * base * 0.78;
+      const sx = p.x + spread + (row % 2 ? base * 0.18 : 0);
+      const sy = p.y + row * base * 0.74;
+      const flash = state.player.hitFlash > 0 ? 1 : 0;
+      ctx.fillStyle = flash ? '#ffe0e0' : '#2457ff';
+      roundRect(sx - base * 0.26, sy - base * 0.44, base * 0.52, base * 0.78, base * 0.14, true);
+      ctx.fillStyle = '#e6be73';
+      ctx.beginPath();
+      ctx.arc(sx, sy - base * 0.54, base * 0.17, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = Math.max(1, base * 0.08);
+      ctx.beginPath();
+      ctx.moveTo(sx + base * 0.07, sy - base * 0.28);
+      ctx.lineTo(sx + base * 0.5, sy - base * 0.55);
+      ctx.stroke();
+      if (state.player.fireCooldown > 0.01 && i < 8) {
+        ctx.fillStyle = 'rgba(255,190,90,.95)';
+        ctx.beginPath();
+        ctx.arc(sx + base * 0.55, sy - base * 0.56, base * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    ctx.font = `900 ${Math.max(20, 32 * p.scale)}px system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = 'rgba(0,0,0,.5)';
+    ctx.strokeText(fmt(state.player.count), p.x, p.y - base * 1.7);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(fmt(state.player.count), p.x, p.y - base * 1.7);
+  }
+
+  function drawTracers() {
+    for (const t of state.tracers) {
+      const a = t.life / t.maxLife;
+      const p1 = worldToScreen(t.x1, t.z1);
+      const p2 = worldToScreen(t.x2, t.z2);
+      if (!p1 || !p2) continue;
+      ctx.strokeStyle = `rgba(255,191,90,${a})`;
+      ctx.lineWidth = Math.max(1, 3 * p1.scale * a);
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+    }
+  }
+
+  function drawParticles() {
+    for (const p of state.particles) {
+      const sp = worldToScreen(p.x, p.z);
+      if (!sp) continue;
+      const a = clamp(p.life / p.maxLife, 0, 1);
+      ctx.fillStyle = p.color.replace(')', `, ${a})`).replace('rgb', 'rgba');
+      if (!ctx.fillStyle.includes('rgba')) ctx.fillStyle = p.color;
+      ctx.globalAlpha = a;
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, Math.max(1, p.size * 28 * sp.scale), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawFloaters() {
+    for (const f of state.floaters) {
+      const p = worldToScreen(f.x, f.z);
+      if (!p) continue;
+      const a = clamp(f.life / f.maxLife, 0, 1);
+      ctx.globalAlpha = a;
+      ctx.fillStyle = f.color;
+      ctx.font = `900 ${Math.max(14, 16 * p.scale)}px system-ui, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(f.text, p.x, p.y);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function roundRect(x, y, w, h, r, fill = false) {
+    const rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+    if (fill) ctx.fill();
+  }
+
+  function render() {
+    if (!state) return;
+    drawBackground();
+
+    const drawables = state.objects.slice().sort((a, b) => b.z - a.z);
+    for (const o of drawables) {
+      if (o.type === 'gate') drawGate(o);
+      else if (o.type === 'horde') drawHorde(o);
+      else if (o.type === 'truck' || o.type === 'boss') drawTruck(o);
+      else if (o.type === 'pickup') drawPickup(o);
+    }
+
+    drawTracers();
+    drawParticles();
+    drawPlayer();
+    drawFloaters();
+
+    if (state.player.hitFlash > 0) {
+      ctx.fillStyle = `rgba(255,80,80,${state.player.hitFlash * 0.16})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    ctx.restore();
+  }
+
+  function frame(ts) {
+    if (!lastTs) lastTs = ts;
+    const dt = Math.min(0.033, (ts - lastTs) / 1000);
+    lastTs = ts;
+    if (running) update(dt);
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  function onPointer(e) {
+    pointerActive = true;
+    const touch = e.touches ? e.touches[0] : e;
+    pointerX = touch.clientX;
+    if (e.cancelable) e.preventDefault();
+  }
+  function endPointer(e) {
+    pointerActive = false;
+    if (e && e.cancelable) e.preventDefault();
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  state = makeState();
+  updateUI();
+  requestAnimationFrame(frame);
+
+  canvas.addEventListener('touchstart', onPointer, { passive: false });
+  canvas.addEventListener('touchmove', onPointer, { passive: false });
+  canvas.addEventListener('touchend', endPointer, { passive: false });
+  canvas.addEventListener('mousedown', onPointer);
+  window.addEventListener('mousemove', e => { if (pointerActive) pointerX = e.clientX; });
+  window.addEventListener('mouseup', endPointer);
+
+  const holdStart = dir => e => {
+    if (dir === 'left') leftHeld = true;
+    else rightHeld = true;
+    if (e.cancelable) e.preventDefault();
+  };
+  const holdEnd = dir => e => {
+    if (dir === 'left') leftHeld = false;
+    else rightHeld = false;
+    if (e.cancelable) e.preventDefault();
+  };
+
+  [['touchstart','touchend','touchcancel','mousedown','mouseup','mouseleave'], ['pointerdown','pointerup','pointercancel']].forEach(()=>{});
+
+  ['touchstart','mousedown'].forEach(ev => ui.leftBtn.addEventListener(ev, holdStart('left'), { passive: false }));
+  ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev => ui.leftBtn.addEventListener(ev, holdEnd('left'), { passive: false }));
+  ['touchstart','mousedown'].forEach(ev => ui.rightBtn.addEventListener(ev, holdStart('right'), { passive: false }));
+  ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev => ui.rightBtn.addEventListener(ev, holdEnd('right'), { passive: false }));
+
+  ui.startBtn.addEventListener('click', startGame);
+  ui.restartBtn.addEventListener('click', startGame);
+})();
+</script>
+</body>
+</html>
