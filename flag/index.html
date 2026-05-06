@@ -1,367 +1,2354 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Realistic 3D Flag Simulator</title>
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Realistic 3D Flag Simulator</title>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+    }
   }
-}
-</script>
-<style>
-:root{--bg:#08111d;--panel:rgba(15,22,34,.94);--panel2:rgba(255,255,255,.055);--line:rgba(255,255,255,.13);--text:#f4f7fb;--muted:#9aa8ba;--accent:#6fc2ff;--good:#8af0b0;--bad:#ff8882;--r:16px;color-scheme:dark}*{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden}body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 20% 0,#1c2d48 0,#0b111d 45%,#05070b 100%);color:var(--text)}button,input,select,textarea{font:inherit}button{border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.045));color:var(--text);padding:.68rem .82rem;cursor:pointer;touch-action:manipulation}button:hover{border-color:rgba(111,194,255,.55)}button.primary{background:linear-gradient(180deg,rgba(111,194,255,.35),rgba(111,194,255,.12));border-color:rgba(111,194,255,.65)}button.good{background:linear-gradient(180deg,rgba(138,240,176,.32),rgba(138,240,176,.1));border-color:rgba(138,240,176,.55)}button.bad{background:linear-gradient(180deg,rgba(255,136,130,.32),rgba(255,136,130,.1));border-color:rgba(255,136,130,.5)}header{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 1rem;border-bottom:1px solid var(--line);background:rgba(5,8,14,.78);backdrop-filter:blur(14px);position:relative;z-index:5}.brand{display:flex;align-items:center;gap:.75rem;min-width:0}.logo{width:34px;height:34px;border-radius:12px;background:linear-gradient(90deg,#ff5555 0 33%,white 33% 66%,#4389ff 66%);transform:skewX(-8deg);box-shadow:0 10px 26px rgba(0,0,0,.28)}h1{margin:0;font-size:clamp(1rem,2.4vw,1.25rem);letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tabs{display:flex;gap:.45rem}.tab{border-radius:999px;padding:.58rem .82rem}.tab.active{background:linear-gradient(180deg,#d6efff,#74c3ff);color:#07111c;border-color:transparent;font-weight:800}.page{height:calc(100vh - 58px);display:none}.page.active{display:grid}#simPage,#designerPage{grid-template-columns:minmax(330px,390px) 1fr;min-height:0}.panel{overflow:auto;min-height:0;padding:1rem;background:var(--panel);border-right:1px solid var(--line);box-shadow:0 20px 50px rgba(0,0,0,.32)}.view{position:relative;min-width:0;min-height:0}#threeCanvas{display:block;width:100%;height:100%;touch-action:none;outline:0}.hint,.stats{position:absolute;border:1px solid var(--line);background:rgba(4,7,12,.55);backdrop-filter:blur(14px);color:var(--muted);font-size:.75rem}.hint{right:1rem;top:1rem;border-radius:999px;padding:.58rem .75rem}.stats{left:1rem;bottom:1rem;border-radius:14px;padding:.7rem .82rem;display:grid;gap:.25rem;max-width:min(460px,calc(100% - 2rem));pointer-events:none}.stats b{color:var(--text)}details.group{border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);margin-bottom:.82rem;overflow:hidden}details.group summary{cursor:pointer;list-style:none;padding:.85rem .95rem;font-weight:850;display:flex;justify-content:space-between;gap:.7rem}details.group summary::-webkit-details-marker{display:none}details.group summary:after{content:"⌄";color:var(--muted)}details.group[open] summary:after{transform:rotate(180deg)}.body{padding:0 .95rem .95rem;display:grid;gap:.76rem}.field{display:grid;gap:.34rem}.field.inline{grid-template-columns:1fr auto;align-items:center}.field label,.flabel{font-size:.82rem;font-weight:760;color:#e8f0fb;display:flex;justify-content:space-between;gap:.5rem}.val{font-variant-numeric:tabular-nums;color:#cceaff;border:1px solid rgba(111,194,255,.2);background:rgba(111,194,255,.1);border-radius:999px;padding:.1rem .4rem;white-space:nowrap}small,.note{color:var(--muted);line-height:1.35}.note{font-size:.8rem;padding:.7rem;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.04)}input[type=range]{width:100%;accent-color:var(--accent)}input[type=text],input[type=number],select,textarea,input[type=color]{width:100%;border:1px solid var(--line);border-radius:12px;background:rgba(2,5,11,.58);color:var(--text);padding:.62rem .68rem;outline:0}input[type=color]{height:42px;padding:.25rem}.row2{display:grid;grid-template-columns:1fr 1fr;gap:.62rem}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.62rem}.buttons{display:flex;flex-wrap:wrap;gap:.52rem}.buttons>*{flex:1 1 116px}.workspace{display:grid;grid-template-rows:auto 1fr auto;gap:1rem;padding:1rem;min-width:0;min-height:0;overflow:auto}.bar{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap;border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);padding:.8rem}.stage{border:1px solid var(--line);border-radius:24px;background:linear-gradient(45deg,rgba(255,255,255,.05) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.05) 75%),linear-gradient(45deg,rgba(255,255,255,.05) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.05) 75%),rgba(2,5,10,.38);background-position:0 0,12px 12px;background-size:24px 24px;display:grid;place-items:center;overflow:auto;padding:min(4vw,2rem)}#designCanvas{width:min(100%,1100px);height:auto;max-height:70vh;background:white;border-radius:12px;box-shadow:0 22px 62px rgba(0,0,0,.48);touch-action:none;cursor:crosshair}.pill{border:1px solid var(--line);border-radius:999px;padding:.42rem .62rem;color:var(--muted);background:rgba(0,0,0,.22);font-size:.78rem}@media(max-width:920px){html,body{overflow:auto}header{position:sticky;top:0}.page{height:auto;min-height:calc(100vh - 58px)}#simPage,#designerPage{grid-template-columns:1fr;grid-template-rows:auto minmax(58vh,1fr)}.panel{max-height:44vh;border-right:0;border-bottom:1px solid var(--line)}.view{min-height:58vh}.hint{display:none}.tab{padding:.52rem .62rem;font-size:.86rem}.logo{display:none}.row3{grid-template-columns:1fr 1fr}}@media(max-width:540px){header{padding:0 .65rem}h1{max-width:42vw}.row2,.row3{grid-template-columns:1fr}.panel,.workspace{padding:.75rem}.bar{align-items:stretch}.bar>*{width:100%}}
-</style>
+  </script>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: rgba(18, 24, 34, 0.94);
+      --panel-2: rgba(30, 39, 55, 0.86);
+      --text: #f4f7fb;
+      --muted: #9ba7bb;
+      --line: rgba(255, 255, 255, 0.12);
+      --accent: #68b8ff;
+      --accent-2: #83e2aa;
+      --danger: #ff837d;
+      --shadow: 0 18px 42px rgba(0, 0, 0, 0.35);
+      --radius: 18px;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top left, #19263a 0, #0d1117 46%, #06080d 100%);
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+      color: var(--text);
+      padding: 0.72rem 0.85rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+      touch-action: manipulation;
+    }
+    button:hover { border-color: rgba(104, 184, 255, 0.55); }
+    button:active { transform: translateY(1px); }
+    button.primary {
+      background: linear-gradient(180deg, rgba(104,184,255,0.34), rgba(104,184,255,0.13));
+      border-color: rgba(104,184,255,0.62);
+    }
+    button.success {
+      background: linear-gradient(180deg, rgba(131,226,170,0.32), rgba(131,226,170,0.1));
+      border-color: rgba(131,226,170,0.55);
+    }
+    button.danger {
+      background: linear-gradient(180deg, rgba(255,131,125,0.27), rgba(255,131,125,0.08));
+      border-color: rgba(255,131,125,0.48);
+    }
+
+    .app-header {
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0 1rem;
+      border-bottom: 1px solid var(--line);
+      background: rgba(8, 11, 17, 0.76);
+      backdrop-filter: blur(16px);
+      position: relative;
+      z-index: 10;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 0;
+    }
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background:
+        linear-gradient(90deg, #ff6262 0 33%, #ffffff 33% 66%, #4287ff 66% 100%);
+      box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(0, 0, 0, 0.24);
+      transform: skewX(-8deg);
+      flex: 0 0 auto;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(0.96rem, 2.4vw, 1.25rem);
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tabs {
+      display: flex;
+      gap: 0.45rem;
+      align-items: center;
+    }
+    .tab {
+      padding: 0.62rem 0.85rem;
+      border-radius: 999px;
+    }
+    .tab.active {
+      color: #08111d;
+      background: linear-gradient(180deg, #c5e7ff, #69b9ff);
+      border-color: transparent;
+      font-weight: 800;
+    }
+
+    .page {
+      height: calc(100vh - 58px);
+      display: none;
+    }
+    .page.active { display: grid; }
+
+    #simPage {
+      grid-template-columns: minmax(330px, 390px) 1fr;
+      min-height: 0;
+    }
+    #controlPanel {
+      overflow: auto;
+      padding: 1rem;
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      min-height: 0;
+    }
+    .viewport-wrap {
+      position: relative;
+      min-width: 0;
+      min-height: 0;
+    }
+    #threeCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      outline: none;
+      touch-action: none;
+    }
+    .stats {
+      position: absolute;
+      left: 1rem;
+      bottom: 1rem;
+      display: grid;
+      gap: 0.3rem;
+      padding: 0.75rem 0.85rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(4, 7, 12, 0.52);
+      backdrop-filter: blur(14px);
+      color: var(--muted);
+      font-size: 0.76rem;
+      pointer-events: none;
+      max-width: min(420px, calc(100% - 2rem));
+    }
+    .stats strong { color: var(--text); font-weight: 800; }
+    .hint {
+      position: absolute;
+      right: 1rem;
+      top: 1rem;
+      padding: 0.62rem 0.78rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(4, 7, 12, 0.45);
+      backdrop-filter: blur(14px);
+      font-size: 0.75rem;
+      pointer-events: none;
+    }
+
+    details.group {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.035);
+      margin-bottom: 0.85rem;
+      overflow: hidden;
+    }
+    details.group[open] { background: rgba(255, 255, 255, 0.052); }
+    details.group summary {
+      cursor: pointer;
+      padding: 0.9rem 1rem;
+      font-weight: 850;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.7rem;
+    }
+    details.group summary::-webkit-details-marker { display: none; }
+    details.group summary::after {
+      content: "⌄";
+      color: var(--muted);
+      transition: transform 0.16s ease;
+    }
+    details.group[open] summary::after { transform: rotate(180deg); }
+    .group-body {
+      padding: 0 1rem 1rem;
+      display: grid;
+      gap: 0.78rem;
+    }
+    .field {
+      display: grid;
+      gap: 0.36rem;
+    }
+    .field.inline {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      column-gap: 0.7rem;
+    }
+    .field label, .field-label {
+      color: #e5edf8;
+      font-size: 0.82rem;
+      font-weight: 720;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .field small {
+      color: var(--muted);
+      line-height: 1.3;
+    }
+    .value-pill {
+      font-variant-numeric: tabular-nums;
+      color: #cce8ff;
+      border: 1px solid rgba(104,184,255,0.18);
+      background: rgba(104,184,255,0.09);
+      border-radius: 999px;
+      padding: 0.12rem 0.42rem;
+      white-space: nowrap;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+    input[type="number"], input[type="text"], select, textarea, input[type="color"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(3, 6, 12, 0.56);
+      color: var(--text);
+      padding: 0.66rem 0.7rem;
+      outline: none;
+    }
+    input[type="color"] {
+      min-height: 42px;
+      padding: 0.25rem;
+      cursor: pointer;
+    }
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.65rem; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+    .button-row button { flex: 1 1 120px; }
+    .status-box {
+      padding: 0.75rem;
+      border-radius: 14px;
+      border: 1px solid rgba(131,226,170,0.28);
+      background: rgba(131,226,170,0.08);
+      color: #cdf7dd;
+      line-height: 1.38;
+      font-size: 0.82rem;
+    }
+    .warning-box {
+      padding: 0.7rem;
+      border-radius: 14px;
+      border: 1px solid rgba(255,199,95,0.28);
+      background: rgba(255,199,95,0.08);
+      color: #ffe6a8;
+      line-height: 1.35;
+      font-size: 0.8rem;
+    }
+
+    #designPage {
+      grid-template-columns: minmax(320px, 380px) 1fr;
+      min-height: 0;
+    }
+    .design-tools {
+      overflow: auto;
+      padding: 1rem;
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      min-height: 0;
+    }
+    .design-workspace {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 1rem;
+      padding: 1rem;
+      overflow: auto;
+    }
+    .design-topbar, .design-bottombar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+      padding: 0.85rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,0.04);
+    }
+    .canvas-stage {
+      min-height: 0;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background:
+        linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.05) 75%),
+        linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.05) 75%),
+        rgba(2, 5, 10, 0.38);
+      background-position: 0 0, 12px 12px;
+      background-size: 24px 24px;
+      display: grid;
+      place-items: center;
+      padding: min(4vw, 2rem);
+      overflow: auto;
+    }
+    #designCanvas {
+      width: min(100%, 1100px);
+      height: auto;
+      max-height: 70vh;
+      border-radius: 12px;
+      box-shadow: 0 22px 60px rgba(0,0,0,0.45);
+      background: white;
+      touch-action: none;
+      cursor: crosshair;
+      image-rendering: auto;
+    }
+    .pill-note {
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.45rem 0.65rem;
+      font-size: 0.78rem;
+      background: rgba(0,0,0,0.2);
+    }
+
+    @media (max-width: 920px) {
+      html, body { overflow: auto; }
+      body { min-height: 100%; }
+      .app-header { position: sticky; top: 0; }
+      .page { height: auto; min-height: calc(100vh - 58px); }
+      #simPage, #designPage {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto minmax(58vh, 1fr);
+      }
+      #controlPanel, .design-tools {
+        max-height: 44vh;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .viewport-wrap { min-height: 58vh; }
+      .hint { display: none; }
+      .tabs { gap: 0.3rem; }
+      .tab { padding: 0.52rem 0.6rem; font-size: 0.85rem; }
+      .brand-icon { display: none; }
+      .stats { left: 0.7rem; right: 0.7rem; bottom: 0.7rem; }
+      .row-3 { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .app-header { padding: 0 0.65rem; }
+      h1 { max-width: 42vw; }
+      .row-2, .row-3 { grid-template-columns: 1fr; }
+      #controlPanel, .design-tools, .design-workspace { padding: 0.75rem; }
+      .design-topbar, .design-bottombar { align-items: stretch; }
+      .design-topbar > *, .design-bottombar > * { width: 100%; }
+    }
+  </style>
 </head>
 <body>
-<header>
-  <div class="brand"><div class="logo" aria-hidden="true"></div><h1>Realistic 3D Flag Simulator</h1></div>
-  <nav class="tabs"><button class="tab active" data-page="simPage">Simulator</button><button class="tab" data-page="designerPage">Flag designer</button></nav>
-</header>
-<main>
-  <section id="simPage" class="page active">
-    <aside class="panel" id="controls"></aside>
-    <div class="view">
-      <canvas id="threeCanvas"></canvas>
-      <div class="hint">Drag = rotate · wheel/pinch = zoom · right drag/two fingers = pan</div>
-      <div class="stats" id="stats"></div>
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true"></div>
+      <h1>Realistic 3D Flag Simulator</h1>
     </div>
-  </section>
-  <section id="designerPage" class="page">
-    <aside class="panel" id="designControls"></aside>
-    <div class="workspace">
-      <div class="bar"><span class="pill" id="canvasInfo"></span><div class="buttons"><button class="good" id="applyDesign">Use design in simulator</button><button id="downloadPng">Export PNG</button></div></div>
-      <div class="stage"><canvas id="designCanvas" width="1280" height="853"></canvas></div>
-      <div class="bar"><span class="note">World presets are loaded from FlagCDN into the canvas. Drawing tools work with mouse, touch, or stylus.</span></div>
-    </div>
-  </section>
-</main>
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    <nav class="tabs" aria-label="Pages">
+      <button class="tab active" data-page="simPage">Simulator</button>
+      <button class="tab" data-page="designPage">Flag designer</button>
+    </nav>
+  </header>
 
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
-const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
-const lerp = (a,b,t) => a + (b-a)*t;
-const rad = d => d * Math.PI / 180;
+  <main>
+    <section id="simPage" class="page active" aria-label="3D simulator page">
+      <aside id="controlPanel" aria-label="Simulation controls">
+        <div class="status-box">
+          Draw a custom flag or load a country preset on the designer page. The canvas texture updates live on the cloth.
+        </div>
 
-const fabrics = {
-  silk:{name:'Silk / satin',thicknessMm:.07,fabricGsm:38,airDrag:.62,stretch:.58,bend:.08,shear:.32,damping:.008,hem:.42,roughness:.35,wetness:0,seam:.12},
-  nylon:{name:'Nylon flag cloth',thicknessMm:.16,fabricGsm:75,airDrag:.90,stretch:.72,bend:.28,shear:.45,damping:.015,hem:.74,roughness:.76,wetness:0,seam:.18},
-  polyester:{name:'Polyester',thicknessMm:.20,fabricGsm:115,airDrag:.96,stretch:.80,bend:.36,shear:.52,damping:.018,hem:.80,roughness:.72,wetness:0,seam:.20},
-  cotton:{name:'Cotton',thicknessMm:.33,fabricGsm:160,airDrag:1.06,stretch:.86,bend:.52,shear:.62,damping:.027,hem:.84,roughness:.90,wetness:.04,seam:.28},
-  wool:{name:'Wool bunting',thicknessMm:.72,fabricGsm:240,airDrag:1.20,stretch:.90,bend:.68,shear:.70,damping:.040,hem:.90,roughness:.96,wetness:.03,seam:.36},
-  canvas:{name:'Heavy canvas',thicknessMm:1.25,fabricGsm:360,airDrag:1.28,stretch:.94,bend:.82,shear:.78,damping:.050,hem:.95,roughness:.98,wetness:.02,seam:.45},
-  vinyl:{name:'Vinyl banner',thicknessMm:.50,fabricGsm:280,airDrag:.82,stretch:.98,bend:.90,shear:.88,damping:.030,hem:.96,roughness:.32,wetness:0,seam:.30},
-  custom:{name:'Custom'}
-};
+        <details class="group" open>
+          <summary>Simulation</summary>
+          <div class="group-body">
+            <div class="button-row">
+              <button id="playPause" class="primary">Pause</button>
+              <button id="resetSim">Reset cloth</button>
+              <button id="calmWind">Calm wind</button>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Quality preset</label>
+                <select id="qualityPreset">
+                  <option value="mobile">Mobile fast</option>
+                  <option value="balanced" selected>Balanced</option>
+                  <option value="high">High realism</option>
+                  <option value="cinematic">Cinematic heavy</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Time scale <span class="value-pill" data-val="timeScale"></span></label>
+                <input id="timeScale" type="range" min="0.15" max="1.8" step="0.01" value="1" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Particle columns <span class="value-pill" data-val="cols"></span></label>
+                <input id="cols" type="range" min="16" max="110" step="1" value="54" />
+                <small>Rows are calculated from the flag aspect ratio.</small>
+              </div>
+              <div class="field">
+                <label>Solver iterations <span class="value-pill" data-val="iterations"></span></label>
+                <input id="iterations" type="range" min="1" max="12" step="1" value="5" />
+                <small>Higher values resist stretching and look more physical.</small>
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Physics substeps <span class="value-pill" data-val="substeps"></span></label>
+                <input id="substeps" type="range" min="1" max="5" step="1" value="2" />
+              </div>
+              <div class="field inline">
+                <span class="field-label">Show particles / wire</span>
+                <input id="wireframe" type="checkbox" />
+              </div>
+            </div>
+            <div class="warning-box" id="qualityWarning" hidden></div>
+          </div>
+        </details>
 
-const countries = [
-['ad','Andorra'],['ae','United Arab Emirates'],['af','Afghanistan'],['ag','Antigua and Barbuda'],['ai','Anguilla'],['al','Albania'],['am','Armenia'],['ao','Angola'],['aq','Antarctica'],['ar','Argentina'],['as','American Samoa'],['at','Austria'],['au','Australia'],['aw','Aruba'],['ax','Åland Islands'],['az','Azerbaijan'],
-['ba','Bosnia and Herzegovina'],['bb','Barbados'],['bd','Bangladesh'],['be','Belgium'],['bf','Burkina Faso'],['bg','Bulgaria'],['bh','Bahrain'],['bi','Burundi'],['bj','Benin'],['bl','Saint Barthélemy'],['bm','Bermuda'],['bn','Brunei'],['bo','Bolivia'],['bq','Caribbean Netherlands'],['br','Brazil'],['bs','Bahamas'],['bt','Bhutan'],['bv','Bouvet Island'],['bw','Botswana'],['by','Belarus'],['bz','Belize'],
-['ca','Canada'],['cc','Cocos Islands'],['cd','DR Congo'],['cf','Central African Republic'],['cg','Republic of the Congo'],['ch','Switzerland'],['ci','Côte d’Ivoire'],['ck','Cook Islands'],['cl','Chile'],['cm','Cameroon'],['cn','China'],['co','Colombia'],['cr','Costa Rica'],['cu','Cuba'],['cv','Cape Verde'],['cw','Curaçao'],['cx','Christmas Island'],['cy','Cyprus'],['cz','Czechia'],
-['de','Germany'],['dj','Djibouti'],['dk','Denmark'],['dm','Dominica'],['do','Dominican Republic'],['dz','Algeria'],['ec','Ecuador'],['ee','Estonia'],['eg','Egypt'],['eh','Western Sahara'],['er','Eritrea'],['es','Spain'],['et','Ethiopia'],['eu','European Union'],
-['fi','Finland'],['fj','Fiji'],['fk','Falkland Islands'],['fm','Micronesia'],['fo','Faroe Islands'],['fr','France'],['ga','Gabon'],['gb','United Kingdom'],['gd','Grenada'],['ge','Georgia'],['gf','French Guiana'],['gg','Guernsey'],['gh','Ghana'],['gi','Gibraltar'],['gl','Greenland'],['gm','Gambia'],['gn','Guinea'],['gp','Guadeloupe'],['gq','Equatorial Guinea'],['gr','Greece'],['gs','South Georgia and the South Sandwich Islands'],['gt','Guatemala'],['gu','Guam'],['gw','Guinea-Bissau'],['gy','Guyana'],
-['hk','Hong Kong'],['hm','Heard Island and McDonald Islands'],['hn','Honduras'],['hr','Croatia'],['ht','Haiti'],['hu','Hungary'],['id','Indonesia'],['ie','Ireland'],['il','Israel'],['im','Isle of Man'],['in','India'],['io','British Indian Ocean Territory'],['iq','Iraq'],['ir','Iran'],['is','Iceland'],['it','Italy'],['je','Jersey'],['jm','Jamaica'],['jo','Jordan'],['jp','Japan'],
-['ke','Kenya'],['kg','Kyrgyzstan'],['kh','Cambodia'],['ki','Kiribati'],['km','Comoros'],['kn','Saint Kitts and Nevis'],['kp','North Korea'],['kr','South Korea'],['kw','Kuwait'],['ky','Cayman Islands'],['kz','Kazakhstan'],['la','Laos'],['lb','Lebanon'],['lc','Saint Lucia'],['li','Liechtenstein'],['lk','Sri Lanka'],['lr','Liberia'],['ls','Lesotho'],['lt','Lithuania'],['lu','Luxembourg'],['lv','Latvia'],['ly','Libya'],
-['ma','Morocco'],['mc','Monaco'],['md','Moldova'],['me','Montenegro'],['mf','Saint Martin'],['mg','Madagascar'],['mh','Marshall Islands'],['mk','North Macedonia'],['ml','Mali'],['mm','Myanmar'],['mn','Mongolia'],['mo','Macau'],['mp','Northern Mariana Islands'],['mq','Martinique'],['mr','Mauritania'],['ms','Montserrat'],['mt','Malta'],['mu','Mauritius'],['mv','Maldives'],['mw','Malawi'],['mx','Mexico'],['my','Malaysia'],['mz','Mozambique'],
-['na','Namibia'],['nc','New Caledonia'],['ne','Niger'],['nf','Norfolk Island'],['ng','Nigeria'],['ni','Nicaragua'],['nl','Netherlands'],['no','Norway'],['np','Nepal'],['nr','Nauru'],['nu','Niue'],['nz','New Zealand'],['om','Oman'],['pa','Panama'],['pe','Peru'],['pf','French Polynesia'],['pg','Papua New Guinea'],['ph','Philippines'],['pk','Pakistan'],['pl','Poland'],['pm','Saint Pierre and Miquelon'],['pn','Pitcairn Islands'],['pr','Puerto Rico'],['ps','Palestine'],['pt','Portugal'],['pw','Palau'],['py','Paraguay'],['qa','Qatar'],
-['re','Réunion'],['ro','Romania'],['rs','Serbia'],['ru','Russia'],['rw','Rwanda'],['sa','Saudi Arabia'],['sb','Solomon Islands'],['sc','Seychelles'],['sd','Sudan'],['se','Sweden'],['sg','Singapore'],['sh','Saint Helena'],['si','Slovenia'],['sj','Svalbard and Jan Mayen'],['sk','Slovakia'],['sl','Sierra Leone'],['sm','San Marino'],['sn','Senegal'],['so','Somalia'],['sr','Suriname'],['ss','South Sudan'],['st','São Tomé and Príncipe'],['sv','El Salvador'],['sx','Sint Maarten'],['sy','Syria'],['sz','Eswatini'],
-['tc','Turks and Caicos Islands'],['td','Chad'],['tf','French Southern Territories'],['tg','Togo'],['th','Thailand'],['tj','Tajikistan'],['tk','Tokelau'],['tl','Timor-Leste'],['tm','Turkmenistan'],['tn','Tunisia'],['to','Tonga'],['tr','Türkiye'],['tt','Trinidad and Tobago'],['tv','Tuvalu'],['tw','Taiwan'],['tz','Tanzania'],['ua','Ukraine'],['ug','Uganda'],['um','United States Minor Outlying Islands'],['un','United Nations'],['us','United States'],['uy','Uruguay'],['uz','Uzbekistan'],
-['va','Vatican City'],['vc','Saint Vincent and the Grenadines'],['ve','Venezuela'],['vg','British Virgin Islands'],['vi','U.S. Virgin Islands'],['vn','Vietnam'],['vu','Vanuatu'],['wf','Wallis and Futuna'],['ws','Samoa'],['xk','Kosovo'],['ye','Yemen'],['yt','Mayotte'],['za','South Africa'],['zm','Zambia'],['zw','Zimbabwe']
-];
+        <details class="group" open>
+          <summary>Flag size</summary>
+          <div class="group-body">
+            <div class="row-2">
+              <div class="field">
+                <label>Width, m <span class="value-pill" data-val="flagWidth"></span></label>
+                <input id="flagWidth" type="range" min="0.4" max="6" step="0.05" value="3" />
+              </div>
+              <div class="field">
+                <label>Height, m <span class="value-pill" data-val="flagHeight"></span></label>
+                <input id="flagHeight" type="range" min="0.2" max="4" step="0.05" value="2" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Design texture resolution <span class="value-pill" data-val="textureWidth"></span></label>
+              <input id="textureWidth" type="range" min="512" max="2048" step="128" value="1280" />
+              <small>Changing this resizes the designer canvas while preserving the artwork.</small>
+            </div>
+          </div>
+        </details>
 
-const cfg = {
-  playing:true, quality:'balanced', timeScale:1, cols:54, rows:36, iterations:5, substeps:2,
-  flagW:3, flagH:2, texW:1280,
-  fabric:'nylon', thicknessMm:.16, fabricGsm:75, airDrag:.9, stretch:.72, bend:.28, shear:.45, damping:.015, hem:.74, roughness:.76, wetness:0, seam:.18,
-  windSpeed:9, windAngle:0, windLift:3, turbulence:.75, gustStrength:6, gustFreq:.42, randomness:.52, vortex:.35, windSmooth:.72, airDensity:1.225, gravity:9.8,
-  tie:'sleeve', tieSlack:.05, tieTension:.8, poleDiameter:.11, polePadding:.8, poleCollision:true,
-  selfShadow:true, groundShadow:true, sunElevation:42, sunAzimuth:-38, sunIntensity:2.45, ambient:.56, exposure:1, shadowMap:2048, cameraFov:48, autoRotate:false, wire:false,
-  brush:24, designTool:'brush', fillTolerance:28
-};
+        <details class="group" open>
+          <summary>Fabric</summary>
+          <div class="group-body">
+            <div class="row-2">
+              <div class="field">
+                <label>Fabric type</label>
+                <select id="fabricType">
+                  <option value="silk">Silk / satin</option>
+                  <option value="nylon" selected>Nylon flag cloth</option>
+                  <option value="cotton">Cotton</option>
+                  <option value="wool">Wool bunting</option>
+                  <option value="canvas">Heavy canvas</option>
+                  <option value="denim">Denim / very heavy</option>
+                  <option value="vinyl">Vinyl banner</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Thickness, mm <span class="value-pill" data-val="thicknessMm"></span></label>
+                <input id="thicknessMm" type="range" min="0.04" max="3" step="0.01" value="0.16" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Weight, gsm <span class="value-pill" data-val="fabricGsm"></span></label>
+                <input id="fabricGsm" type="range" min="30" max="900" step="5" value="75" />
+              </div>
+              <div class="field">
+                <label>Air drag <span class="value-pill" data-val="airDrag"></span></label>
+                <input id="airDrag" type="range" min="0.05" max="2" step="0.01" value="0.9" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Stretch stiffness <span class="value-pill" data-val="stretchStiffness"></span></label>
+                <input id="stretchStiffness" type="range" min="0.05" max="1" step="0.01" value="0.72" />
+              </div>
+              <div class="field">
+                <label>Bend stiffness <span class="value-pill" data-val="bendStiffness"></span></label>
+                <input id="bendStiffness" type="range" min="0" max="1" step="0.01" value="0.28" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Shear stiffness <span class="value-pill" data-val="shearStiffness"></span></label>
+                <input id="shearStiffness" type="range" min="0" max="1" step="0.01" value="0.45" />
+              </div>
+              <div class="field">
+                <label>Velocity damping <span class="value-pill" data-val="damping"></span></label>
+                <input id="damping" type="range" min="0.001" max="0.08" step="0.001" value="0.015" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Hem / edge stiffness <span class="value-pill" data-val="hemStiffness"></span></label>
+                <input id="hemStiffness" type="range" min="0" max="1" step="0.01" value="0.74" />
+              </div>
+              <div class="field">
+                <label>Surface roughness <span class="value-pill" data-val="roughness"></span></label>
+                <input id="roughness" type="range" min="0.18" max="1" step="0.01" value="0.76" />
+              </div>
+            </div>
+          </div>
+        </details>
 
-const numberDefs = {
- timeScale:['Time scale',.15,1.8,.01,'×'], cols:['Particle columns',16,110,1,''], iterations:['Solver iterations',1,12,1,''], substeps:['Physics substeps',1,5,1,''],
- flagW:['Width',.4,6,.05,' m'], flagH:['Height',.2,4,.05,' m'], texW:['Design resolution',512,2048,128,' px'],
- thicknessMm:['Thickness',.04,3,.01,' mm'], fabricGsm:['Weight',30,900,5,' gsm'], airDrag:['Air drag',.05,2,.01,''], stretch:['Stretch stiffness',.05,1,.01,''], bend:['Bend stiffness',0,1,.01,''], shear:['Shear stiffness',0,1,.01,''], damping:['Velocity damping',.001,.08,.001,''], hem:['Hem / edge stiffness',0,1,.01,''], roughness:['Surface roughness',.18,1,.01,''], wetness:['Wetness / absorbed water',0,1,.01,''], seam:['Seam weight',0,1,.01,''],
- windSpeed:['Wind speed',0,35,.1,' m/s'], windAngle:['Wind angle',-180,180,1,'°'], windLift:['Vertical lift',-35,35,1,'°'], turbulence:['Turbulence',0,2.5,.01,''], gustStrength:['Gust strength',0,25,.1,' m/s'], gustFreq:['Gust frequency',0,3,.01,' Hz'], randomness:['Randomness',0,1.5,.01,''], vortex:['Vortex swirl',0,1.5,.01,''], windSmooth:['Wind smoothing',0,.98,.01,''], airDensity:['Air density',.3,1.6,.01,' kg/m³'], gravity:['Gravity',0,18,.1,' m/s²'],
- tieSlack:['Tie slack',0,.55,.01,' m'], tieTension:['Tie tension',.05,1,.01,''], poleDiameter:['Pole diameter',.04,.38,.01,' m'], polePadding:['Pole height padding',.2,2,.05,' m'],
- sunElevation:['Sun elevation',5,85,1,'°'], sunAzimuth:['Sun azimuth',-180,180,1,'°'], sunIntensity:['Sun intensity',0,5,.05,''], ambient:['Ambient light',0,2,.02,''], exposure:['Exposure',.35,2,.01,''], cameraFov:['Camera FOV',28,78,1,'°'], brush:['Brush size',1,120,1,' px'], fillTolerance:['Bucket fill tolerance',0,90,1,'']
-};
+        <details class="group" open>
+          <summary>Wind</summary>
+          <div class="group-body">
+            <div class="row-2">
+              <div class="field">
+                <label>Wind speed, m/s <span class="value-pill" data-val="windSpeed"></span></label>
+                <input id="windSpeed" type="range" min="0" max="35" step="0.1" value="9" />
+              </div>
+              <div class="field">
+                <label>Wind angle <span class="value-pill" data-val="windAngle"></span></label>
+                <input id="windAngle" type="range" min="-180" max="180" step="1" value="0" />
+                <small>0° blows away from the pole; 90° blows toward the camera side.</small>
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Vertical lift angle <span class="value-pill" data-val="windLift"></span></label>
+                <input id="windLift" type="range" min="-35" max="35" step="1" value="3" />
+              </div>
+              <div class="field">
+                <label>Turbulence <span class="value-pill" data-val="turbulence"></span></label>
+                <input id="turbulence" type="range" min="0" max="2.5" step="0.01" value="0.75" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Gust strength, m/s <span class="value-pill" data-val="gustStrength"></span></label>
+                <input id="gustStrength" type="range" min="0" max="25" step="0.1" value="6" />
+              </div>
+              <div class="field">
+                <label>Gust frequency <span class="value-pill" data-val="gustFrequency"></span></label>
+                <input id="gustFrequency" type="range" min="0" max="3" step="0.01" value="0.42" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Randomness <span class="value-pill" data-val="randomness"></span></label>
+                <input id="randomness" type="range" min="0" max="1.5" step="0.01" value="0.52" />
+              </div>
+              <div class="field">
+                <label>Vortex swirl <span class="value-pill" data-val="vortex"></span></label>
+                <input id="vortex" type="range" min="0" max="1.5" step="0.01" value="0.35" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Gravity, m/s² <span class="value-pill" data-val="gravity"></span></label>
+                <input id="gravity" type="range" min="0" max="18" step="0.1" value="9.8" />
+              </div>
+              <div class="field">
+                <label>Wind smoothing <span class="value-pill" data-val="windSmoothing"></span></label>
+                <input id="windSmoothing" type="range" min="0" max="0.98" step="0.01" value="0.72" />
+              </div>
+            </div>
+          </div>
+        </details>
 
-function buildControls(){
-  const fabricOptions = Object.entries(fabrics).map(([k,v])=>[k,v.name]);
-  const groups = [
-    ['Simulation',true,[buttonRow([['playPause','Pause','primary'],['resetCloth','Reset cloth',''],['calmWind','Calm wind','']]), selectField('quality','Quality preset',[['mobile','Mobile fast'],['balanced','Balanced'],['high','High realism'],['cinematic','Cinematic heavy']]), rangeField('timeScale'), rangeField('cols'), rangeField('iterations'), rangeField('substeps'), checkField('wire','Show particle wire')]],
-    ['Flag size',true,[rangeField('flagW'),rangeField('flagH'),rangeField('texW')]],
-    ['Fabric',true,[selectField('fabric','Fabric type',fabricOptions),rangeField('thicknessMm'),rangeField('fabricGsm'),rangeField('airDrag'),rangeField('stretch'),rangeField('bend'),rangeField('shear'),rangeField('damping'),rangeField('hem'),rangeField('roughness'),rangeField('wetness'),rangeField('seam')]],
-    ['Wind',true,[rangeField('windSpeed'),rangeField('windAngle'),rangeField('windLift'),rangeField('turbulence'),rangeField('gustStrength'),rangeField('gustFreq'),rangeField('randomness'),rangeField('vortex'),rangeField('windSmooth'),rangeField('airDensity'),rangeField('gravity')]],
-    ['Pole & tie type',true,[selectField('tie','Tie / attachment type',[['sleeve','Sleeve: whole hoist edge fixed'],['looseSleeve','Loose sleeve: edge can wobble'],['grommets','Two corner grommets'],['clips3','Three clips / ties'],['clips5','Five clips / parade ties'],['topRod','Top rod banner'],['freeCorner','Top grommet only'],['free','Free cloth test']]),rangeField('tieSlack'),rangeField('tieTension'),rangeField('poleDiameter'),rangeField('polePadding'),checkField('poleCollision','Prevent cloth through pole')]],
-    ['Lighting, shadows & camera',false,[checkField('selfShadow','Self/cloth shadows'),checkField('groundShadow','Ground shadow'),rangeField('sunElevation'),rangeField('sunAzimuth'),rangeField('sunIntensity'),rangeField('ambient'),rangeField('exposure'),selectField('shadowMap','Shadow map size',[[1024,'1024 fast'],[2048,'2048 balanced'],[4096,'4096 sharp']]),rangeField('cameraFov'),checkField('autoRotate','Auto rotate camera'),buttonRow([['resetCamera','Reset camera','']])]]
-  ];
-  $('#controls').innerHTML = '<div class="note">Draw a custom flag or load a country preset in the designer. The canvas texture updates live on the 3D cloth.</div>' + groups.map(([t,o,items])=>`<details class="group" ${o?'open':''}><summary>${t}</summary><div class="body">${items.join('')}</div></details>`).join('');
-  bindControlEvents();
-}
-function rangeField(id){const [label,min,max,step,unit]=numberDefs[id];return `<div class="field"><label>${label}<span class="val" data-for="${id}">${cfg[id]}${unit}</span></label><input data-cfg="${id}" id="${id}" type="range" min="${min}" max="${max}" step="${step}" value="${cfg[id]}"></div>`}
-function checkField(id,label){return `<div class="field inline"><span class="flabel">${label}</span><input data-cfg="${id}" id="${id}" type="checkbox" ${cfg[id]?'checked':''}></div>`}
-function selectField(id,label,opts){return `<div class="field"><label>${label}</label><select data-cfg="${id}" id="${id}">${opts.map(([v,t])=>`<option value="${v}" ${String(cfg[id])===String(v)?'selected':''}>${t}</option>`).join('')}</select></div>`}
-function buttonRow(btns){return `<div class="buttons">${btns.map(([id,t,cl])=>`<button id="${id}" class="${cl||''}">${t}</button>`).join('')}</div>`}
-function updateControls(){
-  for(const [id,def] of Object.entries(numberDefs)){const el=$('#'+id), pill=$(`[data-for="${id}"]`); if(el) el.value=cfg[id]; if(pill){const unit=def[4]||''; const v=Number(cfg[id]); pill.textContent=(Math.abs(v)<10&&def[2]-def[1]<=5?v.toFixed(2).replace(/0+$/,'').replace(/\.$/,''):v)+unit;}}
-  ['fabric','quality','tie','shadowMap'].forEach(id=>{const el=$('#'+id); if(el) el.value=cfg[id];});
-  ['wire','poleCollision','selfShadow','groundShadow','autoRotate'].forEach(id=>{const el=$('#'+id); if(el) el.checked=!!cfg[id];});
-}
-function bindControlEvents(){
-  $('#playPause').onclick=()=>{cfg.playing=!cfg.playing; $('#playPause').textContent=cfg.playing?'Pause':'Play'};
-  $('#resetCloth').onclick=()=>rebuildCloth();
-  $('#calmWind').onclick=()=>{cfg.windSpeed=1;cfg.gustStrength=0;cfg.turbulence=.05;cfg.randomness=0;updateControls();};
-  $('#resetCamera').onclick=()=>resetCamera();
-  $$('[data-cfg]').forEach(el=>el.oninput=()=>{
-    const id=el.dataset.cfg; cfg[id]=el.type==='checkbox'?el.checked:(el.tagName==='SELECT'?el.value:Number(el.value));
-    if(['thicknessMm','fabricGsm','airDrag','stretch','bend','shear','damping','hem','roughness','wetness','seam'].includes(id) && id!=='fabric') cfg.fabric='custom';
-    if(id==='fabric') applyFabric(cfg.fabric);
-    if(id==='quality') applyQuality(cfg.quality);
-    if(['cols','flagW','flagH','tie','poleDiameter','polePadding'].includes(id)) rebuildCloth();
-    if(['flagW','flagH','texW'].includes(id)) resizeDesignCanvas(true);
-    if(['roughness','thicknessMm','selfShadow','groundShadow','sunElevation','sunAzimuth','sunIntensity','ambient','exposure','cameraFov','shadowMap','wire'].includes(id)) updateRendering();
-    updateControls();
-  });
-  updateControls();
-}
-function applyFabric(key){const f=fabrics[key]; if(!f || key==='custom') return; Object.assign(cfg,f); cfg.fabric=key; rebuildCloth(); updateRendering(); updateControls();}
-function applyQuality(q){
-  const presets={mobile:{cols:34,iterations:3,substeps:1,shadowMap:1024},balanced:{cols:54,iterations:5,substeps:2,shadowMap:2048},high:{cols:78,iterations:7,substeps:3,shadowMap:2048},cinematic:{cols:100,iterations:10,substeps:4,shadowMap:4096}};
-  Object.assign(cfg,presets[q]||presets.balanced); cfg.quality=q; rebuildCloth(); updateRendering(); updateControls();
-}
+        <details class="group" open>
+          <summary>Pole & tie type</summary>
+          <div class="group-body">
+            <div class="field">
+              <label>Tie / attachment type</label>
+              <select id="tieType">
+                <option value="sleeve" selected>Sleeve: whole hoist edge fixed</option>
+                <option value="looseSleeve">Loose sleeve: edge can wobble</option>
+                <option value="grommets">Two corner grommets</option>
+                <option value="clips3">Three clips / ties</option>
+                <option value="clips5">Five clips / parade ties</option>
+                <option value="topRod">Top rod banner</option>
+                <option value="freeCorner">Top grommet only</option>
+              </select>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Tie slack, m <span class="value-pill" data-val="tieSlack"></span></label>
+                <input id="tieSlack" type="range" min="0" max="0.55" step="0.01" value="0.05" />
+              </div>
+              <div class="field">
+                <label>Tie tension <span class="value-pill" data-val="tieTension"></span></label>
+                <input id="tieTension" type="range" min="0.05" max="1" step="0.01" value="0.8" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Pole diameter, m <span class="value-pill" data-val="poleDiameter"></span></label>
+                <input id="poleDiameter" type="range" min="0.04" max="0.38" step="0.01" value="0.11" />
+              </div>
+              <div class="field">
+                <label>Pole height padding <span class="value-pill" data-val="polePadding"></span></label>
+                <input id="polePadding" type="range" min="0.2" max="2" step="0.05" value="0.8" />
+              </div>
+            </div>
+            <div class="field inline">
+              <span class="field-label">Prevent cloth through pole</span>
+              <input id="poleCollision" type="checkbox" checked />
+            </div>
+          </div>
+        </details>
 
-let scene,camera,renderer,controls,clothMesh,wireMesh,clothMaterial,ground,poleGroup,attachGroup,sun,ambient,texture;
-let pos=new Float32Array(0), old=new Float32Array(0), acc=new Float32Array(0), invMass=new Float32Array(0), pin=new Float32Array(0), geom;
-let constraints=[], tethers=[], particles=0, rows=0, cols=0, elapsed=0, windFiltered=new THREE.Vector3(), windSpeedNow=0, fps=60;
-const canvas3d = $('#threeCanvas');
-const tmpA=new THREE.Vector3(), tmpB=new THREE.Vector3(), tmpC=new THREE.Vector3(), tmpN=new THREE.Vector3();
+        <details class="group">
+          <summary>Lighting, shadows & camera</summary>
+          <div class="group-body">
+            <div class="row-2">
+              <div class="field inline">
+                <span class="field-label">Self/cloth shadows</span>
+                <input id="selfShadow" type="checkbox" checked />
+              </div>
+              <div class="field inline">
+                <span class="field-label">Ground shadow</span>
+                <input id="groundShadow" type="checkbox" checked />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Sun elevation <span class="value-pill" data-val="sunElevation"></span></label>
+                <input id="sunElevation" type="range" min="5" max="85" step="1" value="42" />
+              </div>
+              <div class="field">
+                <label>Sun azimuth <span class="value-pill" data-val="sunAzimuth"></span></label>
+                <input id="sunAzimuth" type="range" min="-180" max="180" step="1" value="-38" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Sun intensity <span class="value-pill" data-val="sunIntensity"></span></label>
+                <input id="sunIntensity" type="range" min="0" max="5" step="0.05" value="2.45" />
+              </div>
+              <div class="field">
+                <label>Ambient light <span class="value-pill" data-val="ambientIntensity"></span></label>
+                <input id="ambientIntensity" type="range" min="0" max="2" step="0.02" value="0.56" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Shadow map size</label>
+                <select id="shadowMapSize">
+                  <option value="1024">1024 fast</option>
+                  <option value="2048" selected>2048 balanced</option>
+                  <option value="4096">4096 sharp</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Camera FOV <span class="value-pill" data-val="cameraFov"></span></label>
+                <input id="cameraFov" type="range" min="28" max="78" step="1" value="48" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field inline">
+                <span class="field-label">Auto rotate camera</span>
+                <input id="autoRotate" type="checkbox" />
+              </div>
+              <button id="resetCamera">Reset camera</button>
+            </div>
+          </div>
+        </details>
+      </aside>
 
-function initThree(){
-  scene = new THREE.Scene(); scene.background = new THREE.Color(0x0b1220); scene.fog = new THREE.Fog(0x0b1220, 9, 24);
-  camera = new THREE.PerspectiveCamera(cfg.cameraFov,1,.03,100); camera.position.set(4.7,2.1,4.9);
-  renderer = new THREE.WebGLRenderer({canvas:canvas3d,antialias:true,powerPreference:'high-performance'}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=cfg.exposure;
-  controls = new OrbitControls(camera, renderer.domElement); controls.target.set(1.35,.08,0); controls.enableDamping=true; controls.dampingFactor=.06; controls.enablePan=true; controls.minDistance=1.2; controls.maxDistance=14;
-  ambient = new THREE.HemisphereLight(0xddeaff,0x1b2533,cfg.ambient); scene.add(ambient);
-  sun = new THREE.DirectionalLight(0xffffff,cfg.sunIntensity); sun.castShadow=true; sun.shadow.bias=-.00008; sun.shadow.normalBias=.018; sun.shadow.camera.near=.2; sun.shadow.camera.far=30; sun.shadow.camera.left=-8; sun.shadow.camera.right=8; sun.shadow.camera.top=8; sun.shadow.camera.bottom=-8; scene.add(sun); scene.add(sun.target);
-  const groundMat = new THREE.ShadowMaterial({opacity:.32}); ground = new THREE.Mesh(new THREE.PlaneGeometry(30,30),groundMat); ground.rotation.x=-Math.PI/2; ground.position.y=-1.65; ground.receiveShadow=true; scene.add(ground);
-  poleGroup = new THREE.Group(); attachGroup = new THREE.Group(); scene.add(poleGroup, attachGroup);
-  texture = new THREE.CanvasTexture($('#designCanvas')); texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy=8; texture.wrapS=THREE.ClampToEdgeWrapping; texture.wrapT=THREE.ClampToEdgeWrapping;
-  clothMaterial = new THREE.MeshPhysicalMaterial({map:texture,side:THREE.DoubleSide,roughness:cfg.roughness,metalness:0,sheen:1,sheenRoughness:.8,clearcoat:0,thickness:cfg.thicknessMm/1000});
-  rebuildCloth(); updateRendering(); resetCamera(); addEventListener('resize',resizeRenderer); resizeRenderer(); requestAnimationFrame(animate);
-}
-function resetCamera(){ if(!camera||!controls)return; camera.position.set(cfg.flagW*1.35, cfg.flagH*.75, cfg.flagW*1.65); controls.target.set(cfg.flagW*.48,0,0); controls.update(); }
-function resizeRenderer(){const r=canvas3d.parentElement.getBoundingClientRect(); renderer.setSize(Math.max(1,r.width),Math.max(1,r.height),false); camera.aspect=Math.max(1,r.width)/Math.max(1,r.height); camera.updateProjectionMatrix();}
-function updateRendering(){
-  if(!renderer) return;
-  renderer.toneMappingExposure=cfg.exposure; renderer.shadowMap.enabled=cfg.selfShadow||cfg.groundShadow; renderer.shadowMap.needsUpdate=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  const s=Number(cfg.shadowMap)||2048; sun.shadow.mapSize.set(s,s); sun.intensity=cfg.sunIntensity; ambient.intensity=cfg.ambient; camera.fov=cfg.cameraFov; camera.updateProjectionMatrix();
-  const elev=rad(cfg.sunElevation), az=rad(cfg.sunAzimuth), d=11; sun.position.set(Math.cos(elev)*Math.cos(az)*d, Math.sin(elev)*d, Math.cos(elev)*Math.sin(az)*d); sun.target.position.set(cfg.flagW*.55,0,0); sun.target.updateMatrixWorld();
-  ground.visible=cfg.groundShadow; ground.receiveShadow=cfg.groundShadow; ground.position.y=-cfg.flagH*.5-cfg.polePadding*.6;
-  if(clothMesh){clothMesh.castShadow=cfg.selfShadow; clothMesh.receiveShadow=cfg.selfShadow; clothMaterial.roughness=cfg.roughness; clothMaterial.thickness=cfg.thicknessMm/1000; clothMaterial.needsUpdate=true;}
-  if(wireMesh) wireMesh.visible=cfg.wire;
-  updatePole();
-}
-function updatePole(){
-  if(!poleGroup) return; poleGroup.clear(); attachGroup.clear();
-  const radius=cfg.poleDiameter/2, h=cfg.flagH+2*cfg.polePadding, y=0;
-  const poleMat = new THREE.MeshStandardMaterial({color:0x7d8795,roughness:.35,metalness:.65});
-  const pole = new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,h,32),poleMat); pole.position.set(-radius, y,0); pole.castShadow=true; pole.receiveShadow=true; poleGroup.add(pole);
-  const finial = new THREE.Mesh(new THREE.SphereGeometry(radius*1.42,32,16),poleMat); finial.position.set(-radius,h/2+radius*.9,0); finial.castShadow=true; poleGroup.add(finial);
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(radius*2.2,radius*2.8,.16,32),poleMat); base.position.set(-radius,-h/2-.08,0); base.castShadow=true; base.receiveShadow=true; poleGroup.add(base);
-}
-function id(i,j){return j*cols+i}
-function setVec(arr,k,x,y,z){arr[3*k]=x;arr[3*k+1]=y;arr[3*k+2]=z}
-function getVec(arr,k,v){return v.set(arr[3*k],arr[3*k+1],arr[3*k+2])}
-function addConstraint(a,b,rest,kind,edge=false){constraints.push({a,b,rest,kind,edge})}
-function stiffness(c){let k=c.kind==='stretch'?cfg.stretch:c.kind==='shear'?cfg.shear:cfg.bend; if(c.edge) k=Math.max(k,cfg.hem); return clamp(k,0,1)}
-function rebuildCloth(){
-  if(!scene) return;
-  cols=Math.round(cfg.cols); rows=Math.max(5,Math.round(cols*cfg.flagH/cfg.flagW)); cfg.rows=rows; particles=cols*rows;
-  pos=new Float32Array(particles*3); old=new Float32Array(particles*3); acc=new Float32Array(particles*3); invMass=new Float32Array(particles); pin=new Float32Array(particles*3); constraints=[]; tethers=[];
-  const dx=cfg.flagW/(cols-1), dy=cfg.flagH/(rows-1), area=cfg.flagW*cfg.flagH;
-  const massPerParticle=Math.max(.003,(cfg.fabricGsm/1000)*area/particles*(1+cfg.thicknessMm*.12+cfg.wetness*2.2));
-  for(let j=0;j<rows;j++) for(let i=0;i<cols;i++){
-    const k=id(i,j), x=i*dx, y=cfg.flagH*.5-j*dy, z=Math.sin(i*.35+j*.12)*.015;
-    setVec(pos,k,x,y,z); setVec(old,k,x,y,z); setVec(pin,k,x,y,0); invMass[k]=1/massPerParticle;
-  }
-  for(let j=0;j<rows;j++) for(let i=0;i<cols;i++){
-    const edge=i===0||j===0||i===cols-1||j===rows-1;
-    if(i<cols-1) addConstraint(id(i,j),id(i+1,j),dx,'stretch',edge||i===cols-2);
-    if(j<rows-1) addConstraint(id(i,j),id(i,j+1),dy,'stretch',edge||j===rows-2);
-    if(i<cols-1&&j<rows-1){addConstraint(id(i,j),id(i+1,j+1),Math.hypot(dx,dy),'shear',edge);addConstraint(id(i+1,j),id(i,j+1),Math.hypot(dx,dy),'shear',edge);}
-    if(i<cols-2) addConstraint(id(i,j),id(i+2,j),dx*2,'bend',edge);
-    if(j<rows-2) addConstraint(id(i,j),id(i,j+2),dy*2,'bend',edge);
-  }
-  applyTiePins();
-  const vertices = new Float32Array(pos); const uvs = new Float32Array(particles*2); const idxs=[];
-  for(let j=0;j<rows;j++) for(let i=0;i<cols;i++){const k=id(i,j); uvs[2*k]=i/(cols-1); uvs[2*k+1]=1-j/(rows-1);}
-  for(let j=0;j<rows-1;j++) for(let i=0;i<cols-1;i++){const a=id(i,j),b=id(i+1,j),c=id(i,j+1),d=id(i+1,j+1); idxs.push(a,c,b,b,c,d);}
-  if(clothMesh){scene.remove(clothMesh); clothMesh.geometry.dispose(); if(wireMesh){scene.remove(wireMesh); wireMesh.geometry.dispose();}}
-  geom = new THREE.BufferGeometry(); geom.setAttribute('position',new THREE.BufferAttribute(vertices,3)); geom.setAttribute('uv',new THREE.BufferAttribute(uvs,2)); geom.setIndex(idxs); geom.computeVertexNormals();
-  clothMesh = new THREE.Mesh(geom,clothMaterial); clothMesh.castShadow=cfg.selfShadow; clothMesh.receiveShadow=cfg.selfShadow; scene.add(clothMesh);
-  wireMesh = new THREE.LineSegments(new THREE.WireframeGeometry(geom), new THREE.LineBasicMaterial({color:0xbde7ff,transparent:true,opacity:.22})); wireMesh.visible=cfg.wire; scene.add(wireMesh);
-  updatePole(); updateAttachMarkers(); updateRendering();
-}
-function applyTiePins(){
-  const pinParticle=(i,j)=>{const k=id(i,j); invMass[k]=0; setVec(pin,k,pos[3*k],pos[3*k+1],pos[3*k+2]);};
-  const tetherParticle=(i,j,slack=cfg.tieSlack)=>{const k=id(i,j); tethers.push({k,x:pos[3*k],y:pos[3*k+1],z:0,slack});};
-  if(cfg.tie==='sleeve'){for(let j=0;j<rows;j++) pinParticle(0,j);}
-  else if(cfg.tie==='looseSleeve'){for(let j=0;j<rows;j++) tetherParticle(0,j,cfg.tieSlack+.03); pinParticle(0,0); pinParticle(0,rows-1);}
-  else if(cfg.tie==='grommets'){pinParticle(0,0); pinParticle(0,rows-1);}
-  else if(cfg.tie==='clips3'){[0,.5,1].forEach(v=>pinParticle(0,Math.round(v*(rows-1))));}
-  else if(cfg.tie==='clips5'){[0,.25,.5,.75,1].forEach(v=>pinParticle(0,Math.round(v*(rows-1))));}
-  else if(cfg.tie==='topRod'){for(let i=0;i<cols;i++) pinParticle(i,0);}
-  else if(cfg.tie==='freeCorner'){pinParticle(0,0);}
-}
-function updateAttachMarkers(){
-  if(!attachGroup) return; attachGroup.clear();
-  const mat=new THREE.MeshStandardMaterial({color:0xd7e7ff,roughness:.45,metalness:.35});
-  for(let k=0;k<particles;k++) if(invMass[k]===0){const s=new THREE.Mesh(new THREE.SphereGeometry(.035,12,8),mat); s.position.set(pos[3*k],pos[3*k+1],pos[3*k+2]); s.castShadow=true; attachGroup.add(s);}
-}
-function normalAt(i,j,out){
-  const k=id(i,j); getVec(pos,k,tmpA); out.set(0,0,0);
-  const neigh=[[i+1,j],[i,j+1],[i-1,j],[i,j-1]];
-  for(let n=0;n<neigh.length;n++){const p=neigh[n], q=neigh[(n+1)%neigh.length]; if(p[0]<0||p[0]>=cols||p[1]<0||p[1]>=rows||q[0]<0||q[0]>=cols||q[1]<0||q[1]>=rows) continue; getVec(pos,id(p[0],p[1]),tmpB).sub(tmpA); getVec(pos,id(q[0],q[1]),tmpC).sub(tmpA); out.add(tmpB.cross(tmpC));}
-  return out.lengthSq()>1e-8?out.normalize():out.set(0,0,1);
-}
-function noise(x,y,z){return Math.sin(x*1.37+y*2.21+z*.73)+.5*Math.sin(x*2.11-y*.91+z*1.61)+.25*Math.sin(-x*.77+y*1.71+z*2.29)}
-function windVector(time){
-  const gustWave=Math.max(0,Math.sin(time*cfg.gustFreq*Math.PI*2)+.45*Math.sin(time*cfg.gustFreq*1.71+1.4));
-  const gust=cfg.gustStrength*gustWave*gustWave*.55;
-  const random=cfg.randomness*cfg.gustStrength*(noise(time*.23,0,0)*.18+noise(time*.051,1,2)*.28);
-  const speed=Math.max(0,cfg.windSpeed+gust+random); windSpeedNow=speed;
-  const a=rad(cfg.windAngle), lift=rad(cfg.windLift);
-  const v=new THREE.Vector3(Math.cos(a)*Math.cos(lift),Math.sin(lift),Math.sin(a)*Math.cos(lift)).multiplyScalar(speed);
-  windFiltered.lerp(v,1-cfg.windSmooth); return windFiltered;
-}
-function stepPhysics(dt){
-  const sub=Math.max(1,Math.round(cfg.substeps)); dt=clamp(dt*cfg.timeScale,0,.033)/sub;
-  for(let ss=0;ss<sub;ss++){
-    const wind=windVector(elapsed); const cellArea=(cfg.flagW/(cols-1))*(cfg.flagH/(rows-1));
-    const densityScale=1/Math.max(.45,cfg.fabricGsm/90 + cfg.thicknessMm*.55 + cfg.wetness*3.5 + cfg.seam*.8);
-    for(let k=0;k<particles;k++){acc[3*k]=0;acc[3*k+1]=-cfg.gravity;acc[3*k+2]=0;}
-    for(let j=0;j<rows;j++) for(let i=0;i<cols;i++){
-      const k=id(i,j); if(invMass[k]===0) continue;
-      normalAt(i,j,tmpN); getVec(pos,k,tmpA);
-      const turb=cfg.turbulence; const local=new THREE.Vector3(
-        wind.x + turb*(noise(tmpA.x*1.2,tmpA.y*1.7,elapsed*1.6)),
-        wind.y + turb*.45*(noise(tmpA.y*2.0,tmpA.z*2.5,elapsed*1.4)),
-        wind.z + turb*(noise(tmpA.x*1.7,tmpA.z*1.3,elapsed*1.9))
+      <div class="viewport-wrap">
+        <canvas id="threeCanvas" aria-label="3D flag canvas"></canvas>
+        <div class="hint">Drag to orbit · pinch / wheel to zoom · right-drag to pan</div>
+        <div class="stats" id="statsBox">
+          <div><strong>Particles:</strong> <span id="statParticles">–</span> · <strong>FPS:</strong> <span id="statFps">–</span></div>
+          <div><strong>Wind:</strong> <span id="statWind">–</span> · <strong>Fabric:</strong> <span id="statFabric">–</span></div>
+          <div><strong>Tip:</strong> heavier fabric + high bend stiffness makes slower, broader waves.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="designPage" class="page" aria-label="Flag designer page">
+      <aside class="design-tools" aria-label="Flag design tools">
+        <div class="status-box">
+          The designer canvas keeps the same aspect ratio as the simulated flag size. Presets stretch, contain, or cover according to the fit mode.
+        </div>
+
+        <details class="group" open>
+          <summary>Preset flags</summary>
+          <div class="group-body">
+            <div class="field">
+              <label>Search country / code</label>
+              <input id="countrySearch" type="text" placeholder="Search: Japan, AE, Brazil…" />
+            </div>
+            <div class="field">
+              <label>World flag preset</label>
+              <select id="countrySelect"></select>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Fit mode</label>
+                <select id="fitMode">
+                  <option value="stretch" selected>Stretch to current size</option>
+                  <option value="contain">Contain / letterbox</option>
+                  <option value="cover">Cover / crop</option>
+                </select>
+              </div>
+              <button id="loadCountry" class="primary">Load preset</button>
+            </div>
+            <small id="presetStatus" class="pill-note">Presets use ISO-style two-letter country codes.</small>
+          </div>
+        </details>
+
+        <details class="group" open>
+          <summary>Draw tools</summary>
+          <div class="group-body">
+            <div class="row-2">
+              <div class="field">
+                <label>Tool</label>
+                <select id="drawTool">
+                  <option value="brush" selected>Brush</option>
+                  <option value="eraser">White eraser</option>
+                  <option value="line">Line</option>
+                  <option value="rect">Rectangle</option>
+                  <option value="ellipse">Ellipse</option>
+                  <option value="fill">Paint bucket</option>
+                  <option value="text">Text</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Brush size <span class="value-pill" data-val="brushSize"></span></label>
+                <input id="brushSize" type="range" min="1" max="110" step="1" value="24" />
+              </div>
+            </div>
+            <div class="row-3">
+              <div class="field"><label>Color 1</label><input id="color1" type="color" value="#d92323" /></div>
+              <div class="field"><label>Color 2</label><input id="color2" type="color" value="#ffffff" /></div>
+              <div class="field"><label>Color 3</label><input id="color3" type="color" value="#1d5fd1" /></div>
+            </div>
+            <div class="row-2">
+              <button id="undoBtn">Undo</button>
+              <button id="clearBtn" class="danger">Clear white</button>
+            </div>
+            <div class="field">
+              <label>Upload image</label>
+              <input id="uploadImage" type="file" accept="image/*" />
+              <small>Uploaded images are fitted using the selected fit mode.</small>
+            </div>
+          </div>
+        </details>
+
+        <details class="group">
+          <summary>Quick flag patterns</summary>
+          <div class="group-body">
+            <div class="row-2">
+              <div class="field">
+                <label>Pattern</label>
+                <select id="patternType">
+                  <option value="horizontal3">Horizontal tricolor</option>
+                  <option value="vertical3">Vertical tricolor</option>
+                  <option value="horizontal2">Horizontal bicolor</option>
+                  <option value="vertical2">Vertical bicolor</option>
+                  <option value="diagonal2">Diagonal bicolor</option>
+                  <option value="cross">Centered cross</option>
+                  <option value="nordic">Nordic cross</option>
+                  <option value="circle">Circle emblem</option>
+                  <option value="star">Star emblem</option>
+                </select>
+              </div>
+              <button id="applyPattern" class="success">Apply pattern</button>
+            </div>
+            <div class="field">
+              <label>Stripe / cross thickness <span class="value-pill" data-val="patternWeight"></span></label>
+              <input id="patternWeight" type="range" min="0.05" max="0.5" step="0.01" value="0.18" />
+            </div>
+          </div>
+        </details>
+
+        <details class="group">
+          <summary>Export</summary>
+          <div class="group-body">
+            <div class="button-row">
+              <button id="downloadPng" class="primary">Download PNG</button>
+              <button id="copySizeInfo">Copy size info</button>
+            </div>
+            <small class="pill-note" id="designInfo">–</small>
+          </div>
+        </details>
+      </aside>
+
+      <div class="design-workspace">
+        <div class="design-topbar">
+          <span class="pill-note">Drawing updates the 3D cloth texture live.</span>
+          <span class="pill-note" id="aspectNote">–</span>
+        </div>
+        <div class="canvas-stage">
+          <canvas id="designCanvas" width="1280" height="853" aria-label="Flag design canvas"></canvas>
+        </div>
+        <div class="design-bottombar">
+          <span class="pill-note">Use touch or mouse. Rectangle, ellipse, and line preview before release.</span>
+          <button id="toSimulator" class="success">View in simulator</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => [...document.querySelectorAll(selector)];
+    const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const degToRad = (deg) => deg * Math.PI / 180;
+
+    const fabricPresets = {
+      silk:       { thicknessMm: 0.08, fabricGsm: 45,  airDrag: 0.62, stretchStiffness: 0.45, bendStiffness: 0.08, shearStiffness: 0.25, damping: 0.009, hemStiffness: 0.45, roughness: 0.38 },
+      nylon:      { thicknessMm: 0.16, fabricGsm: 75,  airDrag: 0.90, stretchStiffness: 0.72, bendStiffness: 0.28, shearStiffness: 0.45, damping: 0.015, hemStiffness: 0.74, roughness: 0.76 },
+      cotton:     { thicknessMm: 0.32, fabricGsm: 150, airDrag: 1.05, stretchStiffness: 0.80, bendStiffness: 0.42, shearStiffness: 0.56, damping: 0.024, hemStiffness: 0.80, roughness: 0.90 },
+      wool:       { thicknessMm: 0.75, fabricGsm: 320, airDrag: 1.18, stretchStiffness: 0.88, bendStiffness: 0.62, shearStiffness: 0.68, damping: 0.034, hemStiffness: 0.88, roughness: 0.96 },
+      canvas:     { thicknessMm: 0.95, fabricGsm: 430, airDrag: 1.22, stretchStiffness: 0.93, bendStiffness: 0.76, shearStiffness: 0.74, damping: 0.042, hemStiffness: 0.92, roughness: 0.98 },
+      denim:      { thicknessMm: 1.40, fabricGsm: 620, airDrag: 1.10, stretchStiffness: 0.96, bendStiffness: 0.88, shearStiffness: 0.82, damping: 0.052, hemStiffness: 0.96, roughness: 0.95 },
+      vinyl:      { thicknessMm: 0.50, fabricGsm: 280, airDrag: 0.82, stretchStiffness: 0.98, bendStiffness: 0.90, shearStiffness: 0.88, damping: 0.030, hemStiffness: 0.96, roughness: 0.32 },
+      custom:     null
+    };
+
+    const countryFlags = [
+      ['ad','Andorra'], ['ae','United Arab Emirates'], ['af','Afghanistan'], ['ag','Antigua and Barbuda'], ['ai','Anguilla'], ['al','Albania'], ['am','Armenia'], ['ao','Angola'], ['aq','Antarctica'], ['ar','Argentina'], ['as','American Samoa'], ['at','Austria'], ['au','Australia'], ['aw','Aruba'], ['ax','Åland Islands'], ['az','Azerbaijan'],
+      ['ba','Bosnia and Herzegovina'], ['bb','Barbados'], ['bd','Bangladesh'], ['be','Belgium'], ['bf','Burkina Faso'], ['bg','Bulgaria'], ['bh','Bahrain'], ['bi','Burundi'], ['bj','Benin'], ['bl','Saint Barthélemy'], ['bm','Bermuda'], ['bn','Brunei'], ['bo','Bolivia'], ['bq','Caribbean Netherlands'], ['br','Brazil'], ['bs','Bahamas'], ['bt','Bhutan'], ['bv','Bouvet Island'], ['bw','Botswana'], ['by','Belarus'], ['bz','Belize'],
+      ['ca','Canada'], ['cc','Cocos Islands'], ['cd','DR Congo'], ['cf','Central African Republic'], ['cg','Republic of the Congo'], ['ch','Switzerland'], ['ci','Côte d’Ivoire'], ['ck','Cook Islands'], ['cl','Chile'], ['cm','Cameroon'], ['cn','China'], ['co','Colombia'], ['cr','Costa Rica'], ['cu','Cuba'], ['cv','Cape Verde'], ['cw','Curaçao'], ['cx','Christmas Island'], ['cy','Cyprus'], ['cz','Czechia'],
+      ['de','Germany'], ['dj','Djibouti'], ['dk','Denmark'], ['dm','Dominica'], ['do','Dominican Republic'], ['dz','Algeria'],
+      ['ec','Ecuador'], ['ee','Estonia'], ['eg','Egypt'], ['eh','Western Sahara'], ['er','Eritrea'], ['es','Spain'], ['et','Ethiopia'], ['eu','European Union'],
+      ['fi','Finland'], ['fj','Fiji'], ['fk','Falkland Islands'], ['fm','Micronesia'], ['fo','Faroe Islands'], ['fr','France'],
+      ['ga','Gabon'], ['gb','United Kingdom'], ['gd','Grenada'], ['ge','Georgia'], ['gf','French Guiana'], ['gg','Guernsey'], ['gh','Ghana'], ['gi','Gibraltar'], ['gl','Greenland'], ['gm','Gambia'], ['gn','Guinea'], ['gp','Guadeloupe'], ['gq','Equatorial Guinea'], ['gr','Greece'], ['gs','South Georgia and the South Sandwich Islands'], ['gt','Guatemala'], ['gu','Guam'], ['gw','Guinea-Bissau'], ['gy','Guyana'],
+      ['hk','Hong Kong'], ['hm','Heard Island and McDonald Islands'], ['hn','Honduras'], ['hr','Croatia'], ['ht','Haiti'], ['hu','Hungary'],
+      ['id','Indonesia'], ['ie','Ireland'], ['il','Israel'], ['im','Isle of Man'], ['in','India'], ['io','British Indian Ocean Territory'], ['iq','Iraq'], ['ir','Iran'], ['is','Iceland'], ['it','Italy'],
+      ['je','Jersey'], ['jm','Jamaica'], ['jo','Jordan'], ['jp','Japan'],
+      ['ke','Kenya'], ['kg','Kyrgyzstan'], ['kh','Cambodia'], ['ki','Kiribati'], ['km','Comoros'], ['kn','Saint Kitts and Nevis'], ['kp','North Korea'], ['kr','South Korea'], ['kw','Kuwait'], ['ky','Cayman Islands'], ['kz','Kazakhstan'],
+      ['la','Laos'], ['lb','Lebanon'], ['lc','Saint Lucia'], ['li','Liechtenstein'], ['lk','Sri Lanka'], ['lr','Liberia'], ['ls','Lesotho'], ['lt','Lithuania'], ['lu','Luxembourg'], ['lv','Latvia'], ['ly','Libya'],
+      ['ma','Morocco'], ['mc','Monaco'], ['md','Moldova'], ['me','Montenegro'], ['mf','Saint Martin'], ['mg','Madagascar'], ['mh','Marshall Islands'], ['mk','North Macedonia'], ['ml','Mali'], ['mm','Myanmar'], ['mn','Mongolia'], ['mo','Macau'], ['mp','Northern Mariana Islands'], ['mq','Martinique'], ['mr','Mauritania'], ['ms','Montserrat'], ['mt','Malta'], ['mu','Mauritius'], ['mv','Maldives'], ['mw','Malawi'], ['mx','Mexico'], ['my','Malaysia'], ['mz','Mozambique'],
+      ['na','Namibia'], ['nc','New Caledonia'], ['ne','Niger'], ['nf','Norfolk Island'], ['ng','Nigeria'], ['ni','Nicaragua'], ['nl','Netherlands'], ['no','Norway'], ['np','Nepal'], ['nr','Nauru'], ['nu','Niue'], ['nz','New Zealand'],
+      ['om','Oman'],
+      ['pa','Panama'], ['pe','Peru'], ['pf','French Polynesia'], ['pg','Papua New Guinea'], ['ph','Philippines'], ['pk','Pakistan'], ['pl','Poland'], ['pm','Saint Pierre and Miquelon'], ['pn','Pitcairn Islands'], ['pr','Puerto Rico'], ['ps','Palestine'], ['pt','Portugal'], ['pw','Palau'], ['py','Paraguay'],
+      ['qa','Qatar'],
+      ['re','Réunion'], ['ro','Romania'], ['rs','Serbia'], ['ru','Russia'], ['rw','Rwanda'],
+      ['sa','Saudi Arabia'], ['sb','Solomon Islands'], ['sc','Seychelles'], ['sd','Sudan'], ['se','Sweden'], ['sg','Singapore'], ['sh','Saint Helena'], ['si','Slovenia'], ['sj','Svalbard and Jan Mayen'], ['sk','Slovakia'], ['sl','Sierra Leone'], ['sm','San Marino'], ['sn','Senegal'], ['so','Somalia'], ['sr','Suriname'], ['ss','South Sudan'], ['st','São Tomé and Príncipe'], ['sv','El Salvador'], ['sx','Sint Maarten'], ['sy','Syria'], ['sz','Eswatini'],
+      ['tc','Turks and Caicos Islands'], ['td','Chad'], ['tf','French Southern Territories'], ['tg','Togo'], ['th','Thailand'], ['tj','Tajikistan'], ['tk','Tokelau'], ['tl','Timor-Leste'], ['tm','Turkmenistan'], ['tn','Tunisia'], ['to','Tonga'], ['tr','Türkiye'], ['tt','Trinidad and Tobago'], ['tv','Tuvalu'], ['tw','Taiwan'], ['tz','Tanzania'],
+      ['ua','Ukraine'], ['ug','Uganda'], ['um','United States Minor Outlying Islands'], ['un','United Nations'], ['us','United States'], ['uy','Uruguay'], ['uz','Uzbekistan'],
+      ['va','Vatican City'], ['vc','Saint Vincent and the Grenadines'], ['ve','Venezuela'], ['vg','British Virgin Islands'], ['vi','U.S. Virgin Islands'], ['vn','Vietnam'], ['vu','Vanuatu'],
+      ['wf','Wallis and Futuna'], ['ws','Samoa'],
+      ['xk','Kosovo'], ['ye','Yemen'], ['yt','Mayotte'], ['za','South Africa'], ['zm','Zambia'], ['zw','Zimbabwe']
+    ];
+
+    const controlIds = [
+      'timeScale', 'cols', 'iterations', 'substeps', 'flagWidth', 'flagHeight', 'textureWidth',
+      'thicknessMm', 'fabricGsm', 'airDrag', 'stretchStiffness', 'bendStiffness', 'shearStiffness',
+      'damping', 'hemStiffness', 'roughness', 'windSpeed', 'windAngle', 'windLift', 'turbulence',
+      'gustStrength', 'gustFrequency', 'randomness', 'vortex', 'gravity', 'windSmoothing', 'tieSlack',
+      'tieTension', 'poleDiameter', 'polePadding', 'sunElevation', 'sunAzimuth', 'sunIntensity',
+      'ambientIntensity', 'cameraFov', 'brushSize', 'patternWeight'
+    ];
+
+    const state = {
+      playing: true,
+      qualityPreset: 'balanced',
+      timeScale: 1,
+      cols: 54,
+      rows: 36,
+      iterations: 5,
+      substeps: 2,
+      flagWidth: 3,
+      flagHeight: 2,
+      textureWidth: 1280,
+      fabricType: 'nylon',
+      thicknessMm: 0.16,
+      fabricGsm: 75,
+      airDrag: 0.9,
+      stretchStiffness: 0.72,
+      bendStiffness: 0.28,
+      shearStiffness: 0.45,
+      damping: 0.015,
+      hemStiffness: 0.74,
+      roughness: 0.76,
+      windSpeed: 9,
+      windAngle: 0,
+      windLift: 3,
+      turbulence: 0.75,
+      gustStrength: 6,
+      gustFrequency: 0.42,
+      randomness: 0.52,
+      vortex: 0.35,
+      gravity: 9.8,
+      windSmoothing: 0.72,
+      tieType: 'sleeve',
+      tieSlack: 0.05,
+      tieTension: 0.8,
+      poleDiameter: 0.11,
+      polePadding: 0.8,
+      poleCollision: true,
+      selfShadow: true,
+      groundShadow: true,
+      sunElevation: 42,
+      sunAzimuth: -38,
+      sunIntensity: 2.45,
+      ambientIntensity: 0.56,
+      shadowMapSize: 2048,
+      cameraFov: 48,
+      autoRotate: false,
+      wireframe: false,
+      brushSize: 24,
+      patternWeight: 0.18
+    };
+
+    const dom = Object.fromEntries([...controlIds, 'fabricType', 'tieType', 'qualityPreset', 'shadowMapSize', 'poleCollision', 'selfShadow', 'groundShadow', 'autoRotate', 'wireframe'].map(id => [id, $('#' + id)]));
+    const designCanvas = $('#designCanvas');
+    const designCtx = designCanvas.getContext('2d');
+    let canvasTexture;
+    let textureDirty = true;
+
+    let scene, camera, renderer, controls, clothMesh, clothMaterial, wireMesh, poleGroup, groundMesh;
+    let sunLight, ambientLight;
+    let hemGroup = new THREE.Group();
+    let attachmentGroup = new THREE.Group();
+    let ropeLines = null;
+    let clock = new THREE.Clock();
+
+    let pos = new Float32Array(0);
+    let prev = new Float32Array(0);
+    let acc = new Float32Array(0);
+    let invMass = new Float32Array(0);
+    let pinPos = new Float32Array(0);
+    let constraints = [];
+    let tethers = [];
+    let geometry;
+    let particleCount = 0;
+    let lastFrameTime = 0;
+    let elapsed = 0;
+    let windFiltered = new THREE.Vector3(0, 0, 0);
+    let windNowSpeed = 0;
+    let fpsAvg = 60;
+    let snapshotCanvas = document.createElement('canvas');
+    let undoStack = [];
+    let isDrawing = false;
+    let drawStart = null;
+    let lastDraw = null;
+    const previewCanvas = document.createElement('canvas');
+    const previewCtx = previewCanvas.getContext('2d');
+
+    function readControls() {
+      for (const id of controlIds) {
+        const el = $('#' + id);
+        if (el) state[id] = Number(el.value);
+      }
+      state.fabricType = $('#fabricType').value;
+      state.tieType = $('#tieType').value;
+      state.qualityPreset = $('#qualityPreset').value;
+      state.shadowMapSize = Number($('#shadowMapSize').value);
+      state.poleCollision = $('#poleCollision').checked;
+      state.selfShadow = $('#selfShadow').checked;
+      state.groundShadow = $('#groundShadow').checked;
+      state.autoRotate = $('#autoRotate').checked;
+      state.wireframe = $('#wireframe').checked;
+    }
+
+    function updateValuePills() {
+      const units = {
+        timeScale: '×', cols: '', iterations: '', substeps: '', flagWidth: ' m', flagHeight: ' m', textureWidth: ' px',
+        thicknessMm: ' mm', fabricGsm: ' gsm', windSpeed: ' m/s', windAngle: '°', windLift: '°', gustStrength: ' m/s',
+        gustFrequency: ' Hz', gravity: ' m/s²', tieSlack: ' m', poleDiameter: ' m', polePadding: ' m', sunElevation: '°',
+        sunAzimuth: '°', cameraFov: '°', brushSize: ' px'
+      };
+      $$('[data-val]').forEach(span => {
+        const id = span.dataset.val;
+        let value = state[id];
+        if (id === 'cols') value = `${state.cols}×${state.rows}`;
+        else if (id === 'textureWidth') value = `${state.textureWidth}×${Math.round(state.textureWidth * state.flagHeight / state.flagWidth)}`;
+        else if (Number.isInteger(value)) value = String(value);
+        else value = Number(value).toFixed(id.includes('Stiffness') || id === 'roughness' || id === 'airDrag' || id === 'damping' || id === 'timeScale' || id === 'turbulence' || id === 'randomness' || id === 'vortex' || id === 'tieTension' || id === 'windSmoothing' || id === 'patternWeight' ? 2 : 2).replace(/\.00$/, '');
+        span.textContent = `${value}${units[id] ?? ''}`;
+      });
+      $('#aspectNote').textContent = `Aspect ratio: ${state.flagWidth.toFixed(2)} : ${state.flagHeight.toFixed(2)} · canvas ${designCanvas.width}×${designCanvas.height}`;
+      $('#designInfo').textContent = `3D size ${state.flagWidth.toFixed(2)} m × ${state.flagHeight.toFixed(2)} m · texture ${designCanvas.width}×${designCanvas.height}px`;
+    }
+
+    function setControl(id, value) {
+      const el = $('#' + id);
+      if (!el) return;
+      if (el.type === 'checkbox') el.checked = Boolean(value);
+      else el.value = value;
+      state[id] = (el.type === 'checkbox') ? Boolean(value) : Number(value);
+    }
+
+    function applyFabricPreset(name) {
+      const preset = fabricPresets[name];
+      if (!preset) return;
+      for (const [key, value] of Object.entries(preset)) setControl(key, value);
+      readControls();
+      updateMaterialFromState();
+      rebuildCloth(true);
+      updateValuePills();
+    }
+
+    function applyQualityPreset(name) {
+      const presets = {
+        mobile: { cols: 34, iterations: 3, substeps: 1, shadowMapSize: 1024 },
+        balanced: { cols: 54, iterations: 5, substeps: 2, shadowMapSize: 2048 },
+        high: { cols: 74, iterations: 7, substeps: 3, shadowMapSize: 2048 },
+        cinematic: { cols: 96, iterations: 9, substeps: 4, shadowMapSize: 4096 }
+      };
+      const preset = presets[name];
+      if (!preset) return;
+      for (const [key, value] of Object.entries(preset)) setControl(key, value);
+      $('#shadowMapSize').value = String(preset.shadowMapSize);
+      readControls();
+      resizeRenderer();
+      updateLighting();
+      rebuildCloth(true);
+      updateValuePills();
+    }
+
+    function initDesignerCanvas(fill = true) {
+      const old = document.createElement('canvas');
+      old.width = designCanvas.width;
+      old.height = designCanvas.height;
+      if (old.width && old.height) old.getContext('2d').drawImage(designCanvas, 0, 0);
+
+      const targetW = clamp(Math.round(state.textureWidth), 512, 2048);
+      const targetH = clamp(Math.round(targetW * state.flagHeight / state.flagWidth), 128, 2048);
+      designCanvas.width = targetW;
+      designCanvas.height = targetH;
+      previewCanvas.width = targetW;
+      previewCanvas.height = targetH;
+      snapshotCanvas.width = targetW;
+      snapshotCanvas.height = targetH;
+
+      if (fill || old.width === 0) {
+        designCtx.fillStyle = '#ffffff';
+        designCtx.fillRect(0, 0, designCanvas.width, designCanvas.height);
+        drawDefaultFlag();
+      } else {
+        designCtx.fillStyle = '#ffffff';
+        designCtx.fillRect(0, 0, designCanvas.width, designCanvas.height);
+        designCtx.drawImage(old, 0, 0, designCanvas.width, designCanvas.height);
+      }
+      textureDirty = true;
+      updateValuePills();
+    }
+
+    function drawDefaultFlag() {
+      const w = designCanvas.width;
+      const h = designCanvas.height;
+      designCtx.fillStyle = '#ffffff';
+      designCtx.fillRect(0, 0, w, h);
+      designCtx.fillStyle = '#df2e2e';
+      designCtx.fillRect(0, 0, w, h / 3);
+      designCtx.fillStyle = '#ffffff';
+      designCtx.fillRect(0, h / 3, w, h / 3);
+      designCtx.fillStyle = '#1c5fd2';
+      designCtx.fillRect(0, 2 * h / 3, w, h / 3);
+      designCtx.fillStyle = 'rgba(0,0,0,0.12)';
+      designCtx.fillRect(0, 0, w * 0.035, h);
+    }
+
+    function initThree() {
+      const canvas = $('#threeCanvas');
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0d1117);
+      scene.fog = new THREE.Fog(0x0d1117, 9, 24);
+
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.05;
+
+      camera = new THREE.PerspectiveCamera(state.cameraFov, 1, 0.03, 120);
+      camera.position.set(3.6, 1.3, 5.6);
+
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.055;
+      controls.target.set(1.5, 0, 0);
+      controls.maxPolarAngle = Math.PI * 0.94;
+      controls.minDistance = 1.1;
+      controls.maxDistance = 16;
+      controls.enablePan = true;
+      controls.screenSpacePanning = true;
+
+      ambientLight = new THREE.HemisphereLight(0x8fb6ff, 0x1c1a14, state.ambientIntensity);
+      scene.add(ambientLight);
+      sunLight = new THREE.DirectionalLight(0xffffff, state.sunIntensity);
+      sunLight.castShadow = true;
+      scene.add(sunLight);
+
+      const groundGeo = new THREE.PlaneGeometry(28, 28);
+      const groundMat = new THREE.MeshStandardMaterial({ color: 0x111820, roughness: 0.78, metalness: 0.02 });
+      groundMesh = new THREE.Mesh(groundGeo, groundMat);
+      groundMesh.rotation.x = -Math.PI / 2;
+      groundMesh.receiveShadow = true;
+      scene.add(groundMesh);
+
+      const grid = new THREE.GridHelper(28, 28, 0x30445f, 0x1d2b3f);
+      grid.position.y = -1.01;
+      grid.material.transparent = true;
+      grid.material.opacity = 0.28;
+      scene.add(grid);
+
+      scene.add(hemGroup);
+      scene.add(attachmentGroup);
+
+      canvasTexture = new THREE.CanvasTexture(designCanvas);
+      canvasTexture.colorSpace = THREE.SRGBColorSpace;
+      canvasTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+      clothMaterial = new THREE.MeshPhysicalMaterial({
+        map: canvasTexture,
+        side: THREE.DoubleSide,
+        roughness: state.roughness,
+        metalness: 0.0,
+        clearcoat: 0.0,
+        sheen: 0.55,
+        sheenRoughness: 0.9,
+        transparent: false,
+        alphaTest: 0.02
+      });
+
+      rebuildPole();
+      rebuildCloth(true);
+      updateLighting();
+      resizeRenderer();
+      window.addEventListener('resize', resizeRenderer);
+    }
+
+    function idx(i, j) {
+      return j * (state.cols + 1) + i;
+    }
+
+    function getParticle(i, j, out = new THREE.Vector3()) {
+      const p = idx(i, j) * 3;
+      out.set(pos[p], pos[p + 1], pos[p + 2]);
+      return out;
+    }
+
+    function calcRows() {
+      const rows = Math.max(6, Math.round(state.cols * state.flagHeight / state.flagWidth));
+      return Math.min(90, rows);
+    }
+
+    function rebuildCloth(resetTexture = false) {
+      readControls();
+      state.rows = calcRows();
+      particleCount = (state.cols + 1) * (state.rows + 1);
+      pos = new Float32Array(particleCount * 3);
+      prev = new Float32Array(particleCount * 3);
+      acc = new Float32Array(particleCount * 3);
+      invMass = new Float32Array(particleCount);
+      pinPos = new Float32Array(particleCount * 3);
+      constraints = [];
+      tethers = [];
+
+      const w = state.flagWidth;
+      const h = state.flagHeight;
+      const seedPhase = Math.random() * Math.PI * 2;
+      for (let j = 0; j <= state.rows; j++) {
+        for (let i = 0; i <= state.cols; i++) {
+          const id = idx(i, j);
+          const p = id * 3;
+          const u = i / state.cols;
+          const v = j / state.rows;
+          const wrinkle = Math.sin(u * Math.PI * 2.5 + v * 3.5 + seedPhase) * 0.025 * u;
+          pos[p] = u * w;
+          pos[p + 1] = h * 0.5 - v * h;
+          pos[p + 2] = wrinkle;
+          prev[p] = pos[p] - 0.012 * u;
+          prev[p + 1] = pos[p + 1];
+          prev[p + 2] = pos[p + 2];
+          invMass[id] = 1;
+          pinPos[p] = pos[p];
+          pinPos[p + 1] = pos[p + 1];
+          pinPos[p + 2] = pos[p + 2];
+        }
+      }
+
+      buildConstraints();
+      applyTiePins();
+
+      const positions = new Float32Array(particleCount * 3);
+      positions.set(pos);
+      const uvs = new Float32Array(particleCount * 2);
+      for (let j = 0; j <= state.rows; j++) {
+        for (let i = 0; i <= state.cols; i++) {
+          const id = idx(i, j) * 2;
+          uvs[id] = i / state.cols;
+          uvs[id + 1] = 1 - j / state.rows;
+        }
+      }
+      const indices = [];
+      for (let j = 0; j < state.rows; j++) {
+        for (let i = 0; i < state.cols; i++) {
+          const a = idx(i, j);
+          const b = idx(i + 1, j);
+          const c = idx(i, j + 1);
+          const d = idx(i + 1, j + 1);
+          indices.push(a, c, b, b, c, d);
+        }
+      }
+
+      if (clothMesh) {
+        scene.remove(clothMesh);
+        clothMesh.geometry.dispose();
+      }
+      if (wireMesh) {
+        scene.remove(wireMesh);
+        wireMesh.geometry.dispose();
+      }
+      geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+
+      clothMesh = new THREE.Mesh(geometry, clothMaterial);
+      clothMesh.castShadow = state.selfShadow || state.groundShadow;
+      clothMesh.receiveShadow = state.selfShadow;
+      scene.add(clothMesh);
+
+      wireMesh = buildWireMesh();
+      wireMesh.visible = state.wireframe;
+      scene.add(wireMesh);
+
+      buildHemMeshes();
+      rebuildPole();
+      rebuildAttachmentVisuals();
+      updateGeometry();
+      updateStats();
+      updateQualityWarning();
+      updateValuePills();
+      if (resetTexture) textureDirty = true;
+    }
+
+    function buildConstraints() {
+      const wStep = state.flagWidth / state.cols;
+      const hStep = state.flagHeight / state.rows;
+      const diag = Math.hypot(wStep, hStep);
+      const add = (a, b, rest, k, type = 'normal') => constraints.push({ a, b, rest, k, type });
+      for (let j = 0; j <= state.rows; j++) {
+        for (let i = 0; i <= state.cols; i++) {
+          const p = idx(i, j);
+          if (i < state.cols) add(p, idx(i + 1, j), wStep, state.stretchStiffness, 'struct');
+          if (j < state.rows) add(p, idx(i, j + 1), hStep, state.stretchStiffness, 'struct');
+          if (i < state.cols && j < state.rows) {
+            add(p, idx(i + 1, j + 1), diag, state.shearStiffness, 'shear');
+            add(idx(i + 1, j), idx(i, j + 1), diag, state.shearStiffness, 'shear');
+          }
+          if (i < state.cols - 1) add(p, idx(i + 2, j), wStep * 2, state.bendStiffness, 'bend');
+          if (j < state.rows - 1) add(p, idx(i, j + 2), hStep * 2, state.bendStiffness, 'bend');
+        }
+      }
+
+      const edgeK = clamp(state.hemStiffness, 0, 1);
+      for (let i = 0; i < state.cols; i++) {
+        add(idx(i, 0), idx(i + 1, 0), wStep, edgeK, 'hem');
+        add(idx(i, state.rows), idx(i + 1, state.rows), wStep, edgeK, 'hem');
+      }
+      for (let j = 0; j < state.rows; j++) {
+        add(idx(0, j), idx(0, j + 1), hStep, edgeK, 'hem');
+        add(idx(state.cols, j), idx(state.cols, j + 1), hStep, edgeK, 'hem');
+      }
+    }
+
+    function pinParticle(id) {
+      invMass[id] = 0;
+      const p = id * 3;
+      pinPos[p] = pos[p];
+      pinPos[p + 1] = pos[p + 1];
+      pinPos[p + 2] = pos[p + 2];
+    }
+
+    function addTether(id, x, y, z, rest = state.tieSlack, k = state.tieTension) {
+      tethers.push({ a: id, x, y, z, rest, k });
+    }
+
+    function applyTiePins() {
+      invMass.fill(1);
+      const rows = state.rows;
+      const cols = state.cols;
+      const left = (j) => idx(0, clamp(j, 0, rows));
+      const top = (i) => idx(clamp(i, 0, cols), 0);
+      const poleX = -state.poleDiameter * 0.16;
+      const slack = state.tieSlack;
+
+      if (state.tieType === 'sleeve') {
+        for (let j = 0; j <= rows; j++) pinParticle(left(j));
+      } else if (state.tieType === 'looseSleeve') {
+        pinParticle(left(0));
+        pinParticle(left(rows));
+        for (let j = 1; j < rows; j++) {
+          const p = left(j) * 3;
+          addTether(left(j), poleX, pos[p + 1], 0, slack + 0.03, state.tieTension * 0.82);
+        }
+      } else if (state.tieType === 'grommets') {
+        pinParticle(left(0));
+        pinParticle(left(rows));
+      } else if (state.tieType === 'clips3') {
+        [0, Math.round(rows / 2), rows].forEach(j => pinParticle(left(j)));
+        for (let j = 0; j <= rows; j += Math.max(1, Math.round(rows / 8))) {
+          const p = left(j) * 3;
+          addTether(left(j), poleX, pos[p + 1], 0, slack + 0.04, state.tieTension * 0.55);
+        }
+      } else if (state.tieType === 'clips5') {
+        [0, Math.round(rows * 0.25), Math.round(rows * 0.5), Math.round(rows * 0.75), rows].forEach(j => pinParticle(left(j)));
+      } else if (state.tieType === 'topRod') {
+        for (let i = 0; i <= cols; i++) pinParticle(top(i));
+        for (let j = 1; j <= rows; j += Math.max(1, Math.round(rows / 6))) {
+          const p = left(j) * 3;
+          addTether(left(j), poleX, pos[p + 1], 0, slack + 0.05, state.tieTension * 0.35);
+        }
+      } else if (state.tieType === 'freeCorner') {
+        pinParticle(left(0));
+        const mid = left(Math.round(rows * 0.05));
+        const p = mid * 3;
+        addTether(mid, poleX, pos[p + 1], 0, slack + 0.02, state.tieTension * 0.6);
+      }
+    }
+
+    function resetPinsToAnchors() {
+      for (let id = 0; id < particleCount; id++) {
+        if (invMass[id] === 0) {
+          const p = id * 3;
+          pos[p] = pinPos[p]; pos[p + 1] = pinPos[p + 1]; pos[p + 2] = pinPos[p + 2];
+          prev[p] = pinPos[p]; prev[p + 1] = pinPos[p + 1]; prev[p + 2] = pinPos[p + 2];
+        }
+      }
+    }
+
+    function computeWindVector(t) {
+      const base = state.windSpeed;
+      const f = state.gustFrequency;
+      let gustPulse = 0;
+      if (f > 0.001) {
+        const pulseA = Math.max(0, Math.sin(t * Math.PI * 2 * f));
+        const pulseB = Math.max(0, Math.sin(t * Math.PI * 2 * (f * 0.37 + 0.05) + 1.8));
+        const shaped = Math.pow(pulseA, 2.4) * 0.78 + Math.pow(pulseB, 4.0) * 0.22;
+        gustPulse = state.gustStrength * shaped;
+      }
+      const jitter = (hashNoise(t * 0.8, 12.7, 0) - 0.5) * state.randomness * Math.max(0.5, state.gustStrength * 0.18);
+      const speed = Math.max(0, base + gustPulse + jitter);
+      const angle = degToRad(state.windAngle);
+      const lift = degToRad(state.windLift);
+      const horizontal = Math.cos(lift) * speed;
+      const target = new THREE.Vector3(
+        Math.cos(angle) * horizontal,
+        Math.sin(lift) * speed,
+        Math.sin(angle) * horizontal
       );
-      local.x += cfg.vortex*Math.sin(tmpA.y*5+elapsed*3.1)*(i/(cols-1));
-      local.z += cfg.vortex*Math.cos(tmpA.x*4-elapsed*2.4)*(i/(cols-1));
-      const dot=tmpN.dot(local); const pressure=dot*Math.abs(dot)*.018*cfg.airDensity*cfg.airDrag*cellArea*densityScale;
-      acc[3*k]+=tmpN.x*pressure + local.x*.012*densityScale;
-      acc[3*k+1]+=tmpN.y*pressure + local.y*.012*densityScale;
-      acc[3*k+2]+=tmpN.z*pressure + local.z*.012*densityScale;
+      windFiltered.lerp(target, 1 - state.windSmoothing);
+      windNowSpeed = windFiltered.length();
+      return windFiltered;
     }
-    const damp=clamp(cfg.damping + cfg.wetness*.04 + cfg.thicknessMm*.002,0,.12);
-    for(let k=0;k<particles;k++){
-      if(invMass[k]===0){pos[3*k]=pin[3*k];pos[3*k+1]=pin[3*k+1];pos[3*k+2]=pin[3*k+2];old[3*k]=pos[3*k];old[3*k+1]=pos[3*k+1];old[3*k+2]=pos[3*k+2];continue;}
-      const x=pos[3*k],y=pos[3*k+1],z=pos[3*k+2];
-      const vx=(x-old[3*k])*(1-damp), vy=(y-old[3*k+1])*(1-damp), vz=(z-old[3*k+2])*(1-damp);
-      old[3*k]=x;old[3*k+1]=y;old[3*k+2]=z;
-      pos[3*k]=x+vx+acc[3*k]*dt*dt; pos[3*k+1]=y+vy+acc[3*k+1]*dt*dt; pos[3*k+2]=z+vz+acc[3*k+2]*dt*dt;
+
+    function hashNoise(x, y, z = 0) {
+      const n = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719) * 43758.5453123;
+      return n - Math.floor(n);
     }
-    for(let it=0;it<cfg.iterations;it++){for(const c of constraints) satisfy(c); for(const te of tethers) satisfyTether(te); enforcePins(); if(cfg.poleCollision) collidePole();}
-  }
-}
-function satisfy(c){
-  const a=c.a,b=c.b,w1=invMass[a],w2=invMass[b],ws=w1+w2; if(ws===0) return;
-  const ax=pos[3*a],ay=pos[3*a+1],az=pos[3*a+2], bx=pos[3*b],by=pos[3*b+1],bz=pos[3*b+2];
-  let dx=bx-ax,dy=by-ay,dz=bz-az; const d=Math.hypot(dx,dy,dz)||1e-6; const corr=(d-c.rest)/d*stiffness(c)*.5;
-  dx*=corr;dy*=corr;dz*=corr; const r1=w1/ws,r2=w2/ws;
-  if(w1){pos[3*a]+=dx*r1;pos[3*a+1]+=dy*r1;pos[3*a+2]+=dz*r1;} if(w2){pos[3*b]-=dx*r2;pos[3*b+1]-=dy*r2;pos[3*b+2]-=dz*r2;}
-}
-function satisfyTether(te){
-  const k=te.k,w=invMass[k]; if(!w) return; const x=pos[3*k]-te.x,y=pos[3*k+1]-te.y,z=pos[3*k+2]-te.z; const d=Math.hypot(x,y,z)||1e-6; if(d<=te.slack) return;
-  const pull=(d-te.slack)/d*cfg.tieTension; pos[3*k]-=x*pull; pos[3*k+1]-=y*pull; pos[3*k+2]-=z*pull;
-}
-function enforcePins(){for(let k=0;k<particles;k++) if(invMass[k]===0){pos[3*k]=pin[3*k];pos[3*k+1]=pin[3*k+1];pos[3*k+2]=pin[3*k+2];}}
-function collidePole(){
-  const r=cfg.poleDiameter/2, cx=-r, minY=-cfg.flagH/2-cfg.polePadding, maxY=cfg.flagH/2+cfg.polePadding;
-  for(let k=0;k<particles;k++){if(pos[3*k+1]<minY||pos[3*k+1]>maxY) continue; const x=pos[3*k]-cx,z=pos[3*k+2],d=Math.hypot(x,z); if(d<r*1.03 && pos[3*k]<r*.55){const m=(r*1.03-d)/(d||1e-6); pos[3*k]+=x*m; pos[3*k+2]+=z*m;}}
-}
-function updateGeometry(){
-  const attr=geom.attributes.position; attr.array.set(pos); attr.needsUpdate=true; geom.computeVertexNormals();
-  if(wireMesh){wireMesh.visible=cfg.wire; if(cfg.wire){wireMesh.geometry.dispose(); wireMesh.geometry=new THREE.WireframeGeometry(geom);}}
-  let p=0; for(let k=0;k<particles;k++) if(invMass[k]===0 && attachGroup.children[p]){attachGroup.children[p].position.set(pos[3*k],pos[3*k+1],pos[3*k+2]); p++;}
-}
-function animate(now){
-  requestAnimationFrame(animate); const dt=Math.min(.05,(now-(animate.last||now))/1000||.016); animate.last=now; elapsed+=dt; fps=lerp(fps,1/dt,.05);
-  if(cfg.playing) stepPhysics(dt); updateGeometry(); if(texture){texture.needsUpdate=true;} controls.autoRotate=cfg.autoRotate; controls.update(); renderer.render(scene,camera);
-  $('#stats').innerHTML=`<b>${cols} × ${rows}</b> particles: ${particles.toLocaleString()}<br><b>${windSpeedNow.toFixed(1)} m/s</b> current wind · ${cfg.fabric} · ${cfg.tie}<br><b>${fps.toFixed(0)} FPS</b> · ${cfg.iterations} iterations · ${cfg.substeps} substeps`;
-}
 
-const designCanvas=$('#designCanvas'), dctx=designCanvas.getContext('2d');
-let undo=[], redo=[], drawing=false, start=null, last=null, snapshot=null;
-function buildDesigner(){
-  $('#designControls').innerHTML = `
-  <details class="group" open><summary>Drawing tools</summary><div class="body">
-    ${selectField('designTool','Tool',[['brush','Brush'],['eraser','Eraser'],['line','Line'],['rect','Rectangle'],['ellipse','Ellipse'],['fill','Bucket fill'],['text','Text stamp']])}
-    ${rangeField('brush')}${rangeField('fillTolerance')}
-    <div class="row2"><div class="field"><label>Primary color</label><input id="colorA" type="color" value="#ffffff"></div><div class="field"><label>Secondary color</label><input id="colorB" type="color" value="#0b55ff"></div></div>
-    <div class="field"><label>Text stamp</label><input id="stampText" type="text" value="FLAG"></div>
-    <div class="buttons"><button id="undoBtn">Undo</button><button id="redoBtn">Redo</button><button class="bad" id="clearCanvas">Clear</button></div>
-    <div class="field"><label>Import image</label><input id="uploadImage" type="file" accept="image/*"></div>
-  </div></details>
-  <details class="group" open><summary>Quick patterns</summary><div class="body">
-    <div class="buttons"><button data-pattern="horizontal">Horizontal stripes</button><button data-pattern="vertical">Vertical stripes</button><button data-pattern="cross">Nordic cross</button><button data-pattern="canton">Canton + stripes</button><button data-pattern="circle">Circle emblem</button><button data-pattern="diagonal">Diagonal bands</button></div>
-  </div></details>
-  <details class="group" open><summary>World flag presets</summary><div class="body">
-    <div class="field"><label>Country / organization</label><select id="countrySelect">${countries.map(([c,n])=>`<option value="${c}">${n}</option>`).join('')}</select></div>
-    <div class="buttons"><button id="loadCountry" class="primary">Load selected flag</button><button id="uaePreset">Load UAE</button><button id="usPreset">Load US</button></div>
-    <small>Requires internet access because flags are loaded from FlagCDN.</small>
-  </div></details>`;
-  bindDesigner(); resizeDesignCanvas(false); drawStarterFlag(); pushUndo(); updateCanvasInfo();
-}
-function bindDesigner(){
-  $('#designTool').oninput=e=>cfg.designTool=e.target.value;
-  $('#brush').oninput=e=>{cfg.brush=Number(e.target.value);updateControls();}; $('#fillTolerance').oninput=e=>{cfg.fillTolerance=Number(e.target.value);updateControls();};
-  $('#undoBtn').onclick=doUndo; $('#redoBtn').onclick=doRedo; $('#clearCanvas').onclick=()=>{pushUndo();dctx.clearRect(0,0,designCanvas.width,designCanvas.height);dctx.fillStyle='white';dctx.fillRect(0,0,designCanvas.width,designCanvas.height);markTexture();};
-  $('#uploadImage').onchange=e=>{const f=e.target.files[0]; if(!f)return; const img=new Image(); img.onload=()=>{pushUndo();drawImageCover(img);URL.revokeObjectURL(img.src);markTexture();}; img.src=URL.createObjectURL(f);};
-  $('#loadCountry').onclick=()=>loadCountry($('#countrySelect').value); $('#uaePreset').onclick=()=>loadCountry('ae'); $('#usPreset').onclick=()=>loadCountry('us');
-  $$('[data-pattern]').forEach(b=>b.onclick=()=>drawPattern(b.dataset.pattern));
-  $('#applyDesign').onclick=()=>{markTexture(); switchPage('simPage');}; $('#downloadPng').onclick=()=>{const a=document.createElement('a');a.download='flag-design.png';a.href=designCanvas.toDataURL('image/png');a.click();};
-  designCanvas.addEventListener('pointerdown',pointerDown); designCanvas.addEventListener('pointermove',pointerMove); addEventListener('pointerup',pointerUp);
-}
-function resizeDesignCanvas(preserve=true){
-  const old=document.createElement('canvas'); old.width=designCanvas.width||1; old.height=designCanvas.height||1; old.getContext('2d').drawImage(designCanvas,0,0);
-  designCanvas.width=Math.round(cfg.texW); designCanvas.height=Math.max(64,Math.round(cfg.texW*cfg.flagH/cfg.flagW));
-  dctx.fillStyle='white'; dctx.fillRect(0,0,designCanvas.width,designCanvas.height); if(preserve) dctx.drawImage(old,0,0,designCanvas.width,designCanvas.height); markTexture(); updateCanvasInfo();
-}
-function updateCanvasInfo(){if($('#canvasInfo')) $('#canvasInfo').textContent=`Designer canvas: ${designCanvas.width} × ${designCanvas.height}px · flag ratio ${cfg.flagW.toFixed(2)}:${cfg.flagH.toFixed(2)}`;}
-function canvasPoint(e){const r=designCanvas.getBoundingClientRect(); return {x:(e.clientX-r.left)*designCanvas.width/r.width,y:(e.clientY-r.top)*designCanvas.height/r.height};}
-function pushUndo(){try{undo.push(dctx.getImageData(0,0,designCanvas.width,designCanvas.height)); if(undo.length>25) undo.shift(); redo=[];}catch(e){}}
-function restore(img){dctx.putImageData(img,0,0); markTexture();}
-function doUndo(){if(undo.length<2)return; redo.push(undo.pop()); restore(undo[undo.length-1]);}
-function doRedo(){if(!redo.length)return; const img=redo.pop(); undo.push(img); restore(img);}
-function markTexture(){if(texture) texture.needsUpdate=true; updateCanvasInfo();}
-function pointerDown(e){e.preventDefault(); start=last=canvasPoint(e); if(cfg.designTool==='fill'){pushUndo();bucketFill(start.x,start.y,$('#colorA').value,cfg.fillTolerance);pushUndo();markTexture();return} if(cfg.designTool==='text'){pushUndo();dctx.fillStyle=$('#colorA').value;dctx.font=`bold ${cfg.brush*3}px system-ui,sans-serif`;dctx.textAlign='center';dctx.textBaseline='middle';dctx.fillText($('#stampText').value,start.x,start.y);pushUndo();markTexture();return} drawing=true; snapshot=dctx.getImageData(0,0,designCanvas.width,designCanvas.height); pushUndo(); if(['brush','eraser'].includes(cfg.designTool)) drawStroke(start,start);}
-function pointerMove(e){if(!drawing)return; const p=canvasPoint(e); if(cfg.designTool==='brush'||cfg.designTool==='eraser'){drawStroke(last,p); last=p;} else {dctx.putImageData(snapshot,0,0);drawShape(start,p,false);} markTexture();}
-function pointerUp(){if(!drawing)return; drawing=false; pushUndo(); markTexture();}
-function drawStroke(a,b){dctx.save();dctx.lineCap='round';dctx.lineJoin='round';dctx.lineWidth=cfg.brush; if(cfg.designTool==='eraser'){dctx.globalCompositeOperation='destination-out';} else {dctx.strokeStyle=$('#colorA').value;} dctx.beginPath();dctx.moveTo(a.x,a.y);dctx.lineTo(b.x,b.y);dctx.stroke();dctx.restore();}
-function drawShape(a,b){dctx.save();dctx.lineWidth=cfg.brush;dctx.strokeStyle=$('#colorA').value;dctx.fillStyle=$('#colorB').value; const x=Math.min(a.x,b.x),y=Math.min(a.y,b.y),w=Math.abs(a.x-b.x),h=Math.abs(a.y-b.y); if(cfg.designTool==='line'){dctx.beginPath();dctx.moveTo(a.x,a.y);dctx.lineTo(b.x,b.y);dctx.stroke();} if(cfg.designTool==='rect'){dctx.fillRect(x,y,w,h);dctx.strokeRect(x,y,w,h);} if(cfg.designTool==='ellipse'){dctx.beginPath();dctx.ellipse((a.x+b.x)/2,(a.y+b.y)/2,w/2,h/2,0,0,Math.PI*2);dctx.fill();dctx.stroke();} dctx.restore();}
-function hexToRgb(hex){const n=parseInt(hex.slice(1),16); return [n>>16&255,n>>8&255,n&255,255];}
-function bucketFill(x,y,hex,tol){x=Math.floor(x);y=Math.floor(y);const img=dctx.getImageData(0,0,designCanvas.width,designCanvas.height),data=img.data,w=img.width,h=img.height,fill=hexToRgb(hex),i0=(y*w+x)*4,target=data.slice(i0,i0+4); const same=(i)=>Math.abs(data[i]-target[0])+Math.abs(data[i+1]-target[1])+Math.abs(data[i+2]-target[2])+Math.abs(data[i+3]-target[3])<=tol; const q=[[x,y]],seen=new Uint8Array(w*h); while(q.length){const [cx,cy]=q.pop(); if(cx<0||cy<0||cx>=w||cy>=h)continue; const p=cy*w+cx,i=p*4;if(seen[p]||!same(i))continue;seen[p]=1;data[i]=fill[0];data[i+1]=fill[1];data[i+2]=fill[2];data[i+3]=255;q.push([cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]);} dctx.putImageData(img,0,0);}
-function drawStarterFlag(){dctx.fillStyle='#ffffff';dctx.fillRect(0,0,designCanvas.width,designCanvas.height);dctx.fillStyle='#de2536';dctx.fillRect(0,0,designCanvas.width,designCanvas.height/3);dctx.fillStyle='#2457c5';dctx.fillRect(0,designCanvas.height*2/3,designCanvas.width,designCanvas.height/3);markTexture();}
-function drawPattern(kind){pushUndo();const w=designCanvas.width,h=designCanvas.height,a=$('#colorA').value,b=$('#colorB').value;dctx.fillStyle='white';dctx.fillRect(0,0,w,h); if(kind==='horizontal'){dctx.fillStyle=a;dctx.fillRect(0,0,w,h/3);dctx.fillStyle=b;dctx.fillRect(0,h*2/3,w,h/3);} if(kind==='vertical'){dctx.fillStyle=a;dctx.fillRect(0,0,w/3,h);dctx.fillStyle=b;dctx.fillRect(w*2/3,0,w/3,h);} if(kind==='cross'){dctx.fillStyle=b;dctx.fillRect(0,0,w,h);dctx.fillStyle='white';dctx.fillRect(w*.28,0,w*.16,h);dctx.fillRect(0,h*.42,w,h*.16);dctx.fillStyle=a;dctx.fillRect(w*.32,0,w*.08,h);dctx.fillRect(0,h*.46,w,h*.08);} if(kind==='canton'){for(let i=0;i<7;i++){dctx.fillStyle=i%2?a:'white';dctx.fillRect(0,i*h/7,w,h/7);}dctx.fillStyle=b;dctx.fillRect(0,0,w*.42,h*.54);} if(kind==='circle'){dctx.fillStyle='white';dctx.fillRect(0,0,w,h);dctx.fillStyle=a;dctx.beginPath();dctx.arc(w/2,h/2,Math.min(w,h)*.23,0,Math.PI*2);dctx.fill();} if(kind==='diagonal'){dctx.fillStyle=b;dctx.fillRect(0,0,w,h);dctx.fillStyle='white';dctx.beginPath();dctx.moveTo(0,h*.12);dctx.lineTo(w,0);dctx.lineTo(w,h*.18);dctx.lineTo(0,h*.84);dctx.closePath();dctx.fill();dctx.fillStyle=a;dctx.beginPath();dctx.moveTo(0,h*.25);dctx.lineTo(w,h*.02);dctx.lineTo(w,h*.17);dctx.lineTo(0,h*.98);dctx.closePath();dctx.fill();} pushUndo();markTexture();}
-function drawImageCover(img){const w=designCanvas.width,h=designCanvas.height;dctx.fillStyle='white';dctx.fillRect(0,0,w,h); const r=Math.min(w/img.width,h/img.height),dw=img.width*r,dh=img.height*r; dctx.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh);}
-function loadCountry(code){const img=new Image(); img.crossOrigin='anonymous'; img.onload=()=>{pushUndo();drawImageCover(img);pushUndo();markTexture();}; img.onerror=()=>alert('Could not load this flag. Check internet access or try another preset.'); img.src=`https://flagcdn.com/w1280/${code.toLowerCase()}.png`;}
+    function applyForces(dt, wind) {
+      acc.fill(0);
+      const density = Math.max(0.03, state.fabricGsm / 1000 + state.thicknessMm * 0.012);
+      const area = state.flagWidth * state.flagHeight;
+      const massPerParticle = Math.max(0.0002, density * area / particleCount);
+      const flutterBase = state.turbulence * windNowSpeed * 1.65 / Math.sqrt(Math.max(0.04, density));
+      const flowPull = 0.12 * state.airDrag / Math.max(0.16, density);
+      const vorticity = state.vortex * windNowSpeed * 0.55;
 
-function switchPage(id){$$('.page').forEach(p=>p.classList.toggle('active',p.id===id)); $$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.page===id)); setTimeout(()=>{resizeRenderer();updateCanvasInfo();},50);}
-$$('.tab').forEach(b=>b.onclick=()=>switchPage(b.dataset.page));
+      for (let id = 0; id < particleCount; id++) {
+        if (invMass[id] === 0) continue;
+        const p = id * 3;
+        const u = pos[p] / Math.max(0.001, state.flagWidth);
+        const j = Math.floor(id / (state.cols + 1));
+        const i = id - j * (state.cols + 1);
+        const n1 = Math.sin(elapsed * (2.2 + state.randomness) + i * 0.39 + j * 0.23);
+        const n2 = Math.sin(elapsed * (5.1 + state.randomness * 2.1) + i * 0.13 - j * 0.41 + 1.8);
+        const n3 = hashNoise(i * 0.21 + elapsed * 0.75, j * 0.29, Math.floor(elapsed * 0.7));
+        const edgeFade = smoothstep(0.04, 0.34, u);
+        const flutter = (n1 * 0.62 + n2 * 0.28 + (n3 - 0.5) * 0.9 * state.randomness) * flutterBase * edgeFade;
+        const swirl = Math.sin(elapsed * 2.8 + u * 13 + j * 0.12) * vorticity * edgeFade;
+        acc[p] += wind.x * flowPull;
+        acc[p + 1] += -state.gravity + wind.y * flowPull * 0.7 + flutter * 0.08 + swirl * 0.05;
+        acc[p + 2] += wind.z * flowPull + flutter + swirl;
+      }
 
-buildControls(); buildDesigner(); initThree();
-</script>
+      applyAerodynamicTriangles(wind, massPerParticle);
+    }
+
+    function smoothstep(edge0, edge1, x) {
+      const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
+      return t * t * (3 - 2 * t);
+    }
+
+    function applyAerodynamicTriangles(wind, massPerParticle) {
+      const tempA = new THREE.Vector3();
+      const tempB = new THREE.Vector3();
+      const tempC = new THREE.Vector3();
+      const ab = new THREE.Vector3();
+      const ac = new THREE.Vector3();
+      const normal = new THREE.Vector3();
+      const windLen = wind.length();
+      if (windLen < 0.02) return;
+
+      const scale = 0.042 * state.airDrag / Math.max(0.0002, massPerParticle);
+      for (let j = 0; j < state.rows; j++) {
+        for (let i = 0; i < state.cols; i++) {
+          const a = idx(i, j);
+          const b = idx(i + 1, j);
+          const c = idx(i, j + 1);
+          const d = idx(i + 1, j + 1);
+          triangleWind(a, c, b, tempA, tempB, tempC, ab, ac, normal, wind, scale);
+          triangleWind(b, c, d, tempA, tempB, tempC, ab, ac, normal, wind, scale);
+        }
+      }
+    }
+
+    function triangleWind(a, b, c, tempA, tempB, tempC, ab, ac, normal, wind, scale) {
+      tempA.fromArray(pos, a * 3);
+      tempB.fromArray(pos, b * 3);
+      tempC.fromArray(pos, c * 3);
+      ab.subVectors(tempB, tempA);
+      ac.subVectors(tempC, tempA);
+      normal.crossVectors(ab, ac);
+      const doubleArea = normal.length();
+      if (doubleArea < 1e-7) return;
+      normal.multiplyScalar(1 / doubleArea);
+      const dot = normal.dot(wind);
+      const pressure = dot * Math.abs(dot) * doubleArea * scale;
+      const fx = normal.x * pressure / 3;
+      const fy = normal.y * pressure / 3;
+      const fz = normal.z * pressure / 3;
+      addAcc(a, fx, fy, fz);
+      addAcc(b, fx, fy, fz);
+      addAcc(c, fx, fy, fz);
+    }
+
+    function addAcc(id, x, y, z) {
+      if (invMass[id] === 0) return;
+      const p = id * 3;
+      acc[p] += x;
+      acc[p + 1] += y;
+      acc[p + 2] += z;
+    }
+
+    function integrate(dt) {
+      const damping = clamp(state.damping + state.thicknessMm * 0.0018, 0.001, 0.12);
+      const drag = 1 - damping;
+      const maxSpeedStep = 0.22 + 0.03 * state.flagWidth;
+      for (let id = 0; id < particleCount; id++) {
+        const p = id * 3;
+        if (invMass[id] === 0) {
+          pos[p] = pinPos[p]; pos[p + 1] = pinPos[p + 1]; pos[p + 2] = pinPos[p + 2];
+          prev[p] = pinPos[p]; prev[p + 1] = pinPos[p + 1]; prev[p + 2] = pinPos[p + 2];
+          continue;
+        }
+        let vx = (pos[p] - prev[p]) * drag;
+        let vy = (pos[p + 1] - prev[p + 1]) * drag;
+        let vz = (pos[p + 2] - prev[p + 2]) * drag;
+        const speedStep = Math.hypot(vx, vy, vz);
+        if (speedStep > maxSpeedStep) {
+          const s = maxSpeedStep / speedStep;
+          vx *= s; vy *= s; vz *= s;
+        }
+        const nx = pos[p] + vx + acc[p] * dt * dt;
+        const ny = pos[p + 1] + vy + acc[p + 1] * dt * dt;
+        const nz = pos[p + 2] + vz + acc[p + 2] * dt * dt;
+        prev[p] = pos[p]; prev[p + 1] = pos[p + 1]; prev[p + 2] = pos[p + 2];
+        pos[p] = nx; pos[p + 1] = ny; pos[p + 2] = nz;
+      }
+    }
+
+    function satisfyConstraints() {
+      for (let iter = 0; iter < state.iterations; iter++) {
+        for (const c of constraints) solveDistance(c.a, c.b, c.rest, c.k);
+        for (const tether of tethers) solveTether(tether);
+        if (state.poleCollision) solvePoleCollision();
+        solveGroundCollision();
+        resetPinsToAnchors();
+      }
+    }
+
+    function solveDistance(a, b, rest, stiffness) {
+      const ai = a * 3;
+      const bi = b * 3;
+      const dx = pos[bi] - pos[ai];
+      const dy = pos[bi + 1] - pos[ai + 1];
+      const dz = pos[bi + 2] - pos[ai + 2];
+      const dist = Math.hypot(dx, dy, dz);
+      if (dist < 1e-7) return;
+      const invA = invMass[a];
+      const invB = invMass[b];
+      const invSum = invA + invB;
+      if (invSum === 0) return;
+      const correction = ((dist - rest) / dist) * stiffness;
+      const ax = dx * correction * (invA / invSum);
+      const ay = dy * correction * (invA / invSum);
+      const az = dz * correction * (invA / invSum);
+      const bx = dx * correction * (invB / invSum);
+      const by = dy * correction * (invB / invSum);
+      const bz = dz * correction * (invB / invSum);
+      if (invA > 0) { pos[ai] += ax; pos[ai + 1] += ay; pos[ai + 2] += az; }
+      if (invB > 0) { pos[bi] -= bx; pos[bi + 1] -= by; pos[bi + 2] -= bz; }
+    }
+
+    function solveTether(tether) {
+      const p = tether.a * 3;
+      if (invMass[tether.a] === 0) return;
+      const dx = tether.x - pos[p];
+      const dy = tether.y - pos[p + 1];
+      const dz = tether.z - pos[p + 2];
+      const dist = Math.hypot(dx, dy, dz);
+      if (dist <= tether.rest || dist < 1e-7) return;
+      const correction = ((dist - tether.rest) / dist) * tether.k;
+      pos[p] += dx * correction;
+      pos[p + 1] += dy * correction;
+      pos[p + 2] += dz * correction;
+    }
+
+    function solvePoleCollision() {
+      const radius = state.poleDiameter * 0.5 + 0.012;
+      const poleX = -state.poleDiameter * 0.5;
+      for (let id = 0; id < particleCount; id++) {
+        if (invMass[id] === 0) continue;
+        const p = id * 3;
+        const dx = pos[p] - poleX;
+        const dz = pos[p + 2];
+        const d = Math.hypot(dx, dz);
+        if (d < radius && pos[p] < radius * 1.2) {
+          const s = radius / Math.max(1e-5, d);
+          pos[p] = poleX + dx * s;
+          pos[p + 2] = dz * s;
+        }
+        if (pos[p] < -state.poleDiameter * 0.25) pos[p] = -state.poleDiameter * 0.25;
+      }
+    }
+
+    function solveGroundCollision() {
+      const groundY = -state.flagHeight * 0.5 - 0.68;
+      for (let id = 0; id < particleCount; id++) {
+        if (invMass[id] === 0) continue;
+        const p = id * 3;
+        if (pos[p + 1] < groundY) {
+          pos[p + 1] = groundY;
+          prev[p + 1] = lerp(prev[p + 1], groundY, 0.35);
+        }
+      }
+    }
+
+    function simulate(delta) {
+      if (!state.playing) return;
+      const maxDelta = Math.min(delta, 1 / 24);
+      const substeps = Math.max(1, state.substeps);
+      const step = maxDelta * state.timeScale / substeps;
+      for (let s = 0; s < substeps; s++) {
+        elapsed += step;
+        const wind = computeWindVector(elapsed);
+        applyForces(step, wind);
+        integrate(step);
+        satisfyConstraints();
+      }
+    }
+
+    function updateGeometry() {
+      if (!geometry) return;
+      const attr = geometry.getAttribute('position');
+      attr.array.set(pos);
+      attr.needsUpdate = true;
+      geometry.computeVertexNormals();
+      geometry.computeBoundingSphere();
+      updateWireMesh();
+      updateHemMeshes();
+      updateAttachmentVisuals();
+    }
+
+    function buildHemMeshes() {
+      hemGroup.clear();
+      const mat = new THREE.MeshStandardMaterial({ color: 0xe8edf5, roughness: 0.92, metalness: 0.0, side: THREE.DoubleSide });
+      const defs = [
+        { name: 'top', count: state.cols + 1, get: k => idx(k, 0) },
+        { name: 'bottom', count: state.cols + 1, get: k => idx(k, state.rows) },
+        { name: 'left', count: state.rows + 1, get: k => idx(0, k) },
+        { name: 'right', count: state.rows + 1, get: k => idx(state.cols, k) }
+      ];
+      for (const def of defs) {
+        const g = new THREE.BufferGeometry();
+        const positions = new Float32Array(def.count * 2 * 3);
+        const indices = [];
+        for (let k = 0; k < def.count - 1; k++) {
+          const a = k * 2;
+          indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+        }
+        g.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        g.setIndex(indices);
+        const mesh = new THREE.Mesh(g, mat);
+        mesh.userData.def = def;
+        mesh.castShadow = true;
+        mesh.receiveShadow = state.selfShadow;
+        hemGroup.add(mesh);
+      }
+    }
+
+    function updateHemMeshes() {
+      if (!geometry) return;
+      const normalAttr = geometry.getAttribute('normal');
+      if (!normalAttr) return;
+      const visualThickness = Math.max(0.002, state.thicknessMm / 1000 * 16);
+      for (const mesh of hemGroup.children) {
+        const def = mesh.userData.def;
+        const arr = mesh.geometry.getAttribute('position').array;
+        for (let k = 0; k < def.count; k++) {
+          const id = def.get(k);
+          const p = id * 3;
+          const n = id * 3;
+          const nx = normalAttr.array[n] || 0;
+          const ny = normalAttr.array[n + 1] || 0;
+          const nz = normalAttr.array[n + 2] || 1;
+          const o = k * 6;
+          arr[o] = pos[p] + nx * visualThickness;
+          arr[o + 1] = pos[p + 1] + ny * visualThickness;
+          arr[o + 2] = pos[p + 2] + nz * visualThickness;
+          arr[o + 3] = pos[p] - nx * visualThickness;
+          arr[o + 4] = pos[p + 1] - ny * visualThickness;
+          arr[o + 5] = pos[p + 2] - nz * visualThickness;
+        }
+        mesh.geometry.getAttribute('position').needsUpdate = true;
+        mesh.geometry.computeVertexNormals();
+      }
+    }
+
+    function rebuildPole() {
+      if (!scene) return;
+      if (poleGroup) scene.remove(poleGroup);
+      poleGroup = new THREE.Group();
+      const h = state.flagHeight + state.polePadding * 2;
+      const radius = state.poleDiameter / 2;
+      const poleMat = new THREE.MeshStandardMaterial({ color: 0xb8c0cc, metalness: 0.58, roughness: 0.32 });
+      const poleGeo = new THREE.CylinderGeometry(radius, radius, h, 36, 1);
+      const pole = new THREE.Mesh(poleGeo, poleMat);
+      pole.position.set(-radius, 0, 0);
+      pole.castShadow = true;
+      pole.receiveShadow = true;
+      poleGroup.add(pole);
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(radius * 1.38, 32, 16), poleMat);
+      cap.position.set(-radius, h / 2 + radius * 0.55, 0);
+      cap.castShadow = true;
+      poleGroup.add(cap);
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(radius * 2.8, radius * 3.5, 0.12, 40), poleMat);
+      base.position.set(-radius, -h / 2 - 0.06, 0);
+      base.castShadow = true;
+      base.receiveShadow = true;
+      poleGroup.add(base);
+      scene.add(poleGroup);
+      if (groundMesh) groundMesh.position.y = -state.flagHeight * 0.5 - 0.7;
+    }
+
+    function collectAttachmentNodes() {
+      const nodes = [];
+      const rows = state.rows;
+      const cols = state.cols;
+      if (state.tieType === 'sleeve' || state.tieType === 'looseSleeve') {
+        nodes.push(idx(0, 0), idx(0, Math.round(rows / 2)), idx(0, rows));
+      } else if (state.tieType === 'grommets') {
+        nodes.push(idx(0, 0), idx(0, rows));
+      } else if (state.tieType === 'clips3') {
+        nodes.push(idx(0, 0), idx(0, Math.round(rows / 2)), idx(0, rows));
+      } else if (state.tieType === 'clips5') {
+        nodes.push(idx(0, 0), idx(0, Math.round(rows * 0.25)), idx(0, Math.round(rows * 0.5)), idx(0, Math.round(rows * 0.75)), idx(0, rows));
+      } else if (state.tieType === 'topRod') {
+        nodes.push(idx(0, 0), idx(Math.round(cols * 0.35), 0), idx(Math.round(cols * 0.7), 0), idx(cols, 0));
+      } else if (state.tieType === 'freeCorner') {
+        nodes.push(idx(0, 0));
+      }
+      return [...new Set(nodes)];
+    }
+
+    function rebuildAttachmentVisuals() {
+      attachmentGroup.clear();
+      if (ropeLines) {
+        scene.remove(ropeLines);
+        ropeLines.geometry.dispose();
+        ropeLines = null;
+      }
+      const nodes = collectAttachmentNodes();
+      const ringMat = new THREE.MeshStandardMaterial({ color: 0xe9d38c, roughness: 0.28, metalness: 0.88 });
+      for (const node of nodes) {
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.007, 10, 28), ringMat);
+        ring.userData.node = node;
+        ring.castShadow = true;
+        attachmentGroup.add(ring);
+      }
+      const ropeGeo = new THREE.BufferGeometry();
+      ropeGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(nodes.length * 2 * 3), 3));
+      const ropeMat = new THREE.LineBasicMaterial({ color: 0xd6d1bf, transparent: true, opacity: 0.9 });
+      ropeLines = new THREE.LineSegments(ropeGeo, ropeMat);
+      ropeLines.userData.nodes = nodes;
+      scene.add(ropeLines);
+      updateAttachmentVisuals();
+    }
+
+    function updateAttachmentVisuals() {
+      for (const ring of attachmentGroup.children) {
+        const p = ring.userData.node * 3;
+        ring.position.set(pos[p], pos[p + 1], pos[p + 2]);
+        ring.rotation.set(0, 0, 0);
+        ring.scale.setScalar(Math.max(0.6, state.poleDiameter / 0.11));
+      }
+      if (ropeLines) {
+        const nodes = ropeLines.userData.nodes || [];
+        const arr = ropeLines.geometry.getAttribute('position').array;
+        const poleX = -state.poleDiameter * 0.5;
+        for (let k = 0; k < nodes.length; k++) {
+          const p = nodes[k] * 3;
+          const o = k * 6;
+          arr[o] = poleX;
+          arr[o + 1] = pos[p + 1];
+          arr[o + 2] = 0;
+          arr[o + 3] = pos[p];
+          arr[o + 4] = pos[p + 1];
+          arr[o + 5] = pos[p + 2];
+        }
+        ropeLines.geometry.getAttribute('position').needsUpdate = true;
+      }
+    }
+
+    function updateMaterialFromState() {
+      if (!clothMaterial) return;
+      clothMaterial.roughness = state.roughness;
+      clothMaterial.sheen = state.fabricType === 'vinyl' ? 0.05 : 0.55;
+      clothMaterial.clearcoat = state.fabricType === 'vinyl' ? 0.38 : 0.0;
+      clothMaterial.clearcoatRoughness = state.fabricType === 'vinyl' ? 0.2 : 0.8;
+      clothMaterial.needsUpdate = true;
+      for (const mesh of hemGroup.children) mesh.receiveShadow = state.selfShadow;
+      if (clothMesh) {
+        clothMesh.receiveShadow = state.selfShadow;
+        clothMesh.castShadow = state.selfShadow || state.groundShadow;
+      }
+      if (wireMesh) wireMesh.visible = state.wireframe;
+    }
+
+    function updateLighting() {
+      if (!sunLight || !ambientLight) return;
+      ambientLight.intensity = state.ambientIntensity;
+      sunLight.intensity = state.sunIntensity;
+      sunLight.castShadow = state.selfShadow || state.groundShadow;
+      const elev = degToRad(state.sunElevation);
+      const az = degToRad(state.sunAzimuth);
+      const r = 8;
+      sunLight.position.set(Math.cos(elev) * Math.cos(az) * r, Math.sin(elev) * r, Math.cos(elev) * Math.sin(az) * r);
+      sunLight.target.position.set(state.flagWidth * 0.55, 0, 0);
+      scene.add(sunLight.target);
+      const shadowCam = sunLight.shadow.camera;
+      const span = Math.max(5, state.flagWidth + state.flagHeight + 2);
+      shadowCam.left = -span;
+      shadowCam.right = span;
+      shadowCam.top = span;
+      shadowCam.bottom = -span;
+      shadowCam.near = 0.2;
+      shadowCam.far = 32;
+      shadowCam.updateProjectionMatrix();
+      sunLight.shadow.bias = -0.00008;
+      sunLight.shadow.normalBias = 0.018;
+      if (sunLight.shadow.mapSize.x !== state.shadowMapSize) {
+        sunLight.shadow.mapSize.set(state.shadowMapSize, state.shadowMapSize);
+        if (sunLight.shadow.map) sunLight.shadow.map.dispose();
+        sunLight.shadow.map = null;
+      }
+      if (groundMesh) groundMesh.receiveShadow = state.groundShadow;
+      if (camera) {
+        camera.fov = state.cameraFov;
+        camera.updateProjectionMatrix();
+      }
+      if (controls) controls.autoRotate = state.autoRotate;
+      updateMaterialFromState();
+    }
+
+    function resizeRenderer() {
+      if (!renderer || !camera) return;
+      const wrap = $('.viewport-wrap');
+      const rect = wrap.getBoundingClientRect();
+      const width = Math.max(1, Math.floor(rect.width));
+      const height = Math.max(1, Math.floor(rect.height));
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+
+    function resetCamera() {
+      camera.position.set(state.flagWidth * 1.15, state.flagHeight * 0.55, Math.max(3.5, state.flagWidth * 1.75));
+      controls.target.set(state.flagWidth * 0.5, 0, 0);
+      controls.update();
+    }
+
+    function updateStats() {
+      $('#statParticles').textContent = `${particleCount.toLocaleString()} (${state.cols}×${state.rows})`;
+      $('#statFps').textContent = `${Math.round(fpsAvg)}`;
+      $('#statWind').textContent = `${windNowSpeed.toFixed(1)} m/s @ ${state.windAngle}°`;
+      const label = $('#fabricType').selectedOptions[0]?.textContent || state.fabricType;
+      $('#statFabric').textContent = `${label}, ${state.fabricGsm} gsm, ${state.thicknessMm.toFixed(2)} mm`;
+    }
+
+    function updateQualityWarning() {
+      const box = $('#qualityWarning');
+      const estimatedConstraints = constraints.length * state.iterations * state.substeps;
+      if (particleCount > 6000 || estimatedConstraints > 700000) {
+        box.hidden = false;
+        box.textContent = 'This is a heavy setup for phones. Lower particle columns, iterations, substeps, or shadow size if motion becomes choppy.';
+      } else {
+        box.hidden = true;
+      }
+    }
+
+    function buildWireMesh() {
+      const segments = state.rows * state.cols + state.rows + state.cols + state.cols;
+      const horizontal = (state.rows + 1) * state.cols;
+      const vertical = (state.cols + 1) * state.rows;
+      const totalSegments = horizontal + vertical;
+      const wireGeo = new THREE.BufferGeometry();
+      wireGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(totalSegments * 2 * 3), 3));
+      const material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.24 });
+      const line = new THREE.LineSegments(wireGeo, material);
+      updateWirePositions(line);
+      return line;
+    }
+
+    function updateWireMesh() {
+      if (!wireMesh) return;
+      wireMesh.visible = state.wireframe;
+      if (!state.wireframe) return;
+      updateWirePositions(wireMesh);
+    }
+
+    function updateWirePositions(line) {
+      const attr = line.geometry.getAttribute('position');
+      const arr = attr.array;
+      let o = 0;
+      const put = (id) => {
+        const p = id * 3;
+        arr[o++] = pos[p];
+        arr[o++] = pos[p + 1];
+        arr[o++] = pos[p + 2];
+      };
+      for (let j = 0; j <= state.rows; j++) {
+        for (let i = 0; i < state.cols; i++) {
+          put(idx(i, j));
+          put(idx(i + 1, j));
+        }
+      }
+      for (let i = 0; i <= state.cols; i++) {
+        for (let j = 0; j < state.rows; j++) {
+          put(idx(i, j));
+          put(idx(i, j + 1));
+        }
+      }
+      attr.needsUpdate = true;
+      line.geometry.computeBoundingSphere();
+    }
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const delta = Math.min(0.05, clock.getDelta());
+      if (lastFrameTime) {
+        const fps = 1000 / Math.max(1, now - lastFrameTime);
+        fpsAvg = lerp(fpsAvg, fps, 0.08);
+      }
+      lastFrameTime = now;
+
+      simulate(delta);
+      updateGeometry();
+      if (textureDirty && canvasTexture) {
+        canvasTexture.needsUpdate = true;
+        textureDirty = false;
+      }
+      if (controls) {
+        controls.autoRotate = state.autoRotate;
+        controls.update();
+      }
+      renderer.render(scene, camera);
+      if (now % 200 < 17) updateStats();
+    }
+
+    function bindControlEvents() {
+      controlIds.forEach(id => {
+        const el = $('#' + id);
+        if (!el) return;
+        const hardRebuild = new Set(['cols', 'flagWidth', 'flagHeight', 'textureWidth']);
+        const clothRebuild = new Set(['stretchStiffness', 'bendStiffness', 'shearStiffness', 'hemStiffness', 'tieSlack', 'tieTension', 'poleDiameter', 'polePadding']);
+        el.addEventListener('input', () => {
+          readControls();
+          if (id === 'flagWidth' || id === 'flagHeight' || id === 'textureWidth') initDesignerCanvas(false);
+          if (hardRebuild.has(id) || clothRebuild.has(id)) rebuildCloth(false);
+          if (id === 'roughness' || id === 'thicknessMm' || id === 'fabricGsm') updateMaterialFromState();
+          if (id.includes('sun') || id === 'ambientIntensity' || id === 'cameraFov') updateLighting();
+          updateValuePills();
+        });
+        el.addEventListener('change', () => {
+          readControls();
+          if (id === 'flagWidth' || id === 'flagHeight' || id === 'textureWidth') initDesignerCanvas(false);
+          if (hardRebuild.has(id) || clothRebuild.has(id)) rebuildCloth(false);
+          updateValuePills();
+        });
+      });
+
+      $('#fabricType').addEventListener('change', (e) => {
+        readControls();
+        applyFabricPreset(e.target.value);
+      });
+      $('#qualityPreset').addEventListener('change', (e) => applyQualityPreset(e.target.value));
+      $('#tieType').addEventListener('change', () => { readControls(); rebuildCloth(false); });
+      $('#shadowMapSize').addEventListener('change', () => { readControls(); updateLighting(); });
+      ['poleCollision', 'selfShadow', 'groundShadow', 'autoRotate', 'wireframe'].forEach(id => {
+        $('#' + id).addEventListener('change', () => { readControls(); updateLighting(); updateMaterialFromState(); updateValuePills(); });
+      });
+      $('#playPause').addEventListener('click', () => {
+        state.playing = !state.playing;
+        $('#playPause').textContent = state.playing ? 'Pause' : 'Play';
+        if (state.playing) clock.getDelta();
+      });
+      $('#resetSim').addEventListener('click', () => rebuildCloth(false));
+      $('#calmWind').addEventListener('click', () => {
+        setControl('windSpeed', 1.2);
+        setControl('gustStrength', 0.4);
+        setControl('turbulence', 0.15);
+        readControls();
+        updateValuePills();
+      });
+      $('#resetCamera').addEventListener('click', resetCamera);
+      $('#toSimulator').addEventListener('click', () => switchPage('simPage'));
+    }
+
+    function switchPage(pageId) {
+      $$('.page').forEach(page => page.classList.toggle('active', page.id === pageId));
+      $$('.tab').forEach(tab => tab.classList.toggle('active', tab.dataset.page === pageId));
+      setTimeout(resizeRenderer, 50);
+    }
+
+    function bindTabs() {
+      $$('.tab').forEach(tab => tab.addEventListener('click', () => switchPage(tab.dataset.page)));
+    }
+
+    function saveUndo() {
+      try {
+        undoStack.push(designCtx.getImageData(0, 0, designCanvas.width, designCanvas.height));
+        if (undoStack.length > 18) undoStack.shift();
+      } catch (err) {
+        undoStack = [];
+      }
+    }
+
+    function restorePreview() {
+      designCtx.clearRect(0, 0, designCanvas.width, designCanvas.height);
+      designCtx.drawImage(previewCanvas, 0, 0);
+    }
+
+    function backupPreview() {
+      previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+      previewCtx.drawImage(designCanvas, 0, 0);
+    }
+
+    function canvasPoint(evt) {
+      const rect = designCanvas.getBoundingClientRect();
+      return {
+        x: (evt.clientX - rect.left) * designCanvas.width / rect.width,
+        y: (evt.clientY - rect.top) * designCanvas.height / rect.height
+      };
+    }
+
+    function setStrokeStyle(tool = $('#drawTool').value) {
+      designCtx.lineCap = 'round';
+      designCtx.lineJoin = 'round';
+      designCtx.lineWidth = Number($('#brushSize').value);
+      designCtx.strokeStyle = tool === 'eraser' ? '#ffffff' : $('#color1').value;
+      designCtx.fillStyle = $('#color1').value;
+      designCtx.globalCompositeOperation = 'source-over';
+    }
+
+    function bindDrawing() {
+      designCanvas.addEventListener('pointerdown', (evt) => {
+        evt.preventDefault();
+        designCanvas.setPointerCapture(evt.pointerId);
+        const tool = $('#drawTool').value;
+        const p = canvasPoint(evt);
+        saveUndo();
+        isDrawing = true;
+        drawStart = p;
+        lastDraw = p;
+        backupPreview();
+        setStrokeStyle(tool);
+
+        if (tool === 'fill') {
+          floodFill(Math.floor(p.x), Math.floor(p.y), hexToRgba($('#color1').value));
+          isDrawing = false;
+          textureDirty = true;
+          return;
+        }
+        if (tool === 'text') {
+          const text = prompt('Text to add to the flag:', 'FLAG');
+          if (text) {
+            designCtx.font = `bold ${Math.max(18, Number($('#brushSize').value) * 2)}px ui-sans-serif, system-ui, sans-serif`;
+            designCtx.textAlign = 'center';
+            designCtx.textBaseline = 'middle';
+            designCtx.fillStyle = $('#color1').value;
+            designCtx.fillText(text, p.x, p.y);
+            textureDirty = true;
+          }
+          isDrawing = false;
+          return;
+        }
+        if (tool === 'brush' || tool === 'eraser') {
+          designCtx.beginPath();
+          designCtx.moveTo(p.x, p.y);
+          designCtx.lineTo(p.x + 0.1, p.y + 0.1);
+          designCtx.stroke();
+          textureDirty = true;
+        }
+      });
+
+      designCanvas.addEventListener('pointermove', (evt) => {
+        if (!isDrawing) return;
+        evt.preventDefault();
+        const tool = $('#drawTool').value;
+        const p = canvasPoint(evt);
+        setStrokeStyle(tool);
+
+        if (tool === 'brush' || tool === 'eraser') {
+          designCtx.beginPath();
+          designCtx.moveTo(lastDraw.x, lastDraw.y);
+          designCtx.lineTo(p.x, p.y);
+          designCtx.stroke();
+          lastDraw = p;
+          textureDirty = true;
+          return;
+        }
+
+        restorePreview();
+        if (tool === 'line') drawLine(drawStart, p);
+        if (tool === 'rect') drawRect(drawStart, p);
+        if (tool === 'ellipse') drawEllipse(drawStart, p);
+        textureDirty = true;
+      });
+
+      const finish = (evt) => {
+        if (!isDrawing) return;
+        evt.preventDefault();
+        isDrawing = false;
+        textureDirty = true;
+      };
+      designCanvas.addEventListener('pointerup', finish);
+      designCanvas.addEventListener('pointercancel', finish);
+      designCanvas.addEventListener('pointerleave', (evt) => {
+        if (isDrawing && evt.pointerType === 'mouse') finish(evt);
+      });
+
+      $('#undoBtn').addEventListener('click', () => {
+        const last = undoStack.pop();
+        if (last) {
+          designCtx.putImageData(last, 0, 0);
+          textureDirty = true;
+        }
+      });
+      $('#clearBtn').addEventListener('click', () => {
+        saveUndo();
+        designCtx.fillStyle = '#ffffff';
+        designCtx.fillRect(0, 0, designCanvas.width, designCanvas.height);
+        textureDirty = true;
+      });
+      $('#applyPattern').addEventListener('click', applyPattern);
+      $('#downloadPng').addEventListener('click', downloadDesign);
+      $('#copySizeInfo').addEventListener('click', copySizeInfo);
+      $('#uploadImage').addEventListener('change', handleUpload);
+    }
+
+    function drawLine(a, b) {
+      designCtx.beginPath();
+      designCtx.moveTo(a.x, a.y);
+      designCtx.lineTo(b.x, b.y);
+      designCtx.stroke();
+    }
+
+    function drawRect(a, b) {
+      const x = Math.min(a.x, b.x), y = Math.min(a.y, b.y);
+      const w = Math.abs(a.x - b.x), h = Math.abs(a.y - b.y);
+      designCtx.fillStyle = $('#color1').value;
+      designCtx.fillRect(x, y, w, h);
+      designCtx.strokeStyle = $('#color1').value;
+      designCtx.strokeRect(x, y, w, h);
+    }
+
+    function drawEllipse(a, b) {
+      const cx = (a.x + b.x) / 2;
+      const cy = (a.y + b.y) / 2;
+      const rx = Math.abs(a.x - b.x) / 2;
+      const ry = Math.abs(a.y - b.y) / 2;
+      designCtx.beginPath();
+      designCtx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+      designCtx.fillStyle = $('#color1').value;
+      designCtx.fill();
+    }
+
+    function hexToRgba(hex) {
+      const clean = hex.replace('#', '');
+      const num = parseInt(clean, 16);
+      return [(num >> 16) & 255, (num >> 8) & 255, num & 255, 255];
+    }
+
+    function floodFill(x, y, color) {
+      const w = designCanvas.width;
+      const h = designCanvas.height;
+      if (x < 0 || y < 0 || x >= w || y >= h) return;
+      const img = designCtx.getImageData(0, 0, w, h);
+      const data = img.data;
+      const start = (y * w + x) * 4;
+      const target = [data[start], data[start + 1], data[start + 2], data[start + 3]];
+      const tolerance = 18;
+      if (colorsClose(target, color, 0)) return;
+      const stack = [[x, y]];
+      const visited = new Uint8Array(w * h);
+      while (stack.length) {
+        const [px, py] = stack.pop();
+        if (px < 0 || py < 0 || px >= w || py >= h) continue;
+        const key = py * w + px;
+        if (visited[key]) continue;
+        const off = key * 4;
+        const here = [data[off], data[off + 1], data[off + 2], data[off + 3]];
+        if (!colorsClose(here, target, tolerance)) continue;
+        visited[key] = 1;
+        data[off] = color[0]; data[off + 1] = color[1]; data[off + 2] = color[2]; data[off + 3] = color[3];
+        stack.push([px + 1, py], [px - 1, py], [px, py + 1], [px, py - 1]);
+      }
+      designCtx.putImageData(img, 0, 0);
+    }
+
+    function colorsClose(a, b, tolerance) {
+      return Math.abs(a[0] - b[0]) <= tolerance && Math.abs(a[1] - b[1]) <= tolerance && Math.abs(a[2] - b[2]) <= tolerance && Math.abs(a[3] - b[3]) <= tolerance;
+    }
+
+    function applyPattern() {
+      saveUndo();
+      const w = designCanvas.width;
+      const h = designCanvas.height;
+      const c1 = $('#color1').value;
+      const c2 = $('#color2').value;
+      const c3 = $('#color3').value;
+      const t = Number($('#patternWeight').value);
+      const type = $('#patternType').value;
+      designCtx.clearRect(0, 0, w, h);
+      designCtx.fillStyle = c1;
+      designCtx.fillRect(0, 0, w, h);
+
+      if (type === 'horizontal3') {
+        designCtx.fillStyle = c1; designCtx.fillRect(0, 0, w, h / 3);
+        designCtx.fillStyle = c2; designCtx.fillRect(0, h / 3, w, h / 3);
+        designCtx.fillStyle = c3; designCtx.fillRect(0, 2 * h / 3, w, h / 3 + 1);
+      } else if (type === 'vertical3') {
+        designCtx.fillStyle = c1; designCtx.fillRect(0, 0, w / 3, h);
+        designCtx.fillStyle = c2; designCtx.fillRect(w / 3, 0, w / 3, h);
+        designCtx.fillStyle = c3; designCtx.fillRect(2 * w / 3, 0, w / 3 + 1, h);
+      } else if (type === 'horizontal2') {
+        designCtx.fillStyle = c1; designCtx.fillRect(0, 0, w, h / 2);
+        designCtx.fillStyle = c2; designCtx.fillRect(0, h / 2, w, h / 2);
+      } else if (type === 'vertical2') {
+        designCtx.fillStyle = c1; designCtx.fillRect(0, 0, w / 2, h);
+        designCtx.fillStyle = c2; designCtx.fillRect(w / 2, 0, w / 2, h);
+      } else if (type === 'diagonal2') {
+        designCtx.fillStyle = c1; designCtx.fillRect(0, 0, w, h);
+        designCtx.beginPath();
+        designCtx.moveTo(w, 0); designCtx.lineTo(w, h); designCtx.lineTo(0, h); designCtx.closePath();
+        designCtx.fillStyle = c2; designCtx.fill();
+      } else if (type === 'cross') {
+        designCtx.fillStyle = c1; designCtx.fillRect(0, 0, w, h);
+        designCtx.fillStyle = c2; designCtx.fillRect(0, h * (0.5 - t / 2), w, h * t);
+        designCtx.fillRect(w * (0.5 - t / 2), 0, w * t, h);
+        designCtx.fillStyle = c3; designCtx.fillRect(0, h * (0.5 - t / 5), w, h * t / 2.5);
+        designCtx.fillRect(w * (0.5 - t / 5), 0, w * t / 2.5, h);
+      } else if (type === 'nordic') {
+        designCtx.fillStyle = c1; designCtx.fillRect(0, 0, w, h);
+        const vx = w * 0.36;
+        designCtx.fillStyle = c2; designCtx.fillRect(0, h * (0.5 - t / 2), w, h * t);
+        designCtx.fillRect(vx - h * t / 2, 0, h * t, h);
+        designCtx.fillStyle = c3; designCtx.fillRect(0, h * (0.5 - t / 5), w, h * t / 2.5);
+        designCtx.fillRect(vx - h * t / 5, 0, h * t / 2.5, h);
+      } else if (type === 'circle') {
+        designCtx.fillStyle = c1; designCtx.fillRect(0, 0, w, h);
+        designCtx.beginPath();
+        designCtx.arc(w / 2, h / 2, Math.min(w, h) * (0.22 + t * 0.2), 0, Math.PI * 2);
+        designCtx.fillStyle = c2; designCtx.fill();
+      } else if (type === 'star') {
+        designCtx.fillStyle = c1; designCtx.fillRect(0, 0, w, h);
+        drawStar(w / 2, h / 2, Math.min(w, h) * (0.12 + t * 0.3), Math.min(w, h) * (0.27 + t * 0.3), 5, c2);
+      }
+      textureDirty = true;
+    }
+
+    function drawStar(cx, cy, inner, outer, points, color) {
+      designCtx.beginPath();
+      for (let i = 0; i < points * 2; i++) {
+        const r = i % 2 ? inner : outer;
+        const a = -Math.PI / 2 + i * Math.PI / points;
+        const x = cx + Math.cos(a) * r;
+        const y = cy + Math.sin(a) * r;
+        if (i === 0) designCtx.moveTo(x, y);
+        else designCtx.lineTo(x, y);
+      }
+      designCtx.closePath();
+      designCtx.fillStyle = color;
+      designCtx.fill();
+    }
+
+    function drawImageFitted(img) {
+      const mode = $('#fitMode').value;
+      const cw = designCanvas.width;
+      const ch = designCanvas.height;
+      const iw = img.naturalWidth || img.width;
+      const ih = img.naturalHeight || img.height;
+      let dw = cw, dh = ch, dx = 0, dy = 0;
+      if (mode !== 'stretch') {
+        const scale = mode === 'contain' ? Math.min(cw / iw, ch / ih) : Math.max(cw / iw, ch / ih);
+        dw = iw * scale;
+        dh = ih * scale;
+        dx = (cw - dw) / 2;
+        dy = (ch - dh) / 2;
+      }
+      designCtx.fillStyle = '#ffffff';
+      designCtx.fillRect(0, 0, cw, ch);
+      designCtx.drawImage(img, dx, dy, dw, dh);
+      textureDirty = true;
+    }
+
+    function populateCountrySelect(filter = '') {
+      const select = $('#countrySelect');
+      const term = filter.trim().toLowerCase();
+      select.innerHTML = '';
+      countryFlags
+        .filter(([code, name]) => !term || code.includes(term) || name.toLowerCase().includes(term))
+        .forEach(([code, name]) => {
+          const option = document.createElement('option');
+          option.value = code;
+          option.textContent = `${name} (${code.toUpperCase()})`;
+          select.appendChild(option);
+        });
+      if (!select.options.length) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No matching flags';
+        select.appendChild(option);
+      }
+    }
+
+    function bindPresetLoader() {
+      populateCountrySelect();
+      $('#countrySearch').addEventListener('input', (e) => populateCountrySelect(e.target.value));
+      $('#loadCountry').addEventListener('click', () => loadCountryFlag($('#countrySelect').value));
+    }
+
+    function loadCountryFlag(code) {
+      if (!code) return;
+      saveUndo();
+      const status = $('#presetStatus');
+      status.textContent = `Loading ${code.toUpperCase()}…`;
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        drawImageFitted(img);
+        status.textContent = `Loaded ${code.toUpperCase()} preset. Texture is live in 3D.`;
+      };
+      img.onerror = () => {
+        status.textContent = `Could not load ${code.toUpperCase()}. Try another flag or check your connection.`;
+      };
+      img.src = `https://flagcdn.com/w1280/${code.toLowerCase()}.png`;
+    }
+
+    function handleUpload(evt) {
+      const file = evt.target.files?.[0];
+      if (!file) return;
+      saveUndo();
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => drawImageFitted(img);
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function downloadDesign() {
+      const a = document.createElement('a');
+      a.href = designCanvas.toDataURL('image/png');
+      a.download = `flag-design-${designCanvas.width}x${designCanvas.height}.png`;
+      a.click();
+    }
+
+    async function copySizeInfo() {
+      const text = `Flag simulation size: ${state.flagWidth.toFixed(2)} m × ${state.flagHeight.toFixed(2)} m. Texture: ${designCanvas.width}×${designCanvas.height}px. Particles: ${(state.cols + 1) * (state.rows + 1)}.`;
+      try {
+        await navigator.clipboard.writeText(text);
+        $('#designInfo').textContent = 'Copied: ' + text;
+      } catch {
+        $('#designInfo').textContent = text;
+      }
+    }
+
+    function startApp() {
+      readControls();
+      bindTabs();
+      bindControlEvents();
+      bindDrawing();
+      bindPresetLoader();
+      initDesignerCanvas(true);
+      initThree();
+      resetCamera();
+      updateValuePills();
+      requestAnimationFrame(animate);
+    }
+
+    startApp();
+  </script>
 </body>
 </html>
