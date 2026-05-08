@@ -405,6 +405,49 @@
         </div>
 
         <details class="group" open>
+          <summary>Full weather / scene presets</summary>
+          <div class="group-body">
+            <div class="row-2">
+              <div class="field">
+                <label>Built-in preset</label>
+                <select id="scenePresetSelect"></select>
+              </div>
+              <button id="applyScenePreset" class="primary">Apply built-in preset</button>
+            </div>
+            <div class="field inline">
+              <span class="field-label">Keep current flag drawing for built-in presets</span>
+              <input id="keepDesignOnPreset" type="checkbox" checked />
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Save current setup as</label>
+                <input id="customPresetName" type="text" placeholder="Example: windy balcony setup" />
+              </div>
+              <button id="saveScenePreset" class="success">Save current preset</button>
+            </div>
+            <div class="field inline">
+              <span class="field-label">Include current flag drawing in saved preset</span>
+              <input id="includeDesignInPreset" type="checkbox" checked />
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Saved local preset</label>
+                <select id="savedPresetSelect"></select>
+              </div>
+              <button id="loadSavedPreset" class="primary">Load saved preset</button>
+            </div>
+            <div class="button-row">
+              <button id="deleteSavedPreset" class="danger">Delete saved</button>
+              <button id="exportSavedPresets">Export saved JSON</button>
+              <button id="importSavedPresetBtn">Import saved JSON</button>
+              <input id="importSavedPresetFile" type="file" accept="application/json,.json" hidden />
+              <button id="resetDefaultScene">Reset default setup</button>
+            </div>
+            <small id="fullPresetStatus" class="pill-note">Built-in presets change simulation, wind, cloth, lighting, background, ground, performance, pole, tie, and trace settings.</small>
+          </div>
+        </details>
+
+        <details class="group" open>
           <summary>Simulation</summary>
           <div class="group-body">
             <div class="button-row">
@@ -453,6 +496,44 @@
           </div>
         </details>
 
+        <details class="group">
+          <summary>Video export & performance</summary>
+          <div class="group-body">
+            <div class="row-2">
+              <div class="field">
+                <label>Render scale <span class="value-pill" data-val="renderScale"></span></label>
+                <input id="renderScale" type="range" min="0.5" max="1.5" step="0.05" value="1" />
+                <small>Lower this before lowering cloth quality if the FPS drops.</small>
+              </div>
+              <div class="field inline">
+                <span class="field-label">Adaptive performance</span>
+                <input id="adaptivePerformance" type="checkbox" checked />
+              </div>
+            </div>
+            <div class="row-3">
+              <div class="field">
+                <label>Video length <span class="value-pill" data-val="recordSeconds"></span></label>
+                <input id="recordSeconds" type="range" min="2" max="20" step="1" value="6" />
+              </div>
+              <div class="field">
+                <label>Video FPS <span class="value-pill" data-val="recordFps"></span></label>
+                <input id="recordFps" type="range" min="12" max="60" step="1" value="30" />
+              </div>
+              <div class="field">
+                <label>Bitrate <span class="value-pill" data-val="videoBitrate"></span></label>
+                <input id="videoBitrate" type="range" min="2" max="18" step="1" value="8" />
+              </div>
+            </div>
+            <div class="button-row">
+              <button id="recordRealtime" class="primary">Record real-time WebM</button>
+              <button id="recordOffline" class="success">Offline smooth render</button>
+              <button id="stopRecording" class="danger">Stop recording</button>
+              <button id="downloadSnapshot">Snapshot PNG</button>
+            </div>
+            <div class="warning-box" id="videoStatus">Offline smooth render advances physics one frame at a time. It can take longer than the clip duration, but the exported motion is more consistent.</div>
+          </div>
+        </details>
+
         <details class="group" open>
           <summary>Flag size</summary>
           <div class="group-body">
@@ -483,6 +564,7 @@
                 <select id="fabricType">
                   <option value="silk">Silk / satin</option>
                   <option value="nylon" selected>Nylon flag cloth</option>
+                  <option value="polyester">Polyester</option>
                   <option value="cotton">Cotton</option>
                   <option value="wool">Wool bunting</option>
                   <option value="canvas">Heavy canvas</option>
@@ -553,6 +635,21 @@
                 <small>0° blows away from the pole; 90° blows toward the camera side.</small>
               </div>
             </div>
+            <div class="row-3">
+              <div class="field">
+                <label>Direction randomness <span class="value-pill" data-val="windDirectionRandomness"></span></label>
+                <input id="windDirectionRandomness" type="range" min="0" max="95" step="1" value="18" />
+                <small>Lets wind direction wander left/right over time.</small>
+              </div>
+              <div class="field">
+                <label>Direction change rate <span class="value-pill" data-val="windDirectionFrequency"></span></label>
+                <input id="windDirectionFrequency" type="range" min="0" max="2" step="0.01" value="0.18" />
+              </div>
+              <div class="field">
+                <label>Vertical randomness <span class="value-pill" data-val="windVerticalRandomness"></span></label>
+                <input id="windVerticalRandomness" type="range" min="0" max="45" step="1" value="7" />
+              </div>
+            </div>
             <div class="row-2">
               <div class="field">
                 <label>Vertical lift angle <span class="value-pill" data-val="windLift"></span></label>
@@ -597,6 +694,42 @@
         </details>
 
         <details class="group" open>
+          <summary>Wind visualizer</summary>
+          <div class="group-body">
+            <div class="row-2">
+              <div class="field inline">
+                <span class="field-label">Show wind trace lines</span>
+                <input id="showWindTraces" type="checkbox" checked />
+              </div>
+              <div class="field">
+                <label>Trace color</label>
+                <input id="windTraceColor" type="color" value="#9bdcff" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Trace count <span class="value-pill" data-val="windTraceCount"></span></label>
+                <input id="windTraceCount" type="range" min="0" max="420" step="5" value="110" />
+              </div>
+              <div class="field">
+                <label>Trace length <span class="value-pill" data-val="windTraceLength"></span></label>
+                <input id="windTraceLength" type="range" min="0.05" max="1.5" step="0.01" value="0.42" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Trace speed <span class="value-pill" data-val="windTraceSpeed"></span></label>
+                <input id="windTraceSpeed" type="range" min="0.1" max="4" step="0.05" value="1.25" />
+              </div>
+              <div class="field">
+                <label>Trace opacity <span class="value-pill" data-val="windTraceOpacity"></span></label>
+                <input id="windTraceOpacity" type="range" min="0.05" max="1" step="0.01" value="0.62" />
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="group" open>
           <summary>Pole & tie type</summary>
           <div class="group-body">
             <div class="field">
@@ -610,6 +743,11 @@
                 <option value="topRod">Top rod banner</option>
                 <option value="freeCorner">Top grommet only</option>
               </select>
+            </div>
+            <div class="field">
+              <label>Flag Y position on pole <span class="value-pill" data-val="flagYOffset"></span></label>
+              <input id="flagYOffset" type="range" min="-3" max="3" step="0.05" value="0" />
+              <small>Positive values move the whole flag higher on the pole; negative values move it lower.</small>
             </div>
             <div class="row-2">
               <div class="field">
@@ -634,6 +772,61 @@
             <div class="field inline">
               <span class="field-label">Prevent cloth through pole</span>
               <input id="poleCollision" type="checkbox" checked />
+            </div>
+          </div>
+        </details>
+
+        <details class="group">
+          <summary>Background scene & ground</summary>
+          <div class="group-body">
+            <div class="row-2">
+              <div class="field">
+                <label>Scene preset</label>
+                <select id="environmentPreset">
+                  <option value="studio" selected>Studio dark</option>
+                  <option value="plain">Plain color</option>
+                  <option value="field">Outdoor field</option>
+                  <option value="desert">Desert dunes</option>
+                  <option value="harbor">Harbor / open water</option>
+                  <option value="night">Night stadium</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Background color</label>
+                <input id="backgroundColor" type="color" value="#0d1117" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Ground preset</label>
+                <select id="groundPreset">
+                  <option value="matte" selected>Matte studio</option>
+                  <option value="plain">Plain color</option>
+                  <option value="grass">Grass texture</option>
+                  <option value="sand">Sand texture</option>
+                  <option value="concrete">Concrete texture</option>
+                  <option value="checker">Checker grid</option>
+                  <option value="water">Stylized water</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Ground color</label>
+                <input id="groundColor" type="color" value="#111820" />
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Ground roughness <span class="value-pill" data-val="groundRoughness"></span></label>
+                <input id="groundRoughness" type="range" min="0.05" max="1" step="0.01" value="0.78" />
+              </div>
+              <div class="field inline">
+                <span class="field-label">Show grid helper</span>
+                <input id="showGrid" type="checkbox" checked />
+              </div>
+            </div>
+            <div class="field inline">
+              <span class="field-label">Show simple 3D background props</span>
+              <input id="showSceneProps" type="checkbox" checked />
             </div>
           </div>
         </details>
@@ -845,6 +1038,7 @@
     const fabricPresets = {
       silk:       { thicknessMm: 0.08, fabricGsm: 45,  airDrag: 0.62, stretchStiffness: 0.45, bendStiffness: 0.08, shearStiffness: 0.25, damping: 0.009, hemStiffness: 0.45, roughness: 0.38 },
       nylon:      { thicknessMm: 0.16, fabricGsm: 75,  airDrag: 0.90, stretchStiffness: 0.72, bendStiffness: 0.28, shearStiffness: 0.45, damping: 0.015, hemStiffness: 0.74, roughness: 0.76 },
+      polyester:  { thicknessMm: 0.20, fabricGsm: 115, airDrag: 0.96, stretchStiffness: 0.80, bendStiffness: 0.36, shearStiffness: 0.52, damping: 0.018, hemStiffness: 0.80, roughness: 0.72 },
       cotton:     { thicknessMm: 0.32, fabricGsm: 150, airDrag: 1.05, stretchStiffness: 0.80, bendStiffness: 0.42, shearStiffness: 0.56, damping: 0.024, hemStiffness: 0.80, roughness: 0.90 },
       wool:       { thicknessMm: 0.75, fabricGsm: 320, airDrag: 1.18, stretchStiffness: 0.88, bendStiffness: 0.62, shearStiffness: 0.68, damping: 0.034, hemStiffness: 0.88, roughness: 0.96 },
       canvas:     { thicknessMm: 0.95, fabricGsm: 430, airDrag: 1.22, stretchStiffness: 0.93, bendStiffness: 0.76, shearStiffness: 0.74, damping: 0.042, hemStiffness: 0.92, roughness: 0.98 },
@@ -882,11 +1076,15 @@
 
     const controlIds = [
       'timeScale', 'cols', 'iterations', 'substeps', 'flagWidth', 'flagHeight', 'textureWidth',
+      'renderScale', 'recordSeconds', 'recordFps', 'videoBitrate',
       'thicknessMm', 'fabricGsm', 'airDrag', 'stretchStiffness', 'bendStiffness', 'shearStiffness',
       'damping', 'hemStiffness', 'roughness', 'windSpeed', 'windAngle', 'windLift', 'turbulence',
-      'gustStrength', 'gustFrequency', 'randomness', 'vortex', 'gravity', 'windSmoothing', 'tieSlack',
-      'tieTension', 'poleDiameter', 'polePadding', 'sunElevation', 'sunAzimuth', 'sunIntensity',
-      'ambientIntensity', 'cameraFov', 'brushSize', 'patternWeight'
+      'gustStrength', 'gustFrequency', 'randomness', 'vortex', 'gravity', 'windSmoothing',
+      'windDirectionRandomness', 'windDirectionFrequency', 'windVerticalRandomness',
+      'windTraceCount', 'windTraceLength', 'windTraceSpeed', 'windTraceOpacity',
+      'tieSlack', 'tieTension', 'poleDiameter', 'polePadding', 'flagYOffset',
+      'sunElevation', 'sunAzimuth', 'sunIntensity', 'ambientIntensity', 'cameraFov', 'groundRoughness',
+      'brushSize', 'patternWeight'
     ];
 
     const state = {
@@ -897,6 +1095,11 @@
       rows: 36,
       iterations: 5,
       substeps: 2,
+      renderScale: 1,
+      adaptivePerformance: true,
+      recordSeconds: 6,
+      recordFps: 30,
+      videoBitrate: 8,
       flagWidth: 3,
       flagHeight: 2,
       textureWidth: 1280,
@@ -920,14 +1123,31 @@
       vortex: 0.35,
       gravity: 9.8,
       windSmoothing: 0.72,
+      windDirectionRandomness: 18,
+      windDirectionFrequency: 0.18,
+      windVerticalRandomness: 7,
+      showWindTraces: true,
+      windTraceCount: 110,
+      windTraceLength: 0.42,
+      windTraceSpeed: 1.25,
+      windTraceOpacity: 0.62,
+      windTraceColor: '#9bdcff',
       tieType: 'sleeve',
       tieSlack: 0.05,
       tieTension: 0.8,
       poleDiameter: 0.11,
       polePadding: 0.8,
+      flagYOffset: 0,
       poleCollision: true,
       selfShadow: true,
       groundShadow: true,
+      environmentPreset: 'studio',
+      backgroundColor: '#0d1117',
+      groundPreset: 'matte',
+      groundColor: '#111820',
+      groundRoughness: 0.78,
+      showGrid: true,
+      showSceneProps: true,
       sunElevation: 42,
       sunAzimuth: -38,
       sunIntensity: 2.45,
@@ -940,18 +1160,158 @@
       patternWeight: 0.18
     };
 
-    const dom = Object.fromEntries([...controlIds, 'fabricType', 'tieType', 'qualityPreset', 'shadowMapSize', 'poleCollision', 'selfShadow', 'groundShadow', 'autoRotate', 'wireframe'].map(id => [id, $('#' + id)]));
+    const dom = Object.fromEntries([...controlIds, 'fabricType', 'tieType', 'qualityPreset', 'shadowMapSize', 'poleCollision', 'selfShadow', 'groundShadow', 'autoRotate', 'wireframe', 'adaptivePerformance', 'showWindTraces', 'windTraceColor', 'environmentPreset', 'backgroundColor', 'groundPreset', 'groundColor', 'showGrid', 'showSceneProps'].map(id => [id, $('#' + id)]));
+    const PRESET_STORAGE_KEY = 'realisticFlagSimulator.localScenePresets.v3';
+    const presetSettingKeys = [...new Set([
+      ...controlIds,
+      'fabricType', 'tieType', 'qualityPreset', 'shadowMapSize',
+      'poleCollision', 'selfShadow', 'groundShadow', 'autoRotate', 'wireframe', 'adaptivePerformance',
+      'showWindTraces', 'windTraceColor',
+      'environmentPreset', 'backgroundColor', 'groundPreset', 'groundColor', 'showGrid', 'showSceneProps'
+    ])];
+    const defaultPresetSettings = Object.fromEntries(presetSettingKeys.filter(key => key in state).map(key => [key, state[key]]));
+    const presetSettings = (overrides = {}) => ({ ...defaultPresetSettings, ...overrides });
+
+    const builtInScenePresets = {
+      defaultBalanced: {
+        name: 'Default balanced',
+        description: 'Neutral studio setup with balanced cloth, medium wind, and live wind traces.',
+        design: 'default',
+        camera: { position: [3.6, 1.3, 5.6], target: [1.5, 0, 0] },
+        settings: presetSettings({})
+      },
+      sunnyDay: {
+        name: 'Sunny day',
+        description: 'Bright outdoor field, clean shadows, gentle natural gusts, and a light nylon flag.',
+        design: 'sunny',
+        camera: { position: [4.0, 1.7, 5.2], target: [1.5, 0.25, 0] },
+        settings: presetSettings({
+          qualityPreset: 'balanced', cols: 56, iterations: 5, substeps: 2, renderScale: 1, adaptivePerformance: true,
+          flagWidth: 3, flagHeight: 2, textureWidth: 1280,
+          fabricType: 'nylon', thicknessMm: 0.15, fabricGsm: 70, airDrag: 0.86, stretchStiffness: 0.70, bendStiffness: 0.24, shearStiffness: 0.42, damping: 0.013, hemStiffness: 0.72, roughness: 0.72,
+          windSpeed: 5.8, windAngle: 0, windLift: 4, turbulence: 0.42, gustStrength: 3.0, gustFrequency: 0.25, randomness: 0.25, vortex: 0.22, gravity: 9.8, windSmoothing: 0.78, windDirectionRandomness: 9, windDirectionFrequency: 0.10, windVerticalRandomness: 4,
+          showWindTraces: true, windTraceCount: 85, windTraceLength: 0.32, windTraceSpeed: 0.95, windTraceOpacity: 0.42, windTraceColor: '#d7f0ff',
+          tieType: 'sleeve', tieSlack: 0.04, tieTension: 0.82, poleDiameter: 0.11, polePadding: 0.9, flagYOffset: 0.35, poleCollision: true,
+          selfShadow: true, groundShadow: true, environmentPreset: 'field', backgroundColor: '#bcdfff', groundPreset: 'grass', groundColor: '#2f6f3d', groundRoughness: 0.86, showGrid: false, showSceneProps: true,
+          sunElevation: 62, sunAzimuth: -42, sunIntensity: 3.15, ambientIntensity: 0.82, shadowMapSize: 2048, cameraFov: 45, autoRotate: false, wireframe: false
+        })
+      },
+      seaBreeze: {
+        name: 'Sea breeze',
+        description: 'Harbor scene with smooth moderate wind, bright sky, reflective ground, and long wave motion.',
+        design: 'sea',
+        camera: { position: [4.4, 1.2, 5.9], target: [1.6, 0.05, 0] },
+        settings: presetSettings({
+          qualityPreset: 'balanced', cols: 60, iterations: 6, substeps: 2, renderScale: 1, adaptivePerformance: true,
+          flagWidth: 3.2, flagHeight: 2.05, textureWidth: 1280,
+          fabricType: 'polyester', thicknessMm: 0.18, fabricGsm: 95, airDrag: 0.95, stretchStiffness: 0.78, bendStiffness: 0.30, shearStiffness: 0.50, damping: 0.017, hemStiffness: 0.78, roughness: 0.70,
+          windSpeed: 8.2, windAngle: 14, windLift: 2, turbulence: 0.55, gustStrength: 4.2, gustFrequency: 0.32, randomness: 0.36, vortex: 0.40, gravity: 9.8, windSmoothing: 0.80, windDirectionRandomness: 18, windDirectionFrequency: 0.16, windVerticalRandomness: 6,
+          showWindTraces: true, windTraceCount: 130, windTraceLength: 0.48, windTraceSpeed: 1.15, windTraceOpacity: 0.52, windTraceColor: '#a7efff',
+          tieType: 'grommets', tieSlack: 0.08, tieTension: 0.72, poleDiameter: 0.12, polePadding: 1.0, flagYOffset: 0.25, poleCollision: true,
+          selfShadow: true, groundShadow: true, environmentPreset: 'harbor', backgroundColor: '#bdefff', groundPreset: 'water', groundColor: '#2b7799', groundRoughness: 0.25, showGrid: false, showSceneProps: true,
+          sunElevation: 38, sunAzimuth: -28, sunIntensity: 2.65, ambientIntensity: 0.78, shadowMapSize: 2048, cameraFov: 48, autoRotate: false, wireframe: false
+        })
+      },
+      strongWind: {
+        name: 'Strong wind',
+        description: 'Fast, forceful wind with gusts and higher solver quality to keep the cloth stable.',
+        design: 'warning',
+        camera: { position: [4.9, 1.5, 5.0], target: [1.75, 0.12, 0] },
+        settings: presetSettings({
+          qualityPreset: 'high', cols: 74, iterations: 8, substeps: 3, renderScale: 0.95, adaptivePerformance: true,
+          flagWidth: 3.4, flagHeight: 2.05, textureWidth: 1280,
+          fabricType: 'polyester', thicknessMm: 0.22, fabricGsm: 125, airDrag: 1.05, stretchStiffness: 0.86, bendStiffness: 0.42, shearStiffness: 0.58, damping: 0.020, hemStiffness: 0.86, roughness: 0.78,
+          windSpeed: 22, windAngle: -6, windLift: -2, turbulence: 1.15, gustStrength: 11, gustFrequency: 0.55, randomness: 0.72, vortex: 0.78, gravity: 9.8, windSmoothing: 0.64, windDirectionRandomness: 28, windDirectionFrequency: 0.30, windVerticalRandomness: 12,
+          showWindTraces: true, windTraceCount: 210, windTraceLength: 0.78, windTraceSpeed: 2.05, windTraceOpacity: 0.70, windTraceColor: '#c5ecff',
+          tieType: 'clips5', tieSlack: 0.06, tieTension: 0.86, poleDiameter: 0.14, polePadding: 1.2, flagYOffset: 0.18, poleCollision: true,
+          selfShadow: true, groundShadow: true, environmentPreset: 'field', backgroundColor: '#b7d7e8', groundPreset: 'concrete', groundColor: '#6e747a', groundRoughness: 0.82, showGrid: false, showSceneProps: true,
+          sunElevation: 37, sunAzimuth: -78, sunIntensity: 2.05, ambientIntensity: 0.70, shadowMapSize: 2048, cameraFov: 50, autoRotate: false, wireframe: false
+        })
+      },
+      thunderstorm: {
+        name: 'Thunderstorm',
+        description: 'Dark storm lighting, heavy gusts, strong direction shifts, and rain-like wind streak visibility.',
+        design: 'storm',
+        camera: { position: [4.2, 1.0, 5.6], target: [1.6, 0.12, 0] },
+        settings: presetSettings({
+          qualityPreset: 'high', cols: 66, iterations: 8, substeps: 3, renderScale: 0.85, adaptivePerformance: true,
+          flagWidth: 3.5, flagHeight: 2.2, textureWidth: 1280,
+          fabricType: 'nylon', thicknessMm: 0.24, fabricGsm: 130, airDrag: 1.22, stretchStiffness: 0.84, bendStiffness: 0.48, shearStiffness: 0.62, damping: 0.030, hemStiffness: 0.88, roughness: 0.88,
+          windSpeed: 17.5, windAngle: 18, windLift: -7, turbulence: 2.05, gustStrength: 21, gustFrequency: 0.78, randomness: 1.18, vortex: 1.22, gravity: 9.8, windSmoothing: 0.48, windDirectionRandomness: 56, windDirectionFrequency: 0.54, windVerticalRandomness: 24,
+          showWindTraces: true, windTraceCount: 300, windTraceLength: 1.05, windTraceSpeed: 2.65, windTraceOpacity: 0.86, windTraceColor: '#9fd7ff',
+          tieType: 'clips3', tieSlack: 0.10, tieTension: 0.76, poleDiameter: 0.15, polePadding: 1.4, flagYOffset: 0.05, poleCollision: true,
+          selfShadow: true, groundShadow: true, environmentPreset: 'night', backgroundColor: '#050815', groundPreset: 'water', groundColor: '#172a33', groundRoughness: 0.22, showGrid: false, showSceneProps: true,
+          sunElevation: 12, sunAzimuth: -35, sunIntensity: 0.72, ambientIntensity: 0.30, shadowMapSize: 2048, cameraFov: 52, autoRotate: false, wireframe: false
+        })
+      },
+      desertHeat: {
+        name: 'Desert heat',
+        description: 'Dry air, warm low sun, sandy ground, and uneven gusts with shimmering wind traces.',
+        design: 'desert',
+        camera: { position: [4.0, 1.4, 5.8], target: [1.55, 0.18, 0] },
+        settings: presetSettings({
+          qualityPreset: 'balanced', cols: 54, iterations: 5, substeps: 2, renderScale: 1, adaptivePerformance: true,
+          flagWidth: 3.0, flagHeight: 1.8, textureWidth: 1280,
+          fabricType: 'cotton', thicknessMm: 0.34, fabricGsm: 165, airDrag: 0.98, stretchStiffness: 0.80, bendStiffness: 0.50, shearStiffness: 0.58, damping: 0.026, hemStiffness: 0.82, roughness: 0.94,
+          windSpeed: 11.5, windAngle: -12, windLift: 7, turbulence: 1.25, gustStrength: 7.0, gustFrequency: 0.38, randomness: 0.62, vortex: 0.55, gravity: 9.8, windSmoothing: 0.68, windDirectionRandomness: 22, windDirectionFrequency: 0.20, windVerticalRandomness: 14,
+          showWindTraces: true, windTraceCount: 160, windTraceLength: 0.52, windTraceSpeed: 1.45, windTraceOpacity: 0.38, windTraceColor: '#ffe2a6',
+          tieType: 'sleeve', tieSlack: 0.05, tieTension: 0.80, poleDiameter: 0.12, polePadding: 1.0, flagYOffset: 0.25, poleCollision: true,
+          selfShadow: true, groundShadow: true, environmentPreset: 'desert', backgroundColor: '#ffe1ad', groundPreset: 'sand', groundColor: '#cda467', groundRoughness: 0.90, showGrid: false, showSceneProps: true,
+          sunElevation: 28, sunAzimuth: -62, sunIntensity: 3.55, ambientIntensity: 0.72, shadowMapSize: 2048, cameraFov: 48, autoRotate: false, wireframe: false
+        })
+      },
+      nightStadium: {
+        name: 'Night stadium',
+        description: 'High contrast night scene with stadium props, heavier shadows, and steady display wind.',
+        design: 'night',
+        camera: { position: [3.7, 1.8, 5.3], target: [1.45, 0.35, 0] },
+        settings: presetSettings({
+          qualityPreset: 'balanced', cols: 58, iterations: 6, substeps: 2, renderScale: 0.95, adaptivePerformance: true,
+          flagWidth: 2.8, flagHeight: 1.7, textureWidth: 1280,
+          fabricType: 'polyester', thicknessMm: 0.20, fabricGsm: 115, airDrag: 0.95, stretchStiffness: 0.82, bendStiffness: 0.36, shearStiffness: 0.54, damping: 0.019, hemStiffness: 0.84, roughness: 0.68,
+          windSpeed: 7.5, windAngle: 4, windLift: 1, turbulence: 0.65, gustStrength: 3.5, gustFrequency: 0.30, randomness: 0.35, vortex: 0.38, gravity: 9.8, windSmoothing: 0.78, windDirectionRandomness: 12, windDirectionFrequency: 0.16, windVerticalRandomness: 5,
+          showWindTraces: true, windTraceCount: 100, windTraceLength: 0.40, windTraceSpeed: 1.0, windTraceOpacity: 0.56, windTraceColor: '#d8f4ff',
+          tieType: 'topRod', tieSlack: 0.04, tieTension: 0.88, poleDiameter: 0.10, polePadding: 1.1, flagYOffset: 0.55, poleCollision: true,
+          selfShadow: true, groundShadow: true, environmentPreset: 'night', backgroundColor: '#060b16', groundPreset: 'concrete', groundColor: '#303640', groundRoughness: 0.70, showGrid: false, showSceneProps: true,
+          sunElevation: 18, sunAzimuth: -115, sunIntensity: 1.10, ambientIntensity: 0.38, shadowMapSize: 2048, cameraFov: 46, autoRotate: false, wireframe: false
+        })
+      },
+      calmStudio: {
+        name: 'Calm studio',
+        description: 'Plain controllable studio scene for close inspection of fabric and tie behavior.',
+        design: 'minimal',
+        camera: { position: [3.2, 1.2, 4.3], target: [1.35, 0.1, 0] },
+        settings: presetSettings({
+          qualityPreset: 'balanced', cols: 58, iterations: 6, substeps: 2, renderScale: 1, adaptivePerformance: true,
+          flagWidth: 2.6, flagHeight: 1.6, textureWidth: 1280,
+          fabricType: 'silk', thicknessMm: 0.08, fabricGsm: 45, airDrag: 0.62, stretchStiffness: 0.45, bendStiffness: 0.08, shearStiffness: 0.25, damping: 0.009, hemStiffness: 0.45, roughness: 0.38,
+          windSpeed: 2.5, windAngle: 0, windLift: 3, turbulence: 0.20, gustStrength: 1.0, gustFrequency: 0.18, randomness: 0.15, vortex: 0.12, gravity: 9.8, windSmoothing: 0.88, windDirectionRandomness: 5, windDirectionFrequency: 0.06, windVerticalRandomness: 3,
+          showWindTraces: true, windTraceCount: 55, windTraceLength: 0.22, windTraceSpeed: 0.65, windTraceOpacity: 0.35, windTraceColor: '#9bdcff',
+          tieType: 'looseSleeve', tieSlack: 0.08, tieTension: 0.66, poleDiameter: 0.10, polePadding: 0.75, flagYOffset: 0.2, poleCollision: true,
+          selfShadow: true, groundShadow: true, environmentPreset: 'studio', backgroundColor: '#0d1117', groundPreset: 'matte', groundColor: '#111820', groundRoughness: 0.78, showGrid: true, showSceneProps: false,
+          sunElevation: 48, sunAzimuth: -38, sunIntensity: 2.1, ambientIntensity: 0.62, shadowMapSize: 2048, cameraFov: 44, autoRotate: false, wireframe: false
+        })
+      }
+    };
+
     const designCanvas = $('#designCanvas');
     const designCtx = designCanvas.getContext('2d');
     let canvasTexture;
     let textureDirty = true;
 
-    let scene, camera, renderer, controls, clothMesh, clothMaterial, wireMesh, poleGroup, groundMesh;
+    let scene, camera, renderer, controls, clothMesh, clothMaterial, wireMesh, poleGroup, groundMesh, gridHelper;
     let sunLight, ambientLight;
     let hemGroup = new THREE.Group();
     let attachmentGroup = new THREE.Group();
+    let environmentGroup = new THREE.Group();
+    let windTraceLines = null;
+    let windTraceParticles = [];
     let ropeLines = null;
     let clock = new THREE.Clock();
+    let activeRecorder = null;
+    let recordingChunks = [];
+    let recordTimer = null;
+    let offlineRendering = false;
 
     let pos = new Float32Array(0);
     let prev = new Float32Array(0);
@@ -966,7 +1326,10 @@
     let elapsed = 0;
     let windFiltered = new THREE.Vector3(0, 0, 0);
     let windNowSpeed = 0;
+    let currentWindAngle = 0;
+    let currentWindLift = 0;
     let fpsAvg = 60;
+    let nextAdaptiveCheck = 0;
     let snapshotCanvas = document.createElement('canvas');
     let undoStack = [];
     let isDrawing = false;
@@ -989,13 +1352,25 @@
       state.groundShadow = $('#groundShadow').checked;
       state.autoRotate = $('#autoRotate').checked;
       state.wireframe = $('#wireframe').checked;
+      state.adaptivePerformance = $('#adaptivePerformance').checked;
+      state.showWindTraces = $('#showWindTraces').checked;
+      state.windTraceColor = $('#windTraceColor').value;
+      state.environmentPreset = $('#environmentPreset').value;
+      state.backgroundColor = $('#backgroundColor').value;
+      state.groundPreset = $('#groundPreset').value;
+      state.groundColor = $('#groundColor').value;
+      state.showGrid = $('#showGrid').checked;
+      state.showSceneProps = $('#showSceneProps').checked;
     }
 
     function updateValuePills() {
       const units = {
-        timeScale: '×', cols: '', iterations: '', substeps: '', flagWidth: ' m', flagHeight: ' m', textureWidth: ' px',
+        timeScale: '×', cols: '', iterations: '', substeps: '', renderScale: '×', recordSeconds: ' s', recordFps: ' fps', videoBitrate: ' Mbps',
+        flagWidth: ' m', flagHeight: ' m', textureWidth: ' px', flagYOffset: ' m',
         thicknessMm: ' mm', fabricGsm: ' gsm', windSpeed: ' m/s', windAngle: '°', windLift: '°', gustStrength: ' m/s',
-        gustFrequency: ' Hz', gravity: ' m/s²', tieSlack: ' m', poleDiameter: ' m', polePadding: ' m', sunElevation: '°',
+        gustFrequency: ' Hz', gravity: ' m/s²', windDirectionRandomness: '°', windDirectionFrequency: ' Hz', windVerticalRandomness: '°',
+        windTraceCount: '', windTraceLength: ' m', windTraceSpeed: '×', windTraceOpacity: '',
+        tieSlack: ' m', poleDiameter: ' m', polePadding: ' m', sunElevation: '°',
         sunAzimuth: '°', cameraFov: '°', brushSize: ' px'
       };
       $$('[data-val]').forEach(span => {
@@ -1004,7 +1379,7 @@
         if (id === 'cols') value = `${state.cols}×${state.rows}`;
         else if (id === 'textureWidth') value = `${state.textureWidth}×${Math.round(state.textureWidth * state.flagHeight / state.flagWidth)}`;
         else if (Number.isInteger(value)) value = String(value);
-        else value = Number(value).toFixed(id.includes('Stiffness') || id === 'roughness' || id === 'airDrag' || id === 'damping' || id === 'timeScale' || id === 'turbulence' || id === 'randomness' || id === 'vortex' || id === 'tieTension' || id === 'windSmoothing' || id === 'patternWeight' ? 2 : 2).replace(/\.00$/, '');
+        else value = Number(value).toFixed(id.includes('Stiffness') || id === 'roughness' || id === 'groundRoughness' || id === 'airDrag' || id === 'damping' || id === 'timeScale' || id === 'renderScale' || id === 'turbulence' || id === 'randomness' || id === 'vortex' || id === 'tieTension' || id === 'windSmoothing' || id === 'windTraceLength' || id === 'windTraceSpeed' || id === 'windTraceOpacity' || id === 'patternWeight' ? 2 : 2).replace(/\.00$/, '');
         span.textContent = `${value}${units[id] ?? ''}`;
       });
       $('#aspectNote').textContent = `Aspect ratio: ${state.flagWidth.toFixed(2)} : ${state.flagHeight.toFixed(2)} · canvas ${designCanvas.width}×${designCanvas.height}`;
@@ -1031,10 +1406,10 @@
 
     function applyQualityPreset(name) {
       const presets = {
-        mobile: { cols: 34, iterations: 3, substeps: 1, shadowMapSize: 1024 },
-        balanced: { cols: 54, iterations: 5, substeps: 2, shadowMapSize: 2048 },
-        high: { cols: 74, iterations: 7, substeps: 3, shadowMapSize: 2048 },
-        cinematic: { cols: 96, iterations: 9, substeps: 4, shadowMapSize: 4096 }
+        mobile: { cols: 34, iterations: 3, substeps: 1, renderScale: 0.8, shadowMapSize: 1024 },
+        balanced: { cols: 54, iterations: 5, substeps: 2, renderScale: 1.0, shadowMapSize: 2048 },
+        high: { cols: 74, iterations: 7, substeps: 3, renderScale: 1.0, shadowMapSize: 2048 },
+        cinematic: { cols: 96, iterations: 9, substeps: 4, renderScale: 1.0, shadowMapSize: 4096 }
       };
       const preset = presets[name];
       if (!preset) return;
@@ -1045,6 +1420,365 @@
       updateLighting();
       rebuildCloth(true);
       updateValuePills();
+    }
+
+    function setPresetControlValue(id, value) {
+      if (value === undefined || value === null) return;
+      const el = $('#' + id);
+      if (el) {
+        if (el.type === 'checkbox') el.checked = Boolean(value);
+        else el.value = String(value);
+      }
+      if (id in state) state[id] = value;
+    }
+
+    function captureCurrentPresetSettings() {
+      readControls();
+      const settings = {};
+      for (const key of presetSettingKeys) {
+        if (key in state) settings[key] = state[key];
+      }
+      return settings;
+    }
+
+    function writeFullPresetStatus(message) {
+      const el = $('#fullPresetStatus');
+      if (el) el.textContent = message;
+    }
+
+    function populateBuiltInPresetSelect() {
+      const select = $('#scenePresetSelect');
+      if (!select) return;
+      select.innerHTML = '';
+      for (const [id, preset] of Object.entries(builtInScenePresets)) {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = preset.name;
+        option.title = preset.description;
+        select.appendChild(option);
+      }
+    }
+
+    function getLocalPresetList() {
+      try {
+        const raw = localStorage.getItem(PRESET_STORAGE_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list.filter(item => item && item.settings && item.name) : [];
+      } catch (err) {
+        writeFullPresetStatus(`Could not read saved presets: ${err.message}`);
+        return [];
+      }
+    }
+
+    function storeLocalPresetList(list) {
+      localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(list));
+    }
+
+    function refreshSavedPresetSelect(selectId = null) {
+      const select = $('#savedPresetSelect');
+      if (!select) return;
+      const presets = getLocalPresetList();
+      select.innerHTML = '';
+      if (!presets.length) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No saved presets yet';
+        select.appendChild(option);
+        return;
+      }
+      presets
+        .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+        .forEach(preset => {
+          const option = document.createElement('option');
+          option.value = preset.id;
+          const date = preset.created ? new Date(preset.created) : null;
+          const dateText = date && !Number.isNaN(date.getTime()) ? ` · ${date.toLocaleDateString()}` : '';
+          option.textContent = `${preset.name}${preset.designImage ? ' · with drawing' : ''}${dateText}`;
+          select.appendChild(option);
+        });
+      if (selectId && presets.some(p => p.id === selectId)) select.value = selectId;
+    }
+
+    function canvasToPresetImage() {
+      const maxWidth = 1024;
+      const scale = Math.min(1, maxWidth / Math.max(1, designCanvas.width));
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(designCanvas.width * scale));
+      c.height = Math.max(1, Math.round(designCanvas.height * scale));
+      c.getContext('2d').drawImage(designCanvas, 0, 0, c.width, c.height);
+      let dataUrl = '';
+      try {
+        dataUrl = c.toDataURL('image/webp', 0.86);
+      } catch {}
+      if (!dataUrl || !dataUrl.startsWith('data:image/webp')) dataUrl = c.toDataURL('image/png');
+      return dataUrl;
+    }
+
+    function captureCameraState() {
+      if (!camera || !controls) return null;
+      return {
+        position: camera.position.toArray().map(v => Number(v.toFixed(4))),
+        target: controls.target.toArray().map(v => Number(v.toFixed(4)))
+      };
+    }
+
+    function applyCameraState(cameraState) {
+      if (!camera || !controls || !cameraState?.position || !cameraState?.target) {
+        resetCamera();
+        return;
+      }
+      camera.position.fromArray(cameraState.position);
+      controls.target.fromArray(cameraState.target);
+      controls.update();
+    }
+
+    function applyFullPreset(settings, options = {}) {
+      const merged = { ...defaultPresetSettings, ...(settings || {}) };
+      for (const [key, value] of Object.entries(merged)) setPresetControlValue(key, value);
+      readControls();
+
+      initDesignerCanvas(false);
+      applyRenderScale();
+      updateMaterialFromState();
+      updateEnvironment();
+      updateLighting();
+      rebuildCloth(true);
+      rebuildWindTraces();
+      if (options.camera) applyCameraState(options.camera);
+      else resetCamera();
+
+      if (options.designImage) restorePresetDesignImage(options.designImage);
+      else if (options.design && !options.keepDesign) drawPresetDesign(options.design);
+
+      updateValuePills();
+      updateStats();
+      const label = options.name || 'preset';
+      writeFullPresetStatus(`Applied ${label}. All simulation, wind, fabric, pole, lighting, background, ground, performance, and visualizer settings were updated.`);
+    }
+
+    function applyBuiltInScenePreset() {
+      const id = $('#scenePresetSelect')?.value;
+      const preset = builtInScenePresets[id];
+      if (!preset) return;
+      const keepDesign = $('#keepDesignOnPreset')?.checked ?? true;
+      applyFullPreset(preset.settings, {
+        name: preset.name,
+        design: preset.design,
+        keepDesign,
+        camera: preset.camera
+      });
+    }
+
+    function saveCurrentScenePreset() {
+      const name = ($('#customPresetName')?.value || '').trim();
+      if (!name) {
+        writeFullPresetStatus('Enter a preset name first.');
+        return;
+      }
+      const includeDesign = $('#includeDesignInPreset')?.checked ?? true;
+      const now = new Date().toISOString();
+      const preset = {
+        id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name,
+        created: now,
+        updated: now,
+        settings: captureCurrentPresetSettings(),
+        camera: captureCameraState(),
+        designImage: includeDesign ? canvasToPresetImage() : null
+      };
+      const list = getLocalPresetList();
+      const existingIndex = list.findIndex(item => item.name.toLowerCase() === name.toLowerCase());
+      if (existingIndex >= 0) {
+        preset.id = list[existingIndex].id;
+        preset.created = list[existingIndex].created || now;
+        list[existingIndex] = preset;
+      } else {
+        list.push(preset);
+      }
+      try {
+        storeLocalPresetList(list);
+        refreshSavedPresetSelect(preset.id);
+        writeFullPresetStatus(`Saved local preset “${name}”${includeDesign ? ' with the current drawing' : ''}. It will be available in this browser later.`);
+      } catch (err) {
+        writeFullPresetStatus(`Could not save preset. Browser storage may be full. Try saving without the drawing. ${err.message}`);
+      }
+    }
+
+    function loadSavedScenePreset() {
+      const id = $('#savedPresetSelect')?.value;
+      if (!id) {
+        writeFullPresetStatus('No saved preset selected.');
+        return;
+      }
+      const preset = getLocalPresetList().find(item => item.id === id);
+      if (!preset) {
+        writeFullPresetStatus('Saved preset was not found.');
+        refreshSavedPresetSelect();
+        return;
+      }
+      applyFullPreset(preset.settings, { name: preset.name, designImage: preset.designImage, camera: preset.camera });
+    }
+
+    function deleteSavedScenePreset() {
+      const id = $('#savedPresetSelect')?.value;
+      if (!id) return;
+      const list = getLocalPresetList();
+      const preset = list.find(item => item.id === id);
+      const next = list.filter(item => item.id !== id);
+      try {
+        storeLocalPresetList(next);
+        refreshSavedPresetSelect();
+        writeFullPresetStatus(preset ? `Deleted local preset “${preset.name}”.` : 'Deleted saved preset.');
+      } catch (err) {
+        writeFullPresetStatus(`Could not delete preset: ${err.message}`);
+      }
+    }
+
+    function exportSavedScenePresets() {
+      const list = getLocalPresetList();
+      const payload = { app: 'Realistic 3D Flag Simulator', version: 3, exported: new Date().toISOString(), presets: list };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'flag-simulator-local-presets.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 500);
+      writeFullPresetStatus(`Exported ${list.length} saved preset${list.length === 1 ? '' : 's'} as JSON.`);
+    }
+
+    function importSavedScenePresetsFromFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result || '{}'));
+          const incoming = Array.isArray(parsed) ? parsed : Array.isArray(parsed.presets) ? parsed.presets : [];
+          const clean = incoming.filter(item => item && item.name && item.settings).map(item => ({
+            id: item.id || `preset-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            name: String(item.name),
+            created: item.created || new Date().toISOString(),
+            updated: item.updated || new Date().toISOString(),
+            settings: item.settings,
+            camera: item.camera || null,
+            designImage: item.designImage || null
+          }));
+          if (!clean.length) {
+            writeFullPresetStatus('The selected JSON file did not contain compatible presets.');
+            return;
+          }
+          const current = getLocalPresetList();
+          const byName = new Map(current.map(item => [item.name.toLowerCase(), item]));
+          for (const item of clean) byName.set(item.name.toLowerCase(), item);
+          const merged = [...byName.values()];
+          storeLocalPresetList(merged);
+          refreshSavedPresetSelect(clean[0].id);
+          writeFullPresetStatus(`Imported ${clean.length} preset${clean.length === 1 ? '' : 's'} into local storage.`);
+        } catch (err) {
+          writeFullPresetStatus(`Import failed: ${err.message}`);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function restorePresetDesignImage(dataUrl) {
+      if (!dataUrl) return;
+      const img = new Image();
+      img.onload = () => {
+        saveUndo();
+        designCtx.fillStyle = '#ffffff';
+        designCtx.fillRect(0, 0, designCanvas.width, designCanvas.height);
+        designCtx.drawImage(img, 0, 0, designCanvas.width, designCanvas.height);
+        textureDirty = true;
+      };
+      img.onerror = () => writeFullPresetStatus('Preset loaded, but the saved drawing image could not be restored.');
+      img.src = dataUrl;
+    }
+
+    function drawPresetDesign(kind) {
+      saveUndo();
+      const w = designCanvas.width;
+      const h = designCanvas.height;
+      designCtx.clearRect(0, 0, w, h);
+      if (kind === 'default') {
+        drawDefaultFlag();
+      } else if (kind === 'sunny') {
+        designCtx.fillStyle = '#ffffff'; designCtx.fillRect(0, 0, w, h);
+        designCtx.fillStyle = '#ffd166'; designCtx.fillRect(0, 0, w, h * 0.34);
+        designCtx.fillStyle = '#ffffff'; designCtx.fillRect(0, h * 0.34, w, h * 0.32);
+        designCtx.fillStyle = '#4dabf7'; designCtx.fillRect(0, h * 0.66, w, h * 0.34);
+        designCtx.fillStyle = '#f77f00'; designCtx.beginPath(); designCtx.arc(w * 0.18, h * 0.5, h * 0.16, 0, Math.PI * 2); designCtx.fill();
+      } else if (kind === 'sea') {
+        const grad = designCtx.createLinearGradient(0, 0, w, h);
+        grad.addColorStop(0, '#e0fbff'); grad.addColorStop(0.55, '#2fb7d8'); grad.addColorStop(1, '#0b5e8e');
+        designCtx.fillStyle = grad; designCtx.fillRect(0, 0, w, h);
+        designCtx.strokeStyle = 'rgba(255,255,255,0.85)'; designCtx.lineWidth = h * 0.055;
+        for (let y = h * 0.28; y < h; y += h * 0.22) {
+          designCtx.beginPath();
+          for (let x = -w * 0.05; x <= w * 1.05; x += w / 40) {
+            const yy = y + Math.sin(x / w * Math.PI * 4) * h * 0.035;
+            if (x < 0) designCtx.moveTo(x, yy); else designCtx.lineTo(x, yy);
+          }
+          designCtx.stroke();
+        }
+      } else if (kind === 'warning') {
+        designCtx.fillStyle = '#111827'; designCtx.fillRect(0, 0, w, h);
+        designCtx.fillStyle = '#f9c74f';
+        for (let x = -w; x < w * 1.4; x += w * 0.18) {
+          designCtx.beginPath(); designCtx.moveTo(x, h); designCtx.lineTo(x + w * 0.12, h); designCtx.lineTo(x + w * 0.62, 0); designCtx.lineTo(x + w * 0.50, 0); designCtx.closePath(); designCtx.fill();
+        }
+        designCtx.fillStyle = '#ffffff'; designCtx.fillRect(0, h * 0.42, w, h * 0.16);
+      } else if (kind === 'storm') {
+        designCtx.fillStyle = '#101828'; designCtx.fillRect(0, 0, w, h);
+        designCtx.fillStyle = '#26364f'; designCtx.fillRect(0, 0, w, h * 0.34);
+        designCtx.fillStyle = '#0b1324'; designCtx.fillRect(0, h * 0.67, w, h * 0.33);
+        designCtx.fillStyle = '#fef08a';
+        designCtx.beginPath();
+        designCtx.moveTo(w * 0.58, h * 0.12); designCtx.lineTo(w * 0.43, h * 0.50); designCtx.lineTo(w * 0.55, h * 0.50); designCtx.lineTo(w * 0.41, h * 0.90); designCtx.lineTo(w * 0.70, h * 0.40); designCtx.lineTo(w * 0.55, h * 0.42); designCtx.closePath(); designCtx.fill();
+      } else if (kind === 'desert') {
+        designCtx.fillStyle = '#f4d58d'; designCtx.fillRect(0, 0, w, h);
+        designCtx.fillStyle = '#b87333'; designCtx.fillRect(0, h * 0.62, w, h * 0.38);
+        designCtx.fillStyle = '#ffffff'; designCtx.fillRect(0, h * 0.44, w, h * 0.12);
+        designCtx.fillStyle = '#6c3f1d'; designCtx.beginPath(); designCtx.moveTo(0, h * 0.82); designCtx.quadraticCurveTo(w * 0.35, h * 0.55, w, h * 0.72); designCtx.lineTo(w, h); designCtx.lineTo(0, h); designCtx.closePath(); designCtx.fill();
+      } else if (kind === 'night') {
+        designCtx.fillStyle = '#050b18'; designCtx.fillRect(0, 0, w, h);
+        designCtx.fillStyle = '#0ea5e9'; designCtx.fillRect(0, h * 0.39, w, h * 0.22);
+        drawStar(w * 0.22, h * 0.5, h * 0.075, h * 0.16, 5, '#ffffff');
+        drawStar(w * 0.78, h * 0.5, h * 0.075, h * 0.16, 5, '#ffffff');
+      } else if (kind === 'minimal') {
+        designCtx.fillStyle = '#f8fafc'; designCtx.fillRect(0, 0, w, h);
+        designCtx.fillStyle = '#0f172a'; designCtx.fillRect(0, 0, w * 0.18, h);
+        designCtx.fillStyle = '#3b82f6'; designCtx.fillRect(w * 0.18, h * 0.42, w * 0.82, h * 0.16);
+      } else {
+        drawDefaultFlag();
+      }
+      textureDirty = true;
+    }
+
+    function bindFullPresetControls() {
+      populateBuiltInPresetSelect();
+      refreshSavedPresetSelect();
+      $('#applyScenePreset')?.addEventListener('click', applyBuiltInScenePreset);
+      $('#saveScenePreset')?.addEventListener('click', saveCurrentScenePreset);
+      $('#loadSavedPreset')?.addEventListener('click', loadSavedScenePreset);
+      $('#deleteSavedPreset')?.addEventListener('click', deleteSavedScenePreset);
+      $('#exportSavedPresets')?.addEventListener('click', exportSavedScenePresets);
+      $('#importSavedPresetBtn')?.addEventListener('click', () => $('#importSavedPresetFile')?.click());
+      $('#importSavedPresetFile')?.addEventListener('change', (evt) => importSavedScenePresetsFromFile(evt.target.files?.[0]));
+      $('#resetDefaultScene')?.addEventListener('click', () => {
+        applyFullPreset(builtInScenePresets.defaultBalanced.settings, {
+          name: builtInScenePresets.defaultBalanced.name,
+          design: builtInScenePresets.defaultBalanced.design,
+          keepDesign: $('#keepDesignOnPreset')?.checked ?? true,
+          camera: builtInScenePresets.defaultBalanced.camera
+        });
+      });
+      $('#scenePresetSelect')?.addEventListener('change', () => {
+        const preset = builtInScenePresets[$('#scenePresetSelect').value];
+        if (preset) writeFullPresetStatus(preset.description);
+      });
+      const first = builtInScenePresets[$('#scenePresetSelect')?.value];
+      if (first) writeFullPresetStatus(first.description);
     }
 
     function initDesignerCanvas(fill = true) {
@@ -1097,7 +1831,7 @@
       scene.fog = new THREE.Fog(0x0d1117, 9, 24);
 
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      applyRenderScale();
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -1130,11 +1864,12 @@
       groundMesh.receiveShadow = true;
       scene.add(groundMesh);
 
-      const grid = new THREE.GridHelper(28, 28, 0x30445f, 0x1d2b3f);
-      grid.position.y = -1.01;
-      grid.material.transparent = true;
-      grid.material.opacity = 0.28;
-      scene.add(grid);
+      gridHelper = new THREE.GridHelper(28, 28, 0x30445f, 0x1d2b3f);
+      gridHelper.position.y = -1.01;
+      gridHelper.material.transparent = true;
+      gridHelper.material.opacity = 0.28;
+      scene.add(gridHelper);
+      scene.add(environmentGroup);
 
       scene.add(hemGroup);
       scene.add(attachmentGroup);
@@ -1155,8 +1890,10 @@
         alphaTest: 0.02
       });
 
+      updateEnvironment();
       rebuildPole();
       rebuildCloth(true);
+      rebuildWindTraces();
       updateLighting();
       resizeRenderer();
       window.addEventListener('resize', resizeRenderer);
@@ -1200,7 +1937,7 @@
           const v = j / state.rows;
           const wrinkle = Math.sin(u * Math.PI * 2.5 + v * 3.5 + seedPhase) * 0.025 * u;
           pos[p] = u * w;
-          pos[p + 1] = h * 0.5 - v * h;
+          pos[p + 1] = state.flagYOffset + h * 0.5 - v * h;
           pos[p + 2] = wrinkle;
           prev[p] = pos[p] - 0.012 * u;
           prev[p + 1] = pos[p + 1];
@@ -1376,8 +2113,13 @@
       }
       const jitter = (hashNoise(t * 0.8, 12.7, 0) - 0.5) * state.randomness * Math.max(0.5, state.gustStrength * 0.18);
       const speed = Math.max(0, base + gustPulse + jitter);
-      const angle = degToRad(state.windAngle);
-      const lift = degToRad(state.windLift);
+      const dirRate = Math.max(0.001, state.windDirectionFrequency);
+      const angleJitter = state.windDirectionRandomness * signedWaveNoise(t * dirRate, 2.3);
+      const liftJitter = state.windVerticalRandomness * signedWaveNoise(t * dirRate * 0.83 + 1.1, 6.7);
+      currentWindAngle = state.windAngle + angleJitter;
+      currentWindLift = clamp(state.windLift + liftJitter, -55, 55);
+      const angle = degToRad(currentWindAngle);
+      const lift = degToRad(currentWindLift);
       const horizontal = Math.cos(lift) * speed;
       const target = new THREE.Vector3(
         Math.cos(angle) * horizontal,
@@ -1387,6 +2129,13 @@
       windFiltered.lerp(target, 1 - state.windSmoothing);
       windNowSpeed = windFiltered.length();
       return windFiltered;
+    }
+
+    function signedWaveNoise(x, seed = 0) {
+      const a = Math.sin(x * 2.13 + seed) * 0.55;
+      const b = Math.sin(x * 0.91 + seed * 1.77) * 0.30;
+      const c = Math.sin(x * 4.37 - seed * 0.41) * 0.15;
+      return clamp(a + b + c, -1, 1);
     }
 
     function hashNoise(x, y, z = 0) {
@@ -1572,7 +2321,7 @@
     }
 
     function solveGroundCollision() {
-      const groundY = -state.flagHeight * 0.5 - 0.68;
+      const groundY = getGroundY() + 0.025;
       for (let id = 0; id < particleCount; id++) {
         if (invMass[id] === 0) continue;
         const p = id * 3;
@@ -1583,8 +2332,8 @@
       }
     }
 
-    function simulate(delta) {
-      if (!state.playing) return;
+    function simulate(delta, force = false) {
+      if (!state.playing && !force) return;
       const maxDelta = Math.min(delta, 1 / 24);
       const substeps = Math.max(1, state.substeps);
       const step = maxDelta * state.timeScale / substeps;
@@ -1664,11 +2413,19 @@
       }
     }
 
+    function getPoleHeight() {
+      return state.flagHeight + state.polePadding * 2 + Math.abs(state.flagYOffset) * 2;
+    }
+
+    function getGroundY() {
+      return -getPoleHeight() / 2 - 0.06;
+    }
+
     function rebuildPole() {
       if (!scene) return;
       if (poleGroup) scene.remove(poleGroup);
       poleGroup = new THREE.Group();
-      const h = state.flagHeight + state.polePadding * 2;
+      const h = getPoleHeight();
       const radius = state.poleDiameter / 2;
       const poleMat = new THREE.MeshStandardMaterial({ color: 0xb8c0cc, metalness: 0.58, roughness: 0.32 });
       const poleGeo = new THREE.CylinderGeometry(radius, radius, h, 36, 1);
@@ -1687,7 +2444,9 @@
       base.receiveShadow = true;
       poleGroup.add(base);
       scene.add(poleGroup);
-      if (groundMesh) groundMesh.position.y = -state.flagHeight * 0.5 - 0.7;
+      if (groundMesh) groundMesh.position.y = getGroundY();
+      if (gridHelper) gridHelper.position.y = getGroundY() + 0.006;
+      updateEnvironment();
     }
 
     function collectAttachmentNodes() {
@@ -1774,6 +2533,237 @@
       if (wireMesh) wireMesh.visible = state.wireframe;
     }
 
+    function hexColor(value, fallback = 0x0d1117) {
+      try { return new THREE.Color(value); } catch { return new THREE.Color(fallback); }
+    }
+
+    function applyRenderScale() {
+      if (!renderer) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      renderer.setPixelRatio(clamp(dpr * state.renderScale, 0.5, 2.5));
+      resizeRenderer();
+    }
+
+    function makeSkyTexture(preset) {
+      const c = document.createElement('canvas');
+      c.width = 1024; c.height = 512;
+      const ctx = c.getContext('2d');
+      const palettes = {
+        studio: ['#101828', '#0d1117', '#05070c'],
+        field: ['#8ecaff', '#d6efff', '#597f4d'],
+        desert: ['#9ed0ff', '#ffe0a8', '#d4a45a'],
+        harbor: ['#87cfff', '#d9f6ff', '#2d6f9f'],
+        night: ['#071022', '#111a34', '#020307']
+      };
+      const p = palettes[preset] || palettes.studio;
+      const g = ctx.createLinearGradient(0, 0, 0, c.height);
+      g.addColorStop(0, p[0]); g.addColorStop(0.62, p[1]); g.addColorStop(1, p[2]);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, c.width, c.height);
+      if (preset === 'night') {
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        for (let i = 0; i < 120; i++) ctx.fillRect(Math.random() * c.width, Math.random() * c.height * 0.55, 1.2, 1.2);
+      } else if (preset !== 'studio') {
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        for (let i = 0; i < 8; i++) {
+          const x = Math.random() * c.width;
+          const y = 70 + Math.random() * 130;
+          ctx.beginPath(); ctx.ellipse(x, y, 70 + Math.random() * 90, 18 + Math.random() * 24, 0, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    function makeGroundTexture(preset) {
+      if (preset === 'plain' || preset === 'matte') return null;
+      const c = document.createElement('canvas'); c.width = 512; c.height = 512;
+      const ctx = c.getContext('2d');
+      const base = {
+        grass: '#2d6f3b', sand: '#cda467', concrete: '#777a80', checker: '#d6dde8', water: '#2b7799'
+      }[preset] || '#333843';
+      ctx.fillStyle = base; ctx.fillRect(0, 0, c.width, c.height);
+      if (preset === 'checker') {
+        for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+          ctx.fillStyle = (x + y) % 2 ? '#6f7886' : '#d7ddea';
+          ctx.fillRect(x * 64, y * 64, 64, 64);
+        }
+      } else if (preset === 'water') {
+        ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 3;
+        for (let y = 18; y < c.height; y += 34) {
+          ctx.beginPath();
+          for (let x = 0; x <= c.width; x += 16) {
+            const yy = y + Math.sin(x * 0.045 + y * 0.04) * 8;
+            if (x === 0) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
+          }
+          ctx.stroke();
+        }
+      } else {
+        for (let i = 0; i < 3800; i++) {
+          const light = preset === 'grass' ? 30 + Math.random() * 35 : preset === 'sand' ? 80 + Math.random() * 55 : 90 + Math.random() * 35;
+          ctx.fillStyle = `rgba(${light},${light},${light},${0.08 + Math.random() * 0.13})`;
+          ctx.fillRect(Math.random() * c.width, Math.random() * c.height, 1 + Math.random() * 3, 1 + Math.random() * 3);
+        }
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(8, 8);
+      return tex;
+    }
+
+    function updateEnvironment() {
+      if (!scene || !groundMesh) return;
+      if (state.environmentPreset === 'plain') {
+        scene.background = hexColor(state.backgroundColor);
+      } else {
+        scene.background = makeSkyTexture(state.environmentPreset);
+      }
+      scene.fog = new THREE.Fog(hexColor(state.backgroundColor), state.environmentPreset === 'night' ? 8 : 11, state.environmentPreset === 'plain' ? 30 : 24);
+      if (state.environmentPreset === 'field') scene.fog.color.set('#bcdfff');
+      if (state.environmentPreset === 'desert') scene.fog.color.set('#ffe1ad');
+      if (state.environmentPreset === 'harbor') scene.fog.color.set('#bdefff');
+      if (state.environmentPreset === 'night') scene.fog.color.set('#060b16');
+
+      const mat = groundMesh.material;
+      if (mat.map) mat.map.dispose();
+      mat.map = makeGroundTexture(state.groundPreset);
+      mat.color.copy(hexColor(state.groundColor, 0x111820));
+      if (state.groundPreset === 'grass') mat.color.set('#2f6f3d');
+      if (state.groundPreset === 'sand') mat.color.set('#cda467');
+      if (state.groundPreset === 'water') mat.color.set('#2b7799');
+      mat.roughness = state.groundPreset === 'water' ? Math.min(0.35, state.groundRoughness) : state.groundRoughness;
+      mat.metalness = state.groundPreset === 'water' ? 0.05 : 0.02;
+      mat.needsUpdate = true;
+      groundMesh.position.y = getGroundY();
+      if (gridHelper) {
+        gridHelper.visible = state.showGrid;
+        gridHelper.position.y = getGroundY() + 0.006;
+      }
+      rebuildEnvironmentProps();
+    }
+
+    function disposeGroup(group) {
+      for (const child of group.children) {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          if (Array.isArray(child.material)) child.material.forEach(m => m.dispose && m.dispose());
+          else child.material.dispose && child.material.dispose();
+        }
+      }
+      group.clear();
+    }
+
+    function rebuildEnvironmentProps() {
+      if (!environmentGroup) return;
+      disposeGroup(environmentGroup);
+      if (!state.showSceneProps || state.environmentPreset === 'plain' || state.environmentPreset === 'studio') return;
+      const gy = getGroundY();
+      const addHill = (x, z, sx, sy, color) => {
+        const hill = new THREE.Mesh(new THREE.ConeGeometry(1, 1, 4), new THREE.MeshStandardMaterial({ color, roughness: 0.95 }));
+        hill.position.set(x, gy + sy * 0.5 - 0.02, z);
+        hill.scale.set(sx, sy, sx * 1.4);
+        hill.rotation.y = Math.PI / 4;
+        hill.receiveShadow = true;
+        environmentGroup.add(hill);
+      };
+      if (state.environmentPreset === 'field') {
+        for (let i = 0; i < 7; i++) addHill(-4 + i * 2.1, -9 - Math.random() * 1.5, 1.4 + Math.random() * 0.9, 0.7 + Math.random() * 0.6, 0x4b7b55);
+        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x6f4f2c, roughness: 0.9 });
+        const leafMat = new THREE.MeshStandardMaterial({ color: 0x315f39, roughness: 0.9 });
+        for (let i = 0; i < 5; i++) {
+          const x = -5 + i * 2.7, z = -6.5 - Math.random() * 2;
+          const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.07, 0.5, 8), trunkMat);
+          trunk.position.set(x, gy + 0.25, z); environmentGroup.add(trunk);
+          const leaves = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.9, 12), leafMat);
+          leaves.position.set(x, gy + 0.9, z); environmentGroup.add(leaves);
+        }
+      } else if (state.environmentPreset === 'desert') {
+        for (let i = 0; i < 9; i++) addHill(-6 + i * 1.8, -8 - Math.random() * 2, 1.8 + Math.random(), 0.35 + Math.random() * 0.25, 0xc79c5b);
+      } else if (state.environmentPreset === 'harbor') {
+        const horizonMat = new THREE.MeshStandardMaterial({ color: 0x1f5e79, roughness: 0.5, metalness: 0.02 });
+        const water = new THREE.Mesh(new THREE.PlaneGeometry(22, 5), horizonMat);
+        water.rotation.x = -Math.PI / 2; water.position.set(4, gy + 0.012, -8); water.receiveShadow = true; environmentGroup.add(water);
+      } else if (state.environmentPreset === 'night') {
+        const mat = new THREE.MeshStandardMaterial({ color: 0xdff0ff, emissive: 0x9ccfff, emissiveIntensity: 0.65 });
+        for (let i = 0; i < 4; i++) {
+          const x = -5 + i * 3.6;
+          const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.8, 8), new THREE.MeshStandardMaterial({ color: 0x596270, roughness: 0.4, metalness: 0.5 }));
+          mast.position.set(x, gy + 1.4, -5.8); environmentGroup.add(mast);
+          const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 8), mat);
+          lamp.position.set(x, gy + 2.85, -5.8); environmentGroup.add(lamp);
+        }
+      }
+    }
+
+    function rebuildWindTraces() {
+      if (!scene) return;
+      if (windTraceLines) {
+        scene.remove(windTraceLines);
+        windTraceLines.geometry.dispose();
+        windTraceLines.material.dispose();
+      }
+      windTraceParticles = [];
+      const count = Math.max(0, Math.round(state.windTraceCount));
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 2 * 3), 3));
+      const mat = new THREE.LineBasicMaterial({ color: hexColor(state.windTraceColor, 0x9bdcff), transparent: true, opacity: state.windTraceOpacity, depthWrite: false });
+      windTraceLines = new THREE.LineSegments(geo, mat);
+      windTraceLines.frustumCulled = false;
+      scene.add(windTraceLines);
+      for (let i = 0; i < count; i++) windTraceParticles.push(makeWindTraceParticle(true));
+    }
+
+    function makeWindTraceParticle(randomVolume = false) {
+      const yMin = state.flagYOffset - state.flagHeight * 0.9;
+      const yMax = state.flagYOffset + state.flagHeight * 0.9;
+      const xMin = -1.2, xMax = state.flagWidth + 1.3;
+      const zMin = -2.4, zMax = 2.4;
+      const dir = windFiltered.lengthSq() > 0.0001 ? windFiltered.clone().normalize() : new THREE.Vector3(1, 0, 0);
+      let x = lerp(xMin, xMax, Math.random());
+      if (!randomVolume) x = dir.x >= 0 ? xMin : xMax;
+      return {
+        x,
+        y: lerp(yMin, yMax, Math.random()),
+        z: lerp(zMin, zMax, Math.random()),
+        phase: Math.random() * Math.PI * 2,
+        age: Math.random() * 10
+      };
+    }
+
+    function updateWindTraces(dt) {
+      if (!windTraceLines) return;
+      if (windTraceParticles.length !== Math.round(state.windTraceCount)) rebuildWindTraces();
+      windTraceLines.visible = state.showWindTraces && state.windTraceCount > 0;
+      if (!windTraceLines.visible) return;
+      windTraceLines.material.color.copy(hexColor(state.windTraceColor, 0x9bdcff));
+      windTraceLines.material.opacity = state.windTraceOpacity;
+      const arr = windTraceLines.geometry.getAttribute('position').array;
+      const dir = windFiltered.lengthSq() > 0.0001 ? windFiltered.clone().normalize() : new THREE.Vector3(1, 0, 0);
+      const speed = (0.55 + windNowSpeed * 0.10) * state.windTraceSpeed;
+      const len = state.windTraceLength * (0.65 + Math.min(1.8, windNowSpeed / 16));
+      const yMin = state.flagYOffset - state.flagHeight * 0.95;
+      const yMax = state.flagYOffset + state.flagHeight * 0.95;
+      const xMin = -1.35, xMax = state.flagWidth + 1.45;
+      const zMin = -2.55, zMax = 2.55;
+      for (let i = 0; i < windTraceParticles.length; i++) {
+        let p = windTraceParticles[i];
+        p.age += dt;
+        const wiggle = state.turbulence * 0.20;
+        p.x += (dir.x * speed + Math.sin(p.age * 2.1 + p.phase) * wiggle) * dt;
+        p.y += (dir.y * speed * 0.45 + Math.sin(p.age * 2.7 + p.phase * 1.7) * wiggle * 0.45) * dt;
+        p.z += (dir.z * speed + Math.cos(p.age * 2.4 + p.phase) * wiggle) * dt;
+        if (p.x < xMin || p.x > xMax || p.y < yMin || p.y > yMax || p.z < zMin || p.z > zMax) {
+          windTraceParticles[i] = p = makeWindTraceParticle(false);
+        }
+        const o = i * 6;
+        arr[o] = p.x; arr[o + 1] = p.y; arr[o + 2] = p.z;
+        arr[o + 3] = p.x - dir.x * len; arr[o + 4] = p.y - dir.y * len; arr[o + 5] = p.z - dir.z * len;
+      }
+      windTraceLines.geometry.getAttribute('position').needsUpdate = true;
+    }
+
     function updateLighting() {
       if (!sunLight || !ambientLight) return;
       ambientLight.intensity = state.ambientIntensity;
@@ -1783,7 +2773,7 @@
       const az = degToRad(state.sunAzimuth);
       const r = 8;
       sunLight.position.set(Math.cos(elev) * Math.cos(az) * r, Math.sin(elev) * r, Math.cos(elev) * Math.sin(az) * r);
-      sunLight.target.position.set(state.flagWidth * 0.55, 0, 0);
+      sunLight.target.position.set(state.flagWidth * 0.55, state.flagYOffset, 0);
       scene.add(sunLight.target);
       const shadowCam = sunLight.shadow.camera;
       const span = Math.max(5, state.flagWidth + state.flagHeight + 2);
@@ -1822,15 +2812,15 @@
     }
 
     function resetCamera() {
-      camera.position.set(state.flagWidth * 1.15, state.flagHeight * 0.55, Math.max(3.5, state.flagWidth * 1.75));
-      controls.target.set(state.flagWidth * 0.5, 0, 0);
+      camera.position.set(state.flagWidth * 1.15, state.flagYOffset + state.flagHeight * 0.55, Math.max(3.5, state.flagWidth * 1.75));
+      controls.target.set(state.flagWidth * 0.5, state.flagYOffset, 0);
       controls.update();
     }
 
     function updateStats() {
       $('#statParticles').textContent = `${particleCount.toLocaleString()} (${state.cols}×${state.rows})`;
       $('#statFps').textContent = `${Math.round(fpsAvg)}`;
-      $('#statWind').textContent = `${windNowSpeed.toFixed(1)} m/s @ ${state.windAngle}°`;
+      $('#statWind').textContent = `${windNowSpeed.toFixed(1)} m/s @ ${currentWindAngle.toFixed(0)}° / lift ${currentWindLift.toFixed(0)}°`;
       const label = $('#fabricType').selectedOptions[0]?.textContent || state.fabricType;
       $('#statFabric').textContent = `${label}, ${state.fabricGsm} gsm, ${state.thicknessMm.toFixed(2)} mm`;
     }
@@ -1903,6 +2893,8 @@
 
       simulate(delta);
       updateGeometry();
+      updateWindTraces(delta);
+      updateAdaptivePerformance(now);
       if (textureDirty && canvasTexture) {
         canvasTexture.needsUpdate = true;
         textureDirty = false;
@@ -1915,16 +2907,163 @@
       if (now % 200 < 17) updateStats();
     }
 
+    function updateAdaptivePerformance(now) {
+      if (!state.adaptivePerformance || offlineRendering) return;
+      if (now < nextAdaptiveCheck) return;
+      nextAdaptiveCheck = now + 1800;
+      if (fpsAvg < 24 && state.renderScale > 0.55) {
+        state.renderScale = Math.max(0.55, Number((state.renderScale - 0.1).toFixed(2)));
+        $('#renderScale').value = state.renderScale;
+        applyRenderScale();
+        updateValuePills();
+      } else if (fpsAvg > 52 && state.renderScale < 1 && state.qualityPreset !== 'mobile') {
+        state.renderScale = Math.min(1, Number((state.renderScale + 0.05).toFixed(2)));
+        $('#renderScale').value = state.renderScale;
+        applyRenderScale();
+        updateValuePills();
+      }
+    }
+
+    function setVideoStatus(text) {
+      const el = $('#videoStatus');
+      if (el) el.textContent = text;
+    }
+
+    function chooseMimeType() {
+      const types = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+      return types.find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || '';
+    }
+
+    function downloadBlob(blob, name) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    }
+
+    function beginRecorder(stream, filePrefix) {
+      if (!window.MediaRecorder) throw new Error('MediaRecorder is not supported in this browser.');
+      recordingChunks = [];
+      const mimeType = chooseMimeType();
+      const options = { videoBitsPerSecond: Math.round(state.videoBitrate * 1000000) };
+      if (mimeType) options.mimeType = mimeType;
+      activeRecorder = new MediaRecorder(stream, options);
+      activeRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) recordingChunks.push(e.data); };
+      activeRecorder.onstop = () => {
+        const blob = new Blob(recordingChunks, { type: activeRecorder.mimeType || 'video/webm' });
+        downloadBlob(blob, `${filePrefix}-${Date.now()}.webm`);
+        stream.getTracks().forEach(track => track.stop());
+        activeRecorder = null;
+        clearTimeout(recordTimer);
+        recordTimer = null;
+        setVideoStatus(`Saved ${filePrefix}. File size: ${(blob.size / 1024 / 1024).toFixed(2)} MB.`);
+      };
+      activeRecorder.start(250);
+      return activeRecorder;
+    }
+
+    function startRealtimeRecording() {
+      readControls();
+      if (!renderer.domElement.captureStream) {
+        setVideoStatus('Canvas capture is not supported in this browser.');
+        return;
+      }
+      if (activeRecorder) stopRecording();
+      try {
+        const stream = renderer.domElement.captureStream(state.recordFps);
+        beginRecorder(stream, 'flag-realtime-recording');
+        setVideoStatus(`Recording real-time WebM for ${state.recordSeconds}s at up to ${state.recordFps} FPS.`);
+        recordTimer = setTimeout(stopRecording, state.recordSeconds * 1000);
+      } catch (err) {
+        setVideoStatus(`Recording failed: ${err.message}`);
+      }
+    }
+
+    function stopRecording() {
+      if (activeRecorder && activeRecorder.state !== 'inactive') activeRecorder.stop();
+      if (recordTimer) clearTimeout(recordTimer);
+      recordTimer = null;
+    }
+
+    async function renderOfflineVideo() {
+      readControls();
+      if (!renderer.domElement.captureStream || !window.MediaRecorder) {
+        setVideoStatus('Offline recording needs canvas.captureStream and MediaRecorder support.');
+        return;
+      }
+      if (activeRecorder || offlineRendering) stopRecording();
+      const fps = clamp(Math.round(state.recordFps), 12, 60);
+      const seconds = clamp(Math.round(state.recordSeconds), 2, 20);
+      const totalFrames = fps * seconds;
+      const previousPlaying = state.playing;
+      const previousButtonText = $('#playPause').textContent;
+      offlineRendering = true;
+      state.playing = false;
+      $('#playPause').textContent = 'Play';
+      setVideoStatus(`Offline rendering 0 / ${totalFrames} frames…`);
+      try {
+        let stream = renderer.domElement.captureStream(0);
+        let track = stream.getVideoTracks()[0];
+        let manualCapture = track && typeof track.requestFrame === 'function';
+        if (!manualCapture) {
+          stream.getTracks().forEach(track => track.stop());
+          stream = renderer.domElement.captureStream(fps);
+          track = stream.getVideoTracks()[0];
+          manualCapture = false;
+          setVideoStatus('requestFrame is unavailable, so offline render is using a timed capture fallback.');
+        }
+        beginRecorder(stream, 'flag-offline-smooth-render');
+        for (let frame = 0; frame < totalFrames; frame++) {
+          simulate(1 / fps, true);
+          updateGeometry();
+          updateWindTraces(1 / fps);
+          if (textureDirty && canvasTexture) { canvasTexture.needsUpdate = true; textureDirty = false; }
+          controls.update();
+          renderer.render(scene, camera);
+          if (manualCapture) track.requestFrame();
+          if (frame % Math.max(1, Math.round(fps / 6)) === 0) setVideoStatus(`Offline rendering ${frame + 1} / ${totalFrames} frames…`);
+          await new Promise(resolve => setTimeout(resolve, manualCapture ? 0 : 1000 / fps));
+        }
+        stopRecording();
+        setVideoStatus(`Finishing offline WebM render (${totalFrames} frames)…`);
+      } catch (err) {
+        setVideoStatus(`Offline render failed: ${err.message}`);
+        if (activeRecorder) stopRecording();
+      } finally {
+        offlineRendering = false;
+        state.playing = previousPlaying;
+        $('#playPause').textContent = previousButtonText;
+      }
+    }
+
+    function downloadSnapshot() {
+      try {
+        updateGeometry();
+        renderer.render(scene, camera);
+        renderer.domElement.toBlob((blob) => {
+          if (blob) downloadBlob(blob, `flag-snapshot-${Date.now()}.png`);
+          else setVideoStatus('Snapshot failed in this browser.');
+        }, 'image/png');
+      } catch (err) {
+        setVideoStatus(`Snapshot failed: ${err.message}`);
+      }
+    }
+
     function bindControlEvents() {
       controlIds.forEach(id => {
         const el = $('#' + id);
         if (!el) return;
-        const hardRebuild = new Set(['cols', 'flagWidth', 'flagHeight', 'textureWidth']);
+        const hardRebuild = new Set(['cols', 'flagWidth', 'flagHeight', 'textureWidth', 'flagYOffset']);
         const clothRebuild = new Set(['stretchStiffness', 'bendStiffness', 'shearStiffness', 'hemStiffness', 'tieSlack', 'tieTension', 'poleDiameter', 'polePadding']);
         el.addEventListener('input', () => {
           readControls();
           if (id === 'flagWidth' || id === 'flagHeight' || id === 'textureWidth') initDesignerCanvas(false);
           if (hardRebuild.has(id) || clothRebuild.has(id)) rebuildCloth(false);
+          if (id === 'windTraceCount') rebuildWindTraces();
+          if (id === 'renderScale') applyRenderScale();
+          if (id === 'groundRoughness') updateEnvironment();
           if (id === 'roughness' || id === 'thicknessMm' || id === 'fabricGsm') updateMaterialFromState();
           if (id.includes('sun') || id === 'ambientIntensity' || id === 'cameraFov') updateLighting();
           updateValuePills();
@@ -1933,6 +3072,9 @@
           readControls();
           if (id === 'flagWidth' || id === 'flagHeight' || id === 'textureWidth') initDesignerCanvas(false);
           if (hardRebuild.has(id) || clothRebuild.has(id)) rebuildCloth(false);
+          if (id === 'windTraceCount') rebuildWindTraces();
+          if (id === 'renderScale') applyRenderScale();
+          if (id === 'groundRoughness') updateEnvironment();
           updateValuePills();
         });
       });
@@ -1944,8 +3086,16 @@
       $('#qualityPreset').addEventListener('change', (e) => applyQualityPreset(e.target.value));
       $('#tieType').addEventListener('change', () => { readControls(); rebuildCloth(false); });
       $('#shadowMapSize').addEventListener('change', () => { readControls(); updateLighting(); });
-      ['poleCollision', 'selfShadow', 'groundShadow', 'autoRotate', 'wireframe'].forEach(id => {
-        $('#' + id).addEventListener('change', () => { readControls(); updateLighting(); updateMaterialFromState(); updateValuePills(); });
+      ['poleCollision', 'selfShadow', 'groundShadow', 'autoRotate', 'wireframe', 'adaptivePerformance', 'showWindTraces'].forEach(id => {
+        $('#' + id).addEventListener('change', () => { readControls(); updateLighting(); updateMaterialFromState(); updateWindTraces(0); updateValuePills(); });
+      });
+      ['environmentPreset', 'backgroundColor', 'groundPreset', 'groundColor', 'showGrid', 'showSceneProps'].forEach(id => {
+        $('#' + id).addEventListener('input', () => { readControls(); updateEnvironment(); updateLighting(); updateValuePills(); });
+        $('#' + id).addEventListener('change', () => { readControls(); updateEnvironment(); updateLighting(); updateValuePills(); });
+      });
+      ['windTraceColor'].forEach(id => {
+        $('#' + id).addEventListener('input', () => { readControls(); updateWindTraces(0); });
+        $('#' + id).addEventListener('change', () => { readControls(); updateWindTraces(0); });
       });
       $('#playPause').addEventListener('click', () => {
         state.playing = !state.playing;
@@ -1961,6 +3111,10 @@
         updateValuePills();
       });
       $('#resetCamera').addEventListener('click', resetCamera);
+      $('#recordRealtime').addEventListener('click', startRealtimeRecording);
+      $('#recordOffline').addEventListener('click', renderOfflineVideo);
+      $('#stopRecording').addEventListener('click', stopRecording);
+      $('#downloadSnapshot').addEventListener('click', downloadSnapshot);
       $('#toSimulator').addEventListener('click', () => switchPage('simPage'));
     }
 
@@ -2339,6 +3493,7 @@
       readControls();
       bindTabs();
       bindControlEvents();
+      bindFullPresetControls();
       bindDrawing();
       bindPresetLoader();
       initDesignerCanvas(true);
