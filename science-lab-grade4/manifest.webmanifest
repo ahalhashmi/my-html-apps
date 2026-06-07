@@ -1,0 +1,9 @@
+{
+  "name": "Grade 4 Science Lab",
+  "short_name": "Science Lab",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f8",
+  "theme_color": "#174a63",
+  "description": "Interactive Grade 4 science revision lab with practice and quiz."
+}
