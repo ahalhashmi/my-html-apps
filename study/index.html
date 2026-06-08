@@ -1,462 +1,948 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-title" content="Science Revision" />
-<meta name="theme-color" content="#0f172a" />
-<title>Grade 4 Science Revision App</title>
-<style>
-  :root{
-    --bg:#f7f8fc; --ink:#101828; --muted:#667085; --card:#ffffff; --line:#e4e7ec;
-    --blue:#2563eb; --blue2:#dbeafe; --green:#16a34a; --green2:#dcfce7;
-    --red:#dc2626; --red2:#fee2e2; --yellow:#f59e0b; --yellow2:#fef3c7;
-    --purple:#7c3aed; --purple2:#ede9fe; --shadow:0 10px 30px rgba(16,24,40,.08);
-    --radius:22px; --tap:48px;
-  }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html{scroll-behavior:smooth}
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:linear-gradient(180deg,#edf4ff 0%,var(--bg) 220px);color:var(--ink);line-height:1.45;}
-  button,input,select{font:inherit}
-  .app{max-width:980px;margin:0 auto;padding:18px 14px 96px;}
-  .top{position:sticky;top:0;z-index:20;margin:-18px -14px 14px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:rgba(247,248,252,.88);backdrop-filter:blur(16px);border-bottom:1px solid rgba(228,231,236,.75)}
-  .hero{background:linear-gradient(135deg,#0f172a,#1d4ed8 58%,#7c3aed);color:white;border-radius:0 0 28px 28px;margin:-18px -14px 16px;padding:calc(28px + env(safe-area-inset-top)) 18px 22px;box-shadow:var(--shadow)}
-  .hero h1{margin:0 0 8px;font-size:clamp(28px,8vw,46px);line-height:1.02;letter-spacing:-.04em}
-  .hero p{margin:0;color:rgba(255,255,255,.86);font-size:16px;max-width:760px}
-  .miniStats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
-  .stat{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);border-radius:18px;padding:12px;text-align:center;min-height:74px;display:flex;flex-direction:column;justify-content:center}
-  .stat b{display:block;font-size:22px}.stat span{font-size:12px;color:rgba(255,255,255,.78)}
-  .nav{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}
-  .nav button{border:0;border-radius:999px;padding:11px 14px;background:#fff;color:#344054;box-shadow:0 1px 0 rgba(16,24,40,.06);white-space:nowrap;min-height:42px}
-  .nav button.active{background:#0f172a;color:#fff}
-  section{display:none;animation:fade .22s ease}.show{display:block}@keyframes fade{from{opacity:.5;transform:translateY(4px)}to{opacity:1;transform:none}}
-  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.col12{grid-column:span 12}.col6{grid-column:span 6}.col4{grid-column:span 4}.col8{grid-column:span 8}
-  @media(max-width:760px){.col6,.col4,.col8{grid-column:span 12}.miniStats{grid-template-columns:repeat(3,1fr)}}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;overflow:hidden}
-  .card h2{margin:0 0 10px;font-size:24px;letter-spacing:-.02em}.card h3{margin:0 0 8px;font-size:18px}.card p{margin:7px 0;color:#344054}.muted{color:var(--muted)!important}.tiny{font-size:12px}.center{text-align:center}.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 10px;font-weight:700;font-size:13px;background:var(--blue2);color:#1d4ed8}.pill.green{background:var(--green2);color:var(--green)}.pill.red{background:var(--red2);color:var(--red)}.pill.yellow{background:var(--yellow2);color:#92400e}.pill.purple{background:var(--purple2);color:var(--purple)}
-  .rule{border-left:5px solid var(--blue);background:#f8fbff;border-radius:16px;padding:12px 14px;margin:10px 0}.rule b{color:#0f172a}
-  .bigBtn,.choice,.smallBtn{border:0;border-radius:16px;min-height:var(--tap);padding:12px 14px;background:#eef2ff;color:#1e3a8a;font-weight:800;box-shadow:0 1px 0 rgba(16,24,40,.05);cursor:pointer;touch-action:manipulation}
-  .smallBtn{min-height:38px;border-radius:12px;padding:9px 11px;font-size:14px;background:#f2f4f7;color:#344054}.bigBtn.dark{background:#0f172a;color:white}.bigBtn.green{background:var(--green);color:white}.bigBtn.red{background:var(--red);color:white}.bigBtn.purple{background:var(--purple);color:white}.bigBtn.yellow{background:var(--yellow);color:white}
-  .choices{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}.choices.three{grid-template-columns:repeat(3,1fr)}@media(max-width:540px){.choices,.choices.three{grid-template-columns:1fr}}
-  .choice{background:#fff;border:2px solid #e5e7eb;color:#111827;text-align:left}.choice:hover{border-color:#93c5fd}.choice.correct{background:var(--green2);border-color:var(--green);color:#065f46}.choice.wrong{background:var(--red2);border-color:var(--red);color:#991b1b}.choice.selected{border-color:var(--blue);background:#eff6ff}.feedback{border-radius:16px;margin-top:10px;padding:12px;display:none}.feedback.ok{display:block;background:var(--green2);color:#065f46}.feedback.no{display:block;background:var(--red2);color:#991b1b}.feedback.info{display:block;background:#eef2ff;color:#1e3a8a}
-  .progressWrap{height:12px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin:8px 0 2px}.progressBar{height:100%;background:linear-gradient(90deg,var(--green),var(--blue));width:0;transition:.35s}
-  .flashcard{min-height:210px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(145deg,#ffffff,#eef5ff);border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);cursor:pointer;perspective:800px}.flashcard .face{font-size:25px;font-weight:900;line-height:1.2}.flashcard .hint{font-size:13px;color:var(--muted);margin-top:14px}.list{display:grid;gap:9px}.item{display:flex;gap:10px;align-items:flex-start;background:#f9fafb;border:1px solid #eef0f3;border-radius:16px;padding:12px}.num{display:flex;align-items:center;justify-content:center;width:28px;height:28px;flex:0 0 28px;border-radius:50%;background:#0f172a;color:white;font-weight:900;font-size:13px}
-  .magnetLab{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin:10px 0}.magnet{height:52px;border:2px solid #111827;border-radius:10px;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;background:#fff;box-shadow:0 4px 12px rgba(16,24,40,.07)}.pole{display:flex;align-items:center;justify-content:center;font-weight:1000;font-size:18px}.pole.n{background:#dbeafe;color:#1d4ed8}.pole.s{background:#fee2e2;color:#b91c1c}.magnet.vertical{height:116px;width:70px;margin:auto;grid-template-columns:1fr;grid-template-rows:1fr 1fr}.between{font-size:26px;font-weight:1000;color:#475467;text-align:center}.scenario{border:1px solid var(--line);border-radius:20px;padding:12px;background:#fff}.scenarioSvg{width:100%;height:116px;display:block;background:#f8fafc;border-radius:14px;margin-bottom:8px}.svgText{font:700 13px system-ui,-apple-system,Segoe UI,Arial}.label{display:inline-block;background:#fff;border:1px solid #cbd5e1;border-radius:9px;padding:4px 8px;font-weight:800;color:#0f172a}.objectGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}@media(max-width:540px){.objectGrid{grid-template-columns:1fr}}
-  .objectCard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px}.objectTop{display:flex;align-items:center;gap:10px;margin-bottom:8px}.emoji{font-size:34px;width:44px;text-align:center}.toggleRow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toggleRow button{border:2px solid var(--line);background:#fff;border-radius:14px;min-height:42px;font-weight:900}.toggleRow button.right{border-color:var(--green);background:var(--green2);color:#166534}.toggleRow button.bad{border-color:var(--red);background:var(--red2);color:#991b1b}
-  .diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:10px}.diagram svg{width:100%;height:auto;display:block}.hotspots{display:grid;gap:10px;margin-top:10px}.hot{border:1px solid var(--line);background:#fff;border-radius:16px;padding:12px;display:flex;align-items:center;gap:10px}.hot b{min-width:76px}.hot span{color:#475467}.chartWrap{background:#fff;border:1px solid var(--line);border-radius:18px;padding:10px}.rangeRow{display:flex;gap:10px;align-items:center;margin-top:10px}.rangeRow input{width:100%;accent-color:#2563eb}.blankLine{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px;border:1px solid var(--line);border-radius:16px;background:#fff}.blankLine select{border:1px solid #d0d5dd;border-radius:12px;padding:8px;background:#fff;font-weight:800;min-height:38px}.answerTag{display:none;border-radius:12px;padding:6px 9px;font-weight:900}.answerTag.ok{display:inline-block;background:var(--green2);color:#166534}.answerTag.no{display:inline-block;background:var(--red2);color:#991b1b}.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}.compare .box{border:1px solid var(--line);border-radius:18px;padding:12px;background:#fff}.compare ul{padding-left:20px;margin:8px 0}.lightGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}@media(max-width:640px){.compare,.lightGrid{grid-template-columns:1fr}}
-  .classifyCard{border:1px solid var(--line);background:#fff;border-radius:18px;padding:12px}.quizQ{font-size:20px;font-weight:900;margin:4px 0 12px}.footerSpace{height:14px}.bottomBar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.92);backdrop-filter:blur(18px);border-top:1px solid #e5e7eb;padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;justify-content:center}.bottomBar button{flex:1;max-width:280px}.kbd{font-family:ui-monospace,Menlo,monospace;background:#f2f4f7;border:1px solid #e5e7eb;border-radius:8px;padding:2px 6px;color:#344054}.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}.confetti i{position:absolute;width:10px;height:14px;background:#2563eb;top:-20px;animation:fall 1s linear forwards}@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
-  .tableLike{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border:1px solid var(--line);border-radius:18px}.tableLike th,.tableLike td{padding:10px;border-bottom:1px solid var(--line);text-align:left;background:#fff}.tableLike tr:last-child td{border-bottom:0}.tableLike th{background:#f8fafc;font-size:13px;color:#475467}.sourceNote{font-size:12px;color:#667085;text-align:center;margin-top:16px}.hide{display:none!important}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>iPhone Camera Position Tracker</title>
+  <style>
+    :root {
+      --bg: #080b12;
+      --panel: rgba(12, 17, 30, 0.86);
+      --panel2: rgba(255, 255, 255, 0.08);
+      --text: #f4f7fb;
+      --muted: #aab5c4;
+      --good: #25d366;
+      --warn: #ffcc00;
+      --bad: #ff4d4d;
+      --line: rgba(255, 255, 255, 0.18);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    body {
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    #app {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, #182033 0%, #080b12 60%);
+      overflow: hidden;
+    }
+
+    #stage {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #000;
+    }
+
+    video, canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    video.mirror { transform: scaleX(-1); }
+
+    #overlayCanvas {
+      pointer-events: none;
+    }
+
+    #topPanel {
+      position: absolute;
+      top: calc(10px + env(safe-area-inset-top));
+      left: 10px;
+      right: 10px;
+      z-index: 10;
+      display: grid;
+      gap: 8px;
+    }
+
+    .card {
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    #statusCard {
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    #title {
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      font-size: 16px;
+    }
+
+    #statusText {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    #matchBanner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.94);
+      z-index: 9;
+      min-width: min(86vw, 420px);
+      padding: 18px 20px;
+      text-align: center;
+      border-radius: 24px;
+      background: rgba(37, 211, 102, 0.90);
+      color: #06140c;
+      font-weight: 900;
+      font-size: 34px;
+      letter-spacing: -0.05em;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 160ms ease, transform 160ms ease;
+      box-shadow: 0 18px 70px rgba(37, 211, 102, 0.35);
+    }
+
+    #matchBanner.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    #countdown {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.42);
+      font-size: 120px;
+      font-weight: 950;
+      color: white;
+      text-shadow: 0 8px 40px rgba(0, 0, 0, 0.75);
+    }
+
+    #bottomPanel {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: calc(10px + env(safe-area-inset-bottom));
+      z-index: 20;
+      display: grid;
+      gap: 8px;
+    }
+
+    #controls {
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .buttonRow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 15px;
+      padding: 13px 12px;
+      min-height: 46px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #071017;
+      background: #f4f7fb;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button.primary { background: var(--good); color: #05120b; }
+    button.secondary { background: rgba(255,255,255,0.14); color: var(--text); border: 1px solid var(--line); }
+    button.warn { background: var(--warn); color: #171000; }
+    button.danger { background: rgba(255,77,77,0.18); color: #ffd8d8; border: 1px solid rgba(255,77,77,0.42); }
+    button:disabled { opacity: 0.45; }
+
+    .setting {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    input[type="range"] {
+      grid-column: 1 / -1;
+      width: 100%;
+      accent-color: var(--good);
+    }
+
+    .toggles {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 38px;
+      padding: 8px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--line);
+      font-size: 12px;
+      font-weight: 750;
+      color: var(--text);
+      user-select: none;
+    }
+
+    .toggle input { width: 16px; height: 16px; accent-color: var(--good); }
+
+    #metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .metric {
+      min-height: 54px;
+      padding: 8px 6px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      text-align: center;
+    }
+
+    .metric .value {
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+    }
+
+    .metric .label {
+      margin-top: 3px;
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.1;
+    }
+
+    #help {
+      padding: 10px 12px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    @media (max-height: 720px) {
+      #help { display: none; }
+      #metrics { grid-template-columns: repeat(4, 1fr); }
+      .metric { min-height: 46px; }
+      #matchBanner { font-size: 28px; }
+    }
+  </style>
 </head>
 <body>
-<div class="hero">
-  <h1>Grade 4 Science<br>Final Revision</h1>
-  <p>Interactive study app for magnets, electromagnets, conductors, circuits, light, reflection, and refraction.</p>
-  <div class="miniStats">
-    <div class="stat"><b id="statDone">0</b><span>activities done</span></div>
-    <div class="stat"><b id="statScore">0%</b><span>quiz score</span></div>
-    <div class="stat"><b>6</b><span>study sections</span></div>
-  </div>
-</div>
-<div class="top">
-  <div class="nav" id="nav">
-    <button class="active" data-section="home">Home</button>
-    <button data-section="magnets">Magnets</button>
-    <button data-section="electromagnet">Electromagnet</button>
-    <button data-section="electricity">Electricity</button>
-    <button data-section="circuits">Circuits</button>
-    <button data-section="light">Light</button>
-    <button data-section="quiz">Big Quiz</button>
-  </div>
-</div>
-<main class="app">
-  <section id="home" class="show">
-    <div class="card">
-      <span class="pill">👋 Start here</span>
-      <h2>How to use this app</h2>
-      <p>Read each small lesson, tap the cards, answer the mini questions, then finish with the Big Quiz.</p>
-      <div class="progressWrap"><div class="progressBar" id="mainProgress"></div></div>
-      <p class="muted tiny"><span id="progressText">0%</span> completed. Progress is saved on this phone.</p>
-      <div class="choices">
-        <button class="bigBtn dark" onclick="go('magnets')">Start studying</button>
-        <button class="bigBtn" onclick="go('quiz')">Go to Big Quiz</button>
+  <div id="app">
+    <div id="stage">
+      <video id="video" class="mirror" playsinline muted autoplay></video>
+      <canvas id="overlayCanvas"></canvas>
+    </div>
+
+    <div id="topPanel">
+      <div id="statusCard" class="card">
+        <div id="title">Camera Position Tracker</div>
+        <div id="savedPill" class="pill">No saved position</div>
+        <div id="statusText">Tap Start Camera. Then stand/sit in a position, tap Save Position, wait for 3 seconds, and the app will remember that landmark pattern.</div>
       </div>
     </div>
-    <div class="grid">
-      <div class="card col6"><h3>🧲 Unit 1: Magnets</h3><p>Attract or repel, magnetic objects, broken magnets.</p><button class="smallBtn" onclick="go('magnets')">Open</button></div>
-      <div class="card col6"><h3>🔋 Unit 2: Electromagnets</h3><p>Nail, wire, battery, coil turns, graph reading.</p><button class="smallBtn" onclick="go('electromagnet')">Open</button></div>
-      <div class="card col6"><h3>⚡ Unit 3: Electricity</h3><p>Conductors, insulators, electrons, plug parts.</p><button class="smallBtn" onclick="go('electricity')">Open</button></div>
-      <div class="card col6"><h3>💡 Unit 4: Circuits</h3><p>Series and parallel circuits, brightness, examples.</p><button class="smallBtn" onclick="go('circuits')">Open</button></div>
-      <div class="card col12"><h3>🌈 Unit 5: Light</h3><p>Transparent, translucent, opaque, reflection, refraction.</p><button class="smallBtn" onclick="go('light')">Open</button></div>
-    </div>
-    <div class="card">
-      <h2>Quick flashcards</h2>
-      <div class="flashcard" id="flash" onclick="flipFlash()"><div><div class="face" id="flashFace">Tap to start</div><div class="hint">Tap card to flip. Use Next for another card.</div></div></div>
-      <div class="choices"><button class="bigBtn" onclick="nextFlash()">Next card</button><button class="bigBtn green" onclick="markDone('flashcards')">I studied these</button></div>
-    </div>
-  </section>
 
-  <section id="magnets">
-    <div class="card">
-      <span class="pill purple">🧲 Magnets</span>
-      <h2>Key rules</h2>
-      <div class="rule"><b>Opposite poles attract:</b> North + South pull together.</div>
-      <div class="rule"><b>Same poles repel:</b> North + North or South + South push away.</div>
-      <div class="rule"><b>Broken magnet:</b> when a magnet breaks, each piece becomes a new magnet with its own North and South pole.</div>
-    </div>
+    <div id="matchBanner">IN POSITION</div>
+    <div id="countdown">3</div>
 
-    <div class="card">
-      <h2>Magnet checker</h2>
-      <p>Choose the facing poles and see what happens.</p>
-      <div class="magnetLab">
-        <div><label class="label">Left magnet facing side</label><select id="leftPole" onchange="updateMagnetLab()"><option>N</option><option>S</option></select></div>
-        <div class="between" id="magnetResult">?</div>
-        <div><label class="label">Right magnet facing side</label><select id="rightPole" onchange="updateMagnetLab()"><option>S</option><option>N</option></select></div>
+    <div id="bottomPanel">
+      <div id="metrics" class="card">
+        <div class="metric"><div class="value" id="scoreValue">--</div><div class="label">Match</div></div>
+        <div class="metric"><div class="value" id="faceValue">0</div><div class="label">Face pts</div></div>
+        <div class="metric"><div class="value" id="poseValue">0</div><div class="label">Body pts</div></div>
+        <div class="metric"><div class="value" id="handValue">0</div><div class="label">Hand pts</div></div>
       </div>
-      <div class="feedback info" id="magnetExplain">Choose poles to test.</div>
-    </div>
 
-    <div class="card">
-      <h2>Practice: attract or repel?</h2>
-      <p class="muted">These six match the revision sheet pictures.</p>
-      <div class="grid" id="magnetScenarios"></div>
-      <div class="feedback info" id="magnetScenarioFeedback">Answer all six to complete this activity.</div>
-    </div>
-
-    <div class="card">
-      <h2>Magnetic or non-magnetic?</h2>
-      <p>Tap the correct choice for each object.</p>
-      <div class="objectGrid" id="objectGrid"></div>
-    </div>
-
-    <div class="card">
-      <h2>Broken magnet mini lesson</h2>
-      <div class="diagram">
-        <svg viewBox="0 0 600 230" role="img" aria-label="Broken magnet becomes two magnets">
-          <rect x="80" y="24" width="440" height="56" rx="10" fill="#fff" stroke="#111827" stroke-width="4"/>
-          <text x="110" y="60" class="svgText" fill="#b91c1c">S</text><text x="485" y="60" class="svgText" fill="#1d4ed8">N</text>
-          <path d="M300 92 v42" stroke="#0f172a" stroke-width="6" marker-end="url(#arr)"/>
-          <rect x="112" y="158" width="170" height="48" rx="9" fill="#fff" stroke="#111827" stroke-width="4"/>
-          <rect x="320" y="158" width="170" height="48" rx="9" fill="#fff" stroke="#111827" stroke-width="4"/>
-          <text x="135" y="190" class="svgText" fill="#b91c1c">S</text><text x="250" y="190" class="svgText" fill="#1d4ed8">N</text>
-          <text x="343" y="190" class="svgText" fill="#b91c1c">S</text><text x="458" y="190" class="svgText" fill="#1d4ed8">N</text>
-          <path d="M292 158 l10 12 l-8 12 l10 12 l-9 12" stroke="#9ca3af" fill="none" stroke-width="3"/>
-          <path d="M318 158 l-10 12 l8 12 l-10 12 l9 12" stroke="#9ca3af" fill="none" stroke-width="3"/>
-          <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0f172a"/></marker></defs>
-        </svg>
-      </div>
-      <p><b>Exam answer:</b> We will have 2 new magnets. Each new magnet will have a new pole.</p>
-      <button class="bigBtn green" onclick="markDone('brokenMagnet')">I understand broken magnets</button>
-    </div>
-  </section>
-
-  <section id="electromagnet">
-    <div class="card">
-      <span class="pill yellow">🔋 Electromagnet</span>
-      <h2>Parts of an electromagnet</h2>
-      <p>An electromagnet is made using a nail, wire, and battery.</p>
-      <div class="diagram">
-        <svg viewBox="0 0 700 360" role="img" aria-label="Electromagnet nail wire battery">
-          <rect x="96" y="70" width="508" height="24" rx="12" fill="#cbd5e1" stroke="#64748b" stroke-width="3"/>
-          <polygon points="90,82 30,62 90,52" fill="#94a3b8" stroke="#64748b" stroke-width="3"/>
-          <polygon points="604,70 654,72 654,92 604,94" fill="#94a3b8" stroke="#64748b" stroke-width="3"/>
-          <path d="M120 92 C120 128, 170 128, 170 92 C170 56, 220 56, 220 92 C220 128,270 128,270 92 C270 56,320 56,320 92 C320 128,370 128,370 92 C370 56,420 56,420 92 C420 128,470 128,470 92 C470 56,520 56,520 92 C520 128,570 128,570 92" fill="none" stroke="#f59e0b" stroke-width="9" stroke-linecap="round"/>
-          <path d="M120 91 V275 H240" fill="none" stroke="#f59e0b" stroke-width="9" stroke-linecap="round"/>
-          <path d="M570 91 V275 H460" fill="none" stroke="#f59e0b" stroke-width="9" stroke-linecap="round"/>
-          <rect x="240" y="238" width="220" height="74" rx="26" fill="#ef4444" stroke="#991b1b" stroke-width="3"/>
-          <rect x="240" y="238" width="44" height="74" rx="22" fill="#e5e7eb"/><rect x="416" y="238" width="44" height="74" rx="22" fill="#e5e7eb"/>
-          <text x="258" y="284" font-size="36" font-weight="900" fill="#111827">−</text><text x="424" y="284" font-size="36" font-weight="900" fill="#111827">+</text>
-          <line x1="610" y1="72" x2="648" y2="30" stroke="#2563eb" stroke-width="3"/><rect x="648" y="10" width="90" height="44" rx="8" fill="#fff" stroke="#2563eb" stroke-width="3"/><text x="670" y="39" class="svgText" fill="#2563eb">nail</text>
-          <line x1="580" y1="180" x2="648" y2="180" stroke="#f59e0b" stroke-width="3"/><rect x="648" y="158" width="90" height="44" rx="8" fill="#fff" stroke="#f59e0b" stroke-width="3"/><text x="670" y="187" class="svgText" fill="#92400e">wire</text>
-          <line x1="460" y1="278" x2="648" y2="278" stroke="#dc2626" stroke-width="3"/><rect x="648" y="256" width="110" height="44" rx="8" fill="#fff" stroke="#dc2626" stroke-width="3"/><text x="668" y="285" class="svgText" fill="#dc2626">battery</text>
-        </svg>
-      </div>
-      <div class="hotspots">
-        <button class="hot" onclick="showHot('nail')"><b>nail</b><span>The nail becomes magnetic when current flows through the wire.</span></button>
-        <button class="hot" onclick="showHot('wire')"><b>wire</b><span>The wire is the pathway for electrical energy/current.</span></button>
-        <button class="hot" onclick="showHot('battery')"><b>battery</b><span>The battery provides energy for the current.</span></button>
-      </div>
-      <div class="feedback info" id="hotFeedback">Tap a part to review its job.</div>
-    </div>
-
-    <div class="card">
-      <h2>Experiment graph: number of coil turns</h2>
-      <p>Jasmin tested how the number of wire turns affects electromagnet strength.</p>
-      <div class="chartWrap">
-        <svg id="coilChart" viewBox="0 0 640 360" role="img" aria-label="Graph of coil turns and paper clips picked up"></svg>
-        <div class="rangeRow"><span class="label">Turns</span><input id="coilSlider" type="range" min="10" max="50" step="10" value="10" oninput="drawChart()"><span class="label" id="coilValue">10</span></div>
-      </div>
-      <div class="rule"><b>Graph answer:</b> As more coils are added, the number of paper clips picked up increases.</div>
-      <div class="rule"><b>How to make an electromagnet stronger:</b> use a stronger battery and add more wire turns around the nail.</div>
-      <button class="bigBtn green" onclick="markDone('coilGraph')">I understand the graph</button>
-    </div>
-  </section>
-
-  <section id="electricity">
-    <div class="card">
-      <span class="pill green">⚡ Electricity</span>
-      <h2>Conductors and insulators</h2>
-      <div class="compare">
-        <div class="box"><h3>Conductor</h3><p>A material that readily allows electric charges to pass through.</p><p><b>Examples:</b> metals, copper, gold, silver, iron, steel.</p></div>
-        <div class="box"><h3>Insulator</h3><p>A material that resists the flow of electric charges.</p><p><b>Examples:</b> glass, wood, plastic, oil, diamond, paper, rubber, air, fabric, cotton.</p></div>
-      </div>
-    </div>
-    <div class="card">
-      <h2>Fill in the blanks</h2>
-      <p>Select the correct word.</p>
-      <div class="list" id="blankList"></div>
-      <div class="choices"><button class="bigBtn" onclick="checkBlanks()">Check answers</button><button class="bigBtn green" onclick="fillBlankAnswers()">Show answers</button></div>
-      <div class="feedback info" id="blankFeedback">Complete all blanks.</div>
-    </div>
-    <div class="card">
-      <h2>Plug safety idea</h2>
-      <div class="diagram">
-        <svg viewBox="0 0 660 260" role="img" aria-label="Plug conductors and insulators">
-          <rect x="60" y="70" width="250" height="130" rx="34" fill="#f8fafc" stroke="#0f172a" stroke-width="4"/>
-          <rect x="300" y="98" width="150" height="24" rx="8" fill="#b45309"/><rect x="300" y="148" width="150" height="24" rx="8" fill="#b45309"/>
-          <line x1="60" y1="135" x2="15" y2="135" stroke="#334155" stroke-width="20" stroke-linecap="round"/>
-          <text x="92" y="140" font-size="26" font-weight="900" fill="#0f172a">Plastic cover</text><text x="390" y="86" font-size="18" font-weight="900" fill="#b45309">metal prongs</text>
-          <text x="92" y="224" class="svgText" fill="#dc2626">insulator: safe to hold</text><text x="390" y="202" class="svgText" fill="#16a34a">conductor: goes into outlet</text>
-        </svg>
-      </div>
-      <p>The parts you hold and the wire covering are <b>insulators</b>. The metal parts that go into the outlet are good <b>conductors</b>.</p>
-    </div>
-  </section>
-
-  <section id="circuits">
-    <div class="card">
-      <span class="pill">💡 Circuits</span>
-      <h2>Series and parallel circuits</h2>
-      <div class="compare">
-        <div class="box">
-          <h3>Diagram 1: Series</h3>
-          <div class="diagram"><svg viewBox="0 0 360 230"><path d="M60 40 H300 V165 H60 Z" fill="none" stroke="#111827" stroke-width="5"/><line x1="190" y1="40" x2="190" y2="16" stroke="#111827" stroke-width="5"/><line x1="210" y1="40" x2="210" y2="22" stroke="#111827" stroke-width="5"/><circle cx="145" cy="165" r="28" fill="#fff" stroke="#111827" stroke-width="5"/><path d="M126 146 L164 184 M164 146 L126 184" stroke="#111827" stroke-width="4"/><circle cx="235" cy="165" r="28" fill="#fff" stroke="#111827" stroke-width="5"/><path d="M216 146 L254 184 M254 146 L216 184" stroke="#111827" stroke-width="4"/><text x="128" y="213" class="svgText">Lamp 1</text><text x="218" y="213" class="svgText">Lamp 2</text></svg></div>
-          <ul><li>One pathway for current.</li><li>Adding a second bulb makes the first bulb less bright.</li><li>If one part breaks, the circuit can stop.</li></ul>
+      <div id="controls" class="card">
+        <div class="buttonRow">
+          <button id="startBtn" class="primary">Start Camera</button>
+          <button id="switchBtn" class="secondary" disabled>Switch Camera</button>
         </div>
-        <div class="box">
-          <h3>Diagram 2: Parallel</h3>
-          <div class="diagram"><svg viewBox="0 0 360 230"><path d="M60 40 H300 V185 H60 Z" fill="none" stroke="#111827" stroke-width="5"/><line x1="190" y1="40" x2="190" y2="16" stroke="#111827" stroke-width="5"/><line x1="210" y1="40" x2="210" y2="22" stroke="#111827" stroke-width="5"/><line x1="60" y1="105" x2="300" y2="105" stroke="#111827" stroke-width="5"/><circle cx="180" cy="105" r="28" fill="#fff" stroke="#111827" stroke-width="5"/><path d="M161 86 L199 124 M199 86 L161 124" stroke="#111827" stroke-width="4"/><circle cx="180" cy="185" r="28" fill="#fff" stroke="#111827" stroke-width="5"/><path d="M161 166 L199 204 M199 166 L161 204" stroke="#111827" stroke-width="4"/><text x="222" y="98" class="svgText">Lamp 2</text><text x="222" y="178" class="svgText">Lamp 1</text></svg></div>
-          <ul><li>Two or more pathways for current.</li><li>Bulb brightness stays the same when another bulb is connected.</li><li>One device can work without affecting the others.</li></ul>
+        <div class="buttonRow">
+          <button id="saveBtn" class="warn" disabled>Save Position</button>
+          <button id="clearBtn" class="danger">Clear Saved</button>
+        </div>
+
+        <div class="setting">
+          <span>Match tolerance</span>
+          <strong id="toleranceLabel">0.090</strong>
+          <input id="toleranceSlider" type="range" min="0.025" max="0.220" step="0.005" value="0.090" />
+        </div>
+
+        <div class="toggles">
+          <label class="toggle"><input id="faceToggle" type="checkbox" checked /> Face</label>
+          <label class="toggle"><input id="poseToggle" type="checkbox" checked /> Body</label>
+          <label class="toggle"><input id="handToggle" type="checkbox" checked /> Hands</label>
         </div>
       </div>
-    </div>
-    <div class="card">
-      <h2>Brightness simulator</h2>
-      <p>Tap a circuit type and see what happens when a second bulb is connected.</p>
-      <div class="choices"><button class="bigBtn" onclick="circuitSim('series')">Series</button><button class="bigBtn" onclick="circuitSim('parallel')">Parallel</button></div>
-      <div class="diagram" style="margin-top:10px"><svg id="circuitSimSvg" viewBox="0 0 680 230"></svg></div>
-      <div class="feedback info" id="circuitFeedback">Choose series or parallel.</div>
-    </div>
-    <div class="card">
-      <h2>Everyday examples</h2>
-      <table class="tableLike"><thead><tr><th>Type</th><th>Examples from revision</th><th>Main advantage / note</th></tr></thead><tbody><tr><td><b>Series</b></td><td>Light decoration, ceiling light bulbs, car electricity</td><td>One pathway.</td></tr><tr><td><b>Parallel</b></td><td>House wiring plan, TV, microwave</td><td>Devices can work separately; if one stops, others can still work.</td></tr></tbody></table>
-      <button class="bigBtn green" onclick="markDone('circuitsLearned')" style="margin-top:10px">I understand circuits</button>
-    </div>
-  </section>
 
-  <section id="light">
-    <div class="card">
-      <span class="pill yellow">🌈 Light</span>
-      <h2>Transparent, translucent, opaque</h2>
-      <div class="lightGrid">
-        <div class="rule"><b>Transparent:</b> light passes completely through the object.</div>
-        <div class="rule"><b>Translucent:</b> light passes partially through the object.</div>
-        <div class="rule"><b>Opaque:</b> light does not pass through the object.</div>
-        <div class="rule"><b>Remember:</b> transparent = clear, translucent = partly clear, opaque = blocks light.</div>
+      <div id="help" class="card">
+        Notes: Use Safari over HTTPS, localhost, or a proper hosted page. Camera access usually will not work from a normal file:// page on iPhone. For best matching, keep the phone angle and distance similar when saving and testing.
       </div>
     </div>
-    <div class="card">
-      <h2>Classify the objects</h2>
-      <p>Tap the correct answer for each picture word.</p>
-      <div class="lightGrid" id="lightObjects"></div>
-    </div>
-    <div class="card">
-      <h2>Reflection</h2>
-      <div class="diagram">
-        <svg viewBox="0 0 700 300" role="img" aria-label="Reflection of light rays on mirror">
-          <rect x="250" y="210" width="240" height="26" rx="4" fill="#bae6fd" stroke="#0f172a" stroke-width="4"/>
-          <line x1="106" y1="66" x2="280" y2="210" stroke="#111827" stroke-width="4" marker-end="url(#arrowR1)"/>
-          <line x1="280" y1="210" x2="468" y2="78" stroke="#dc2626" stroke-width="6" marker-end="url(#arrowR2)"/>
-          <rect x="52" y="38" width="84" height="42" rx="15" fill="#475569" transform="rotate(35 94 59)"/><circle cx="125" cy="98" r="24" fill="#fde68a" opacity=".8"/>
-          <text x="70" y="32" class="svgText">light source</text><text x="500" y="80" class="svgText" fill="#dc2626">reflected ray</text><text x="265" y="260" class="svgText">mirror</text>
-          <defs><marker id="arrowR1" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#111827"/></marker><marker id="arrowR2" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker></defs>
-        </svg>
-      </div>
-      <div class="rule"><b>Exam answer:</b> Reflection of light occurs when light bounces back off a surface, changing its direction.</div>
-      <button class="bigBtn green" onclick="markDone('reflection')">I understand reflection</button>
-    </div>
-    <div class="card">
-      <h2>Refraction</h2>
-      <div class="diagram">
-        <svg viewBox="0 0 700 310" role="img" aria-label="Pencil looks broken in water because of refraction">
-          <rect x="110" y="74" width="360" height="188" rx="22" fill="#e0f2fe" stroke="#64748b" stroke-width="4" opacity=".78"/>
-          <ellipse cx="290" cy="76" rx="180" ry="28" fill="#f8fafc" stroke="#64748b" stroke-width="4"/>
-          <path d="M405 36 L326 150" stroke="#3f3f46" stroke-width="28" stroke-linecap="round"/><path d="M313 152 L223 282" stroke="#3f3f46" stroke-width="28" stroke-linecap="round"/>
-          <path d="M223 282 L205 294 L213 273 Z" fill="#facc15"/><line x1="110" y1="150" x2="470" y2="150" stroke="#60a5fa" stroke-width="4" opacity=".7"/>
-          <text x="505" y="92" class="svgText" fill="#dc2626">The pencil looks</text><text x="505" y="118" class="svgText" fill="#dc2626">broken because</text><text x="505" y="144" class="svgText" fill="#dc2626">light bends.</text>
-        </svg>
-      </div>
-      <div class="rule"><b>Exam answer:</b> Refraction is the bending of light rays as they pass from one medium to another, changing the path of the rays. It happens because the speed of the light ray or wave changes.</div>
-      <button class="bigBtn green" onclick="markDone('refraction')">I understand refraction</button>
-    </div>
-  </section>
+  </div>
 
-  <section id="quiz">
-    <div class="card">
-      <span class="pill red">🎯 Big Quiz</span>
-      <h2>Final practice quiz</h2>
-      <p>Answer one question at a time. Your score is saved.</p>
-      <div class="progressWrap"><div class="progressBar" id="quizProgress"></div></div>
-      <p class="muted tiny" id="quizMeta">Question 1</p>
-      <div class="quizQ" id="quizQ">Press Start Quiz</div>
-      <div class="choices" id="quizChoices"></div>
-      <div class="feedback" id="quizFeedback"></div>
-      <div class="choices"><button class="bigBtn dark" onclick="startQuiz()">Start / Restart</button><button class="bigBtn green" onclick="nextQuiz()">Next</button></div>
-    </div>
-    <div class="card" id="quizSummaryCard">
-      <h2>Quiz summary</h2>
-      <p id="quizSummary">Start the quiz to see your result.</p>
-      <button class="bigBtn" onclick="go('home')">Back home</button>
-    </div>
-  </section>
+  <script type="module">
+    import {
+      FilesetResolver,
+      FaceLandmarker,
+      PoseLandmarker,
+      HandLandmarker
+    } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.mjs";
 
-  <p class="sourceNote">Made as a single-file offline HTML study app for iPhone Safari. No internet needed.</p>
-</main>
-<div class="bottomBar"><button class="bigBtn" onclick="go('home')">🏠 Home</button><button class="bigBtn green" onclick="go('quiz')">🎯 Quiz</button></div>
-<div class="confetti" id="confetti"></div>
-<script>
-const stateKey='grade4ScienceRevisionState_v1';
-const defaultState={done:{},quizBest:0,quizLast:0};
-let state=JSON.parse(localStorage.getItem(stateKey)||'null')||defaultState;
-function save(){localStorage.setItem(stateKey,JSON.stringify(state));updateStats()}
-function markDone(k){state.done[k]=true;save();toast('Done! Great work ✅');if(Object.keys(state.done).length>=10) burst()}
-function updateStats(){let total=12,done=Object.keys(state.done).length;document.getElementById('statDone').textContent=done;document.getElementById('statScore').textContent=Math.round(state.quizBest||0)+'%';let pct=Math.min(100,Math.round(done/total*100));document.getElementById('mainProgress').style.width=pct+'%';document.getElementById('progressText').textContent=pct+'%'}
-function toast(msg){let el=document.createElement('div');el.textContent=msg;el.style.cssText='position:fixed;left:16px;right:16px;bottom:96px;background:#0f172a;color:white;border-radius:18px;padding:14px;text-align:center;font-weight:900;z-index:80;box-shadow:0 10px 25px rgba(0,0,0,.18)';document.body.appendChild(el);setTimeout(()=>el.remove(),1450)}
-function go(id){document.querySelectorAll('section').forEach(s=>s.classList.remove('show'));document.getElementById(id).classList.add('show');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.section===id));window.scrollTo({top:0,behavior:'smooth'})}
-document.getElementById('nav').addEventListener('click',e=>{if(e.target.dataset.section)go(e.target.dataset.section)});
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("overlayCanvas");
+    const ctx = canvas.getContext("2d");
 
-const flashes=[
-  ['Same magnetic poles do what?','They repel. N+N repel and S+S repel.'],
-  ['Opposite magnetic poles do what?','They attract. N+S pull together.'],
-  ['What happens when a magnet breaks?','It becomes two new magnets. Each has a North and South pole.'],
-  ['What is a conductor?','A material that allows electric charges to pass through easily.'],
-  ['What is an insulator?','A material that resists the flow of electric charges.'],
-  ['What happens when more coil turns are added to an electromagnet?','The electromagnet becomes stronger and picks up more paper clips.'],
-  ['Series circuit?','One pathway for electric current.'],
-  ['Parallel circuit?','Two or more pathways for electric current.'],
-  ['Transparent?','Light passes completely through.'],
-  ['Translucent?','Light passes partially through.'],
-  ['Opaque?','Light does not pass through.'],
-  ['Reflection?','Light bounces back off a surface.'],
-  ['Refraction?','Light bends when it passes from one medium to another.']
-];
-let flashIndex=-1,flashBack=false;
-function nextFlash(){flashIndex=(flashIndex+1)%flashes.length;flashBack=false;document.getElementById('flashFace').textContent=flashes[flashIndex][0]}
-function flipFlash(){if(flashIndex<0)nextFlash();else{flashBack=!flashBack;document.getElementById('flashFace').textContent=flashes[flashIndex][flashBack?1:0]}}
-nextFlash();
+    const startBtn = document.getElementById("startBtn");
+    const switchBtn = document.getElementById("switchBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const statusText = document.getElementById("statusText");
+    const savedPill = document.getElementById("savedPill");
+    const matchBanner = document.getElementById("matchBanner");
+    const countdownEl = document.getElementById("countdown");
+    const scoreValue = document.getElementById("scoreValue");
+    const faceValue = document.getElementById("faceValue");
+    const poseValue = document.getElementById("poseValue");
+    const handValue = document.getElementById("handValue");
+    const toleranceSlider = document.getElementById("toleranceSlider");
+    const toleranceLabel = document.getElementById("toleranceLabel");
+    const faceToggle = document.getElementById("faceToggle");
+    const poseToggle = document.getElementById("poseToggle");
+    const handToggle = document.getElementById("handToggle");
 
-function updateMagnetLab(){let l=document.getElementById('leftPole').value,r=document.getElementById('rightPole').value;let same=l===r;let res=same?'REPEL ⇠ ⇢':'ATTRACT ⇢ ⇠';document.getElementById('magnetResult').textContent=res;let f=document.getElementById('magnetExplain');f.className='feedback '+(same?'no':'ok');f.textContent=same?`${l} and ${r} are the same pole, so they repel.`:`${l} and ${r} are opposite poles, so they attract.`;markDone('magnetLab')}
-updateMagnetLab();
+    const STORAGE_KEY = "generic_camera_position_signature_v1";
 
-const magnetCases=[
-  {name:'1',desc:'S facing S',ans:'repel',layout:'barSS'},
-  {name:'2',desc:'N-S near S-N',ans:'attract',layout:'stackOpp'},
-  {name:'3',desc:'Horseshoe N/S near bar S/N',ans:'attract',layout:'horseAttract'},
-  {name:'4',desc:'N near N and S near S',ans:'repel',layout:'horseRepel'},
-  {name:'5',desc:'S near S',ans:'repel',layout:'barRepel2'},
-  {name:'6',desc:'N near N',ans:'repel',layout:'uRepel'}
-];
-let magnetAnswered={};
-function miniMagnetSvg(type){
-  const bar=(x,y,a,b,w=145)=>`<rect x="${x}" y="${y}" width="${w}" height="30" rx="6" fill="#fff" stroke="#111827" stroke-width="3"/><rect x="${x}" y="${y}" width="38" height="30" rx="6" fill="${a==='N'?'#dbeafe':'#fee2e2'}"/><rect x="${x+w-38}" y="${y}" width="38" height="30" rx="6" fill="${b==='N'?'#dbeafe':'#fee2e2'}"/><text x="${x+13}" y="${y+21}" class="svgText">${a}</text><text x="${x+w-25}" y="${y+21}" class="svgText">${b}</text>`;
-  if(type==='barSS')return bar(40,42,'N','S')+bar(215,42,'S','N');
-  if(type==='stackOpp')return bar(130,25,'N','S')+bar(130,72,'S','N');
-  if(type==='horseAttract')return `<path d="M115 95 V55 Q115 20 155 20 H205 Q245 20 245 55 V95" fill="none" stroke="#9ca3af" stroke-width="34" stroke-linecap="round"/><text x="102" y="112" class="svgText">N</text><text x="238" y="112" class="svgText">S</text>`+bar(110,128,'S','N');
-  if(type==='horseRepel')return `<path d="M80 95 V55 Q80 20 120 20 H240 Q280 20 280 55 V95" fill="none" stroke="#9ca3af" stroke-width="34" stroke-linecap="round"/><text x="68" y="112" class="svgText">N</text><text x="268" y="112" class="svgText">S</text><path d="M175 55 H185" stroke="#9ca3af" stroke-width="34"/>`; 
-  if(type==='barRepel2')return bar(50,72,'N','S')+bar(190,36,'S','N');
-  return `<path d="M115 122 V82 Q115 45 155 45 H205 Q245 45 245 82 V122" fill="none" stroke="#9ca3af" stroke-width="34" stroke-linecap="round"/><text x="102" y="62" class="svgText">S</text><text x="238" y="62" class="svgText">N</text>`+bar(190,15,'S','N',145);
-}
-function renderMagnetScenarios(){let host=document.getElementById('magnetScenarios');host.innerHTML=magnetCases.map((m,i)=>`<div class="scenario col4"><svg class="scenarioSvg" viewBox="0 0 400 170">${miniMagnetSvg(m.layout)}</svg><p><b>Case ${m.name}:</b> ${m.desc}</p><div class="toggleRow"><button onclick="answerMagnet(${i},'attract',this)">Attract</button><button onclick="answerMagnet(${i},'repel',this)">Repel</button></div></div>`).join('')}
-function answerMagnet(i,ans,btn){let good=magnetCases[i].ans===ans;magnetAnswered[i]=good;btn.parentElement.querySelectorAll('button').forEach(b=>{b.classList.remove('right','bad')});btn.classList.add(good?'right':'bad');let all=magnetCases.every((_,idx)=>magnetAnswered[idx]===true);let f=document.getElementById('magnetScenarioFeedback');f.className='feedback '+(good?'ok':'no');f.textContent=good?'Correct ✅':'Try again. Remember: same poles repel, opposite poles attract.';if(all){f.className='feedback ok';f.textContent='All six magnet questions are correct. Excellent!';markDone('magnetScenarios')}}
-renderMagnetScenarios();
+    const POSE_CONNECTIONS = [
+      [11,12],[11,13],[13,15],[12,14],[14,16],
+      [11,23],[12,24],[23,24],
+      [23,25],[25,27],[27,29],[29,31],
+      [24,26],[26,28],[28,30],[30,32],
+      [0,2],[2,5],[5,0],[0,7],[0,8]
+    ];
 
-const objects=[['🧱','Wooden blocks','Non-Magnetic'],['📎','Paper clips','Magnetic'],['🔘','Buttons','Non-Magnetic'],['🔩','Nuts and bolts','Magnetic'],['📏','Ruler','Non-Magnetic'],['🧽','Eraser','Non-Magnetic'],['🔧','Wrench','Magnetic'],['🔑','Keys','Magnetic']];
-let objAnswered={};
-function renderObjects(){let host=document.getElementById('objectGrid');host.innerHTML=objects.map((o,i)=>`<div class="objectCard"><div class="objectTop"><div class="emoji">${o[0]}</div><b>${o[1]}</b></div><div class="toggleRow"><button onclick="answerObj(${i},'Magnetic',this)">Magnetic</button><button onclick="answerObj(${i},'Non-Magnetic',this)">Non-magnetic</button></div></div>`).join('')}
-function answerObj(i,ans,btn){let good=objects[i][2]===ans;objAnswered[i]=good;btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('right','bad'));btn.classList.add(good?'right':'bad');if(Object.keys(objAnswered).length===objects.length && Object.values(objAnswered).every(Boolean))markDone('magneticObjects')}
-renderObjects();
+    const HAND_CONNECTIONS = [
+      [0,1],[1,2],[2,3],[3,4],
+      [0,5],[5,6],[6,7],[7,8],
+      [0,9],[9,10],[10,11],[11,12],
+      [0,13],[13,14],[14,15],[15,16],
+      [0,17],[17,18],[18,19],[19,20],
+      [5,9],[9,13],[13,17]
+    ];
 
-function showHot(part){let map={nail:'The nail is the core. It becomes magnetic while current flows.',wire:'The wire carries the current. More turns around the nail make the electromagnet stronger.',battery:'The battery provides electrical energy/current.'};let f=document.getElementById('hotFeedback');f.className='feedback ok';f.textContent=map[part];state.done['hot_'+part]=true;if(['hot_nail','hot_wire','hot_battery'].every(k=>state.done[k]))markDone('electromagnetParts');save()}
-function drawChart(){let svg=document.getElementById('coilChart'),val=+document.getElementById('coilSlider').value;document.getElementById('coilValue').textContent=val;const data=[[10,5],[20,11],[30,21],[40,39],[50,60]],W=640,H=360,L=70,T=25,R=30,B=58;let sx=x=>L+(x/50)*(W-L-R), sy=y=>H-B-(y/60)*(H-T-B);let out=`<rect x="0" y="0" width="640" height="360" rx="14" fill="#f8fafc"/>`;
-for(let y=0;y<=60;y+=10){out+=`<line x1="${L}" y1="${sy(y)}" x2="${W-R}" y2="${sy(y)}" stroke="#d0d5dd"/><text x="28" y="${sy(y)+5}" class="svgText" fill="#475467">${y}</text>`}
-for(let x=0;x<=50;x+=10){out+=`<line x1="${sx(x)}" y1="${T}" x2="${sx(x)}" y2="${H-B}" stroke="#e5e7eb"/><text x="${sx(x)-8}" y="${H-25}" class="svgText" fill="#475467">${x}</text>`}
-out+=`<line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" stroke="#111827" stroke-width="3"/><line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="#111827" stroke-width="3"/><text x="255" y="348" class="svgText">Number of turns</text><text x="8" y="30" class="svgText">Paper clips picked up</text>`;
-let pts=data.map(d=>`${sx(d[0])},${sy(d[1])}`).join(' ');out+=`<polyline points="${pts}" fill="none" stroke="#2563eb" stroke-width="5"/>`;
-data.forEach(d=>{let active=d[0]<=val;out+=`<circle cx="${sx(d[0])}" cy="${sy(d[1])}" r="${active?9:6}" fill="${active?'#2563eb':'#94a3b8'}" stroke="#fff" stroke-width="3"/><text x="${sx(d[0])+10}" y="${sy(d[1])-8}" class="svgText" fill="#0f172a">${d[1]}</text>`});
-let found=data.find(d=>d[0]===val);out+=`<rect x="400" y="42" width="200" height="64" rx="16" fill="#fff" stroke="#d0d5dd"/><text x="418" y="70" class="svgText" fill="#475467">At ${val} turns:</text><text x="418" y="96" font-size="24" font-weight="900" fill="#2563eb">${found[1]} clips</text>`;svg.innerHTML=out}
-drawChart();
+    const state = {
+      isRunning: false,
+      isLoadingModels: false,
+      isFrontCamera: true,
+      stream: null,
+      vision: null,
+      faceLandmarker: null,
+      poseLandmarker: null,
+      handLandmarker: null,
+      latestSignature: null,
+      savedSignature: null,
+      lastVideoTime: -1,
+      lastInferenceMs: 0,
+      inferenceGapMs: 95,
+      matchFrames: 0,
+      bestScore: 0,
+      modelMode: "loading"
+    };
 
-const blanks=[
-  ['A material that resists the flow of electric charges is called','insulator'],
-  ['A material that readily allows electric charges to pass through is called','conductor'],
-  ['Electrical devices work when the','electrons'],
-  ['The parts of the plug that you hold, and the covering of the wire are','insulator'],
-  ['The metals that go into the outlet are good','conductor']
-];
-function renderBlanks(){const opts=['conductor','insulator','electrons'];document.getElementById('blankList').innerHTML=blanks.map((b,i)=>`<div class="blankLine"><span>${b[0]}</span><select id="blank${i}"><option value="">choose...</option>${opts.map(o=>`<option>${o}</option>`).join('')}</select><span class="answerTag" id="blankTag${i}"></span></div>`).join('')}
-function checkBlanks(){let correct=0;blanks.forEach((b,i)=>{let v=document.getElementById('blank'+i).value,tag=document.getElementById('blankTag'+i);let ok=v===b[1];if(ok)correct++;tag.className='answerTag '+(ok?'ok':'no');tag.textContent=ok?'Correct':'Answer: '+b[1]});let f=document.getElementById('blankFeedback');f.className='feedback '+(correct===blanks.length?'ok':'no');f.textContent=`${correct}/${blanks.length} correct.`;if(correct===blanks.length)markDone('electricityBlanks')}
-function fillBlankAnswers(){blanks.forEach((b,i)=>document.getElementById('blank'+i).value=b[1]);checkBlanks()}
-renderBlanks();
+    function setStatus(message) {
+      statusText.textContent = message;
+    }
 
-function circuitSim(type){let svg=document.getElementById('circuitSimSvg'),f=document.getElementById('circuitFeedback');let bright=type==='parallel';let b1=bright?'#fde047':'#fef3c7',b2=bright?'#fde047':'#fef3c7';
-let lamp=(cx,cy,fill,label)=>`<circle cx="${cx}" cy="${cy}" r="30" fill="${fill}" stroke="#111827" stroke-width="5"/><path d="M${cx-19} ${cy-19} L${cx+19} ${cy+19} M${cx+19} ${cy-19} L${cx-19} ${cy+19}" stroke="#111827" stroke-width="4"/><text x="${cx-28}" y="${cy+55}" class="svgText">${label}</text>`;
-if(type==='series'){svg.innerHTML=`<path d="M80 40 H600 V155 H80 Z" fill="none" stroke="#111827" stroke-width="6"/><line x1="330" y1="40" x2="330" y2="15" stroke="#111827" stroke-width="6"/><line x1="355" y1="40" x2="355" y2="22" stroke="#111827" stroke-width="6"/>${lamp(270,155,b1,'less bright')}${lamp(420,155,b2,'less bright')}`;f.className='feedback no';f.textContent='Series: the bulbs share one pathway/current, so each bulb is less bright.'}
-else{svg.innerHTML=`<path d="M80 35 H600 V195 H80 Z" fill="none" stroke="#111827" stroke-width="6"/><line x1="330" y1="35" x2="330" y2="10" stroke="#111827" stroke-width="6"/><line x1="355" y1="35" x2="355" y2="17" stroke="#111827" stroke-width="6"/><line x1="80" y1="105" x2="600" y2="105" stroke="#111827" stroke-width="6"/>${lamp(340,105,b1,'same bright')}${lamp(340,195,b2,'same bright')}`;f.className='feedback ok';f.textContent='Parallel: current flows in different pathways, so the first bulb stays bright.'}
-markDone('circuitSim')}
+    function updateSavedPill() {
+      if (state.savedSignature) {
+        savedPill.textContent = "Saved position ready";
+        savedPill.style.background = "rgba(37, 211, 102, 0.18)";
+        savedPill.style.borderColor = "rgba(37, 211, 102, 0.45)";
+      } else {
+        savedPill.textContent = "No saved position";
+        savedPill.style.background = "rgba(255, 255, 255, 0.08)";
+        savedPill.style.borderColor = "rgba(255, 255, 255, 0.18)";
+      }
+    }
 
-const lightObjs=[['🎁','gift box','Opaque'],['🎈','colored balloon','Translucent'],['📘','book','Opaque'],['💧','water','Transparent'],['🌳','tree','Opaque'],['🥽','goggles','Translucent'],['🚪','door','Opaque'],['🔎','magnifying glass','Transparent'],['🪑','desk','Opaque'],['🧱','cement blocks','Opaque']];
-let lightAnswered={};
-function renderLight(){document.getElementById('lightObjects').innerHTML=lightObjs.map((o,i)=>`<div class="classifyCard"><div class="objectTop"><div class="emoji">${o[0]}</div><b>${o[1]}</b></div><div class="choices three" style="gap:6px;margin-top:8px"><button class="smallBtn" onclick="answerLight(${i},'Transparent',this)">Transparent</button><button class="smallBtn" onclick="answerLight(${i},'Translucent',this)">Translucent</button><button class="smallBtn" onclick="answerLight(${i},'Opaque',this)">Opaque</button></div></div>`).join('')}
-function answerLight(i,ans,btn){let good=lightObjs[i][2]===ans;lightAnswered[i]=good;btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('right','bad'));btn.classList.add(good?'right':'bad');if(Object.keys(lightAnswered).length===lightObjs.length && Object.values(lightAnswered).every(Boolean))markDone('lightObjects')}
-renderLight();
+    function loadSavedSignature() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) state.savedSignature = JSON.parse(raw);
+      } catch (err) {
+        console.warn("Could not load saved signature", err);
+      }
+      updateSavedPill();
+    }
 
-const quiz=[
-  {q:'Two North poles are placed close together. What happens?',a:'They repel',c:['They attract','They repel','They become one magnet','Nothing happens'],why:'Same poles repel.'},
-  {q:'A North pole and a South pole are placed close together. What happens?',a:'They attract',c:['They attract','They repel','They disappear','They become insulators'],why:'Opposite poles attract.'},
-  {q:'What happens when a bar magnet breaks in half?',a:'It becomes two magnets, each with N and S poles',c:['It loses all magnetism','It becomes two magnets, each with N and S poles','Only one piece is magnetic','It becomes an electromagnet'],why:'Each broken piece has a new North and South pole.'},
-  {q:'Which object is magnetic?',a:'Paper clips',c:['Wooden blocks','Paper clips','Eraser','Ruler'],why:'Paper clips are usually made from metal.'},
-  {q:'Which object is non-magnetic?',a:'Eraser',c:['Keys','Wrench','Nuts and bolts','Eraser'],why:'An eraser is not attracted to a magnet.'},
-  {q:'What provides energy/current in an electromagnet?',a:'Battery',c:['Nail','Battery','Paper clip','Mirror'],why:'The battery provides energy/current.'},
-  {q:'What is the pathway for energy/current in an electromagnet?',a:'Wire',c:['Wire','Wood','Glass','Water'],why:'The wire carries current around the nail.'},
-  {q:'What happens when more wire turns are added around the nail?',a:'The electromagnet gets stronger',c:['It gets weaker','It stops working','The electromagnet gets stronger','It becomes opaque'],why:'More turns increase electromagnet strength.'},
-  {q:'A material that resists the flow of electric charges is called:',a:'Insulator',c:['Conductor','Insulator','Electron','Battery'],why:'Insulators resist the flow of electric charges.'},
-  {q:'A material that allows electric charges to pass through easily is called:',a:'Conductor',c:['Conductor','Insulator','Refraction','Opaque'],why:'Conductors allow charges to pass through.'},
-  {q:'Electrical devices work when what flows through them?',a:'Electrons',c:['Water','Electrons','Magnets','Light'],why:'Electrical devices work when electrons flow.'},
-  {q:'Which is a conductor example?',a:'Copper',c:['Rubber','Plastic','Copper','Wood'],why:'Copper is a metal and a good conductor.'},
-  {q:'Which is an insulator example?',a:'Rubber',c:['Iron','Steel','Gold','Rubber'],why:'Rubber resists electric charge flow.'},
-  {q:'Diagram 1 circuit with one pathway is called:',a:'Series circuit',c:['Series circuit','Parallel circuit','Magnet circuit','Light circuit'],why:'Series circuits have one pathway.'},
-  {q:'Diagram 2 circuit with two pathways is called:',a:'Parallel circuit',c:['Series circuit','Parallel circuit','Insulator circuit','Broken circuit'],why:'Parallel circuits have two or more pathways.'},
-  {q:'In a series circuit, adding a second bulb makes the first bulb:',a:'Less bright',c:['Less bright','Same brightness','Brighter than before','Transparent'],why:'The bulbs share one pathway/current.'},
-  {q:'In a parallel circuit, adding a second bulb makes the first bulb:',a:'Stay the same brightness',c:['Go off','Stay the same brightness','Less bright','Become a magnet'],why:'Current flows in different pathways.'},
-  {q:'Light passes completely through which type of object?',a:'Transparent',c:['Transparent','Translucent','Opaque','Magnetic'],why:'Transparent objects allow light to pass completely.'},
-  {q:'Light passes partially through which type of object?',a:'Translucent',c:['Transparent','Translucent','Opaque','Conductor'],why:'Translucent objects allow only some light through.'},
-  {q:'Light does not pass through which type of object?',a:'Opaque',c:['Transparent','Translucent','Opaque','Electron'],why:'Opaque objects block light.'},
-  {q:'Reflection happens when light:',a:'Bounces back off a surface',c:['Bounces back off a surface','Bends through water','Stops moving','Becomes electricity'],why:'Reflection is light bouncing back and changing direction.'},
-  {q:'Refraction happens when light:',a:'Bends as it passes from one medium to another',c:['Bounces off a mirror','Bends as it passes from one medium to another','Turns into magnets','Cannot pass through'],why:'Refraction is bending of light due to speed change in another medium.'},
-  {q:'Why does a pencil look broken in water?',a:'Because light refracts',c:['Because light reflects','Because light refracts','Because the pencil is magnetic','Because water is opaque'],why:'Light bends when passing between air and water.'},
-  {q:'One advantage of a parallel circuit is:',a:'One device can work without affecting the others',c:['It has only one pathway','Bulbs always become dimmer','One device can work without affecting the others','It blocks electrons'],why:'Parallel circuits let devices work separately.'}
-];
-let qi=0,score=0,answered=false,order=[];
-function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
-function startQuiz(){order=shuffle(quiz);qi=0;score=0;answered=false;showQuiz();document.getElementById('quizSummary').textContent='Quiz started. Good luck!'}
-function showQuiz(){let q=order[qi];document.getElementById('quizMeta').textContent=`Question ${qi+1} of ${order.length} • Score: ${score}`;document.getElementById('quizProgress').style.width=Math.round(qi/order.length*100)+'%';document.getElementById('quizQ').textContent=q.q;let choices=shuffle(q.c);document.getElementById('quizChoices').innerHTML=choices.map(c=>`<button class="choice" onclick="answerQuiz(this,'${encodeURIComponent(c)}')">${c}</button>`).join('');let f=document.getElementById('quizFeedback');f.className='feedback';f.textContent='';answered=false}
-function answerQuiz(btn,enc){if(answered)return;answered=true;let ans=decodeURIComponent(enc),q=order[qi],good=ans===q.a;if(good)score++;document.querySelectorAll('#quizChoices .choice').forEach(b=>{if(b.textContent===q.a)b.classList.add('correct')});if(!good)btn.classList.add('wrong');let f=document.getElementById('quizFeedback');f.className='feedback '+(good?'ok':'no');f.textContent=(good?'Correct! ':'Not correct. ')+q.why}
-function nextQuiz(){if(!order.length){startQuiz();return}if(!answered){toast('Choose an answer first');return}qi++;if(qi>=order.length){finishQuiz()}else showQuiz()}
-function finishQuiz(){let pct=Math.round(score/order.length*100);state.quizLast=pct;state.quizBest=Math.max(state.quizBest||0,pct);state.done.bigQuiz=true;save();document.getElementById('quizProgress').style.width='100%';document.getElementById('quizQ').textContent='Finished!';document.getElementById('quizChoices').innerHTML='';let f=document.getElementById('quizFeedback');f.className='feedback '+(pct>=80?'ok':pct>=60?'info':'no');f.textContent=`You scored ${score}/${order.length} = ${pct}%. Best score: ${state.quizBest}%.`;document.getElementById('quizSummary').textContent=pct>=80?'Excellent! You are ready. Review any weak areas once more.':'Good practice. Try again after reviewing the sections where you made mistakes.';burst()}
+    function saveSignatureToStorage(signature) {
+      state.savedSignature = JSON.parse(JSON.stringify(signature));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.savedSignature));
+      updateSavedPill();
+    }
 
-function burst(){let wrap=document.getElementById('confetti');for(let i=0;i<35;i++){let p=document.createElement('i');p.style.left=Math.random()*100+'%';p.style.background=['#2563eb','#16a34a','#f59e0b','#dc2626','#7c3aed'][i%5];p.style.animationDelay=(Math.random()*0.25)+'s';wrap.appendChild(p);setTimeout(()=>p.remove(),1300)}}
-updateStats();
-</script>
+    function clearSavedSignature() {
+      state.savedSignature = null;
+      localStorage.removeItem(STORAGE_KEY);
+      state.matchFrames = 0;
+      scoreValue.textContent = "--";
+      matchBanner.classList.remove("show");
+      updateSavedPill();
+      setStatus("Saved position cleared. Save a new position when ready.");
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function getCanvasPoint(lm) {
+      const x = state.isFrontCamera ? (1 - lm.x) * canvas.width : lm.x * canvas.width;
+      const y = lm.y * canvas.height;
+      return { x, y };
+    }
+
+    function resizeCanvasToVideo() {
+      const rect = video.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const width = Math.max(1, Math.floor(rect.width * dpr));
+      const height = Math.max(1, Math.floor(rect.height * dpr));
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+      }
+    }
+
+    function drawPoint(lm, size = 3, alpha = 1) {
+      const p = getCanvasPoint(lm);
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    function drawLine(a, b, alpha = 0.55) {
+      const pa = getCanvasPoint(a);
+      const pb = getCanvasPoint(b);
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.moveTo(pa.x, pa.y);
+      ctx.lineTo(pb.x, pb.y);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    function drawLandmarks(results) {
+      resizeCanvasToVideo();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.lineWidth = Math.max(2, canvas.width * 0.003);
+      ctx.strokeStyle = "rgba(37, 211, 102, 0.90)";
+      ctx.fillStyle = "rgba(37, 211, 102, 0.95)";
+
+      if (results.pose?.landmarks?.[0]) {
+        const pose = results.pose.landmarks[0];
+        for (const [a, b] of POSE_CONNECTIONS) {
+          if (pose[a] && pose[b]) drawLine(pose[a], pose[b], 0.72);
+        }
+        for (const lm of pose) drawPoint(lm, Math.max(2.4, canvas.width * 0.0045), 0.95);
+      }
+
+      if (results.hands?.landmarks?.length) {
+        ctx.strokeStyle = "rgba(255, 204, 0, 0.88)";
+        ctx.fillStyle = "rgba(255, 204, 0, 0.95)";
+        for (const hand of results.hands.landmarks) {
+          for (const [a, b] of HAND_CONNECTIONS) {
+            if (hand[a] && hand[b]) drawLine(hand[a], hand[b], 0.82);
+          }
+          for (const lm of hand) drawPoint(lm, Math.max(2.1, canvas.width * 0.0038), 0.95);
+        }
+      }
+
+      if (results.face?.faceLandmarks?.[0]) {
+        ctx.fillStyle = "rgba(80, 170, 255, 0.80)";
+        const face = results.face.faceLandmarks[0];
+        for (let i = 0; i < face.length; i += 2) {
+          drawPoint(face[i], Math.max(1.4, canvas.width * 0.0022), 0.72);
+        }
+      }
+    }
+
+    function compactLandmark(lm) {
+      return {
+        x: clamp(Number(lm.x || 0), -2, 2),
+        y: clamp(Number(lm.y || 0), -2, 2),
+        z: clamp(Number(lm.z || 0), -2, 2),
+        v: lm.visibility == null ? 1 : Number(lm.visibility)
+      };
+    }
+
+    function normalizeLandmarkSet(landmarks, type, minVisibility = 0) {
+      if (!landmarks || landmarks.length === 0) return null;
+
+      const points = landmarks.map(compactLandmark);
+      const usable = points.filter(p => p.v >= minVisibility && isFinite(p.x) && isFinite(p.y));
+      if (usable.length < Math.min(4, points.length)) return null;
+
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const p of usable) {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+      }
+
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      const width = Math.max(0.0001, maxX - minX);
+      const height = Math.max(0.0001, maxY - minY);
+      const scale = Math.max(0.08, Math.sqrt(width * width + height * height));
+
+      const vector = [];
+
+      // Absolute camera position features. These make "face/body in this camera position" matter.
+      vector.push(centerX * 0.85, centerY * 0.85, scale * 0.70);
+
+      // Relative shape/posture features. These make "same pose" matter even if slightly shifted.
+      for (const p of points) {
+        const visibleWeight = p.v >= minVisibility ? 1 : 0;
+        vector.push(((p.x - centerX) / scale) * visibleWeight);
+        vector.push(((p.y - centerY) / scale) * visibleWeight);
+        vector.push((p.z / scale) * 0.35 * visibleWeight);
+      }
+
+      return {
+        type,
+        count: points.length,
+        centerX,
+        centerY,
+        scale,
+        vector
+      };
+    }
+
+    function buildSignature(results) {
+      const signature = {
+        createdAt: new Date().toISOString(),
+        parts: {},
+        counts: { face: 0, pose: 0, hands: 0 },
+        enabled: {
+          face: faceToggle.checked,
+          pose: poseToggle.checked,
+          hands: handToggle.checked
+        }
+      };
+
+      if (faceToggle.checked && results.face?.faceLandmarks?.[0]) {
+        const face = normalizeLandmarkSet(results.face.faceLandmarks[0], "face", 0);
+        if (face) {
+          signature.parts.face = face;
+          signature.counts.face = face.count;
+        }
+      }
+
+      if (poseToggle.checked && results.pose?.landmarks?.[0]) {
+        const pose = normalizeLandmarkSet(results.pose.landmarks[0], "pose", 0.25);
+        if (pose) {
+          signature.parts.pose = pose;
+          signature.counts.pose = pose.count;
+        }
+      }
+
+      if (handToggle.checked && results.hands?.landmarks?.length) {
+        // Compare up to two hands. Hand 1 and hand 2 are sorted left-to-right to reduce random order changes.
+        const hands = results.hands.landmarks
+          .map((hand, index) => {
+            const normalized = normalizeLandmarkSet(hand, `hand${index + 1}`, 0);
+            return normalized;
+          })
+          .filter(Boolean)
+          .sort((a, b) => a.centerX - b.centerX)
+          .slice(0, 2);
+
+        hands.forEach((hand, index) => {
+          signature.parts[`hand${index + 1}`] = hand;
+          signature.counts.hands += hand.count;
+        });
+      }
+
+      return signature;
+    }
+
+    function vectorDistance(a, b) {
+      if (!a || !b || !a.vector || !b.vector) return Infinity;
+      const n = Math.min(a.vector.length, b.vector.length);
+      if (n < 8) return Infinity;
+      let sum = 0;
+      let used = 0;
+      for (let i = 0; i < n; i++) {
+        const av = a.vector[i];
+        const bv = b.vector[i];
+        if (Number.isFinite(av) && Number.isFinite(bv)) {
+          sum += Math.abs(av - bv);
+          used++;
+        }
+      }
+      return used ? sum / used : Infinity;
+    }
+
+    function compareSignatures(saved, live) {
+      if (!saved || !live) return { distance: Infinity, score: 0, comparedParts: 0, missing: [] };
+
+      const savedParts = Object.keys(saved.parts || {});
+      if (!savedParts.length) return { distance: Infinity, score: 0, comparedParts: 0, missing: ["saved position has no landmarks"] };
+
+      let weightedDistance = 0;
+      let totalWeight = 0;
+      const missing = [];
+
+      for (const partName of savedParts) {
+        const savedPart = saved.parts[partName];
+        const livePart = live.parts?.[partName];
+        if (!livePart) {
+          missing.push(partName);
+          continue;
+        }
+        const dist = vectorDistance(savedPart, livePart);
+        const weight = partName === "face" ? 0.75 : partName === "pose" ? 1.20 : 0.90;
+        weightedDistance += dist * weight;
+        totalWeight += weight;
+      }
+
+      if (missing.length) {
+        weightedDistance += missing.length * 0.45;
+        totalWeight += missing.length;
+      }
+
+      const distance = totalWeight ? weightedDistance / totalWeight : Infinity;
+      const tolerance = Number(toleranceSlider.value);
+      const score = clamp(Math.round((1 - distance / tolerance) * 100), 0, 100);
+      return { distance, score, comparedParts: totalWeight, missing };
+    }
+
+    async function createWithGpuFallback(TaskClass, options, label) {
+      try {
+        return await TaskClass.createFromOptions(state.vision, {
+          ...options,
+          baseOptions: { ...options.baseOptions, delegate: "GPU" }
+        });
+      } catch (gpuErr) {
+        console.warn(`${label} GPU failed, trying CPU`, gpuErr);
+        return await TaskClass.createFromOptions(state.vision, {
+          ...options,
+          baseOptions: { ...options.baseOptions, delegate: "CPU" }
+        });
+      }
+    }
+
+    async function loadModels() {
+      if (state.faceLandmarker && state.poseLandmarker && state.handLandmarker) return;
+      if (state.isLoadingModels) return;
+      state.isLoadingModels = true;
+      setStatus("Loading MediaPipe face, body, and hand models. First load may take some time.");
+
+      state.vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+      );
+
+      const faceOptions = {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+        },
+        runningMode: "VIDEO",
+        numFaces: 1,
+        minFaceDetectionConfidence: 0.5,
+        minFacePresenceConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+        outputFaceBlendshapes: false,
+        outputFacialTransformationMatrixes: false
+      };
+
+      const poseOptions = {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task"
+        },
+        runningMode: "VIDEO",
+        numPoses: 1,
+        minPoseDetectionConfidence: 0.5,
+        minPosePresenceConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+        outputSegmentationMasks: false
+      };
+
+      const handOptions = {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+        },
+        runningMode: "VIDEO",
+        numHands: 2,
+        minHandDetectionConfidence: 0.45,
+        minHandPresenceConfidence: 0.45,
+        minTrackingConfidence: 0.45
+      };
+
+      state.faceLandmarker = await createWithGpuFallback(FaceLandmarker, faceOptions, "FaceLandmarker");
+      state.poseLandmarker = await createWithGpuFallback(PoseLandmarker, poseOptions, "PoseLandmarker");
+      state.handLandmarker = await createWithGpuFallback(HandLandmarker, handOptions, "HandLandmarker");
+
+      state.isLoadingModels = false;
+      setStatus("Models loaded. Point the camera at your face/body/hands, then save a position.");
+    }
+
+    async function startCamera() {
+      try {
+        startBtn.disabled = true;
+        switchBtn.disabled = true;
+        saveBtn.disabled = true;
+
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error("This browser does not support camera access through getUserMedia().");
+        }
+
+        await loadModels();
+        stopCameraStream();
+
+        const constraints = {
+          audio: false,
+          video: {
+            facingMode: state.isFrontCamera ? "user" : "environment",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            frameRate: { ideal: 30, max: 30 }
+          }
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        state.stream = stream;
+        video.srcObject = stream;
+        video.classList.toggle("mirror", state.isFrontCamera);
+        await video.play();
+
+        state.isRunning = true;
+        state.lastVideoTime = -1;
+        state.lastInferenceMs = 0;
+        startBtn.textContent = "Restart";
+        startBtn.disabled = false;
+        switchBtn.disabled = false;
+        saveBtn.disabled = false;
+        setStatus("Camera running. Save a position, then return to it to trigger IN POSITION.");
+        requestAnimationFrame(predictLoop);
+      } catch (err) {
+        console.error(err);
+        startBtn.disabled = false;
+        switchBtn.disabled = false;
+        saveBtn.disabled = true;
+        setStatus("Error: " + err.message + " — On iPhone, open from HTTPS or localhost, not file://.");
+      }
+    }
+
+    function stopCameraStream() {
+      if (state.stream) {
+        for (const track of state.stream.getTracks()) track.stop();
+      }
+      state.stream = null;
+      state.isRunning = false;
+    }
+
+    async function switchCamera() {
+      state.isFrontCamera = !state.isFrontCamera;
+      setStatus(state.isFrontCamera ? "Switching to front camera..." : "Switching to back camera...");
+      await startCamera();
+    }
+
+    function updateMetricCounts(signature) {
+      faceValue.textContent = signature?.counts?.face || 0;
+      poseValue.textContent = signature?.counts?.pose || 0;
+      handValue.textContent = signature?.counts?.hands || 0;
+    }
+
+    function processMatch(liveSignature) {
+      if (!state.savedSignature || !liveSignature) {
+        matchBanner.classList.remove("show");
+        return;
+      }
+
+      const result = compareSignatures(state.savedSignature, liveSignature);
+      scoreValue.textContent = result.score + "%";
+      state.bestScore = Math.max(state.bestScore, result.score);
+
+      const tolerance = Number(toleranceSlider.value);
+      const isMatch = result.distance < tolerance && result.missing.length === 0;
+
+      if (isMatch) state.matchFrames += 1;
+      else state.matchFrames = Math.max(0, state.matchFrames - 2);
+
+      if (state.matchFrames >= 3) {
+        matchBanner.classList.add("show");
+      } else {
+        matchBanner.classList.remove("show");
+      }
+    }
+
+    function detectCurrentFrame(nowMs) {
+      const results = { face: null, pose: null, hands: null };
+      if (video.readyState < 2) return results;
+
+      if (faceToggle.checked && state.faceLandmarker) {
+        try { results.face = state.faceLandmarker.detectForVideo(video, nowMs); }
+        catch (err) { console.warn("Face detect error", err); }
+      }
+
+      if (poseToggle.checked && state.poseLandmarker) {
+        try { results.pose = state.poseLandmarker.detectForVideo(video, nowMs); }
+        catch (err) { console.warn("Pose detect error", err); }
+      }
+
+      if (handToggle.checked && state.handLandmarker) {
+        try { results.hands = state.handLandmarker.detectForVideo(video, nowMs); }
+        catch (err) { console.warn("Hand detect error", err); }
+      }
+
+      return results;
+    }
+
+    function predictLoop(nowMs) {
+      if (!state.isRunning) return;
+      requestAnimationFrame(predictLoop);
+
+      if (video.currentTime === state.lastVideoTime) return;
+      if (nowMs - state.lastInferenceMs < state.inferenceGapMs) return;
+
+      state.lastVideoTime = video.currentTime;
+      state.lastInferenceMs = nowMs;
+
+      const results = detectCurrentFrame(nowMs);
+      drawLandmarks(results);
+
+      const signature = buildSignature(results);
+      state.latestSignature = signature;
+      updateMetricCounts(signature);
+      processMatch(signature);
+    }
+
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function runCountdown(seconds = 3) {
+      countdownEl.style.display = "flex";
+      for (let i = seconds; i >= 1; i--) {
+        countdownEl.textContent = String(i);
+        await wait(850);
+      }
+      countdownEl.textContent = "SAVE";
+      await wait(350);
+      countdownEl.style.display = "none";
+    }
+
+    async function capturePosition() {
+      if (!state.isRunning) {
+        setStatus("Start the camera first.");
+        return;
+      }
+
+      saveBtn.disabled = true;
+      setStatus("Hold the position. Saving after countdown...");
+      await runCountdown(3);
+
+      const latest = state.latestSignature;
+      const totalPoints = (latest?.counts?.face || 0) + (latest?.counts?.pose || 0) + (latest?.counts?.hands || 0);
+
+      if (!latest || totalPoints < 8 || Object.keys(latest.parts || {}).length === 0) {
+        setStatus("Could not save: not enough landmarks detected. Move into view and try again.");
+        saveBtn.disabled = false;
+        return;
+      }
+
+      saveSignatureToStorage(latest);
+      state.matchFrames = 0;
+      state.bestScore = 0;
+      setStatus(`Saved position with ${totalPoints} landmarks. Move away, then return to the same position.`);
+      saveBtn.disabled = false;
+    }
+
+    function updateToleranceLabel() {
+      toleranceLabel.textContent = Number(toleranceSlider.value).toFixed(3);
+    }
+
+    startBtn.addEventListener("click", startCamera);
+    switchBtn.addEventListener("click", switchCamera);
+    saveBtn.addEventListener("click", capturePosition);
+    clearBtn.addEventListener("click", clearSavedSignature);
+    toleranceSlider.addEventListener("input", updateToleranceLabel);
+
+    for (const toggle of [faceToggle, poseToggle, handToggle]) {
+      toggle.addEventListener("change", () => {
+        state.matchFrames = 0;
+        setStatus("Tracking options changed. Save a new position for best results.");
+      });
+    }
+
+    window.addEventListener("resize", resizeCanvasToVideo);
+    window.addEventListener("orientationchange", () => setTimeout(resizeCanvasToVideo, 350));
+    window.addEventListener("beforeunload", stopCameraStream);
+
+    updateToleranceLabel();
+    loadSavedSignature();
+
+    if (location.protocol !== "https:" && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+      setStatus("Important: camera access on iPhone normally requires HTTPS or localhost. Copy this code into an .html file and host it properly before testing.");
+    }
+  </script>
 </body>
 </html>
