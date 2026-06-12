@@ -246,9 +246,10 @@ function render() {
 
 function renderMatches() {
   const lastFinished = [...state.games].reverse().find(isFinished);
+  const targetDay = lastFinished ? dayFormat.format(lastFinished.date) : "";
   const days = groupBy(state.games, (game) => dayFormat.format(game.date));
   el.content.innerHTML = Object.entries(days).map(([day, games]) => `
-    <section class="day">
+    <section class="day ${day === targetDay ? "is-scroll-target-day" : ""}">
       <h2 class="day-title">${day}</h2>
       ${games.map((game) => matchCard(game, lastFinished?.id === game.id)).join("")}
     </section>
@@ -257,7 +258,7 @@ function renderMatches() {
   if (!state.didInitialScroll && lastFinished) {
     state.didInitialScroll = true;
     requestAnimationFrame(() => {
-      const target = document.querySelector(".match.is-scroll-target");
+      const target = document.querySelector(".day.is-scroll-target-day");
       if (!target) return;
       const offset = document.querySelector(".tabs")?.offsetHeight || 0;
       const top = target.getBoundingClientRect().top + window.scrollY - offset - 8;
