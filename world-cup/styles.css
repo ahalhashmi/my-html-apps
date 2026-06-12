@@ -178,7 +178,7 @@ a {
 
 .day {
   display: grid;
-  gap: 5px;
+  gap: 8px;
 }
 
 .day-title,
@@ -195,7 +195,7 @@ a {
   gap: 12px;
   align-items: center;
   min-height: 88px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--card);
   color: var(--ink);
