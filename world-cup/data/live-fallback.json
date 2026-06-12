@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-12T21:02:59.932Z",
+  "fetchedAt": "2026-06-12T22:43:17.597Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -52,7 +52,7 @@
       "away_team_id": "6",
       "home_score": "1",
       "away_score": "1",
-      "home_scorers": "{\"C. Larin 79'\"}",
+      "home_scorers": "{\"C. Larin 11'\"}",
       "away_scorers": "{\"Jovo Lukić 21'\"}",
       "group": "B",
       "matchday": "1",
