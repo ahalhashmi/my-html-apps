@@ -209,14 +209,14 @@ a {
 }
 
 .match.is-pending {
-  border-color: var(--match-pending-line);
-  background: var(--match-pending);
-  color: var(--match-ink);
+  border-color: var(--match-live-line);
+  background: var(--match-live);
 }
 
 .match.is-live {
-  border-color: var(--match-live-line);
-  background: var(--match-live);
+  border-color: var(--match-pending-line);
+  background: var(--match-pending);
+  color: var(--match-ink);
 }
 
 .teams {
