@@ -41,6 +41,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
+  font-size: 17px;
   letter-spacing: 0;
 }
 
@@ -69,7 +70,7 @@ a {
 .standing th {
   margin: 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -77,7 +78,7 @@ a {
 
 .topbar h1 {
   margin: 0 0 6px;
-  font-size: 30px;
+  font-size: 36px;
   line-height: 1;
 }
 
@@ -103,6 +104,7 @@ a {
   justify-content: center;
   padding: 8px 11px;
   text-decoration: none;
+  font-size: 16px;
   font-weight: 800;
   cursor: pointer;
 }
@@ -129,6 +131,7 @@ a {
   border-radius: 8px;
   background: var(--card);
   color: var(--ink);
+  font-size: 17px;
   font-weight: 850;
   cursor: pointer;
 }
@@ -144,7 +147,7 @@ a {
   display: flex;
   align-items: center;
   margin: 4px 0 10px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--card);
@@ -167,7 +170,7 @@ a {
 .round-title,
 .group-title {
   margin: 10px 2px 0;
-  font-size: 18px;
+  font-size: 22px;
   line-height: 1.15;
 }
 
@@ -213,14 +216,14 @@ a {
   border-radius: 8px;
   color: var(--accent-ink);
   background: var(--accent);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 900;
 }
 
 .team-name {
   min-width: 0;
   overflow-wrap: anywhere;
-  font-size: 16px;
+  font-size: 19px;
   line-height: 1.16;
   font-weight: 850;
 }
@@ -228,7 +231,7 @@ a {
 .team-score {
   min-width: 24px;
   text-align: right;
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 920;
 }
 
@@ -242,7 +245,7 @@ a {
 .time,
 .scoreline {
   color: var(--accent);
-  font-size: 22px;
+  font-size: 27px;
   line-height: 1;
   font-weight: 950;
 }
@@ -252,7 +255,7 @@ a {
   background: var(--accent-soft);
   color: var(--accent);
   padding: 5px 8px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 900;
   white-space: nowrap;
 }
@@ -298,10 +301,10 @@ a {
 
 .standing th,
 .standing td {
-  padding: 8px 6px;
+  padding: 10px 6px;
   border-top: 1px solid var(--line);
   text-align: right;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .standing th:first-child,
@@ -346,11 +349,11 @@ a {
   }
 
   .team-name {
-    font-size: 15px;
+    font-size: 17px;
   }
 
   .time,
   .scoreline {
-    font-size: 20px;
+    font-size: 24px;
   }
 }
