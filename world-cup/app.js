@@ -51,6 +51,7 @@ const el = {
   content: document.getElementById("content"),
   status: document.getElementById("status"),
   refresh: document.getElementById("refresh"),
+  themeToggle: document.getElementById("theme-toggle"),
   tabs: [...document.querySelectorAll(".tab")]
 };
 
@@ -173,12 +174,10 @@ function setStatus(text) {
 }
 
 function render() {
-  const source = state.fallback ? "fallback snapshot" : "live API";
-  setStatus(`${source} - ${state.games.length} matches - updated ${stampFormat.format(state.loadedAt)} UAE - auto refresh every 60s`);
+  setStatus(`Last updated ${stampFormat.format(state.loadedAt)} UAE - ${state.games.length} matches - refreshes every 60s`);
 
   if (state.tab === "matches") renderMatches();
   if (state.tab === "groups") renderGroups();
-  if (state.tab === "knockout") renderKnockout();
 }
 
 function renderMatches() {
@@ -214,26 +213,6 @@ function renderGroups() {
       </table>
     </section>
   `).join("");
-}
-
-function renderKnockout() {
-  const knockoutGames = state.games.filter((game) => game.type !== "group");
-  if (!knockoutGames.length) {
-    el.content.innerHTML = `<div class="empty">Knockout matches will appear here after the group stage.</div>`;
-    return;
-  }
-
-  const order = ["r32", "r16", "qf", "sf", "third", "final"];
-  el.content.innerHTML = order.map((type) => {
-    const games = knockoutGames.filter((game) => game.type === type);
-    if (!games.length) return "";
-    return `
-      <section class="day">
-        <h2 class="round-title">${roundNames[type]}</h2>
-        ${games.map(matchCard).join("")}
-      </section>
-    `;
-  }).join("");
 }
 
 function matchCard(game) {
@@ -335,6 +314,22 @@ function initials(name) {
 
 el.refresh.addEventListener("click", loadData);
 
+function applyTheme(theme) {
+  if (theme === "light") {
+    document.documentElement.dataset.theme = "light";
+    el.themeToggle.textContent = "Night";
+  } else {
+    delete document.documentElement.dataset.theme;
+    el.themeToggle.textContent = "Day";
+  }
+}
+
+el.themeToggle.addEventListener("click", () => {
+  const nextTheme = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+  localStorage.setItem("worldCupTheme", nextTheme);
+  applyTheme(nextTheme);
+});
+
 el.tabs.forEach((tab) => {
   tab.addEventListener("click", () => {
     state.tab = tab.dataset.tab;
@@ -342,6 +337,8 @@ el.tabs.forEach((tab) => {
     render();
   });
 });
+
+applyTheme(localStorage.getItem("worldCupTheme") === "light" ? "light" : "dark");
 
 loadData().catch(() => {
   setStatus("Could not load live data. Try Refresh.");

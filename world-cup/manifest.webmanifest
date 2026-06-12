@@ -1,9 +1,9 @@
 {
-  "name": "World Cup Live UAE",
+  "name": "World Cup 2026",
   "short_name": "World Cup",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f2f6f4",
-  "theme_color": "#073c3a",
+  "background_color": "#071312",
+  "theme_color": "#071312",
   "description": "Minimal live World Cup scores, standings, and knockout view in UAE time."
 }
