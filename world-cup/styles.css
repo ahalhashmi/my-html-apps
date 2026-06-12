@@ -21,6 +21,10 @@
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+:root[data-lang="ar"] {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+}
+
 :root[data-theme="light"] {
   --bg: #f5f7f6;
   --card: #ffffff;
@@ -59,6 +63,7 @@ body {
   color: var(--ink);
   font-size: 17px;
   letter-spacing: 0;
+  direction: inherit;
 }
 
 button,
@@ -106,6 +111,10 @@ a {
   display: block;
   height: 20px;
   max-width: 132px;
+}
+
+html[dir="rtl"] .visitor-badge {
+  margin-left: auto;
 }
 
 .small-button {
@@ -259,19 +268,23 @@ a {
   font-size: 19px;
   line-height: 1.16;
   font-weight: 850;
+  text-align: start;
 }
 
 .team-name span {
   color: var(--match-muted);
   font-size: 0.86em;
   font-weight: 780;
+  unicode-bidi: isolate;
 }
 
 .team-score {
   min-width: 24px;
-  text-align: right;
+  text-align: end;
   font-size: 22px;
   font-weight: 920;
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .match-side {
@@ -287,6 +300,8 @@ a {
   font-size: 27px;
   line-height: 1;
   font-weight: 950;
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .pill {
@@ -331,14 +346,14 @@ a {
 .standing td {
   padding: 10px 6px;
   border-top: 1px solid var(--line);
-  text-align: right;
+  text-align: end;
   font-size: 15px;
 }
 
 .standing th:first-child,
 .standing td:first-child {
   width: 44%;
-  text-align: left;
+  text-align: start;
 }
 
 .standing .team-cell {

@@ -7,6 +7,145 @@ const API = {
 const FALLBACK_URL = "data/live-fallback.json";
 const UAE_TIME_ZONE = "Asia/Dubai";
 const API_TIMEOUT_MS = 6000;
+const LANG_KEY = "worldCupLang";
+
+const labels = {
+  en: {
+    langToggle: "عربي",
+    themeDay: "Day",
+    themeNight: "Night",
+    refresh: "Refresh",
+    matches: "Matches",
+    groups: "Groups",
+    tabsLabel: "World Cup views",
+    loading: "Loading live data...",
+    refreshing: "Refreshing live data...",
+    loadError: "Could not load live data. Try Refresh.",
+    unavailable: "The live API is unavailable right now.",
+    done: "FT",
+    live: "Live",
+    timezone: "UAE",
+    pointAbbr: "pts",
+    visitors: "visitors",
+    standing: {
+      team: "Team",
+      played: "P",
+      won: "W",
+      drawn: "D",
+      lost: "L",
+      goalDifference: "GD",
+      points: "Pts"
+    },
+    lastUpdated(stamp, count) {
+      return `Last updated ${stamp} UAE - ${count} matches - refreshes every 60s`;
+    },
+    groupTitle(name) {
+      return `Group ${name}`;
+    }
+  },
+  ar: {
+    langToggle: "English",
+    themeDay: "نهاري",
+    themeNight: "ليلي",
+    refresh: "تحديث",
+    matches: "المباريات",
+    groups: "المجموعات",
+    tabsLabel: "أقسام كأس العالم",
+    loading: "جاري تحميل البيانات...",
+    refreshing: "جاري التحديث...",
+    loadError: "تعذر تحميل البيانات. جرّب التحديث.",
+    unavailable: "البيانات المباشرة غير متاحة الآن.",
+    done: "نهاية",
+    live: "مباشر",
+    timezone: "الإمارات",
+    pointAbbr: "نق",
+    visitors: "الزوار",
+    standing: {
+      team: "المنتخب",
+      played: "ل",
+      won: "ف",
+      drawn: "تعادل",
+      lost: "خ",
+      goalDifference: "ف أ",
+      points: "نق"
+    },
+    lastUpdated(stamp, count) {
+      return `آخر تحديث ${stamp} بتوقيت الإمارات - ${count} مباراة - التحديث كل 60 ثانية`;
+    },
+    groupTitle(name) {
+      return `المجموعة ${groupName(name)}`;
+    }
+  }
+};
+
+const groupLabels = {
+  A: "الأولى",
+  B: "الثانية",
+  C: "الثالثة",
+  D: "الرابعة",
+  E: "الخامسة",
+  F: "السادسة",
+  G: "السابعة",
+  H: "الثامنة",
+  I: "التاسعة",
+  J: "العاشرة",
+  K: "الحادية عشرة",
+  L: "الثانية عشرة"
+};
+
+const arabicTeamNames = {
+  ALG: "الجزائر",
+  ARG: "الأرجنتين",
+  AUS: "أستراليا",
+  AUT: "النمسا",
+  BEL: "بلجيكا",
+  BIH: "البوسنة والهرسك",
+  BRA: "البرازيل",
+  CAN: "كندا",
+  CIV: "كوت ديفوار",
+  COD: "جمهورية الكونغو الديمقراطية",
+  COL: "كولومبيا",
+  CPV: "الرأس الأخضر",
+  CRO: "كرواتيا",
+  CUW: "كوراساو",
+  CZE: "التشيك",
+  ECU: "الإكوادور",
+  EGY: "مصر",
+  ENG: "إنجلترا",
+  ESP: "إسبانيا",
+  FRA: "فرنسا",
+  GER: "ألمانيا",
+  GHA: "غانا",
+  HAI: "هايتي",
+  IRN: "إيران",
+  IRQ: "العراق",
+  JOR: "الأردن",
+  KOR: "جمهورية كوريا",
+  KSA: "السعودية",
+  MAR: "المغرب",
+  MEX: "المكسيك",
+  NED: "هولندا",
+  NOR: "النرويج",
+  NZL: "نيوزيلندا",
+  PAN: "بنما",
+  PAR: "باراغواي",
+  POR: "البرتغال",
+  QAT: "قطر",
+  RSA: "جنوب أفريقيا",
+  SCO: "اسكتلندا",
+  SEN: "السنغال",
+  SUI: "سويسرا",
+  SWE: "السويد",
+  TUN: "تونس",
+  TUR: "تركيا",
+  URU: "أوروغواي",
+  USA: "الولايات المتحدة",
+  UZB: "أوزبكستان"
+};
+
+const regionNamesAr = typeof Intl.DisplayNames === "function"
+  ? new Intl.DisplayNames(["ar-AE"], { type: "region" })
+  : null;
 
 const stadiumUtcOffsets = {
   1: -6,
@@ -39,6 +178,7 @@ const roundNames = {
 
 const state = {
   tab: "matches",
+  lang: localStorage.getItem(LANG_KEY) === "ar" ? "ar" : "en",
   games: [],
   groups: [],
   teams: [],
@@ -49,38 +189,86 @@ const state = {
 };
 
 const el = {
+  title: document.querySelector("h1"),
   content: document.getElementById("content"),
   status: document.getElementById("status"),
   refresh: document.getElementById("refresh"),
+  langToggle: document.getElementById("lang-toggle"),
   themeToggle: document.getElementById("theme-toggle"),
+  visitorBadge: document.querySelector(".visitor-badge"),
+  tabsNav: document.querySelector(".tabs"),
   tabs: [...document.querySelectorAll(".tab")]
 };
 
-const dayFormat = new Intl.DateTimeFormat("en-AE", {
-  weekday: "long",
-  day: "numeric",
-  month: "long",
-  timeZone: UAE_TIME_ZONE
-});
-
-const timeFormat = new Intl.DateTimeFormat("en-AE", {
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-  timeZone: UAE_TIME_ZONE
-});
-
-const stampFormat = new Intl.DateTimeFormat("en-AE", {
-  day: "numeric",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: UAE_TIME_ZONE
-});
+const dateFormats = {
+  en: {
+    day: new Intl.DateTimeFormat("en-AE-u-nu-latn", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      timeZone: UAE_TIME_ZONE
+    }),
+    time: new Intl.DateTimeFormat("en-AE-u-nu-latn", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: UAE_TIME_ZONE
+    }),
+    stamp: new Intl.DateTimeFormat("en-AE-u-nu-latn", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: UAE_TIME_ZONE
+    })
+  },
+  ar: {
+    day: new Intl.DateTimeFormat("ar-AE-u-nu-latn", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      timeZone: UAE_TIME_ZONE
+    }),
+    time: new Intl.DateTimeFormat("ar-AE-u-nu-latn", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: UAE_TIME_ZONE
+    }),
+    stamp: new Intl.DateTimeFormat("ar-AE-u-nu-latn", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: UAE_TIME_ZONE
+    })
+  }
+};
 
 function numberValue(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function t() {
+  return labels[state.lang];
+}
+
+function formatDate(kind, date) {
+  return dateFormats[state.lang][kind].format(date);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function groupName(name) {
+  return state.lang === "ar" ? groupLabels[name] || name : name;
 }
 
 function teamName(game, side) {
@@ -129,6 +317,32 @@ function teamCode(team, fallbackName) {
   return compactLabel(fallbackName);
 }
 
+function matchTeamLabel(team, fallbackName) {
+  if (state.lang !== "ar") return teamCode(team, fallbackName);
+  if (team) return arabicTeamName(team, fallbackName);
+  return arabicPlaceholderName(fallbackName);
+}
+
+function standingTeamName(team, fallbackName) {
+  if (state.lang === "ar") return arabicTeamName(team, fallbackName);
+  return team?.name_en || fallbackName;
+}
+
+function arabicTeamName(team, fallbackName) {
+  const code = team?.fifa_code?.toUpperCase();
+  if (code && arabicTeamNames[code]) return arabicTeamNames[code];
+  const iso = team?.iso2?.toUpperCase();
+  const regionName = regionNamesAr && /^[A-Z]{2}$/.test(iso) ? regionNamesAr.of(iso) : "";
+  if (regionName) return regionName;
+  return arabicPlaceholderName(fallbackName || team?.name_en || "TBA");
+}
+
+function arabicPlaceholderName(name) {
+  const text = String(name || "");
+  if (!text || text === "TBA") return "لم يحدد";
+  return arabicKnockoutLabel(text);
+}
+
 function compactLabel(name) {
   const text = String(name || "TBA");
   const winnerMatch = text.match(/^Winner Match (\d+)$/i);
@@ -169,7 +383,7 @@ async function getJson(url) {
 
 async function loadData() {
   el.refresh.disabled = true;
-  setStatus("Refreshing live data...");
+  setStatus(t().refreshing);
 
   try {
     const [games, groups, teams] = await Promise.all([
@@ -250,7 +464,7 @@ function setStatus(text) {
 }
 
 function render() {
-  setStatus(`Last updated ${stampFormat.format(state.loadedAt)} UAE - ${state.games.length} matches - refreshes every 60s`);
+  setStatus(t().lastUpdated(formatDate("stamp", state.loadedAt), state.games.length));
 
   if (state.tab === "matches") renderMatches();
   if (state.tab === "groups") renderGroups();
@@ -258,11 +472,11 @@ function render() {
 
 function renderMatches() {
   const lastFinished = [...state.games].reverse().find(isFinished);
-  const targetDay = lastFinished ? dayFormat.format(lastFinished.date) : "";
-  const days = groupBy(state.games, (game) => dayFormat.format(game.date));
+  const targetDay = lastFinished ? formatDate("day", lastFinished.date) : "";
+  const days = groupBy(state.games, (game) => formatDate("day", game.date));
   el.content.innerHTML = Object.entries(days).map(([day, games]) => `
     <section class="day ${day === targetDay ? "is-scroll-target-day" : ""}">
-      <h2 class="day-title">${day}</h2>
+      <h2 class="day-title">${escapeHtml(day)}</h2>
       ${games.map((game) => matchCard(game, lastFinished?.id === game.id)).join("")}
     </section>
   `).join("");
@@ -281,19 +495,20 @@ function renderMatches() {
 
 function renderGroups() {
   const groups = [...state.groups].sort((a, b) => a.name.localeCompare(b.name));
+  const standing = t().standing;
   el.content.innerHTML = groups.map((group) => `
     <section class="group-card">
-      <h2 class="group-title">Group ${group.name}</h2>
+      <h2 class="group-title">${escapeHtml(t().groupTitle(group.name))}</h2>
       <table class="standing">
         <thead>
           <tr>
-            <th>Team</th>
-            <th>P</th>
-            <th>W</th>
-            <th>D</th>
-            <th>L</th>
-            <th>GD</th>
-            <th>Pts</th>
+            <th>${escapeHtml(standing.team)}</th>
+            <th>${escapeHtml(standing.played)}</th>
+            <th>${escapeHtml(standing.won)}</th>
+            <th>${escapeHtml(standing.drawn)}</th>
+            <th>${escapeHtml(standing.lost)}</th>
+            <th>${escapeHtml(standing.goalDifference)}</th>
+            <th>${escapeHtml(standing.points)}</th>
           </tr>
         </thead>
         <tbody>
@@ -308,7 +523,7 @@ function matchCard(game, isScrollTarget = false) {
   const status = statusLabel(game);
   const side = isFinished(game) || isLive(game)
     ? `<span class="scoreline">${game.homeScore}-${game.awayScore}</span>`
-    : `<span class="time">${timeFormat.format(game.date)}</span>`;
+    : `<span class="time">${formatDate("time", game.date)}</span>`;
   const stateClass = isLive(game) ? "is-live" : isFinished(game) ? "is-done" : "is-pending";
 
   return `
@@ -319,7 +534,7 @@ function matchCard(game, isScrollTarget = false) {
       </div>
       <div class="match-side">
         ${side}
-        <span class="pill ${status.className}">${status.text}</span>
+        <span class="pill ${status.className}">${escapeHtml(status.text)}</span>
       </div>
     </article>
   `;
@@ -331,14 +546,15 @@ function teamLine(game, side) {
   const score = side === "home" ? game.homeScore : game.awayScore;
   const showScore = isFinished(game) || isLive(game);
   const code = teamCode(team, name);
+  const label = matchTeamLabel(team, name);
   const detail = game.type === "group" && team
     ? groupProgressText(team.id)
     : knockoutLabelText(name);
 
   return `
     <div class="team">
-      ${team?.flag ? `<img class="flag" src="${team.flag}" alt="">` : `<span class="flag placeholder">${code}</span>`}
-      <span class="team-name"><strong>${code}</strong> <span>- ${detail}</span></span>
+      ${team?.flag ? `<img class="flag" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(code)}</span>`}
+      <span class="team-name"><strong>${escapeHtml(label)}</strong> <span>- ${escapeHtml(detail)}</span></span>
       ${showScore ? `<span class="team-score">${score}</span>` : ""}
     </div>
   `;
@@ -346,23 +562,39 @@ function teamLine(game, side) {
 
 function groupProgressText(teamIdValue) {
   const stats = state.liveGroupStats.get(String(teamIdValue));
-  if (!stats) return "0/3 - 0 pts";
+  if (!stats) return `0/3 - 0 ${t().pointAbbr}`;
   const total = stats.total || 3;
-  return `${stats.played}/${total} - ${stats.pts} pts`;
+  return `${stats.played}/${total} - ${stats.pts} ${t().pointAbbr}`;
 }
 
 function knockoutLabelText(name) {
   const text = String(name || "");
+  if (state.lang === "ar") return arabicKnockoutLabel(text);
   if (/^(Winner|Loser) Match/i.test(text)) return text.replace("Match", "M");
   if (/^Winner Group/i.test(text)) return text.replace("Winner Group", "1st Group");
   if (/^Runner-up Group/i.test(text)) return text.replace("Runner-up Group", "2nd Group");
   return text;
 }
 
+function arabicKnockoutLabel(name) {
+  const text = String(name || "");
+  const winnerMatch = text.match(/^Winner Match (\d+)$/i);
+  if (winnerMatch) return `الفائز من المباراة ${winnerMatch[1]}`;
+  const loserMatch = text.match(/^Loser Match (\d+)$/i);
+  if (loserMatch) return `الخاسر من المباراة ${loserMatch[1]}`;
+  const winnerGroup = text.match(/^Winner Group ([A-L])$/i);
+  if (winnerGroup) return `أول المجموعة ${groupLabels[winnerGroup[1].toUpperCase()] || winnerGroup[1].toUpperCase()}`;
+  const runnerGroup = text.match(/^Runner-up Group ([A-L])$/i);
+  if (runnerGroup) return `ثاني المجموعة ${groupLabels[runnerGroup[1].toUpperCase()] || runnerGroup[1].toUpperCase()}`;
+  const thirdGroup = text.match(/^3rd Group (.+)$/i);
+  if (thirdGroup) return `ثالث المجموعة ${thirdGroup[1].replace(/[^A-L]/gi, "").toUpperCase()}`;
+  return text || "لم يحدد";
+}
+
 function statusLabel(game) {
-  if (isFinished(game)) return { text: "FT", className: "done" };
-  if (isLive(game)) return { text: `${game.time_elapsed}`, className: "live" };
-  return { text: "UAE", className: "" };
+  if (isFinished(game)) return { text: t().done, className: "done" };
+  if (isLive(game)) return { text: state.lang === "ar" ? t().live : `${game.time_elapsed}`, className: "live" };
+  return { text: t().timezone, className: "" };
 }
 
 function sortedGroupTeams(teams) {
@@ -376,13 +608,14 @@ function sortedGroupTeams(teams) {
 
 function standingRow(row) {
   const team = teamById(row.team_id);
-  const name = team?.name_en || `Team ${row.team_id}`;
+  const name = standingTeamName(team, `Team ${row.team_id}`);
+  const placeholder = state.lang === "ar" ? matchTeamLabel(team, name) : initials(name);
   return `
     <tr>
       <td>
         <div class="team-cell">
-          ${team?.flag ? `<img class="flag" src="${team.flag}" alt="">` : `<span class="flag placeholder">${initials(name)}</span>`}
-          <span>${name}</span>
+          ${team?.flag ? `<img class="flag" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(placeholder)}</span>`}
+          <span>${escapeHtml(name)}</span>
         </div>
       </td>
       <td>${row.mp}</td>
@@ -416,15 +649,51 @@ function initials(name) {
 
 el.refresh.addEventListener("click", loadData);
 
+function visitorBadgeUrl() {
+  const label = encodeURIComponent(t().visitors);
+  return `https://hits.sh/ahalhashmi.github.io/my-html-apps/world-cup.svg?label=${label}&color=0f766e&labelColor=232f2d`;
+}
+
+function updateStaticText() {
+  document.title = state.lang === "ar" ? "كأس العالم 2026" : "World Cup 2026";
+  el.title.textContent = document.title;
+  el.langToggle.textContent = t().langToggle;
+  el.refresh.textContent = t().refresh;
+  el.tabsNav.setAttribute("aria-label", t().tabsLabel);
+  el.tabs.forEach((tab) => {
+    tab.textContent = tab.dataset.tab === "matches" ? t().matches : t().groups;
+  });
+  el.visitorBadge.src = visitorBadgeUrl();
+  el.visitorBadge.alt = t().visitors;
+  if (!state.loadedAt) setStatus(t().loading);
+}
+
+function applyLanguage(lang, shouldRender = true) {
+  state.lang = lang === "ar" ? "ar" : "en";
+  document.documentElement.lang = state.lang;
+  document.documentElement.dir = state.lang === "ar" ? "rtl" : "ltr";
+  document.documentElement.dataset.lang = state.lang;
+  if (state.lang === "en") delete document.documentElement.dataset.lang;
+  updateStaticText();
+  applyTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark");
+  if (shouldRender && state.loadedAt) render();
+}
+
 function applyTheme(theme) {
   if (theme === "light") {
     document.documentElement.dataset.theme = "light";
-    el.themeToggle.textContent = "Night";
+    el.themeToggle.textContent = t().themeNight;
   } else {
     delete document.documentElement.dataset.theme;
-    el.themeToggle.textContent = "Day";
+    el.themeToggle.textContent = t().themeDay;
   }
 }
+
+el.langToggle.addEventListener("click", () => {
+  const nextLang = state.lang === "ar" ? "en" : "ar";
+  localStorage.setItem(LANG_KEY, nextLang);
+  applyLanguage(nextLang);
+});
 
 el.themeToggle.addEventListener("click", () => {
   const nextTheme = document.documentElement.dataset.theme === "light" ? "dark" : "light";
@@ -440,11 +709,12 @@ el.tabs.forEach((tab) => {
   });
 });
 
+applyLanguage(state.lang, false);
 applyTheme(localStorage.getItem("worldCupTheme") === "light" ? "light" : "dark");
 
 loadData().catch(() => {
-  setStatus("Could not load live data. Try Refresh.");
-  el.content.innerHTML = `<div class="empty">The live API is unavailable right now.</div>`;
+  setStatus(t().loadError);
+  el.content.innerHTML = `<div class="empty">${escapeHtml(t().unavailable)}</div>`;
 });
 
 setInterval(() => {

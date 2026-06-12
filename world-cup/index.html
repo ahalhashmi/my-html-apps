@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -12,8 +12,13 @@
     if (localStorage.getItem("worldCupTheme") === "light") {
       document.documentElement.dataset.theme = "light";
     }
+    if (localStorage.getItem("worldCupLang") === "ar") {
+      document.documentElement.lang = "ar";
+      document.documentElement.dir = "rtl";
+      document.documentElement.dataset.lang = "ar";
+    }
   </script>
-  <link rel="stylesheet" href="styles.css?v=live-data-1">
+  <link rel="stylesheet" href="styles.css?v=i18n-1">
 </head>
 <body>
   <main class="shell">
@@ -23,6 +28,7 @@
         <img class="visitor-badge" src="https://hits.sh/ahalhashmi.github.io/my-html-apps/world-cup.svg?label=visitors&color=0f766e&labelColor=232f2d" alt="Visitors">
       </div>
       <div class="top-actions">
+        <button class="small-button" id="lang-toggle" type="button">عربي</button>
         <button class="small-button" id="theme-toggle" type="button">Day</button>
         <button class="small-button" id="refresh" type="button">Refresh</button>
       </div>
@@ -37,6 +43,6 @@
     <section class="content" id="content" aria-live="polite"></section>
   </main>
 
-  <script src="app.js?v=live-data-1"></script>
+  <script src="app.js?v=i18n-1"></script>
 </body>
 </html>
