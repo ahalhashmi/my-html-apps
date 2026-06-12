@@ -43,6 +43,7 @@ const state = {
   groups: [],
   teams: [],
   stadiums: [],
+  liveGroupStats: new Map(),
   loadedAt: null,
   fallback: false
 };
@@ -127,6 +128,33 @@ function stadiumById(id) {
   return state.stadiums.find((stadium) => String(stadium.id) === String(id));
 }
 
+function teamCode(team, fallbackName) {
+  if (team?.fifa_code) return team.fifa_code.toUpperCase();
+  return compactLabel(fallbackName);
+}
+
+function compactLabel(name) {
+  const text = String(name || "TBA");
+  const winnerMatch = text.match(/^Winner Match (\d+)$/i);
+  if (winnerMatch) return `W${winnerMatch[1]}`;
+  const loserMatch = text.match(/^Loser Match (\d+)$/i);
+  if (loserMatch) return `L${loserMatch[1]}`;
+  const winnerGroup = text.match(/^Winner Group ([A-L])$/i);
+  if (winnerGroup) return `1${winnerGroup[1].toUpperCase()}`;
+  const runnerGroup = text.match(/^Runner-up Group ([A-L])$/i);
+  if (runnerGroup) return `2${runnerGroup[1].toUpperCase()}`;
+  const thirdGroup = text.match(/^3rd Group (.+)$/i);
+  if (thirdGroup) return `3${thirdGroup[1].replace(/[^A-L]/gi, "").slice(0, 2).toUpperCase()}`;
+  return text
+    .replace(/\([^)]*\)/g, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 3) || "TBA";
+}
+
 async function getJson(url) {
   const response = await fetch(`${url}?t=${Date.now()}`, { cache: "no-store" });
   if (!response.ok) throw new Error(`${url} returned ${response.status}`);
@@ -164,9 +192,53 @@ function applyData(data, fallback) {
   state.groups = data.groups || [];
   state.teams = data.teams || [];
   state.stadiums = data.stadiums || [];
+  state.liveGroupStats = computeLiveGroupStats();
   state.loadedAt = new Date();
   state.fallback = fallback;
   render();
+}
+
+function computeLiveGroupStats() {
+  const stats = new Map();
+
+  state.groups.forEach((group) => {
+    group.teams.forEach((team) => {
+      stats.set(String(team.team_id), {
+        played: 0,
+        total: 0,
+        pts: 0
+      });
+    });
+  });
+
+  state.games
+    .filter((game) => game.type === "group")
+    .forEach((game) => {
+      const homeId = String(teamId(game, "home"));
+      const awayId = String(teamId(game, "away"));
+      const home = stats.get(homeId);
+      const away = stats.get(awayId);
+      if (!home || !away) return;
+
+      home.total += 1;
+      away.total += 1;
+
+      if (!isFinished(game) && !isLive(game)) return;
+
+      home.played += 1;
+      away.played += 1;
+
+      if (game.homeScore > game.awayScore) {
+        home.pts += 3;
+      } else if (game.awayScore > game.homeScore) {
+        away.pts += 3;
+      } else {
+        home.pts += 1;
+        away.pts += 1;
+      }
+    });
+
+  return stats;
 }
 
 function setStatus(text) {
@@ -247,14 +319,33 @@ function teamLine(game, side) {
   const name = side === "home" ? game.homeName : game.awayName;
   const score = side === "home" ? game.homeScore : game.awayScore;
   const showScore = isFinished(game) || isLive(game);
+  const code = teamCode(team, name);
+  const detail = game.type === "group" && team
+    ? groupProgressText(team.id)
+    : knockoutLabelText(name);
 
   return `
     <div class="team">
-      ${team?.flag ? `<img class="flag" src="${team.flag}" alt="">` : `<span class="flag placeholder">${initials(name)}</span>`}
-      <span class="team-name">${name}</span>
+      ${team?.flag ? `<img class="flag" src="${team.flag}" alt="">` : `<span class="flag placeholder">${code}</span>`}
+      <span class="team-name"><strong>${code}</strong> <span>${detail}</span></span>
       ${showScore ? `<span class="team-score">${score}</span>` : ""}
     </div>
   `;
+}
+
+function groupProgressText(teamIdValue) {
+  const stats = state.liveGroupStats.get(String(teamIdValue));
+  if (!stats) return "0/3 - 0 pts";
+  const total = stats.total || 3;
+  return `${stats.played}/${total} - ${stats.pts} pts`;
+}
+
+function knockoutLabelText(name) {
+  const text = String(name || "");
+  if (/^(Winner|Loser) Match/i.test(text)) return text.replace("Match", "M");
+  if (/^Winner Group/i.test(text)) return text.replace("Winner Group", "1st Group");
+  if (/^Runner-up Group/i.test(text)) return text.replace("Runner-up Group", "2nd Group");
+  return text;
 }
 
 function statusLabel(game) {
