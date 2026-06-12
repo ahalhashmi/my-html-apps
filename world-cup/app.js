@@ -43,7 +43,8 @@ const state = {
   teams: [],
   liveGroupStats: new Map(),
   loadedAt: null,
-  fallback: false
+  fallback: false,
+  didInitialScroll: false
 };
 
 const el = {
@@ -244,13 +245,25 @@ function render() {
 }
 
 function renderMatches() {
+  const lastFinished = [...state.games].reverse().find(isFinished);
   const days = groupBy(state.games, (game) => dayFormat.format(game.date));
   el.content.innerHTML = Object.entries(days).map(([day, games]) => `
     <section class="day">
       <h2 class="day-title">${day}</h2>
-      ${games.map(matchCard).join("")}
+      ${games.map((game) => matchCard(game, lastFinished?.id === game.id)).join("")}
     </section>
   `).join("");
+
+  if (!state.didInitialScroll && lastFinished) {
+    state.didInitialScroll = true;
+    requestAnimationFrame(() => {
+      const target = document.querySelector(".match.is-scroll-target");
+      if (!target) return;
+      const offset = document.querySelector(".tabs")?.offsetHeight || 0;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset - 8;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    });
+  }
 }
 
 function renderGroups() {
@@ -278,14 +291,15 @@ function renderGroups() {
   `).join("");
 }
 
-function matchCard(game) {
+function matchCard(game, isScrollTarget = false) {
   const status = statusLabel(game);
   const side = isFinished(game) || isLive(game)
     ? `<span class="scoreline">${game.homeScore}-${game.awayScore}</span>`
     : `<span class="time">${timeFormat.format(game.date)}</span>`;
+  const stateClass = isLive(game) ? "is-live" : isFinished(game) ? "is-done" : "is-pending";
 
   return `
-    <article class="match">
+    <article class="match ${stateClass} ${isScrollTarget ? "is-scroll-target" : ""}">
       <div class="teams">
         ${teamLine(game, "home")}
         ${teamLine(game, "away")}

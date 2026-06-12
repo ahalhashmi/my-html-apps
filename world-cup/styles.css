@@ -7,10 +7,14 @@
   --accent: #35d0ba;
   --accent-ink: #06201c;
   --accent-soft: #14352f;
-  --match-card: #d9fbe9;
-  --match-ink: #09251c;
-  --match-muted: #426356;
-  --match-line: #9be5ba;
+  --match-done: #103b2d;
+  --match-done-line: #246c50;
+  --match-pending: #3b3017;
+  --match-pending-line: #705a22;
+  --match-ink: #eef7f4;
+  --match-muted: #b8c9c4;
+  --match-live: transparent;
+  --match-live-line: var(--line);
   --gold-soft: #3d3318;
   --danger-soft: #43221f;
   --sticky-bg: rgba(7, 19, 18, 0.94);
@@ -26,10 +30,14 @@
   --accent: #0f5f55;
   --accent-ink: #ffffff;
   --accent-soft: #e8f4f1;
-  --match-card: #d9fbe9;
+  --match-done: #d9fbe9;
+  --match-done-line: #9be5ba;
+  --match-pending: #fff1c7;
+  --match-pending-line: #e4be5d;
   --match-ink: #09251c;
   --match-muted: #426356;
-  --match-line: #9be5ba;
+  --match-live: transparent;
+  --match-live-line: var(--line);
   --gold-soft: #fff4d9;
   --danger-soft: #ffefed;
   --sticky-bg: rgba(245, 247, 246, 0.94);
@@ -187,11 +195,28 @@ a {
   gap: 12px;
   align-items: center;
   min-height: 88px;
-  border: 1px solid var(--match-line);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--match-card);
-  color: var(--match-ink);
+  background: var(--card);
+  color: var(--ink);
   padding: 12px;
+}
+
+.match.is-done {
+  border-color: var(--match-done-line);
+  background: var(--match-done);
+  color: var(--match-ink);
+}
+
+.match.is-pending {
+  border-color: var(--match-pending-line);
+  background: var(--match-pending);
+  color: var(--match-ink);
+}
+
+.match.is-live {
+  border-color: var(--match-live-line);
+  background: var(--match-live);
 }
 
 .teams {
