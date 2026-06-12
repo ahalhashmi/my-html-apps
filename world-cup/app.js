@@ -6,6 +6,7 @@ const API = {
 
 const FALLBACK_URL = "data/live-fallback.json";
 const UAE_TIME_ZONE = "Asia/Dubai";
+const API_TIMEOUT_MS = 6000;
 
 const stadiumUtcOffsets = {
   1: -6,
@@ -151,9 +152,19 @@ function compactLabel(name) {
 }
 
 async function getJson(url) {
-  const response = await fetch(`${url}?t=${Date.now()}`, { cache: "no-store" });
-  if (!response.ok) throw new Error(`${url} returned ${response.status}`);
-  return response.json();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(`${url}?t=${Date.now()}`, {
+      cache: "no-store",
+      signal: controller.signal
+    });
+    if (!response.ok) throw new Error(`${url} returned ${response.status}`);
+    return response.json();
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 async function loadData() {
@@ -172,7 +183,7 @@ async function loadData() {
       teams: teams.teams || []
     }, false);
   } catch (error) {
-    const fallback = await fetch(FALLBACK_URL, { cache: "no-store" });
+    const fallback = await fetch(`${FALLBACK_URL}?t=${Date.now()}`, { cache: "no-store" });
     if (!fallback.ok) throw error;
     applyData(await fallback.json(), true);
   } finally {
@@ -185,7 +196,8 @@ function applyData(data, fallback) {
   state.groups = data.groups || [];
   state.teams = data.teams || [];
   state.liveGroupStats = computeLiveGroupStats();
-  state.loadedAt = new Date();
+  const fallbackTime = fallback && data.fetchedAt ? new Date(data.fetchedAt) : null;
+  state.loadedAt = fallbackTime && !Number.isNaN(fallbackTime.getTime()) ? fallbackTime : new Date();
   state.fallback = fallback;
   render();
 }

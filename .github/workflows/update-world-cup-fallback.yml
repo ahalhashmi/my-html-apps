@@ -1,0 +1,69 @@
+name: Update World Cup fallback
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Fetch latest World Cup data
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/world-cup-live world-cup/data
+
+          ip="$(getent ahostsv4 worldcup26.ir | awk '{ print $1; exit }' || true)"
+          if [ -z "$ip" ]; then
+            ip="$(dig +short @1.1.1.1 worldcup26.ir A | tail -n 1 || true)"
+          fi
+
+          resolve_args=()
+          if [ -n "$ip" ]; then
+            resolve_args=(--resolve "worldcup26.ir:443:${ip}")
+          fi
+
+          curl -fsSL --retry 3 --connect-timeout 10 --max-time 30 "${resolve_args[@]}" "https://worldcup26.ir/get/games" > /tmp/world-cup-live/games.json
+          curl -fsSL --retry 3 --connect-timeout 10 --max-time 30 "${resolve_args[@]}" "https://worldcup26.ir/get/groups" > /tmp/world-cup-live/groups.json
+          curl -fsSL --retry 3 --connect-timeout 10 --max-time 30 "${resolve_args[@]}" "https://worldcup26.ir/get/teams" > /tmp/world-cup-live/teams.json
+
+          node <<'NODE'
+          const fs = require("fs");
+
+          function readJson(path) {
+            return JSON.parse(fs.readFileSync(path, "utf8"));
+          }
+
+          const fallback = {
+            fetchedAt: new Date().toISOString(),
+            games: readJson("/tmp/world-cup-live/games.json").games || [],
+            groups: readJson("/tmp/world-cup-live/groups.json").groups || [],
+            teams: readJson("/tmp/world-cup-live/teams.json").teams || []
+          };
+
+          fs.writeFileSync("world-cup/data/live-fallback.json", `${JSON.stringify(fallback, null, 2)}\n`);
+          NODE
+
+      - name: Commit changed fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- world-cup/data/live-fallback.json; then
+            echo "No fallback data changes."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add world-cup/data/live-fallback.json
+          git commit -m "Update world cup fallback data"
+          git push
