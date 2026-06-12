@@ -7,6 +7,10 @@
   --accent: #35d0ba;
   --accent-ink: #06201c;
   --accent-soft: #14352f;
+  --match-card: #d9fbe9;
+  --match-ink: #09251c;
+  --match-muted: #426356;
+  --match-line: #9be5ba;
   --gold-soft: #3d3318;
   --danger-soft: #43221f;
   --sticky-bg: rgba(7, 19, 18, 0.94);
@@ -22,6 +26,10 @@
   --accent: #0f5f55;
   --accent-ink: #ffffff;
   --accent-soft: #e8f4f1;
+  --match-card: #d9fbe9;
+  --match-ink: #09251c;
+  --match-muted: #426356;
+  --match-line: #9be5ba;
   --gold-soft: #fff4d9;
   --danger-soft: #ffefed;
   --sticky-bg: rgba(245, 247, 246, 0.94);
@@ -66,7 +74,6 @@ a {
 }
 
 .status,
-.meta,
 .standing th {
   margin: 0;
   color: var(--muted);
@@ -180,9 +187,10 @@ a {
   gap: 12px;
   align-items: center;
   min-height: 88px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--match-line);
   border-radius: 8px;
-  background: var(--card);
+  background: var(--match-card);
+  color: var(--match-ink);
   padding: 12px;
 }
 
@@ -229,7 +237,7 @@ a {
 }
 
 .team-name span {
-  color: var(--muted);
+  color: var(--match-muted);
   font-size: 0.86em;
   font-weight: 780;
 }
@@ -274,17 +282,6 @@ a {
 .pill.done {
   background: var(--gold-soft);
   color: #f4c96a;
-}
-
-.meta {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  color: var(--muted);
-  line-height: 1.3;
-  text-transform: none;
-  letter-spacing: 0;
 }
 
 .group-card {

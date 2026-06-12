@@ -1,8 +1,7 @@
 const API = {
   games: "https://worldcup26.ir/get/games",
   groups: "https://worldcup26.ir/get/groups",
-  teams: "https://worldcup26.ir/get/teams",
-  stadiums: "https://worldcup26.ir/get/stadiums"
+  teams: "https://worldcup26.ir/get/teams"
 };
 
 const FALLBACK_URL = "data/live-fallback.json";
@@ -42,7 +41,6 @@ const state = {
   games: [],
   groups: [],
   teams: [],
-  stadiums: [],
   liveGroupStats: new Map(),
   loadedAt: null,
   fallback: false
@@ -124,10 +122,6 @@ function teamById(id) {
   return state.teams.find((team) => String(team.id) === String(id));
 }
 
-function stadiumById(id) {
-  return state.stadiums.find((stadium) => String(stadium.id) === String(id));
-}
-
 function teamCode(team, fallbackName) {
   if (team?.fifa_code) return team.fifa_code.toUpperCase();
   return compactLabel(fallbackName);
@@ -166,17 +160,15 @@ async function loadData() {
   setStatus("Refreshing live data...");
 
   try {
-    const [games, groups, teams, stadiums] = await Promise.all([
+    const [games, groups, teams] = await Promise.all([
       getJson(API.games),
       getJson(API.groups),
-      getJson(API.teams),
-      getJson(API.stadiums)
+      getJson(API.teams)
     ]);
     applyData({
       games: games.games || [],
       groups: groups.groups || [],
-      teams: teams.teams || [],
-      stadiums: stadiums.stadiums || []
+      teams: teams.teams || []
     }, false);
   } catch (error) {
     const fallback = await fetch(FALLBACK_URL, { cache: "no-store" });
@@ -191,7 +183,6 @@ function applyData(data, fallback) {
   state.games = (data.games || []).map(hydrateGame).sort((a, b) => a.date - b.date);
   state.groups = data.groups || [];
   state.teams = data.teams || [];
-  state.stadiums = data.stadiums || [];
   state.liveGroupStats = computeLiveGroupStats();
   state.loadedAt = new Date();
   state.fallback = fallback;
@@ -288,8 +279,6 @@ function renderGroups() {
 }
 
 function matchCard(game) {
-  const stadium = stadiumById(game.stadium_id);
-  const venue = stadium ? `${stadium.city_en}` : "Venue TBA";
   const status = statusLabel(game);
   const side = isFinished(game) || isLive(game)
     ? `<span class="scoreline">${game.homeScore}-${game.awayScore}</span>`
@@ -304,11 +293,6 @@ function matchCard(game) {
       <div class="match-side">
         ${side}
         <span class="pill ${status.className}">${status.text}</span>
-      </div>
-      <div class="meta">
-        <span>${roundNames[game.type] || game.group || "Match"}</span>
-        <span>${venue}</span>
-        <span>Match ${game.id}</span>
       </div>
     </article>
   `;
@@ -327,7 +311,7 @@ function teamLine(game, side) {
   return `
     <div class="team">
       ${team?.flag ? `<img class="flag" src="${team.flag}" alt="">` : `<span class="flag placeholder">${code}</span>`}
-      <span class="team-name"><strong>${code}</strong> <span>${detail}</span></span>
+      <span class="team-name"><strong>${code}</strong> <span>- ${detail}</span></span>
       ${showScore ? `<span class="team-score">${score}</span>` : ""}
     </div>
   `;
