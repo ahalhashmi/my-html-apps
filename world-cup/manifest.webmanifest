@@ -1,9 +1,9 @@
 {
-  "name": "World Cup UAE Schedule",
+  "name": "World Cup Live UAE",
   "short_name": "World Cup",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f2f6f4",
   "theme_color": "#073c3a",
-  "description": "iPhone-friendly FIFA World Cup 2026 match schedule in UAE time."
+  "description": "Minimal live World Cup scores, standings, and knockout view in UAE time."
 }

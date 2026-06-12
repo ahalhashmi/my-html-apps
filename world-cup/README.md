@@ -1,10 +1,16 @@
-# World Cup UAE Schedule
+# World Cup Live UAE
 
-Mobile-first static website for the FIFA World Cup 2026 match schedule.
+Minimal mobile-first World Cup dashboard with three tabs:
 
-Data source:
+- Matches: UAE kickoff time for upcoming matches, live/finished score when available
+- Groups: API-provided group standings
+- Knockout: knockout-round matches grouped by round
 
-- Runtime API: `https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json`
-- Local fallback: `data/matches-fallback.json`
+Live API:
 
-The app converts match times to `Asia/Dubai` in the browser and includes search plus quick filters for iPhone use.
+- `https://worldcup26.ir/get/games`
+- `https://worldcup26.ir/get/groups`
+- `https://worldcup26.ir/get/teams`
+- `https://worldcup26.ir/get/stadiums`
+
+The app auto-refreshes every 60 seconds while visible. A bundled API snapshot in `data/live-fallback.json` is used only if the live API request fails.

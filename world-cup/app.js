@@ -1,251 +1,353 @@
-const API_URL = "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json";
-const FALLBACK_URL = "data/matches-fallback.json";
+const API = {
+  games: "https://worldcup26.ir/get/games",
+  groups: "https://worldcup26.ir/get/groups",
+  teams: "https://worldcup26.ir/get/teams",
+  stadiums: "https://worldcup26.ir/get/stadiums"
+};
+
+const FALLBACK_URL = "data/live-fallback.json";
 const UAE_TIME_ZONE = "Asia/Dubai";
-const SOURCE_LABEL = "openfootball/worldcup.json public JSON";
+
+const stadiumUtcOffsets = {
+  1: -6,
+  2: -6,
+  3: -6,
+  4: -5,
+  5: -5,
+  6: -5,
+  7: -4,
+  8: -4,
+  9: -4,
+  10: -4,
+  11: -4,
+  12: -4,
+  13: -7,
+  14: -7,
+  15: -7,
+  16: -7
+};
+
+const roundNames = {
+  group: "Group Stage",
+  r32: "Round of 32",
+  r16: "Round of 16",
+  qf: "Quarter-finals",
+  sf: "Semi-finals",
+  third: "Third Place",
+  final: "Final"
+};
 
 const state = {
-  filter: "all",
-  query: "",
-  matches: [],
+  tab: "matches",
+  games: [],
+  groups: [],
+  teams: [],
+  stadiums: [],
   loadedAt: null,
-  source: "Loading"
+  fallback: false
 };
 
-const elements = {
-  matchCount: document.getElementById("match-count"),
-  sourceLine: document.getElementById("source-line"),
-  dayList: document.getElementById("day-list"),
-  search: document.getElementById("search"),
-  refresh: document.getElementById("refresh-button"),
-  chips: [...document.querySelectorAll(".chip")]
+const el = {
+  content: document.getElementById("content"),
+  status: document.getElementById("status"),
+  refresh: document.getElementById("refresh"),
+  tabs: [...document.querySelectorAll(".tab")]
 };
 
-const uaeDateFormatter = new Intl.DateTimeFormat("en-AE", {
-  weekday: "short",
-  month: "short",
-  day: "numeric",
-  timeZone: UAE_TIME_ZONE
-});
-
-const uaeLongDateFormatter = new Intl.DateTimeFormat("en-AE", {
+const dayFormat = new Intl.DateTimeFormat("en-AE", {
   weekday: "long",
-  month: "long",
   day: "numeric",
+  month: "long",
   timeZone: UAE_TIME_ZONE
 });
 
-const uaeTimeFormatter = new Intl.DateTimeFormat("en-AE", {
+const timeFormat = new Intl.DateTimeFormat("en-AE", {
   hour: "2-digit",
   minute: "2-digit",
   hour12: false,
   timeZone: UAE_TIME_ZONE
 });
 
-const fullDateFormatter = new Intl.DateTimeFormat("en-AE", {
-  dateStyle: "medium",
-  timeStyle: "short",
+const stampFormat = new Intl.DateTimeFormat("en-AE", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
   timeZone: UAE_TIME_ZONE
 });
 
-function parseMatchDate(match) {
-  const time = match.time || "00:00 UTC+0";
-  const timeMatch = time.match(/^(\d{1,2}):(\d{2})(?:\s+UTC([+-]\d{1,2}))?$/);
-  if (!timeMatch) return new Date(`${match.date}T00:00:00Z`);
-
-  const hour = Number(timeMatch[1]);
-  const minute = Number(timeMatch[2]);
-  const offset = Number(timeMatch[3] || "0");
-  const utcHour = hour - offset;
-  return new Date(Date.UTC(...match.date.split("-").map((part, index) => index === 1 ? Number(part) - 1 : Number(part)), utcHour, minute));
+function numberValue(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function normalizeMatch(match, index) {
-  const date = parseMatchDate(match);
+function teamName(game, side) {
+  return game[`${side}_team_name_en`] || game[`${side}_team_label`] || "TBA";
+}
+
+function teamId(game, side) {
+  return game[`${side}_team_id`];
+}
+
+function isFinished(game) {
+  return String(game.finished).toUpperCase() === "TRUE" || game.time_elapsed === "finished";
+}
+
+function isLive(game) {
+  return !isFinished(game) && !["notstarted", "not_started", "", undefined, null].includes(game.time_elapsed);
+}
+
+function parseVenueDate(game) {
+  const match = String(game.local_date || "").match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})$/);
+  if (!match) return new Date(0);
+  const [, mm, dd, yyyy, hour, minute] = match;
+  const offset = stadiumUtcOffsets[game.stadium_id] ?? 0;
+  return new Date(Date.UTC(Number(yyyy), Number(mm) - 1, Number(dd), Number(hour) - offset, Number(minute)));
+}
+
+function hydrateGame(game) {
+  const date = parseVenueDate(game);
   return {
-    ...match,
-    id: `${match.date}-${match.time}-${match.team1}-${match.team2}-${index}`,
-    index,
-    dateObject: date,
-    uaeDayKey: dateKey(date),
-    uaeDayLabel: uaeLongDateFormatter.format(date),
-    uaeShortDay: uaeDateFormatter.format(date),
-    uaeTime: uaeTimeFormatter.format(date),
-    searchable: `${match.team1} ${match.team2} ${match.group || ""} ${match.round || ""} ${match.ground || ""}`.toLowerCase()
+    ...game,
+    date,
+    homeName: teamName(game, "home"),
+    awayName: teamName(game, "away"),
+    homeScore: numberValue(game.home_score),
+    awayScore: numberValue(game.away_score),
+    type: game.type || "group"
   };
 }
 
-function dateKey(date) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    timeZone: UAE_TIME_ZONE
-  }).formatToParts(date);
-  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return `${values.year}-${values.month}-${values.day}`;
+function teamById(id) {
+  return state.teams.find((team) => String(team.id) === String(id));
 }
 
-function nowInUaeKey() {
-  return dateKey(new Date());
+function stadiumById(id) {
+  return state.stadiums.find((stadium) => String(stadium.id) === String(id));
 }
 
-function isGroupMatch(match) {
-  return Boolean(match.group) || /^Matchday/i.test(match.round || "");
+async function getJson(url) {
+  const response = await fetch(`${url}?t=${Date.now()}`, { cache: "no-store" });
+  if (!response.ok) throw new Error(`${url} returned ${response.status}`);
+  return response.json();
 }
 
-function isKnockoutMatch(match) {
-  return !isGroupMatch(match);
-}
-
-async function fetchSchedule(force = false) {
-  elements.refresh.disabled = true;
-  elements.sourceLine.textContent = force ? "Refreshing schedule" : "Fetching public schedule API";
+async function loadData() {
+  el.refresh.disabled = true;
+  setStatus("Refreshing live data...");
 
   try {
-    const response = await fetch(`${API_URL}${force ? `?t=${Date.now()}` : ""}`, { cache: force ? "reload" : "default" });
-    if (!response.ok) throw new Error(`API status ${response.status}`);
-    const data = await response.json();
-    applySchedule(data, SOURCE_LABEL);
+    const [games, groups, teams, stadiums] = await Promise.all([
+      getJson(API.games),
+      getJson(API.groups),
+      getJson(API.teams),
+      getJson(API.stadiums)
+    ]);
+    applyData({
+      games: games.games || [],
+      groups: groups.groups || [],
+      teams: teams.teams || [],
+      stadiums: stadiums.stadiums || []
+    }, false);
   } catch (error) {
-    try {
-      const fallback = await fetch(`${FALLBACK_URL}?t=local`, { cache: "no-store" });
-      if (!fallback.ok) throw new Error(`fallback status ${fallback.status}`);
-      const data = await fallback.json();
-      applySchedule(data, "local fallback copy");
-    } catch (fallbackError) {
-      elements.sourceLine.textContent = "Could not load the schedule. Check your connection and tap Refresh.";
-      elements.dayList.innerHTML = emptyState("Schedule unavailable", "The public API and the local fallback could not be loaded.");
-    }
+    const fallback = await fetch(FALLBACK_URL, { cache: "no-store" });
+    if (!fallback.ok) throw error;
+    applyData(await fallback.json(), true);
   } finally {
-    elements.refresh.disabled = false;
+    el.refresh.disabled = false;
   }
 }
 
-function applySchedule(data, source) {
-  state.matches = (data.matches || [])
-    .map(normalizeMatch)
-    .sort((a, b) => a.dateObject - b.dateObject);
+function applyData(data, fallback) {
+  state.games = (data.games || []).map(hydrateGame).sort((a, b) => a.date - b.date);
+  state.groups = data.groups || [];
+  state.teams = data.teams || [];
+  state.stadiums = data.stadiums || [];
   state.loadedAt = new Date();
-  state.source = source;
+  state.fallback = fallback;
   render();
 }
 
+function setStatus(text) {
+  el.status.textContent = text;
+}
+
 function render() {
-  const filtered = getFilteredMatches();
-  elements.matchCount.textContent = `${state.matches.length} matches`;
-  elements.sourceLine.textContent = `${state.source} - updated ${fullDateFormatter.format(state.loadedAt)}`;
+  const source = state.fallback ? "fallback snapshot" : "live API";
+  setStatus(`${source} - ${state.games.length} matches - updated ${stampFormat.format(state.loadedAt)} UAE - auto refresh every 60s`);
 
-  if (!filtered.length) {
-    elements.dayList.innerHTML = emptyState("No matches found", "Try another team, city, group, or filter.");
-    return;
-  }
+  if (state.tab === "matches") renderMatches();
+  if (state.tab === "groups") renderGroups();
+  if (state.tab === "knockout") renderKnockout();
+}
 
-  const groups = groupByDay(filtered);
-  elements.dayList.innerHTML = Object.entries(groups).map(([dayKey, matches]) => `
-    <section class="day-group">
-      <header class="day-heading">
-        <h2>${matches[0].uaeDayLabel}</h2>
-        <span>${matches.length} match${matches.length === 1 ? "" : "es"}</span>
-      </header>
-      ${matches.map(matchCard).join("")}
+function renderMatches() {
+  const days = groupBy(state.games, (game) => dayFormat.format(game.date));
+  el.content.innerHTML = Object.entries(days).map(([day, games]) => `
+    <section class="day">
+      <h2 class="day-title">${day}</h2>
+      ${games.map(matchCard).join("")}
     </section>
   `).join("");
 }
 
-function getFilteredMatches() {
-  const query = state.query.trim().toLowerCase();
-  const today = nowInUaeKey();
-  const now = Date.now();
-
-  return state.matches.filter((match) => {
-    if (query && !match.searchable.includes(query)) return false;
-    if (state.filter === "today") return match.uaeDayKey === today;
-    if (state.filter === "upcoming") return match.dateObject.getTime() >= now - 3 * 60 * 60 * 1000;
-    if (state.filter === "groups") return isGroupMatch(match);
-    if (state.filter === "knockout") return isKnockoutMatch(match);
-    return true;
-  });
+function renderGroups() {
+  const groups = [...state.groups].sort((a, b) => a.name.localeCompare(b.name));
+  el.content.innerHTML = groups.map((group) => `
+    <section class="group-card">
+      <h2 class="group-title">Group ${group.name}</h2>
+      <table class="standing">
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th>P</th>
+            <th>W</th>
+            <th>D</th>
+            <th>L</th>
+            <th>GD</th>
+            <th>Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sortedGroupTeams(group.teams).map(standingRow).join("")}
+        </tbody>
+      </table>
+    </section>
+  `).join("");
 }
 
-function groupByDay(matches) {
-  return matches.reduce((days, match) => {
-    days[match.uaeDayKey] ||= [];
-    days[match.uaeDayKey].push(match);
-    return days;
-  }, {});
+function renderKnockout() {
+  const knockoutGames = state.games.filter((game) => game.type !== "group");
+  if (!knockoutGames.length) {
+    el.content.innerHTML = `<div class="empty">Knockout matches will appear here after the group stage.</div>`;
+    return;
+  }
+
+  const order = ["r32", "r16", "qf", "sf", "third", "final"];
+  el.content.innerHTML = order.map((type) => {
+    const games = knockoutGames.filter((game) => game.type === type);
+    if (!games.length) return "";
+    return `
+      <section class="day">
+        <h2 class="round-title">${roundNames[type]}</h2>
+        ${games.map(matchCard).join("")}
+      </section>
+    `;
+  }).join("");
 }
 
-function matchCard(match) {
-  const round = match.group || match.round || "World Cup";
-  const venue = match.ground || "Venue TBA";
-  const hostTime = match.time ? match.time.replace("UTC", "UTC ") : "Host time TBA";
+function matchCard(game) {
+  const stadium = stadiumById(game.stadium_id);
+  const venue = stadium ? `${stadium.city_en}` : "Venue TBA";
+  const status = statusLabel(game);
+  const side = isFinished(game) || isLive(game)
+    ? `<span class="scoreline">${game.homeScore}-${game.awayScore}</span>`
+    : `<span class="time">${timeFormat.format(game.date)}</span>`;
 
   return `
-    <article class="match-card">
-      <div class="match-top">
-        <div class="time-block">
-          <span class="time">${match.uaeTime}</span>
-          <span class="timezone">UAE</span>
-        </div>
-        <span class="badge">${round}</span>
-      </div>
-
+    <article class="match">
       <div class="teams">
-        ${teamRow(match.team1)}
-        <div class="versus">VS</div>
-        ${teamRow(match.team2)}
+        ${teamLine(game, "home")}
+        ${teamLine(game, "away")}
       </div>
-
-      <div class="match-meta">
-        <span><strong>${venue}</strong></span>
-        <span>${match.round || "Match"} - host local time ${hostTime}</span>
+      <div class="match-side">
+        ${side}
+        <span class="pill ${status.className}">${status.text}</span>
+      </div>
+      <div class="meta">
+        <span>${roundNames[game.type] || game.group || "Match"}</span>
+        <span>${venue}</span>
+        <span>Match ${game.id}</span>
       </div>
     </article>
   `;
 }
 
-function teamRow(name) {
+function teamLine(game, side) {
+  const team = teamById(teamId(game, side));
+  const name = side === "home" ? game.homeName : game.awayName;
+  const score = side === "home" ? game.homeScore : game.awayScore;
+  const showScore = isFinished(game) || isLive(game);
+
   return `
-    <div class="team-row">
-      <span class="team-mark">${teamInitials(name)}</span>
-      <span class="team-name">${name || "TBA"}</span>
+    <div class="team">
+      ${team?.flag ? `<img class="flag" src="${team.flag}" alt="">` : `<span class="flag placeholder">${initials(name)}</span>`}
+      <span class="team-name">${name}</span>
+      ${showScore ? `<span class="team-score">${score}</span>` : ""}
     </div>
   `;
 }
 
-function teamInitials(name = "TBA") {
-  return name
-    .replace(/\([^)]*\)/g, "")
+function statusLabel(game) {
+  if (isFinished(game)) return { text: "FT", className: "done" };
+  if (isLive(game)) return { text: `${game.time_elapsed}`, className: "live" };
+  return { text: "UAE", className: "" };
+}
+
+function sortedGroupTeams(teams) {
+  return [...teams].sort((a, b) => {
+    return numberValue(b.pts) - numberValue(a.pts)
+      || numberValue(b.gd) - numberValue(a.gd)
+      || numberValue(b.gf) - numberValue(a.gf)
+      || (teamById(a.team_id)?.name_en || "").localeCompare(teamById(b.team_id)?.name_en || "");
+  });
+}
+
+function standingRow(row) {
+  const team = teamById(row.team_id);
+  const name = team?.name_en || `Team ${row.team_id}`;
+  return `
+    <tr>
+      <td>
+        <div class="team-cell">
+          ${team?.flag ? `<img class="flag" src="${team.flag}" alt="">` : `<span class="flag placeholder">${initials(name)}</span>`}
+          <span>${name}</span>
+        </div>
+      </td>
+      <td>${row.mp}</td>
+      <td>${row.w}</td>
+      <td>${row.d}</td>
+      <td>${row.l}</td>
+      <td>${row.gd}</td>
+      <td><strong>${row.pts}</strong></td>
+    </tr>
+  `;
+}
+
+function groupBy(items, keyFn) {
+  return items.reduce((groups, item) => {
+    const key = keyFn(item);
+    groups[key] ||= [];
+    groups[key].push(item);
+    return groups;
+  }, {});
+}
+
+function initials(name) {
+  return String(name)
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0])
     .join("")
-    .toUpperCase() || "TBA";
+    .toUpperCase();
 }
 
-function emptyState(title, text) {
-  return `
-    <section class="empty-state">
-      <h2>${title}</h2>
-      <p>${text}</p>
-    </section>
-  `;
-}
+el.refresh.addEventListener("click", loadData);
 
-elements.search.addEventListener("input", (event) => {
-  state.query = event.target.value;
-  render();
-});
-
-elements.refresh.addEventListener("click", () => fetchSchedule(true));
-
-elements.chips.forEach((chip) => {
-  chip.addEventListener("click", () => {
-    state.filter = chip.dataset.filter;
-    elements.chips.forEach((item) => item.classList.toggle("is-active", item === chip));
+el.tabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    state.tab = tab.dataset.tab;
+    el.tabs.forEach((item) => item.classList.toggle("is-active", item === tab));
     render();
   });
 });
 
-fetchSchedule();
+loadData().catch(() => {
+  setStatus("Could not load live data. Try Refresh.");
+  el.content.innerHTML = `<div class="empty">The live API is unavailable right now.</div>`;
+});
+
+setInterval(() => {
+  if (!document.hidden) loadData();
+}, 60000);
