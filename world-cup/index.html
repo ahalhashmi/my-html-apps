@@ -12,7 +12,7 @@
     if (localStorage.getItem("worldCupTheme") === "light") {
       document.documentElement.dataset.theme = "light";
     }
-    const savedLang = localStorage.getItem("worldCupLang") || "ar";
+    const savedLang = localStorage.getItem("worldCupLangV2") || "ar";
     if (savedLang === "ar") {
       document.documentElement.lang = "ar";
       document.documentElement.dir = "rtl";
@@ -23,7 +23,7 @@
       delete document.documentElement.dataset.lang;
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=ui-cleanup-1">
+  <link rel="stylesheet" href="styles.css?v=ui-cleanup-2">
 </head>
 <body>
   <main class="shell">
@@ -50,6 +50,6 @@
     <section class="content" id="content" aria-live="polite"></section>
   </main>
 
-  <script src="app.js?v=ui-cleanup-1"></script>
+  <script src="app.js?v=ui-cleanup-2"></script>
 </body>
 </html>

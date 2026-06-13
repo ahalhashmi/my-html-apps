@@ -7,7 +7,7 @@ const API = {
 const FALLBACK_URL = "data/live-fallback.json";
 const UAE_TIME_ZONE = "Asia/Dubai";
 const API_TIMEOUT_MS = 6000;
-const LANG_KEY = "worldCupLang";
+const LANG_KEY = "worldCupLangV2";
 
 const labels = {
   en: {
