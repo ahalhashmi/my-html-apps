@@ -692,3 +692,9 @@ loadData().catch(() => {
   setUpdatedAt("");
   el.content.innerHTML = `<div class="empty">${escapeHtml(t().unavailable)}</div>`;
 });
+
+setInterval(() => {
+  if (!document.hidden) {
+    loadData().catch(() => {});
+  }
+}, 60000);
