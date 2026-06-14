@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-14T19:49:59.280Z",
+  "fetchedAt": "2026-06-14T20:54:42.568Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -236,7 +236,7 @@
       "persian_date": "1405-03-24 15:00",
       "stadium_id": "4",
       "finished": "FALSE",
-      "time_elapsed": "notstarted",
+      "time_elapsed": "live",
       "type": "group",
       "home_team_name_en": "Netherlands",
       "home_team_name_fa": "هلند",
