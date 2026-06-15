@@ -504,9 +504,15 @@ function matchCard(game, isScrollTarget = false) {
     ? `<span class="scoreline">${game.homeScore}-${game.awayScore}</span>`
     : `<span class="time">${formatDate("time", game.date)}</span>`;
   const stateClass = isLive(game) ? "is-live" : isFinished(game) ? "is-done" : "is-pending";
+  const highlightUrl = isFinished(game) ? youtubeSearchUrl(game) : "";
+  const highlightLabel = isFinished(game) ? youtubeSearchLabel(game) : "";
+  const openTag = highlightUrl
+    ? `<a class="match ${stateClass} ${isScrollTarget ? "is-scroll-target" : ""}" href="${escapeHtml(highlightUrl)}" target="_blank" rel="noopener" aria-label="${escapeHtml(highlightLabel)}">`
+    : `<article class="match ${stateClass} ${isScrollTarget ? "is-scroll-target" : ""}">`;
+  const closeTag = highlightUrl ? "</a>" : "</article>";
 
   return `
-    <article class="match ${stateClass} ${isScrollTarget ? "is-scroll-target" : ""}">
+    ${openTag}
       <div class="teams">
         ${teamLine(game, "home")}
         ${teamLine(game, "away")}
@@ -515,8 +521,26 @@ function matchCard(game, isScrollTarget = false) {
         ${side}
         <span class="pill ${status.className}">${escapeHtml(status.text)}</span>
       </div>
-    </article>
+    ${closeTag}
   `;
+}
+
+function youtubeSearchLabel(game) {
+  const home = searchTeamName(game, "home");
+  const away = searchTeamName(game, "away");
+  return state.lang === "ar"
+    ? `ملخص كأس العالم ٢٠٢٦ ${home} و ${away}`
+    : `world cup 2026 highlights ${home} x ${away}`;
+}
+
+function youtubeSearchUrl(game) {
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeSearchLabel(game))}`;
+}
+
+function searchTeamName(game, side) {
+  const team = teamById(teamId(game, side));
+  const name = side === "home" ? game.homeName : game.awayName;
+  return state.lang === "ar" ? matchTeamLabel(team, name) : name;
 }
 
 function teamLine(game, side) {

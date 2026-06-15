@@ -220,10 +220,18 @@ a {
   padding: 12px;
 }
 
+a.match {
+  text-decoration: none;
+}
+
 .match.is-done {
   border-color: var(--match-done-line);
   background: var(--match-done);
   color: var(--match-ink);
+}
+
+a.match.is-done {
+  cursor: pointer;
 }
 
 .match.is-pending {
