@@ -420,6 +420,8 @@ a.match.is-done {
 .pill.live {
   background: var(--danger-soft);
   color: #ff8b81;
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .pill.done {

@@ -843,7 +843,7 @@ function arabicKnockoutLabel(name) {
 
 function statusLabel(game) {
   if (isFinished(game)) return { text: t().done, className: "done" };
-  if (isLive(game)) return { text: state.lang === "ar" ? t().live : `${game.time_elapsed}`, className: "live" };
+  if (isLive(game)) return { text: `${game.time_elapsed}`, className: "live" };
   return { text: timeZoneShortName(game.date), className: "" };
 }
 
