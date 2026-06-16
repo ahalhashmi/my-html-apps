@@ -210,6 +210,10 @@ a {
   text-align: center;
 }
 
+.day-title {
+  text-align: start;
+}
+
 .group-title {
   direction: ltr;
   unicode-bidi: isolate;
@@ -295,7 +299,7 @@ a.match.is-done {
   display: flex;
   align-items: center;
   direction: ltr;
-  gap: 7px;
+  gap: 6px;
   max-width: 100%;
   min-width: 0;
 }
@@ -310,6 +314,15 @@ a.match.is-done {
 
 :root[data-lang="ar"] .team--away .team-main {
   flex-direction: row;
+}
+
+.team-flag-stack {
+  display: grid;
+  flex: 0 0 70px;
+  gap: 7px;
+  justify-items: center;
+  min-width: 0;
+  overflow: visible;
 }
 
 .flag {
@@ -347,25 +360,30 @@ a.match.is-done {
 .team-detail {
   color: var(--match-muted);
   direction: ltr;
+  display: grid;
   font-size: 13px;
   font-weight: 850;
-  line-height: 1.12;
-  max-width: 72px;
-  overflow-wrap: anywhere;
+  justify-items: center;
+  line-height: 1.06;
+  max-width: 48px;
+  text-align: center;
   unicode-bidi: isolate;
+  white-space: nowrap;
 }
 
 .team-name {
   min-width: 0;
-  max-width: 100%;
+  width: max-content;
+  max-width: 96px;
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow-wrap: anywhere;
   font-size: 18px;
-  line-height: 1.08;
+  line-height: 1.05;
   font-weight: 900;
+  text-align: center;
 }
 
 .match-center {
@@ -575,12 +593,18 @@ a.match.is-done {
     gap: 5px;
   }
 
+  .team-flag-stack {
+    flex-basis: 60px;
+    gap: 6px;
+  }
+
   .team-detail {
-    max-width: 58px;
+    max-width: 44px;
     font-size: 12px;
   }
 
   .team-name {
+    max-width: 86px;
     font-size: 16px;
   }
 

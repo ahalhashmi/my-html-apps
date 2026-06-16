@@ -785,25 +785,33 @@ function teamLine(game, side) {
   const code = teamCode(team, name);
   const label = matchTeamLabel(team, name);
   const detail = game.type === "group" && team
-    ? groupProgressText(team.id)
-    : knockoutLabelText(name);
+    ? groupProgressLines(team.id)
+    : { top: knockoutLabelText(name), bottom: "" };
 
   return `
     <div class="team team--${side}">
       <div class="team-main">
-        ${team?.flag ? `<img class="flag" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(code)}</span>`}
-        <span class="team-detail">${escapeHtml(detail)}</span>
+        <span class="team-flag-stack">
+          ${team?.flag ? `<img class="flag" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(code)}</span>`}
+          <span class="team-name">${escapeHtml(label)}</span>
+        </span>
+        <span class="team-detail">
+          <span>${escapeHtml(detail.top)}</span>
+          ${detail.bottom ? `<span>${escapeHtml(detail.bottom)}</span>` : ""}
+        </span>
       </div>
-      <span class="team-name">${escapeHtml(label)}</span>
     </div>
   `;
 }
 
-function groupProgressText(teamIdValue) {
+function groupProgressLines(teamIdValue) {
   const stats = state.liveGroupStats.get(String(teamIdValue));
-  if (!stats) return `0/3 - 0 ${t().pointAbbr}`;
+  if (!stats) return { top: "0/3", bottom: `0 ${t().pointAbbr}` };
   const total = stats.total || 3;
-  return `${stats.played}/${total} - ${stats.pts} ${t().pointAbbr}`;
+  return {
+    top: `${stats.played}/${total}`,
+    bottom: `${stats.pts} ${t().pointAbbr}`
+  };
 }
 
 function knockoutLabelText(name) {
