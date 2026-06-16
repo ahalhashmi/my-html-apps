@@ -739,7 +739,7 @@ function renderGroups() {
 function matchCard(game, isScrollTarget = false) {
   const status = statusLabel(game);
   const side = isFinished(game) || isLive(game)
-    ? `<span class="scoreline">${game.homeScore} - ${game.awayScore}</span>`
+    ? `<span class="scoreline">${scoreText(game)}</span>`
     : `<span class="time">${formatDate("time", game.date)}</span>`;
   const stateClass = isLive(game) ? "is-live" : isFinished(game) ? "is-done" : "is-pending";
   const highlightUrl = isFinished(game) ? youtubeSearchUrl(game) : "";
@@ -759,6 +759,12 @@ function matchCard(game, isScrollTarget = false) {
       ${teamLine(game, "away")}
     ${closeTag}
   `;
+}
+
+function scoreText(game) {
+  return state.lang === "ar"
+    ? `${game.awayScore} - ${game.homeScore}`
+    : `${game.homeScore} - ${game.awayScore}`;
 }
 
 function youtubeSearchLabel(game) {
