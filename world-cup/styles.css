@@ -220,22 +220,34 @@ a {
 }
 
 .match {
+  --match-flag-size: 54px;
+  --match-stat-width: 50px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(82px, auto) minmax(0, 1fr);
-  grid-template-areas: "home center away";
-  gap: 8px;
+  grid-template-columns:
+    var(--match-flag-size)
+    var(--match-stat-width)
+    minmax(82px, 1fr)
+    var(--match-stat-width)
+    var(--match-flag-size);
+  grid-template-areas:
+    "homeFlag homeDetail center awayDetail awayFlag"
+    "homeName homeName center awayName awayName";
+  column-gap: 7px;
+  row-gap: 8px;
   align-items: center;
-  min-height: 112px;
+  min-height: 116px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--card);
   color: var(--ink);
   direction: ltr;
-  padding: 10px 12px;
+  padding: 10px 8px;
 }
 
 :root[data-lang="ar"] .match {
-  grid-template-areas: "away center home";
+  grid-template-areas:
+    "awayFlag awayDetail center homeDetail homeFlag"
+    "awayName awayName center homeName homeName";
 }
 
 a.match {
@@ -263,73 +275,6 @@ a.match.is-done {
   color: var(--match-ink);
 }
 
-.team {
-  align-content: center;
-  display: grid;
-  direction: ltr;
-  gap: 8px;
-  min-width: 0;
-}
-
-.team--home {
-  grid-area: home;
-  justify-items: start;
-  text-align: start;
-}
-
-.team--away {
-  grid-area: away;
-  justify-items: end;
-  text-align: end;
-}
-
-:root[data-lang="ar"] .team--home {
-  justify-items: end;
-  text-align: end;
-}
-
-:root[data-lang="ar"] .team--away {
-  justify-items: start;
-  text-align: start;
-}
-
-.team-main {
-  --team-flag-size: 54px;
-  --team-stat-width: 46px;
-  display: grid;
-  grid-template-columns: var(--team-flag-size) var(--team-stat-width);
-  grid-template-areas:
-    "flag detail"
-    "name name";
-  align-items: center;
-  direction: ltr;
-  column-gap: 8px;
-  row-gap: 7px;
-  max-width: 108px;
-  min-width: 0;
-}
-
-.team--away .team-main {
-  grid-template-columns: var(--team-stat-width) var(--team-flag-size);
-  grid-template-areas:
-    "detail flag"
-    "name name";
-}
-
-:root[data-lang="ar"] .team--home .team-main {
-  grid-template-columns: var(--team-stat-width) var(--team-flag-size);
-  grid-template-areas:
-    "detail flag"
-    "name name";
-}
-
-:root[data-lang="ar"] .team--away .team-main {
-  grid-template-columns: var(--team-flag-size) var(--team-stat-width);
-  grid-template-areas:
-    "flag detail"
-    "name name";
-}
-
 .flag {
   width: 28px;
   height: 20px;
@@ -350,15 +295,26 @@ a.match.is-done {
   font-weight: 900;
 }
 
+.team-flag {
+  display: grid;
+}
+
+.team-flag--home {
+  grid-area: homeFlag;
+}
+
+.team-flag--away {
+  grid-area: awayFlag;
+}
+
 .match .flag {
-  grid-area: flag;
-  width: 54px;
-  height: 54px;
+  width: var(--match-flag-size);
+  height: var(--match-flag-size);
   border-radius: 8px;
 }
 
 .match .flag.placeholder {
-  height: 54px;
+  height: var(--match-flag-size);
   font-size: 14px;
 }
 
@@ -367,16 +323,23 @@ a.match.is-done {
   color: var(--match-muted);
   direction: ltr;
   display: grid;
-  font-size: 13px;
-  gap: 3px;
-  grid-area: detail;
-  font-weight: 850;
+  font-size: 15px;
+  gap: 8px;
+  font-weight: 900;
   justify-items: center;
-  line-height: 1.06;
+  line-height: 1;
   overflow: hidden;
   text-align: center;
   unicode-bidi: isolate;
   white-space: nowrap;
+}
+
+.team-detail--home {
+  grid-area: homeDetail;
+}
+
+.team-detail--away {
+  grid-area: awayDetail;
 }
 
 .team-detail span {
@@ -387,7 +350,6 @@ a.match.is-done {
 
 .team-name {
   direction: ltr;
-  grid-area: name;
   min-width: 0;
   width: 100%;
   overflow: hidden;
@@ -401,16 +363,21 @@ a.match.is-done {
   text-align: left;
 }
 
-.team--away .team-name {
+.team-name--home {
+  grid-area: homeName;
+}
+
+.team-name--away {
+  grid-area: awayName;
   text-align: right;
 }
 
-:root[data-lang="ar"] .team--home .team-name {
+:root[data-lang="ar"] .team-name--home {
   direction: rtl;
   text-align: right;
 }
 
-:root[data-lang="ar"] .team--away .team-name {
+:root[data-lang="ar"] .team-name--away {
   direction: rtl;
   text-align: left;
 }
@@ -602,31 +569,25 @@ a.match.is-done {
   }
 
   .match {
-    grid-template-columns: minmax(0, 1fr) minmax(76px, auto) minmax(0, 1fr);
-    gap: 6px;
+    --match-flag-size: 48px;
+    --match-stat-width: 46px;
+    column-gap: 5px;
     padding: 9px;
   }
 
   .match .flag {
-    width: 48px;
-    height: 48px;
+    width: var(--match-flag-size);
+    height: var(--match-flag-size);
   }
 
   .match .flag.placeholder {
-    height: 48px;
+    height: var(--match-flag-size);
     font-size: 13px;
   }
 
-  .team-main {
-    --team-flag-size: 48px;
-    --team-stat-width: 42px;
-    column-gap: 5px;
-    max-width: 95px;
-    row-gap: 6px;
-  }
-
   .team-detail {
-    font-size: 12px;
+    font-size: 14px;
+    gap: 6px;
   }
 
   .team-name {

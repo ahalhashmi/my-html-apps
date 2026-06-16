@@ -789,16 +789,14 @@ function teamLine(game, side) {
     : { top: knockoutLabelText(name), bottom: "" };
 
   return `
-    <div class="team team--${side}">
-      <div class="team-main">
-        ${team?.flag ? `<img class="flag" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(code)}</span>`}
-        <span class="team-detail">
-          <span>${escapeHtml(detail.top)}</span>
-          ${detail.bottom ? `<span>${escapeHtml(detail.bottom)}</span>` : ""}
-        </span>
-        <span class="team-name">${escapeHtml(label)}</span>
-      </div>
-    </div>
+    <span class="team-flag team-flag--${side}">
+      ${team?.flag ? `<img class="flag" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(code)}</span>`}
+    </span>
+    <span class="team-detail team-detail--${side}">
+      <span>${escapeHtml(detail.top)}</span>
+      ${detail.bottom ? `<span>${escapeHtml(detail.bottom)}</span>` : ""}
+    </span>
+    <span class="team-name team-name--${side}">${escapeHtml(label)}</span>
   `;
 }
 
