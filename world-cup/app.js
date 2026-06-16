@@ -7,6 +7,7 @@ const API = {
 const FALLBACK_URL = "data/live-fallback.json";
 const ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
 const API_TIMEOUT_MS = 6000;
+const REFRESH_INTERVAL_MS = 60000;
 const LANG_KEY = "worldCupLangV2";
 const TIME_ZONE_KEY = "worldCupTimeZone";
 const DEFAULT_TIME_ZONE = "UTC";
@@ -1016,13 +1017,29 @@ el.tabs.forEach((tab) => {
 applyLanguage(state.lang, false);
 applyTheme(localStorage.getItem("worldCupTheme") === "light" ? "light" : "dark");
 
-loadData().catch(() => {
-  setUpdatedAt("");
-  el.content.innerHTML = `<div class="empty">${escapeHtml(t().unavailable)}</div>`;
-});
+let refreshPromise = null;
 
-setInterval(() => {
-  if (!document.hidden) {
-    loadData().catch(() => {});
-  }
-}, 60000);
+function refreshData(showError = false) {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = loadData()
+    .catch(() => {
+      if (showError || !state.loadedAt) {
+        setUpdatedAt("");
+        el.content.innerHTML = `<div class="empty">${escapeHtml(t().unavailable)}</div>`;
+      }
+    })
+    .finally(() => {
+      refreshPromise = null;
+    });
+
+  return refreshPromise;
+}
+
+refreshData(true);
+setInterval(() => refreshData(), REFRESH_INTERVAL_MS);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) refreshData();
+});
+window.addEventListener("focus", () => refreshData());
+window.addEventListener("pageshow", () => refreshData());
