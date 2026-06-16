@@ -5,9 +5,41 @@ const API = {
 };
 
 const FALLBACK_URL = "data/live-fallback.json";
-const UAE_TIME_ZONE = "Asia/Dubai";
+const ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
 const API_TIMEOUT_MS = 6000;
 const LANG_KEY = "worldCupLangV2";
+const TIME_ZONE_KEY = "worldCupTimeZone";
+const DEFAULT_TIME_ZONE = "UTC";
+const ESPN_LOOKBACK_DAYS = 1;
+const ESPN_LOOKAHEAD_DAYS = 1;
+const FALLBACK_TIME_ZONES = [
+  "UTC",
+  "Asia/Dubai",
+  "Asia/Riyadh",
+  "Asia/Muscat",
+  "Asia/Qatar",
+  "Asia/Kuwait",
+  "Asia/Bahrain",
+  "Asia/Baghdad",
+  "Asia/Amman",
+  "Asia/Beirut",
+  "Asia/Karachi",
+  "Asia/Kolkata",
+  "Asia/Singapore",
+  "Asia/Tokyo",
+  "Australia/Sydney",
+  "Europe/London",
+  "Europe/Paris",
+  "Europe/Berlin",
+  "Africa/Cairo",
+  "Africa/Johannesburg",
+  "America/New_York",
+  "America/Chicago",
+  "America/Denver",
+  "America/Los_Angeles",
+  "America/Toronto",
+  "America/Mexico_City"
+];
 
 const labels = {
   en: {
@@ -16,14 +48,18 @@ const labels = {
     themeNight: "Night",
     matches: "Matches",
     groups: "Groups",
+    timezoneButton: "Timezone",
+    timezoneTitle: "Select timezone",
+    timezoneApply: "Done",
+    timezoneClose: "Close",
     tabsLabel: "World Cup views",
     loadError: "Could not load live data. Refresh the page.",
     unavailable: "The live API is unavailable right now.",
     done: "FT",
     live: "Live",
-    timezone: "UAE",
     pointAbbr: "pts",
     visitors: "visitors",
+    author: "Abdulla Alhashmi",
     standing: {
       team: "Team",
       played: "P",
@@ -43,14 +79,18 @@ const labels = {
     themeNight: "ليلي",
     matches: "المباريات",
     groups: "المجموعات",
+    timezoneButton: "التوقيت",
+    timezoneTitle: "اختر التوقيت",
+    timezoneApply: "تم",
+    timezoneClose: "إغلاق",
     tabsLabel: "أقسام كأس العالم",
     loadError: "تعذر تحميل البيانات. حدّث الصفحة.",
     unavailable: "البيانات المباشرة غير متاحة الآن.",
     done: "نهاية",
     live: "مباشر",
-    timezone: "الإمارات",
     pointAbbr: "نقطه",
     visitors: "الزوار",
+    author: "عبدالله الهاشمي",
     standing: {
       team: "المنتخب",
       played: "ل",
@@ -167,6 +207,7 @@ const roundNames = {
 const state = {
   tab: "matches",
   lang: localStorage.getItem(LANG_KEY) === "en" ? "en" : "ar",
+  timeZone: initialTimeZone(),
   games: [],
   groups: [],
   teams: [],
@@ -180,56 +221,37 @@ const el = {
   title: document.querySelector("h1"),
   content: document.getElementById("content"),
   updatedAt: document.getElementById("updated-at"),
+  authorCredit: document.getElementById("author-credit"),
   visitorLabel: document.getElementById("visitor-label"),
   langToggle: document.getElementById("lang-toggle"),
+  timezoneToggle: document.getElementById("timezone-toggle"),
+  timezonePanel: document.getElementById("timezone-panel"),
+  timezoneSelect: document.getElementById("timezone-select"),
+  timezoneTitle: document.getElementById("timezone-title"),
+  timezoneApply: document.getElementById("timezone-apply"),
+  timezoneClose: document.getElementById("timezone-close"),
   themeToggle: document.getElementById("theme-toggle"),
   visitorBadge: document.querySelector(".visitor-badge"),
   tabsNav: document.querySelector(".tabs"),
   tabs: [...document.querySelectorAll(".tab")]
 };
 
-const dateFormats = {
-  en: {
-    day: new Intl.DateTimeFormat("en-AE-u-nu-latn", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      timeZone: UAE_TIME_ZONE
-    }),
-    time: new Intl.DateTimeFormat("en-AE-u-nu-latn", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-      timeZone: UAE_TIME_ZONE
-    }),
-    stamp: new Intl.DateTimeFormat("en-AE-u-nu-latn", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: UAE_TIME_ZONE
-    })
+const dateFormatOptions = {
+  day: {
+    weekday: "long",
+    day: "numeric",
+    month: "long"
   },
-  ar: {
-    day: new Intl.DateTimeFormat("ar-AE-u-nu-latn", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      timeZone: UAE_TIME_ZONE
-    }),
-    time: new Intl.DateTimeFormat("ar-AE-u-nu-latn", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-      timeZone: UAE_TIME_ZONE
-    }),
-    stamp: new Intl.DateTimeFormat("ar-AE-u-nu-latn", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: UAE_TIME_ZONE
-    })
+  time: {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  },
+  stamp: {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit"
   }
 };
 
@@ -238,12 +260,84 @@ function numberValue(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function validTimeZone(timeZone) {
+  if (!timeZone) return "";
+  try {
+    new Intl.DateTimeFormat("en", { timeZone }).format(new Date());
+    return timeZone;
+  } catch (error) {
+    return "";
+  }
+}
+
+function browserTimeZone() {
+  return validTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+}
+
+function initialTimeZone() {
+  return validTimeZone(localStorage.getItem(TIME_ZONE_KEY))
+    || browserTimeZone()
+    || DEFAULT_TIME_ZONE;
+}
+
+function localeCode() {
+  return state.lang === "ar" ? "ar-AE-u-nu-latn" : "en-AE-u-nu-latn";
+}
+
 function t() {
   return labels[state.lang];
 }
 
 function formatDate(kind, date) {
-  return dateFormats[state.lang][kind].format(date);
+  return new Intl.DateTimeFormat(localeCode(), {
+    ...dateFormatOptions[kind],
+    timeZone: state.timeZone
+  }).format(date);
+}
+
+function timeZoneShortName(date = new Date()) {
+  try {
+    const parts = new Intl.DateTimeFormat("en-AE-u-nu-latn", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: state.timeZone,
+      timeZoneName: "shortOffset"
+    }).formatToParts(date);
+    return parts.find((part) => part.type === "timeZoneName")?.value || timeZoneCityLabel(state.timeZone);
+  } catch (error) {
+    return "GMT";
+  }
+}
+
+function timeZoneCityLabel(timeZone) {
+  if (timeZone === "UTC" || timeZone === "Etc/GMT") return "GMT";
+  return timeZone.split("/").pop().replace(/_/g, " ");
+}
+
+function timeZoneOptionLabel(timeZone) {
+  return `${timeZone.replace(/_/g, " ")} - ${timeZoneShortOffset(timeZone)}`;
+}
+
+function timeZoneShortOffset(timeZone) {
+  try {
+    const parts = new Intl.DateTimeFormat("en-AE-u-nu-latn", {
+      hour: "2-digit",
+      timeZone,
+      timeZoneName: "shortOffset"
+    }).formatToParts(new Date());
+    return parts.find((part) => part.type === "timeZoneName")?.value || "GMT";
+  } catch (error) {
+    return "GMT";
+  }
+}
+
+function availableTimeZones() {
+  const supported = typeof Intl.supportedValuesOf === "function"
+    ? Intl.supportedValuesOf("timeZone")
+    : [];
+  return [...new Set([state.timeZone, browserTimeZone(), ...FALLBACK_TIME_ZONES, ...supported])]
+    .filter(validTimeZone)
+    .sort((a, b) => timeZoneOptionLabel(a).localeCompare(timeZoneOptionLabel(b)));
 }
 
 function escapeHtml(value) {
@@ -349,12 +443,114 @@ function compactLabel(name) {
     .slice(0, 3) || "TBA";
 }
 
+function cacheBustedUrl(url) {
+  return `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+}
+
+function addUtcDays(date, days) {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + days));
+}
+
+function espnDateKey(date) {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return `${year}${month}${day}`;
+}
+
+function espnScoreboardUrl() {
+  const now = new Date();
+  const start = espnDateKey(addUtcDays(now, -ESPN_LOOKBACK_DAYS));
+  const end = espnDateKey(addUtcDays(now, ESPN_LOOKAHEAD_DAYS));
+  return `${ESPN_SCOREBOARD_URL}?dates=${start}-${end}&limit=60`;
+}
+
+function normalizeCode(code) {
+  return String(code || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+function teamCodeFromData(teams, id, fallbackName) {
+  const team = teams.find((item) => String(item.id) === String(id));
+  return normalizeCode(team?.fifa_code) || normalizeCode(compactLabel(fallbackName));
+}
+
+function gameTeamCode(teams, game, side) {
+  return teamCodeFromData(teams, teamId(game, side), teamName(game, side));
+}
+
+function normalizeEspnEvent(event) {
+  const competition = event?.competitions?.[0] || {};
+  const competitors = competition.competitors || [];
+  const home = competitors.find((item) => item.homeAway === "home");
+  const away = competitors.find((item) => item.homeAway === "away");
+  const date = new Date(competition.date || event.date);
+  if (!home || !away || Number.isNaN(date.getTime())) return null;
+
+  const status = competition.status || event.status || {};
+  const type = status.type || {};
+  const stateName = String(type.state || "").toLowerCase();
+  const statusName = String(type.name || "").toUpperCase();
+  const finished = type.completed === true || stateName === "post";
+  const live = !finished && (
+    stateName === "in"
+    || statusName.includes("IN_PROGRESS")
+    || statusName.includes("HALFTIME")
+    || statusName.includes("BREAK")
+  );
+  const displayClock = status.displayClock || event.status?.displayClock || type.shortDetail || type.detail;
+
+  return {
+    date,
+    homeCode: normalizeCode(home.team?.abbreviation),
+    awayCode: normalizeCode(away.team?.abbreviation),
+    homeScore: numberValue(home.score),
+    awayScore: numberValue(away.score),
+    finished,
+    live,
+    elapsed: finished ? "finished" : live ? (displayClock || "live") : "notstarted"
+  };
+}
+
+function findEspnMatch(game, teams, events) {
+  const homeCode = gameTeamCode(teams, game, "home");
+  const awayCode = gameTeamCode(teams, game, "away");
+  if (!homeCode || !awayCode) return null;
+
+  const date = parseVenueDate(game);
+  const time = date.getTime();
+  return events.find((event) => {
+    const sameDirection = event.homeCode === homeCode && event.awayCode === awayCode;
+    const reversed = event.homeCode === awayCode && event.awayCode === homeCode;
+    const closeTime = Math.abs(event.date.getTime() - time) <= 6 * 60 * 60 * 1000;
+    return (sameDirection || reversed) && closeTime;
+  });
+}
+
+function mergeEspnScores(games, teams, events) {
+  const normalizedEvents = (events || []).map(normalizeEspnEvent).filter(Boolean);
+  if (!normalizedEvents.length) return games;
+
+  return games.map((game) => {
+    const event = findEspnMatch(game, teams, normalizedEvents);
+    if (!event || (!event.finished && !event.live)) return game;
+
+    const sameDirection = event.homeCode === gameTeamCode(teams, game, "home");
+    return {
+      ...game,
+      home_score: String(sameDirection ? event.homeScore : event.awayScore),
+      away_score: String(sameDirection ? event.awayScore : event.homeScore),
+      finished: event.finished ? "TRUE" : "FALSE",
+      time_elapsed: event.elapsed
+    };
+  });
+}
+
 async function getJson(url) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
   try {
-    const response = await fetch(`${url}?t=${Date.now()}`, {
+    const response = await fetch(cacheBustedUrl(url), {
       cache: "no-store",
       signal: controller.signal
     });
@@ -365,23 +561,42 @@ async function getJson(url) {
   }
 }
 
+async function addFastScoreData(data) {
+  try {
+    const scoreboard = await getJson(espnScoreboardUrl());
+    return {
+      ...data,
+      games: mergeEspnScores(data.games || [], data.teams || [], scoreboard.events || []),
+      liveFetchedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    return data;
+  }
+}
+
 async function loadData() {
+  let data;
+  let fallback = false;
+
   try {
     const [games, groups, teams] = await Promise.all([
       getJson(API.games),
       getJson(API.groups),
       getJson(API.teams)
     ]);
-    applyData({
+    data = {
       games: games.games || [],
       groups: groups.groups || [],
       teams: teams.teams || []
-    }, false);
+    };
   } catch (error) {
-    const fallback = await fetch(`${FALLBACK_URL}?t=${Date.now()}`, { cache: "no-store" });
-    if (!fallback.ok) throw error;
-    applyData(await fallback.json(), true);
+    const response = await fetch(cacheBustedUrl(FALLBACK_URL), { cache: "no-store" });
+    if (!response.ok) throw error;
+    data = await response.json();
+    fallback = true;
   }
+
+  applyData(await addFastScoreData(data), fallback);
 }
 
 function applyData(data, fallback) {
@@ -389,8 +604,13 @@ function applyData(data, fallback) {
   state.groups = data.groups || [];
   state.teams = data.teams || [];
   state.liveGroupStats = computeLiveGroupStats();
+  const liveTime = data.liveFetchedAt ? new Date(data.liveFetchedAt) : null;
   const fallbackTime = fallback && data.fetchedAt ? new Date(data.fetchedAt) : null;
-  state.loadedAt = fallbackTime && !Number.isNaN(fallbackTime.getTime()) ? fallbackTime : new Date();
+  state.loadedAt = liveTime && !Number.isNaN(liveTime.getTime())
+    ? liveTime
+    : fallbackTime && !Number.isNaN(fallbackTime.getTime())
+      ? fallbackTime
+      : new Date();
   state.fallback = fallback;
   render();
 }
@@ -403,6 +623,12 @@ function computeLiveGroupStats() {
       stats.set(String(team.team_id), {
         played: 0,
         total: 0,
+        w: 0,
+        d: 0,
+        l: 0,
+        gf: 0,
+        ga: 0,
+        gd: 0,
         pts: 0
       });
     });
@@ -424,12 +650,24 @@ function computeLiveGroupStats() {
 
       home.played += 1;
       away.played += 1;
+      home.gf += game.homeScore;
+      home.ga += game.awayScore;
+      away.gf += game.awayScore;
+      away.ga += game.homeScore;
+      home.gd = home.gf - home.ga;
+      away.gd = away.gf - away.ga;
 
       if (game.homeScore > game.awayScore) {
+        home.w += 1;
+        away.l += 1;
         home.pts += 3;
       } else if (game.awayScore > game.homeScore) {
+        away.w += 1;
+        home.l += 1;
         away.pts += 3;
       } else {
+        home.d += 1;
+        away.d += 1;
         home.pts += 1;
         away.pts += 1;
       }
@@ -597,16 +835,32 @@ function arabicKnockoutLabel(name) {
 function statusLabel(game) {
   if (isFinished(game)) return { text: t().done, className: "done" };
   if (isLive(game)) return { text: state.lang === "ar" ? t().live : `${game.time_elapsed}`, className: "live" };
-  return { text: t().timezone, className: "" };
+  return { text: timeZoneShortName(game.date), className: "" };
 }
 
 function sortedGroupTeams(teams) {
-  return [...teams].sort((a, b) => {
+  return teams.map(liveStandingRow).sort((a, b) => {
     return numberValue(b.pts) - numberValue(a.pts)
       || numberValue(b.gd) - numberValue(a.gd)
       || numberValue(b.gf) - numberValue(a.gf)
       || (teamById(a.team_id)?.name_en || "").localeCompare(teamById(b.team_id)?.name_en || "");
   });
+}
+
+function liveStandingRow(row) {
+  const live = state.liveGroupStats.get(String(row.team_id));
+  if (!live) return row;
+  return {
+    ...row,
+    mp: live.played,
+    w: live.w,
+    d: live.d,
+    l: live.l,
+    gf: live.gf,
+    ga: live.ga,
+    gd: live.gd,
+    pts: live.pts
+  };
 }
 
 function standingRow(row) {
@@ -658,6 +912,11 @@ function updateStaticText() {
   document.title = state.lang === "ar" ? "كأس العالم 2026" : "World Cup 2026";
   el.title.textContent = document.title;
   el.langToggle.textContent = t().langToggle;
+  el.timezoneToggle.textContent = t().timezoneButton;
+  el.timezoneTitle.textContent = t().timezoneTitle;
+  el.timezoneApply.textContent = t().timezoneApply;
+  el.timezoneClose.setAttribute("aria-label", t().timezoneClose);
+  el.authorCredit.textContent = t().author;
   el.visitorLabel.textContent = `${t().visitors}:`;
   el.tabsNav.setAttribute("aria-label", t().tabsLabel);
   el.tabs.forEach((tab) => {
@@ -666,6 +925,33 @@ function updateStaticText() {
   el.visitorBadge.src = visitorBadgeUrl();
   el.visitorBadge.alt = t().visitors;
   if (!state.loadedAt) setUpdatedAt("");
+}
+
+function populateTimeZoneSelect() {
+  const zones = availableTimeZones();
+  el.timezoneSelect.innerHTML = zones.map((timeZone) => `
+    <option value="${escapeHtml(timeZone)}" ${timeZone === state.timeZone ? "selected" : ""}>
+      ${escapeHtml(timeZoneOptionLabel(timeZone))}
+    </option>
+  `).join("");
+}
+
+function openTimeZonePanel() {
+  populateTimeZoneSelect();
+  el.timezonePanel.hidden = false;
+  el.timezoneSelect.focus();
+}
+
+function closeTimeZonePanel() {
+  el.timezonePanel.hidden = true;
+}
+
+function applyTimeZone(timeZone) {
+  const nextTimeZone = validTimeZone(timeZone) || DEFAULT_TIME_ZONE;
+  state.timeZone = nextTimeZone;
+  localStorage.setItem(TIME_ZONE_KEY, nextTimeZone);
+  closeTimeZonePanel();
+  if (state.loadedAt) render();
 }
 
 function applyLanguage(lang, shouldRender = true) {
@@ -693,6 +979,16 @@ el.langToggle.addEventListener("click", () => {
   const nextLang = state.lang === "ar" ? "en" : "ar";
   localStorage.setItem(LANG_KEY, nextLang);
   applyLanguage(nextLang);
+});
+
+el.timezoneToggle.addEventListener("click", openTimeZonePanel);
+el.timezoneClose.addEventListener("click", closeTimeZonePanel);
+el.timezoneApply.addEventListener("click", () => applyTimeZone(el.timezoneSelect.value));
+el.timezonePanel.addEventListener("click", (event) => {
+  if (event.target === el.timezonePanel) closeTimeZonePanel();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !el.timezonePanel.hidden) closeTimeZonePanel();
 });
 
 el.themeToggle.addEventListener("click", () => {

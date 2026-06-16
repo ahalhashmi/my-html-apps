@@ -126,6 +126,14 @@ a {
   line-height: 1.2;
 }
 
+.author-credit {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
 .updated-at {
   font-size: 12px;
   font-weight: 800;
@@ -396,6 +404,80 @@ a.match.is-done {
   text-align: center;
   color: var(--muted);
   line-height: 1.45;
+}
+
+.timezone-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: end center;
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.48);
+}
+
+.timezone-panel[hidden] {
+  display: none;
+}
+
+.timezone-dialog {
+  width: min(420px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink);
+  padding: 12px;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+}
+
+.timezone-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.timezone-head h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.icon-button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.timezone-select,
+.timezone-apply {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 800;
+}
+
+.timezone-select {
+  padding: 8px 10px;
+}
+
+.timezone-apply {
+  margin-top: 10px;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
 }
 
 @media (max-width: 370px) {

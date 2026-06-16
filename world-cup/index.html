@@ -35,9 +35,11 @@
           <img class="visitor-badge" src="https://hits.sh/ahalhashmi.github.io/my-html-apps/world-cup.svg?label=%20&color=0f766e&labelColor=232f2d" alt="الزوار">
           <span class="updated-at" id="updated-at"></span>
         </div>
+        <div class="author-credit" id="author-credit">عبدالله الهاشمي</div>
       </div>
       <div class="top-actions">
         <button class="small-button" id="lang-toggle" type="button">English</button>
+        <button class="small-button" id="timezone-toggle" type="button">التوقيت</button>
         <button class="small-button" id="theme-toggle" type="button">نهاري</button>
       </div>
     </header>
@@ -50,6 +52,17 @@
     <section class="content" id="content" aria-live="polite"></section>
   </main>
 
-  <script src="app.js?v=highlights-1"></script>
+  <div class="timezone-panel" id="timezone-panel" hidden>
+    <div class="timezone-dialog" role="dialog" aria-modal="true" aria-labelledby="timezone-title">
+      <div class="timezone-head">
+        <h2 id="timezone-title">التوقيت</h2>
+        <button class="icon-button" id="timezone-close" type="button" aria-label="إغلاق">×</button>
+      </div>
+      <select class="timezone-select" id="timezone-select"></select>
+      <button class="timezone-apply" id="timezone-apply" type="button">تم</button>
+    </div>
+  </div>
+
+  <script src="app.js?v=live-timezone-1"></script>
 </body>
 </html>
