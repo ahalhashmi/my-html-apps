@@ -739,7 +739,7 @@ function renderGroups() {
 function matchCard(game, isScrollTarget = false) {
   const status = statusLabel(game);
   const side = isFinished(game) || isLive(game)
-    ? `<span class="scoreline">${game.homeScore}-${game.awayScore}</span>`
+    ? `<span class="scoreline">${game.homeScore} - ${game.awayScore}</span>`
     : `<span class="time">${formatDate("time", game.date)}</span>`;
   const stateClass = isLive(game) ? "is-live" : isFinished(game) ? "is-done" : "is-pending";
   const highlightUrl = isFinished(game) ? youtubeSearchUrl(game) : "";
@@ -751,14 +751,12 @@ function matchCard(game, isScrollTarget = false) {
 
   return `
     ${openTag}
-      <div class="teams">
-        ${teamLine(game, "home")}
-        ${teamLine(game, "away")}
-      </div>
-      <div class="match-side">
+      ${teamLine(game, "home")}
+      <div class="match-center">
         ${side}
         <span class="pill ${status.className}">${escapeHtml(status.text)}</span>
       </div>
+      ${teamLine(game, "away")}
     ${closeTag}
   `;
 }
@@ -784,8 +782,6 @@ function searchTeamName(game, side) {
 function teamLine(game, side) {
   const team = teamById(teamId(game, side));
   const name = side === "home" ? game.homeName : game.awayName;
-  const score = side === "home" ? game.homeScore : game.awayScore;
-  const showScore = isFinished(game) || isLive(game);
   const code = teamCode(team, name);
   const label = matchTeamLabel(team, name);
   const detail = game.type === "group" && team
@@ -793,10 +789,12 @@ function teamLine(game, side) {
     : knockoutLabelText(name);
 
   return `
-    <div class="team">
-      ${team?.flag ? `<img class="flag" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(code)}</span>`}
-      <span class="team-name"><strong>${escapeHtml(label)}</strong> <span>- ${escapeHtml(detail)}</span></span>
-      ${showScore ? `<span class="team-score">${score}</span>` : ""}
+    <div class="team team--${side}">
+      <div class="team-main">
+        ${team?.flag ? `<img class="flag" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(code)}</span>`}
+        <span class="team-detail">${escapeHtml(detail)}</span>
+      </div>
+      <span class="team-name">${escapeHtml(label)}</span>
     </div>
   `;
 }
