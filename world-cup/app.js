@@ -791,14 +791,12 @@ function teamLine(game, side) {
   return `
     <div class="team team--${side}">
       <div class="team-main">
-        <span class="team-flag-stack">
-          ${team?.flag ? `<img class="flag" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(code)}</span>`}
-          <span class="team-name">${escapeHtml(label)}</span>
-        </span>
+        ${team?.flag ? `<img class="flag" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(code)}</span>`}
         <span class="team-detail">
           <span>${escapeHtml(detail.top)}</span>
           ${detail.bottom ? `<span>${escapeHtml(detail.bottom)}</span>` : ""}
         </span>
+        <span class="team-name">${escapeHtml(label)}</span>
       </div>
     </div>
   `;

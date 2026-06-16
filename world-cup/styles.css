@@ -296,33 +296,40 @@ a.match.is-done {
 }
 
 .team-main {
-  display: flex;
+  --team-flag-size: 54px;
+  --team-stat-width: 46px;
+  display: grid;
+  grid-template-columns: var(--team-flag-size) var(--team-stat-width);
+  grid-template-areas:
+    "flag detail"
+    "name name";
   align-items: center;
   direction: ltr;
-  gap: 6px;
-  max-width: 100%;
+  column-gap: 8px;
+  row-gap: 7px;
+  max-width: 108px;
   min-width: 0;
 }
 
 .team--away .team-main {
-  flex-direction: row-reverse;
+  grid-template-columns: var(--team-stat-width) var(--team-flag-size);
+  grid-template-areas:
+    "detail flag"
+    "name name";
 }
 
 :root[data-lang="ar"] .team--home .team-main {
-  flex-direction: row-reverse;
+  grid-template-columns: var(--team-stat-width) var(--team-flag-size);
+  grid-template-areas:
+    "detail flag"
+    "name name";
 }
 
 :root[data-lang="ar"] .team--away .team-main {
-  flex-direction: row;
-}
-
-.team-flag-stack {
-  display: grid;
-  flex: 0 0 70px;
-  gap: 7px;
-  justify-items: center;
-  min-width: 0;
-  overflow: visible;
+  grid-template-columns: var(--team-flag-size) var(--team-stat-width);
+  grid-template-areas:
+    "flag detail"
+    "name name";
 }
 
 .flag {
@@ -346,9 +353,9 @@ a.match.is-done {
 }
 
 .match .flag {
+  grid-area: flag;
   width: 54px;
   height: 54px;
-  flex: 0 0 54px;
   border-radius: 8px;
 }
 
@@ -362,19 +369,26 @@ a.match.is-done {
   direction: ltr;
   display: grid;
   font-size: 13px;
+  grid-area: detail;
   font-weight: 850;
   justify-items: center;
   line-height: 1.06;
-  max-width: 48px;
+  overflow: hidden;
   text-align: center;
   unicode-bidi: isolate;
   white-space: nowrap;
 }
 
+.team-detail span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .team-name {
+  grid-area: name;
   min-width: 0;
-  width: max-content;
-  max-width: 96px;
+  width: 100%;
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -383,7 +397,19 @@ a.match.is-done {
   font-size: 18px;
   line-height: 1.05;
   font-weight: 900;
-  text-align: center;
+  text-align: left;
+}
+
+.team--away .team-name {
+  text-align: right;
+}
+
+:root[data-lang="ar"] .team--home .team-name {
+  text-align: right;
+}
+
+:root[data-lang="ar"] .team--away .team-name {
+  text-align: left;
 }
 
 .match-center {
@@ -581,7 +607,6 @@ a.match.is-done {
   .match .flag {
     width: 48px;
     height: 48px;
-    flex-basis: 48px;
   }
 
   .match .flag.placeholder {
@@ -590,21 +615,18 @@ a.match.is-done {
   }
 
   .team-main {
-    gap: 5px;
-  }
-
-  .team-flag-stack {
-    flex-basis: 60px;
-    gap: 6px;
+    --team-flag-size: 48px;
+    --team-stat-width: 42px;
+    column-gap: 5px;
+    max-width: 95px;
+    row-gap: 6px;
   }
 
   .team-detail {
-    max-width: 44px;
     font-size: 12px;
   }
 
   .team-name {
-    max-width: 86px;
     font-size: 16px;
   }
 
