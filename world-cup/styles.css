@@ -266,7 +266,7 @@ a.match.is-done {
 .team {
   align-content: center;
   display: grid;
-  direction: inherit;
+  direction: ltr;
   gap: 8px;
   min-width: 0;
 }
@@ -284,13 +284,11 @@ a.match.is-done {
 }
 
 :root[data-lang="ar"] .team--home {
-  direction: rtl;
   justify-items: end;
   text-align: end;
 }
 
 :root[data-lang="ar"] .team--away {
-  direction: rtl;
   justify-items: start;
   text-align: start;
 }
@@ -365,10 +363,12 @@ a.match.is-done {
 }
 
 .team-detail {
+  align-self: center;
   color: var(--match-muted);
   direction: ltr;
   display: grid;
   font-size: 13px;
+  gap: 3px;
   grid-area: detail;
   font-weight: 850;
   justify-items: center;
@@ -386,6 +386,7 @@ a.match.is-done {
 }
 
 .team-name {
+  direction: ltr;
   grid-area: name;
   min-width: 0;
   width: 100%;
@@ -405,10 +406,12 @@ a.match.is-done {
 }
 
 :root[data-lang="ar"] .team--home .team-name {
+  direction: rtl;
   text-align: right;
 }
 
 :root[data-lang="ar"] .team--away .team-name {
+  direction: rtl;
   text-align: left;
 }
 
