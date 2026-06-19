@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Needle Line Probability Simulator</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --hit: #f97316;
+      --miss: #94a3b8;
+      --line: #e5e7eb;
+      --edge: #22c55e;
+      --danger: #fb7185;
+      --card: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.18), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(249,115,22,0.16), transparent 35%),
+        var(--bg);
+      min-height: 100vh;
+      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
+    }
+
+    .app {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 16px 0 28px;
+    }
+
+    header {
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: clamp(22px, 4vw, 36px);
+      line-height: 1.05;
+      margin: 0 0 6px;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin: 0;
+      font-size: 14px;
+      max-width: 800px;
+      line-height: 1.45;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.22);
+      backdrop-filter: blur(10px);
+    }
+
+    .controls {
+      position: sticky;
+      top: 10px;
+    }
+
+    .group {
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 10px;
+    }
+
+    .group-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: #f8fafc;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 92px;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .row:last-child {
+      margin-bottom: 0;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    input[type="number"],
+    input[type="text"],
+    select {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(15,23,42,0.9);
+      color: var(--text);
+      padding: 9px 10px;
+      border-radius: 10px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    input[type="number"]:focus,
+    input[type="text"]:focus,
+    select:focus {
+      border-color: rgba(56,189,248,0.85);
+      box-shadow: 0 0 0 3px rgba(56,189,248,0.14);
+    }
+
+    .check {
+      display: flex;
+      gap: 9px;
+      align-items: flex-start;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .check input {
+      margin-top: 2px;
+      accent-color: var(--accent);
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 12px;
+      color: #06111f;
+      background: var(--accent);
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(56,189,248,0.18);
+      touch-action: manipulation;
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: rgba(255,255,255,0.12);
+      box-shadow: none;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    button.danger {
+      color: white;
+      background: rgba(251,113,133,0.22);
+      box-shadow: none;
+      border: 1px solid rgba(251,113,133,0.35);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 13px;
+      min-height: 82px;
+    }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .stat .value {
+      font-size: clamp(22px, 3.2vw, 34px);
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .stat .small {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.18);
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        rgba(2,6,23,0.72);
+      background-size: 24px 24px;
+      min-height: 240px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 520px;
+    }
+
+    .overlay-note {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      right: 12px;
+      pointer-events: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .pill {
+      background: rgba(15,23,42,0.78);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      padding: 7px 10px;
+      backdrop-filter: blur(6px);
+    }
+
+    .progress {
+      height: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.10);
+      margin-top: 10px;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--hit));
+      transition: width 120ms linear;
+    }
+
+    .info {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 10px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 99px;
+      display: inline-block;
+      background: var(--line);
+    }
+
+    .dot.hit { background: var(--hit); }
+    .dot.miss { background: var(--miss); }
+    .dot.edge { background: var(--edge); }
+
+    .warning {
+      display: none;
+      color: #fecdd3;
+      background: rgba(251,113,133,0.14);
+      border: 1px solid rgba(251,113,133,0.26);
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 12px;
+      line-height: 1.4;
+      margin-top: 10px;
+    }
+
+    .warning.show {
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        position: static;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      canvas {
+        height: 430px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      body {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .stat {
+        padding: 11px;
+      }
+
+      .buttons {
+        grid-template-columns: 1fr;
+      }
+
+      canvas {
+        height: 390px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>Needle Line Probability Simulator</h1>
+        <p class="subtitle">
+          Drop random needles into a space with horizontal lines. The app estimates the probability that a needle touches at least one line.
+        </p>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="panel controls">
+        <div class="group">
+          <div class="group-title">Lines</div>
+
+          <label for="lineCount">Number of horizontal lines</label>
+          <div class="row">
+            <input id="lineCountRange" type="range" min="2" max="250" step="1" value="12" />
+            <input id="lineCount" type="number" min="2" max="250" step="1" value="12" />
+          </div>
+
+          <label for="spacingMode">Spacing mode</label>
+          <select id="spacingMode">
+            <option value="fit">Fit exactly: top and bottom are lines, all spaces equal</option>
+            <option value="floor">Whole-pixel spacing: last bottom space may be different</option>
+          </select>
+
+          <label class="check">
+            <input id="countEdges" type="checkbox" checked />
+            <span>Count the top and bottom space edges as lines for hit detection.</span>
+          </label>
+        </div>
+
+        <div class="group">
+          <div class="group-title">Needles</div>
+
+          <label for="needleLength">Needle length in screen pixels</label>
+          <div class="row">
+            <input id="needleLengthRange" type="range" min="5" max="420" step="1" value="90" />
+            <input id="needleLength" type="number" min="1" max="1000" step="1" value="90" />
+          </div>
+
+          <label for="needleCount">Needles to drop each run</label>
+          <input id="needleCount" type="number" min="1" max="1000000" step="1" value="5000" />
+
+          <label class="check">
+            <input id="allowOutside" type="checkbox" checked />
+            <span>Allow needles to extend outside the space. The center still lands inside the space.</span>
+          </label>
+
+          <label class="check">
+            <input id="showMisses" type="checkbox" checked />
+            <span>Draw needles that do not touch a line.</span>
+          </label>
+        </div>
+
+        <div class="group">
+          <div class="group-title">Display & seed</div>
+
+          <label for="spaceHeight">Space height</label>
+          <div class="row">
+            <input id="spaceHeightRange" type="range" min="260" max="850" step="10" value="520" />
+            <input id="spaceHeight" type="number" min="220" max="1200" step="10" value="520" />
+          </div>
+
+          <label for="maxDraw">Maximum needles to draw visually</label>
+          <input id="maxDraw" type="number" min="50" max="20000" step="50" value="1800" />
+
+          <label for="seed">Seed, optional</label>
+          <input id="seed" type="text" placeholder="Leave empty for random" />
+
+          <div class="buttons">
+            <button id="runBtn">Run / Re-drop</button>
+            <button id="addBtn" class="secondary">Add More</button>
+            <button id="clearBtn" class="danger">Clear</button>
+            <button id="randomSeedBtn" class="secondary">New Seed</button>
+          </div>
+
+          <div class="progress" aria-label="simulation progress">
+            <div id="progressBar" class="bar"></div>
+          </div>
+
+          <div id="warning" class="warning"></div>
+
+          <div class="info">
+            Tip: When you use many needles, the app calculates every needle, but only draws a sample so the screen stays fast.
+          </div>
+        </div>
+      </section>
+
+      <main>
+        <section class="stats">
+          <div class="stat">
+            <div class="label">P(touching line)</div>
+            <div id="probHit" class="value">0.00%</div>
+            <div id="hitCount" class="small">0 hits</div>
+          </div>
+
+          <div class="stat">
+            <div class="label">P(not touching)</div>
+            <div id="probMiss" class="value">0.00%</div>
+            <div id="missCount" class="small">0 misses</div>
+          </div>
+
+          <div class="stat">
+            <div class="label">Total needles</div>
+            <div id="totalCount" class="value">0</div>
+            <div id="drawCount" class="small">0 drawn</div>
+          </div>
+
+          <div class="stat">
+            <div class="label">Line spacing</div>
+            <div id="spacingValue" class="value">—</div>
+            <div id="theoryValue" class="small">Theory: —</div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="canvas-wrap">
+            <canvas id="simCanvas"></canvas>
+            <div class="overlay-note">
+              <span class="pill" id="modeNote">Mode: fit exactly</span>
+              <span class="pill" id="edgeNote">Edges counted</span>
+              <span class="pill" id="sampleNote">Calculated: 0</span>
+            </div>
+          </div>
+
+          <div class="legend">
+            <span class="legend-item"><span class="dot edge"></span> edge line</span>
+            <span class="legend-item"><span class="dot"></span> normal line</span>
+            <span class="legend-item"><span class="dot hit"></span> touching needle</span>
+            <span class="legend-item"><span class="dot miss"></span> not touching needle</span>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const canvas = $("simCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const inputs = {
+      lineCount: $("lineCount"),
+      lineCountRange: $("lineCountRange"),
+      spacingMode: $("spacingMode"),
+      countEdges: $("countEdges"),
+      needleLength: $("needleLength"),
+      needleLengthRange: $("needleLengthRange"),
+      needleCount: $("needleCount"),
+      allowOutside: $("allowOutside"),
+      showMisses: $("showMisses"),
+      spaceHeight: $("spaceHeight"),
+      spaceHeightRange: $("spaceHeightRange"),
+      maxDraw: $("maxDraw"),
+      seed: $("seed")
+    };
+
+    const output = {
+      probHit: $("probHit"),
+      probMiss: $("probMiss"),
+      hitCount: $("hitCount"),
+      missCount: $("missCount"),
+      totalCount: $("totalCount"),
+      drawCount: $("drawCount"),
+      spacingValue: $("spacingValue"),
+      theoryValue: $("theoryValue"),
+      progressBar: $("progressBar"),
+      warning: $("warning"),
+      modeNote: $("modeNote"),
+      edgeNote: $("edgeNote"),
+      sampleNote: $("sampleNote")
+    };
+
+    let state = {
+      runId: 0,
+      total: 0,
+      hits: 0,
+      misses: 0,
+      sample: [],
+      rng: Math.random,
+      currentConfigKey: "",
+      lastLayout: null
+    };
+
+    function clampNumber(value, min, max, fallback) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return fallback;
+      return Math.min(max, Math.max(min, n));
+    }
+
+    function formatInt(n) {
+      return Math.round(n).toLocaleString();
+    }
+
+    function formatPercent(n) {
+      if (!Number.isFinite(n)) return "0.00%";
+      return (n * 100).toFixed(2) + "%";
+    }
+
+    function stringToSeed(str) {
+      let h = 2166136261 >>> 0;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    }
+
+    function makeRng(seedText) {
+      if (!seedText || !seedText.trim()) return Math.random;
+
+      let seed = stringToSeed(seedText.trim());
+      return function rng() {
+        seed += 0x6D2B79F5;
+        let t = seed;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function getCanvasSize() {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        width: rect.width,
+        height: Number(inputs.spaceHeight.value)
+      };
+    }
+
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const size = getCanvasSize();
+
+      canvas.style.height = size.height + "px";
+      canvas.width = Math.max(1, Math.round(size.width * dpr));
+      canvas.height = Math.max(1, Math.round(size.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function uniqueSortedLines(lines, height) {
+      const eps = 0.0001;
+      const clean = [];
+      for (const y of lines) {
+        if (!Number.isFinite(y)) continue;
+        const clamped = Math.max(0, Math.min(height, y));
+        if (!clean.some(v => Math.abs(v - clamped) < eps)) clean.push(clamped);
+      }
+      clean.sort((a, b) => a - b);
+      return clean;
+    }
+
+    function getLayout() {
+      const size = getCanvasSize();
+      const width = size.width;
+      const height = size.height;
+      const lineCount = clampNumber(inputs.lineCount.value, 2, 250, 12);
+      const mode = inputs.spacingMode.value;
+      const countEdges = inputs.countEdges.checked;
+
+      let displayLines = [];
+      let spacing = 0;
+      let bottomLeftover = 0;
+
+      if (mode === "fit") {
+        spacing = height / (lineCount - 1);
+        for (let i = 0; i < lineCount; i++) {
+          displayLines.push(i * spacing);
+        }
+        bottomLeftover = 0;
+      } else {
+        spacing = Math.floor(height / (lineCount - 1));
+        spacing = Math.max(1, spacing);
+        for (let i = 0; i < lineCount; i++) {
+          displayLines.push(i * spacing);
+        }
+        displayLines = displayLines.filter(y => y <= height);
+        bottomLeftover = height - displayLines[displayLines.length - 1];
+      }
+
+      let hitLines = displayLines.slice();
+
+      if (countEdges) {
+        hitLines.push(0, height);
+      }
+
+      displayLines = uniqueSortedLines(displayLines, height);
+      hitLines = uniqueSortedLines(hitLines, height);
+
+      return {
+        width,
+        height,
+        lineCount,
+        mode,
+        countEdges,
+        spacing,
+        bottomLeftover,
+        displayLines,
+        hitLines
+      };
+    }
+
+    function getConfigKey() {
+      const layout = getLayout();
+      return JSON.stringify({
+        width: Math.round(layout.width),
+        height: Math.round(layout.height),
+        lineCount: layout.lineCount,
+        mode: layout.mode,
+        countEdges: layout.countEdges,
+        needleLength: Number(inputs.needleLength.value),
+        allowOutside: inputs.allowOutside.checked,
+        showMisses: inputs.showMisses.checked
+      });
+    }
+
+    function resetStats(redraw = true) {
+      state.runId++;
+      state.total = 0;
+      state.hits = 0;
+      state.misses = 0;
+      state.sample = [];
+      state.currentConfigKey = getConfigKey();
+      output.progressBar.style.width = "0%";
+      updateStats();
+      if (redraw) draw();
+    }
+
+    function hasHit(y1, y2, lines) {
+      const minY = Math.min(y1, y2);
+      const maxY = Math.max(y1, y2);
+      const eps = 1e-9;
+      for (const lineY of lines) {
+        if (lineY + eps >= minY && lineY - eps <= maxY) return true;
+      }
+      return false;
+    }
+
+    function dropNeedle(layout, rng) {
+      const L = clampNumber(inputs.needleLength.value, 1, 1000, 90);
+      const angle = rng() * Math.PI;
+      const halfX = Math.cos(angle) * L / 2;
+      const halfY = Math.sin(angle) * L / 2;
+
+      let cx;
+      let cy;
+
+      if (inputs.allowOutside.checked) {
+        cx = rng() * layout.width;
+        cy = rng() * layout.height;
+      } else {
+        const marginX = Math.min(layout.width / 2, Math.abs(halfX));
+        const marginY = Math.min(layout.height / 2, Math.abs(halfY));
+        const usableW = Math.max(0, layout.width - 2 * marginX);
+        const usableH = Math.max(0, layout.height - 2 * marginY);
+        cx = marginX + rng() * usableW;
+        cy = marginY + rng() * usableH;
+      }
+
+      const x1 = cx - halfX;
+      const y1 = cy - halfY;
+      const x2 = cx + halfX;
+      const y2 = cy + halfY;
+      const hit = hasHit(y1, y2, layout.hitLines);
+
+      return { x1, y1, x2, y2, hit };
+    }
+
+    function addToSample(needle, maxDraw, rng) {
+      if (maxDraw <= 0) return;
+
+      if (state.sample.length < maxDraw) {
+        state.sample.push(needle);
+        return;
+      }
+
+      const j = Math.floor(rng() * state.total);
+      if (j < maxDraw) {
+        state.sample[j] = needle;
+      }
+    }
+
+    function draw() {
+      resizeCanvas();
+      const layout = getLayout();
+      state.lastLayout = layout;
+
+      ctx.clearRect(0, 0, layout.width, layout.height);
+
+      // Background shade
+      ctx.save();
+      ctx.fillStyle = "rgba(2,6,23,0.36)";
+      ctx.fillRect(0, 0, layout.width, layout.height);
+      ctx.restore();
+
+      // Draw lines
+      for (const y of layout.displayLines) {
+        const isEdge = Math.abs(y) < 0.0001 || Math.abs(y - layout.height) < 0.0001;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(layout.width, y);
+        ctx.lineWidth = isEdge ? 3 : 1.5;
+        ctx.strokeStyle = isEdge ? "rgba(34,197,94,0.95)" : "rgba(229,231,235,0.72)";
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // If edges are counted but not already visible in display lines, draw them dashed.
+      if (layout.countEdges) {
+        for (const y of [0, layout.height]) {
+          const alreadyDrawn = layout.displayLines.some(lineY => Math.abs(lineY - y) < 0.0001);
+          if (!alreadyDrawn) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.setLineDash([8, 7]);
+            ctx.moveTo(0, y);
+            ctx.lineTo(layout.width, y);
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = "rgba(34,197,94,0.9)";
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+      }
+
+      // Draw needles
+      const drawMisses = inputs.showMisses.checked;
+      for (const n of state.sample) {
+        if (!n.hit && !drawMisses) continue;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(n.x1, n.y1);
+        ctx.lineTo(n.x2, n.y2);
+        ctx.lineWidth = n.hit ? 2 : 1.2;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = n.hit ? "rgba(249,115,22,0.86)" : "rgba(148,163,184,0.42)";
+        ctx.stroke();
+
+        if (n.hit) {
+          ctx.beginPath();
+          ctx.arc((n.x1 + n.x2) / 2, (n.y1 + n.y2) / 2, 2.1, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(249,115,22,0.95)";
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+
+      updateStats();
+    }
+
+    function updateStats() {
+      const total = state.total;
+      const hitProb = total ? state.hits / total : 0;
+      const missProb = total ? state.misses / total : 0;
+      const layout = getLayout();
+
+      output.probHit.textContent = formatPercent(hitProb);
+      output.probMiss.textContent = formatPercent(missProb);
+      output.hitCount.textContent = formatInt(state.hits) + " hits";
+      output.missCount.textContent = formatInt(state.misses) + " misses";
+      output.totalCount.textContent = formatInt(total);
+      output.drawCount.textContent = formatInt(state.sample.length) + " drawn";
+      output.sampleNote.textContent = "Calculated: " + formatInt(total);
+
+      const spacingText = layout.spacing >= 10
+        ? layout.spacing.toFixed(1) + "px"
+        : layout.spacing.toFixed(2) + "px";
+
+      output.spacingValue.textContent = spacingText;
+
+      const L = Number(inputs.needleLength.value);
+      if (layout.spacing > 0 && L <= layout.spacing && !layout.countEdges) {
+        const theory = (2 * L) / (Math.PI * layout.spacing);
+        output.theoryValue.textContent = "Theory: " + formatPercent(Math.min(1, theory));
+      } else if (layout.spacing > 0 && L <= layout.spacing && layout.mode === "fit") {
+        const theory = (2 * L) / (Math.PI * layout.spacing);
+        output.theoryValue.textContent = "Simple theory: " + formatPercent(Math.min(1, theory));
+      } else {
+        output.theoryValue.textContent = "Theory: simulation only";
+      }
+
+      output.modeNote.textContent = layout.mode === "fit"
+        ? "Mode: fit exactly"
+        : "Mode: whole-pixel spacing";
+
+      output.edgeNote.textContent = layout.countEdges
+        ? "Edges counted"
+        : "Only drawn lines counted";
+
+      const warningMessages = [];
+
+      if (layout.mode === "floor" && layout.bottomLeftover !== 0) {
+        warningMessages.push(
+          "Whole-pixel mode leaves " + layout.bottomLeftover.toFixed(1) + "px below the last drawn line."
+        );
+      }
+
+      if (L > layout.spacing && layout.spacing > 0) {
+        warningMessages.push(
+          "Needle length is longer than the line spacing, so one needle may cross multiple lines. Simulation still works."
+        );
+      }
+
+      if (!inputs.allowOutside.checked && layout.countEdges) {
+        warningMessages.push(
+          "Because needles are kept fully inside the space, touching the top or bottom edge line is extremely unlikely."
+        );
+      }
+
+      if (warningMessages.length) {
+        output.warning.innerHTML = warningMessages.join("<br>");
+        output.warning.classList.add("show");
+      } else {
+        output.warning.classList.remove("show");
+        output.warning.textContent = "";
+      }
+    }
+
+    function runSimulation(addMore) {
+      const configKey = getConfigKey();
+
+      if (!addMore || configKey !== state.currentConfigKey) {
+        resetStats(false);
+        state.currentConfigKey = configKey;
+      }
+
+      const runId = ++state.runId;
+      const layout = getLayout();
+      const amount = Math.floor(clampNumber(inputs.needleCount.value, 1, 1000000, 5000));
+      const maxDraw = Math.floor(clampNumber(inputs.maxDraw.value, 0, 20000, 1800));
+      const seedText = inputs.seed.value.trim();
+
+      // Reuse seeded RNG only for a full new run. For "Add More", keep the current RNG sequence.
+      if (!addMore || !state.rng) {
+        state.rng = makeRng(seedText);
+      }
+
+      let doneThisRun = 0;
+      const batchSize = amount > 100000 ? 10000 : 3000;
+
+      output.progressBar.style.width = "0%";
+
+      function processBatch() {
+        if (runId !== state.runId) return;
+
+        const remaining = amount - doneThisRun;
+        const batch = Math.min(batchSize, remaining);
+
+        for (let i = 0; i < batch; i++) {
+          const needle = dropNeedle(layout, state.rng);
+          state.total++;
+
+          if (needle.hit) state.hits++;
+          else state.misses++;
+
+          addToSample(needle, maxDraw, state.rng);
+        }
+
+        doneThisRun += batch;
+        output.progressBar.style.width = ((doneThisRun / amount) * 100).toFixed(1) + "%";
+
+        updateStats();
+
+        if (doneThisRun < amount) {
+          requestAnimationFrame(processBatch);
+        } else {
+          draw();
+        }
+      }
+
+      processBatch();
+    }
+
+    function syncPair(numberInput, rangeInput, min, max, fallback, onChange) {
+      function fromNumber() {
+        const value = clampNumber(numberInput.value, min, max, fallback);
+        numberInput.value = value;
+        rangeInput.value = Math.min(max, Math.max(min, value));
+        if (onChange) onChange();
+      }
+
+      function fromRange() {
+        numberInput.value = rangeInput.value;
+        if (onChange) onChange();
+      }
+
+      numberInput.addEventListener("input", fromNumber);
+      rangeInput.addEventListener("input", fromRange);
+    }
+
+    function setRandomSeed() {
+      const seed = "seed-" + Math.random().toString(36).slice(2, 10);
+      inputs.seed.value = seed;
+      resetStats(true);
+    }
+
+    syncPair(inputs.lineCount, inputs.lineCountRange, 2, 250, 12, () => resetStats(true));
+    syncPair(inputs.needleLength, inputs.needleLengthRange, 1, 1000, 90, () => resetStats(true));
+    syncPair(inputs.spaceHeight, inputs.spaceHeightRange, 220, 1200, 520, () => resetStats(true));
+
+    inputs.spacingMode.addEventListener("change", () => resetStats(true));
+    inputs.countEdges.addEventListener("change", () => resetStats(true));
+    inputs.allowOutside.addEventListener("change", () => resetStats(true));
+    inputs.showMisses.addEventListener("change", () => draw());
+    inputs.maxDraw.addEventListener("input", () => {
+      inputs.maxDraw.value = clampNumber(inputs.maxDraw.value, 0, 20000, 1800);
+    });
+    inputs.needleCount.addEventListener("input", () => {
+      inputs.needleCount.value = clampNumber(inputs.needleCount.value, 1, 1000000, 5000);
+    });
+    inputs.seed.addEventListener("change", () => resetStats(true));
+
+    $("runBtn").addEventListener("click", () => runSimulation(false));
+    $("addBtn").addEventListener("click", () => runSimulation(true));
+    $("clearBtn").addEventListener("click", () => resetStats(true));
+    $("randomSeedBtn").addEventListener("click", setRandomSeed);
+
+    window.addEventListener("resize", () => {
+      // Resizing changes the geometry, so previous probabilities no longer match the space.
+      resetStats(true);
+    });
+
+    resizeCanvas();
+    state.currentConfigKey = getConfigKey();
+    draw();
+  </script>
+</body>
+</html>
