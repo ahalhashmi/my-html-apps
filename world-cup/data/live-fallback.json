@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-19T00:12:57.614Z",
+  "fetchedAt": "2026-06-19T05:23:25.607Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -534,17 +534,17 @@
       "id": "25",
       "home_team_id": "1",
       "away_team_id": "3",
-      "home_score": "null",
-      "away_score": "null",
-      "home_scorers": "null",
+      "home_score": "1",
+      "away_score": "0",
+      "home_scorers": "{\"Luis Romo 50'\"}",
       "away_scorers": "null",
       "group": "A",
       "matchday": "2",
       "local_date": "06/18/2026 19:00",
       "persian_date": "1405-03-28 19:00",
       "stadium_id": "2",
-      "finished": "FALSE",
-      "time_elapsed": "notstarted",
+      "finished": "TRUE",
+      "time_elapsed": "finished",
       "type": "group",
       "home_team_name_en": "Mexico",
       "home_team_name_fa": "مکزیک",
@@ -2569,26 +2569,26 @@
       "teams": [
         {
           "team_id": "1",
-          "mp": "1",
-          "w": "1",
+          "mp": "2",
+          "w": "2",
           "l": "0",
           "d": "0",
-          "pts": "3",
-          "gf": "2",
+          "pts": "6",
+          "gf": "3",
           "ga": "0",
-          "gd": "2",
+          "gd": "3",
           "_id": "698985a46e8cb0bf61b5ac75"
         },
         {
           "team_id": "3",
-          "mp": "1",
+          "mp": "2",
           "w": "1",
-          "l": "0",
+          "l": "1",
           "d": "0",
           "pts": "3",
           "gf": "2",
-          "ga": "1",
-          "gd": "1",
+          "ga": "2",
+          "gd": "0",
           "_id": "698985a46e8cb0bf61b5ac77"
         },
         {
@@ -2618,7 +2618,7 @@
       ],
       "createdAt": "2026-02-09T06:58:44.331Z",
       "__v": 0,
-      "updatedAt": "2026-06-18T22:09:03.220Z"
+      "updatedAt": "2026-06-19T02:58:15.946Z"
     },
     {
       "_id": "698985a46e8cb0bf61b5ac7a",
