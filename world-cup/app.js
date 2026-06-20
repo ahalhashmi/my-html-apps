@@ -58,6 +58,10 @@ const labels = {
     unavailable: "The live API is unavailable right now.",
     done: "FT",
     live: "Live",
+    highlights: "Match highlights",
+    noGoals: "No goals",
+    expandMatch: "Show match details",
+    collapseMatch: "Hide match details",
     pointAbbr: "pts",
     visitors: "visitors",
     author: "Abdulla Alhashmi",
@@ -89,6 +93,10 @@ const labels = {
     unavailable: "البيانات المباشرة غير متاحة الآن.",
     done: "نهاية",
     live: "مباشر",
+    highlights: "ملخص المباراة",
+    noGoals: "لا توجد أهداف",
+    expandMatch: "عرض تفاصيل المباراة",
+    collapseMatch: "إخفاء تفاصيل المباراة",
     pointAbbr: "نقطه",
     visitors: "الزوار",
     author: "عبدالله الهاشمي",
@@ -215,7 +223,8 @@ const state = {
   liveGroupStats: new Map(),
   loadedAt: null,
   fallback: false,
-  didInitialScroll: false
+  didInitialScroll: false,
+  expandedMatchId: null
 };
 
 const el = {
@@ -479,6 +488,23 @@ function gameTeamCode(teams, game, side) {
   return teamCodeFromData(teams, teamId(game, side), teamName(game, side));
 }
 
+function espnScoringPlays(competition, homeId, awayId) {
+  return (competition.details || []).reduce((scorers, detail) => {
+    if (!detail?.scoringPlay || detail.shootout) return scorers;
+
+    const teamIdValue = String(detail.team?.id || "");
+    const athlete = detail.athletesInvolved?.[0] || {};
+    const player = String(athlete.displayName || athlete.shortName || athlete.fullName || "Goal").trim();
+    const minute = String(detail.clock?.displayValue || "").trim();
+    const note = detail.ownGoal ? " (OG)" : detail.penaltyKick ? " (p)" : "";
+    const scorer = `${player}${minute ? ` ${minute}` : ""}${note}`.trim();
+
+    if (teamIdValue === String(homeId)) scorers.home.push(scorer);
+    if (teamIdValue === String(awayId)) scorers.away.push(scorer);
+    return scorers;
+  }, { home: [], away: [] });
+}
+
 function normalizeEspnEvent(event) {
   const competition = event?.competitions?.[0] || {};
   const competitors = competition.competitors || [];
@@ -499,6 +525,7 @@ function normalizeEspnEvent(event) {
     || statusName.includes("BREAK")
   );
   const displayClock = status.displayClock || event.status?.displayClock || type.shortDetail || type.detail;
+  const scoringPlays = espnScoringPlays(competition, home.team?.id, away.team?.id);
 
   return {
     date,
@@ -506,6 +533,8 @@ function normalizeEspnEvent(event) {
     awayCode: normalizeCode(away.team?.abbreviation),
     homeScore: numberValue(home.score),
     awayScore: numberValue(away.score),
+    homeScorers: scoringPlays.home,
+    awayScorers: scoringPlays.away,
     finished,
     live,
     elapsed: finished ? "finished" : live ? (displayClock || "live") : "notstarted"
@@ -540,6 +569,10 @@ function mergeEspnScores(games, teams, events) {
       ...game,
       home_score: String(sameDirection ? event.homeScore : event.awayScore),
       away_score: String(sameDirection ? event.awayScore : event.homeScore),
+      ...(sameDirection && event.homeScorers.length ? { home_scorers: event.homeScorers } : {}),
+      ...(sameDirection && event.awayScorers.length ? { away_scorers: event.awayScorers } : {}),
+      ...(!sameDirection && event.awayScorers.length ? { home_scorers: event.awayScorers } : {}),
+      ...(!sameDirection && event.homeScorers.length ? { away_scorers: event.homeScorers } : {}),
       finished: event.finished ? "TRUE" : "FALSE",
       time_elapsed: event.elapsed
     };
@@ -743,23 +776,45 @@ function matchCard(game, isScrollTarget = false) {
     ? `<span class="scoreline">${scoreText(game)}</span>`
     : `<span class="time">${formatDate("time", game.date)}</span>`;
   const stateClass = isLive(game) ? "is-live" : isFinished(game) ? "is-done" : "is-pending";
-  const highlightUrl = isFinished(game) ? youtubeSearchUrl(game) : "";
-  const highlightLabel = isFinished(game) ? youtubeSearchLabel(game) : "";
-  const openTag = highlightUrl
-    ? `<a class="match ${stateClass} ${isScrollTarget ? "is-scroll-target" : ""}" href="${escapeHtml(highlightUrl)}" target="_blank" rel="noopener" aria-label="${escapeHtml(highlightLabel)}">`
-    : `<article class="match ${stateClass} ${isScrollTarget ? "is-scroll-target" : ""}">`;
-  const closeTag = highlightUrl ? "</a>" : "</article>";
+  const isDone = isFinished(game);
+  const isExpanded = isDone && state.expandedMatchId === matchKey(game);
+  const card = `
+    ${teamLine(game, "home")}
+    <div class="match-center">
+      <span class="pill stage">${escapeHtml(matchStageLabel(game))}</span>
+      ${side}
+      <span class="pill ${status.className}">${escapeHtml(status.text)}</span>
+    </div>
+    ${teamLine(game, "away")}
+  `;
 
   return `
-    ${openTag}
-      ${teamLine(game, "home")}
-      <div class="match-center">
-        ${side}
-        <span class="pill ${status.className}">${escapeHtml(status.text)}</span>
-      </div>
-      ${teamLine(game, "away")}
-    ${closeTag}
+    <article class="match-wrap ${isExpanded ? "is-expanded" : ""}">
+      ${isDone ? `
+        <button class="match ${stateClass} ${isScrollTarget ? "is-scroll-target" : ""}" type="button" data-match-toggle="${escapeHtml(matchKey(game))}" aria-expanded="${isExpanded}" aria-controls="${escapeHtml(matchDetailsId(game))}" aria-label="${escapeHtml(isExpanded ? t().collapseMatch : t().expandMatch)}">
+          ${card}
+        </button>
+        ${isExpanded ? matchDetails(game) : ""}
+      ` : `
+        <div class="match ${stateClass} ${isScrollTarget ? "is-scroll-target" : ""}">
+          ${card}
+        </div>
+      `}
+    </article>
   `;
+}
+
+function matchKey(game) {
+  return String(game.id || game._id || "");
+}
+
+function matchDetailsId(game) {
+  return `match-details-${matchKey(game).replace(/[^A-Za-z0-9_-]/g, "")}`;
+}
+
+function matchStageLabel(game) {
+  if (game.type === "group" && game.group) return `Group ${String(game.group).toUpperCase()}`;
+  return roundNames[game.type] || game.type || "";
 }
 
 function scoreText(game) {
@@ -778,6 +833,92 @@ function youtubeSearchLabel(game) {
 
 function youtubeSearchUrl(game) {
   return `https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeSearchLabel(game))}`;
+}
+
+function matchDetails(game) {
+  const scorers = goalScorers(game);
+  return `
+    <div class="match-details" id="${escapeHtml(matchDetailsId(game))}">
+      <div class="goal-list">
+        ${scorers.length ? scorers.map(goalRow).join("") : `<div class="no-goals">${escapeHtml(t().noGoals)}</div>`}
+      </div>
+      <a class="highlight-button" href="${escapeHtml(youtubeSearchUrl(game))}" target="_blank" rel="noopener">
+        ${escapeHtml(t().highlights)}
+      </a>
+    </div>
+  `;
+}
+
+function goalScorers(game) {
+  return [
+    ...parseScorers(game.home_scorers, game, "home"),
+    ...parseScorers(game.away_scorers, game, "away")
+  ].sort((a, b) => a.sort - b.sort);
+}
+
+function parseScorers(value, game, side) {
+  const team = teamById(teamId(game, side));
+  const fallbackName = side === "home" ? game.homeName : game.awayName;
+  const code = teamCode(team, fallbackName);
+  return scorerItems(value).map((item) => {
+    const parsed = parseScorerText(item);
+    return {
+      ...parsed,
+      code,
+      sort: minuteSortValue(parsed.minute)
+    };
+  });
+}
+
+function scorerItems(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || "").trim()).filter(Boolean);
+  }
+
+  const text = String(value || "").trim();
+  if (!text || text.toLowerCase() === "null" || text === "{}") return [];
+
+  const normalized = text
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'");
+  const quoted = [...normalized.matchAll(/"([^"]+)"/g)]
+    .map((match) => match[1].trim())
+    .filter(Boolean);
+  if (quoted.length) return quoted;
+
+  return normalized
+    .replace(/^[{\[]/, "")
+    .replace(/[}\]]$/, "")
+    .split(/\s*,\s*/)
+    .map((item) => item.replace(/^"|"$/g, "").trim())
+    .filter(Boolean);
+}
+
+function parseScorerText(value) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  const match = text.match(/^(.*?)\s+(\d{1,3}'(?:\+\d{1,2}')?)\s*(.*)$/);
+  if (!match) return { player: text, minute: "", note: "" };
+  return {
+    player: match[1].trim(),
+    minute: match[2],
+    note: match[3].trim()
+  };
+}
+
+function minuteSortValue(minute) {
+  const match = String(minute || "").match(/^(\d{1,3})'(?:\+(\d{1,2})')?/);
+  if (!match) return Number.MAX_SAFE_INTEGER;
+  return Number(match[1]) * 100 + Number(match[2] || 0);
+}
+
+function goalRow(goal) {
+  return `
+    <div class="goal-row">
+      <span class="goal-code">${escapeHtml(goal.code)}</span>
+      <span class="goal-player">${escapeHtml(goal.player)}${goal.note ? ` <span class="goal-note">${escapeHtml(goal.note)}</span>` : ""}</span>
+      <span class="goal-minute">${escapeHtml(goal.minute)}</span>
+    </div>
+  `;
 }
 
 function searchTeamName(game, side) {
@@ -1012,6 +1153,14 @@ el.tabs.forEach((tab) => {
     el.tabs.forEach((item) => item.classList.toggle("is-active", item === tab));
     render();
   });
+});
+
+el.content.addEventListener("click", (event) => {
+  const trigger = event.target.closest("[data-match-toggle]");
+  if (!trigger) return;
+  const matchId = trigger.dataset.matchToggle;
+  state.expandedMatchId = state.expandedMatchId === matchId ? null : matchId;
+  render();
 });
 
 applyLanguage(state.lang, false);

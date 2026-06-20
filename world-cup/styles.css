@@ -222,6 +222,7 @@ a {
 .match {
   --match-flag-size: 54px;
   --match-stat-width: 50px;
+  appearance: none;
   display: grid;
   grid-template-columns:
     var(--match-flag-size)
@@ -241,7 +242,10 @@ a {
   background: var(--card);
   color: var(--ink);
   direction: ltr;
+  font: inherit;
   padding: 10px 8px;
+  text-align: inherit;
+  width: 100%;
 }
 
 :root[data-lang="ar"] .match {
@@ -252,6 +256,25 @@ a {
 
 a.match {
   text-decoration: none;
+}
+
+.match-wrap {
+  display: grid;
+}
+
+.match-wrap.is-expanded .match {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+button.match {
+  cursor: pointer;
+}
+
+button.match:focus-visible,
+.highlight-button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .match.is-done {
@@ -424,9 +447,90 @@ a.match.is-done {
   unicode-bidi: isolate;
 }
 
+.pill.stage {
+  background: var(--accent-soft);
+  color: var(--match-muted);
+  direction: ltr;
+  font-size: 12px;
+  padding: 4px 7px;
+  unicode-bidi: isolate;
+}
+
 .pill.done {
   background: var(--gold-soft);
   color: #f4c96a;
+}
+
+.match-details {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--match-done-line);
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
+  background: var(--match-done);
+  color: var(--match-ink);
+  padding: 10px;
+}
+
+.goal-list {
+  display: grid;
+  gap: 7px;
+  direction: ltr;
+}
+
+.goal-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 7px 8px;
+  text-align: left;
+}
+
+.goal-code,
+.goal-minute {
+  color: var(--match-muted);
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.goal-player {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--match-ink);
+  font-size: 15px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.goal-note {
+  color: var(--match-muted);
+  font-size: 12px;
+}
+
+.no-goals {
+  color: var(--match-muted);
+  font-size: 15px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.highlight-button {
+  min-height: 42px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 12px;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 950;
 }
 
 .group-card {
