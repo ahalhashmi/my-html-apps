@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-20T14:32:29.775Z",
+  "fetchedAt": "2026-06-20T16:00:17.609Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -754,8 +754,8 @@
       "id": "35",
       "home_team_id": "21",
       "away_team_id": "23",
-      "home_score": "0",
-      "away_score": "0",
+      "home_score": "null",
+      "away_score": "null",
       "home_scorers": "null",
       "away_scorers": "null",
       "group": "F",
