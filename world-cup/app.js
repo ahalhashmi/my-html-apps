@@ -840,7 +840,7 @@ function matchDetails(game) {
   return `
     <div class="match-details" id="${escapeHtml(matchDetailsId(game))}">
       <div class="goal-list">
-        ${scorers.length ? scorers.map(goalRow).join("") : `<div class="no-goals">${escapeHtml(t().noGoals)}</div>`}
+        ${scorers.length ? scorers.map((goal) => goalRow(goal, game)).join("") : `<div class="no-goals">${escapeHtml(t().noGoals)}</div>`}
       </div>
       <a class="highlight-button" href="${escapeHtml(youtubeSearchUrl(game))}" target="_blank" rel="noopener">
         ${escapeHtml(t().highlights)}
@@ -865,6 +865,7 @@ function parseScorers(value, game, side) {
     return {
       ...parsed,
       code,
+      side,
       sort: minuteSortValue(parsed.minute)
     };
   });
@@ -911,12 +912,28 @@ function minuteSortValue(minute) {
   return Number(match[1]) * 100 + Number(match[2] || 0);
 }
 
-function goalRow(goal) {
+function visualGoalSide(goal, game) {
+  const homeIsLeft = state.lang !== "ar";
+  if (goal.side === "home") return homeIsLeft ? "left" : "right";
+  return homeIsLeft ? "right" : "left";
+}
+
+function goalName(goal) {
   return `
-    <div class="goal-row">
-      <span class="goal-code">${escapeHtml(goal.code)}</span>
-      <span class="goal-player">${escapeHtml(goal.player)}${goal.note ? ` <span class="goal-note">${escapeHtml(goal.note)}</span>` : ""}</span>
+    <span class="goal-code">${escapeHtml(goal.code)}</span>
+    <span class="goal-player">${escapeHtml(goal.player)}${goal.note ? ` <span class="goal-note">${escapeHtml(goal.note)}</span>` : ""}</span>
+  `;
+}
+
+function goalRow(goal, game) {
+  const side = visualGoalSide(goal, game);
+  const left = side === "left" ? goalName(goal) : "";
+  const right = side === "right" ? goalName(goal) : "";
+  return `
+    <div class="goal-row goal-row--${side}">
+      <span class="goal-side goal-side--left">${left}</span>
       <span class="goal-minute">${escapeHtml(goal.minute)}</span>
+      <span class="goal-side goal-side--right">${right}</span>
     </div>
   `;
 }
