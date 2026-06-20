@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-20T16:00:17.609Z",
+  "fetchedAt": "2026-06-20T20:08:45.013Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -720,7 +720,7 @@
       "persian_date": "1405-03-30 16:00",
       "stadium_id": "12",
       "finished": "FALSE",
-      "time_elapsed": "notstarted",
+      "time_elapsed": "live",
       "type": "group",
       "home_team_name_en": "Germany",
       "home_team_name_fa": "آلمان",
@@ -732,8 +732,8 @@
       "id": "34",
       "home_team_id": "20",
       "away_team_id": "18",
-      "home_score": "0",
-      "away_score": "0",
+      "home_score": "null",
+      "away_score": "null",
       "home_scorers": "null",
       "away_scorers": "null",
       "group": "E",
@@ -754,17 +754,17 @@
       "id": "35",
       "home_team_id": "21",
       "away_team_id": "23",
-      "home_score": "null",
-      "away_score": "null",
-      "home_scorers": "null",
-      "away_scorers": "null",
+      "home_score": "5",
+      "away_score": "1",
+      "home_scorers": "{\"Brian Brobbey 5'\",\"Brian Brobbey 17'\",\"Kvdi Khakpv 47'\",\"Kvdi Khakpv 54'\",\"Crysencio Summerville 89'\"}",
+      "away_scorers": "{\"Anthony Elanga 59'\"}",
       "group": "F",
       "matchday": "2",
       "local_date": "06/20/2026 12:00",
       "persian_date": "1405-03-30 12:00",
       "stadium_id": "5",
-      "finished": "FALSE",
-      "time_elapsed": "notstarted",
+      "finished": "TRUE",
+      "time_elapsed": "finished",
       "type": "group",
       "home_team_name_en": "Netherlands",
       "home_team_name_fa": "هلند",
@@ -776,8 +776,8 @@
       "id": "36",
       "home_team_id": "24",
       "away_team_id": "22",
-      "home_score": "0",
-      "away_score": "0",
+      "home_score": "null",
+      "away_score": "null",
       "home_scorers": "null",
       "away_scorers": "null",
       "group": "F",
@@ -2462,15 +2462,27 @@
       "teams": [
         {
           "team_id": "21",
-          "mp": "1",
-          "w": "0",
+          "mp": "2",
+          "w": "1",
           "l": "0",
           "d": "1",
-          "pts": "1",
-          "gf": "2",
-          "ga": "2",
-          "gd": "0",
+          "pts": "4",
+          "gf": "7",
+          "ga": "3",
+          "gd": "4",
           "_id": "698985a46e8cb0bf61b5ac93"
+        },
+        {
+          "team_id": "23",
+          "mp": "2",
+          "w": "1",
+          "l": "1",
+          "d": "0",
+          "pts": "3",
+          "gf": "6",
+          "ga": "6",
+          "gd": "0",
+          "_id": "698985a46e8cb0bf61b5ac95"
         },
         {
           "team_id": "22",
@@ -2483,18 +2495,6 @@
           "ga": "2",
           "gd": "0",
           "_id": "698985a46e8cb0bf61b5ac94"
-        },
-        {
-          "team_id": "23",
-          "mp": "1",
-          "w": "1",
-          "l": "0",
-          "d": "0",
-          "pts": "3",
-          "gf": "5",
-          "ga": "1",
-          "gd": "4",
-          "_id": "698985a46e8cb0bf61b5ac95"
         },
         {
           "team_id": "24",
@@ -2510,7 +2510,8 @@
         }
       ],
       "createdAt": "2026-02-09T06:58:44.371Z",
-      "__v": 0
+      "__v": 0,
+      "updatedAt": "2026-06-20T19:04:15.434Z"
     },
     {
       "_id": "698985a46e8cb0bf61b5ac98",
