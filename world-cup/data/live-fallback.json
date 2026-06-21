@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-20T23:51:39.759Z",
+  "fetchedAt": "2026-06-21T02:07:30.944Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -732,8 +732,8 @@
       "id": "34",
       "home_team_id": "20",
       "away_team_id": "18",
-      "home_score": "null",
-      "away_score": "null",
+      "home_score": "0",
+      "away_score": "0",
       "home_scorers": "null",
       "away_scorers": "null",
       "group": "E",
@@ -741,8 +741,8 @@
       "local_date": "06/20/2026 19:00",
       "persian_date": "1405-03-30 19:00",
       "stadium_id": "6",
-      "finished": "FALSE",
-      "time_elapsed": "notstarted",
+      "finished": "TRUE",
+      "time_elapsed": "finished",
       "type": "group",
       "home_team_name_en": "Ecuador",
       "home_team_name_fa": "اکوادور",
@@ -2430,11 +2430,11 @@
         },
         {
           "team_id": "20",
-          "mp": "1",
+          "mp": "2",
           "w": "0",
           "l": "1",
-          "d": "0",
-          "pts": "0",
+          "d": "1",
+          "pts": "1",
           "gf": "0",
           "ga": "1",
           "gd": "-1",
@@ -2442,11 +2442,11 @@
         },
         {
           "team_id": "18",
-          "mp": "1",
+          "mp": "2",
           "w": "0",
           "l": "1",
-          "d": "0",
-          "pts": "0",
+          "d": "1",
+          "pts": "1",
           "gf": "1",
           "ga": "7",
           "gd": "-6",
@@ -2455,7 +2455,7 @@
       ],
       "createdAt": "2026-02-09T06:58:44.367Z",
       "__v": 0,
-      "updatedAt": "2026-06-20T22:01:27.247Z"
+      "updatedAt": "2026-06-21T01:56:41.515Z"
     },
     {
       "_id": "698985a46e8cb0bf61b5ac92",
