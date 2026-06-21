@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-21T19:07:56.339Z",
+  "fetchedAt": "2026-06-21T20:45:08.823Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -798,8 +798,8 @@
       "id": "37",
       "home_team_id": "25",
       "away_team_id": "27",
-      "home_score": "null",
-      "away_score": "null",
+      "home_score": "0",
+      "away_score": "0",
       "home_scorers": "null",
       "away_scorers": "null",
       "group": "G",
@@ -808,7 +808,7 @@
       "persian_date": "1405-03-31 12:00",
       "stadium_id": "16",
       "finished": "FALSE",
-      "time_elapsed": "notstarted",
+      "time_elapsed": "live",
       "type": "group",
       "home_team_name_en": "Belgium",
       "home_team_name_fa": "بلژیک",
@@ -842,17 +842,17 @@
       "id": "39",
       "home_team_id": "29",
       "away_team_id": "31",
-      "home_score": "null",
-      "away_score": "null",
-      "home_scorers": "null",
+      "home_score": "4",
+      "away_score": "0",
+      "home_scorers": "{\"Lamine Yamal 10'\",\"Mikel Oyarzabal 21'\",\"Mikel Oyarzabal 24'\",\"Hassan Mohamed Altmbkti 49'\"}",
       "away_scorers": "null",
       "group": "H",
       "matchday": "2",
       "local_date": "06/21/2026 12:00",
       "persian_date": "1405-03-31 12:00",
       "stadium_id": "7",
-      "finished": "FALSE",
-      "time_elapsed": "notstarted",
+      "finished": "TRUE",
+      "time_elapsed": "finished",
       "type": "group",
       "home_team_name_en": "Spain",
       "home_team_name_fa": "اسپانیا",
@@ -2239,15 +2239,27 @@
       "teams": [
         {
           "team_id": "29",
+          "mp": "2",
+          "w": "1",
+          "l": "0",
+          "d": "1",
+          "pts": "4",
+          "gf": "4",
+          "ga": "0",
+          "gd": "4",
+          "_id": "698985a46e8cb0bf61b5ac9f"
+        },
+        {
+          "team_id": "32",
           "mp": "1",
           "w": "0",
           "l": "0",
           "d": "1",
           "pts": "1",
-          "gf": "0",
-          "ga": "0",
+          "gf": "1",
+          "ga": "1",
           "gd": "0",
-          "_id": "698985a46e8cb0bf61b5ac9f"
+          "_id": "698985a46e8cb0bf61b5aca2"
         },
         {
           "team_id": "30",
@@ -2263,31 +2275,20 @@
         },
         {
           "team_id": "31",
-          "mp": "1",
+          "mp": "2",
           "w": "0",
-          "l": "0",
-          "d": "1",
-          "pts": "1",
-          "gf": "0",
-          "ga": "0",
-          "gd": "0",
-          "_id": "698985a46e8cb0bf61b5aca1"
-        },
-        {
-          "team_id": "32",
-          "mp": "1",
-          "w": "0",
-          "l": "0",
+          "l": "1",
           "d": "1",
           "pts": "1",
           "gf": "1",
-          "ga": "1",
-          "gd": "0",
-          "_id": "698985a46e8cb0bf61b5aca2"
+          "ga": "5",
+          "gd": "-4",
+          "_id": "698985a46e8cb0bf61b5aca1"
         }
       ],
       "createdAt": "2026-02-09T06:58:44.378Z",
-      "__v": 0
+      "__v": 0,
+      "updatedAt": "2026-06-21T20:25:12.751Z"
     },
     {
       "_id": "698985a46e8cb0bf61b5aca4",
