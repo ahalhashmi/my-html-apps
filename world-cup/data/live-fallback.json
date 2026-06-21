@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-21T02:07:30.944Z",
+  "fetchedAt": "2026-06-21T07:02:46.335Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -776,17 +776,17 @@
       "id": "36",
       "home_team_id": "24",
       "away_team_id": "22",
-      "home_score": "null",
-      "away_score": "null",
+      "home_score": "0",
+      "away_score": "4",
       "home_scorers": "null",
-      "away_scorers": "null",
+      "away_scorers": "{\"Daichi Kamada 4'\",\"Aiash Ivida 31'\",\"Junya Itō 69'\",\"Aiash Ivida 83'\"}",
       "group": "F",
       "matchday": "2",
       "local_date": "06/20/2026 22:00",
       "persian_date": "1405-03-30 22:00",
       "stadium_id": "3",
-      "finished": "FALSE",
-      "time_elapsed": "notstarted",
+      "finished": "TRUE",
+      "time_elapsed": "finished",
       "type": "group",
       "home_team_name_en": "Tunisia",
       "home_team_name_fa": "تونس",
@@ -2474,6 +2474,18 @@
           "_id": "698985a46e8cb0bf61b5ac93"
         },
         {
+          "team_id": "22",
+          "mp": "2",
+          "w": "1",
+          "l": "0",
+          "d": "1",
+          "pts": "4",
+          "gf": "6",
+          "ga": "2",
+          "gd": "4",
+          "_id": "698985a46e8cb0bf61b5ac94"
+        },
+        {
           "team_id": "23",
           "mp": "2",
           "w": "1",
@@ -2486,33 +2498,21 @@
           "_id": "698985a46e8cb0bf61b5ac95"
         },
         {
-          "team_id": "22",
-          "mp": "1",
-          "w": "0",
-          "l": "0",
-          "d": "1",
-          "pts": "1",
-          "gf": "2",
-          "ga": "2",
-          "gd": "0",
-          "_id": "698985a46e8cb0bf61b5ac94"
-        },
-        {
           "team_id": "24",
-          "mp": "1",
+          "mp": "2",
           "w": "0",
-          "l": "1",
+          "l": "2",
           "d": "0",
           "pts": "0",
           "gf": "1",
-          "ga": "5",
-          "gd": "-4",
+          "ga": "9",
+          "gd": "-8",
           "_id": "698985a46e8cb0bf61b5ac96"
         }
       ],
       "createdAt": "2026-02-09T06:58:44.371Z",
       "__v": 0,
-      "updatedAt": "2026-06-20T19:04:15.434Z"
+      "updatedAt": "2026-06-21T05:57:52.446Z"
     },
     {
       "_id": "698985a46e8cb0bf61b5ac98",
