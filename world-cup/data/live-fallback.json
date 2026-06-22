@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-22T01:43:53.119Z",
+  "fetchedAt": "2026-06-22T07:04:14.824Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -821,16 +821,16 @@
       "home_team_id": "28",
       "away_team_id": "26",
       "home_score": "1",
-      "away_score": "0",
+      "away_score": "3",
       "home_scorers": "{\"Fin Svrman 15'\"}",
-      "away_scorers": "null",
+      "away_scorers": "{\"Mostafa Ziko 58'\",\"Mohamed Salah 67'\",\"Mahmoud Hassan Trezeguet 82'\"}",
       "group": "G",
       "matchday": "2",
       "local_date": "06/21/2026 18:00",
       "persian_date": "1405-03-31 18:00",
       "stadium_id": "13",
-      "finished": "FALSE",
-      "time_elapsed": "live",
+      "finished": "TRUE",
+      "time_elapsed": "finished",
       "type": "group",
       "home_team_name_en": "New Zealand",
       "home_team_name_fa": "نیوزیلند",
@@ -2522,6 +2522,18 @@
       "name": "G",
       "teams": [
         {
+          "team_id": "26",
+          "mp": "2",
+          "w": "1",
+          "l": "0",
+          "d": "1",
+          "pts": "4",
+          "gf": "4",
+          "ga": "2",
+          "gd": "2",
+          "_id": "698985a46e8cb0bf61b5ac9a"
+        },
+        {
           "team_id": "27",
           "mp": "2",
           "w": "0",
@@ -2547,32 +2559,20 @@
         },
         {
           "team_id": "28",
-          "mp": "1",
+          "mp": "2",
           "w": "0",
-          "l": "0",
+          "l": "1",
           "d": "1",
           "pts": "1",
-          "gf": "2",
-          "ga": "2",
-          "gd": "0",
+          "gf": "3",
+          "ga": "5",
+          "gd": "-2",
           "_id": "698985a46e8cb0bf61b5ac9c"
-        },
-        {
-          "team_id": "26",
-          "mp": "1",
-          "w": "0",
-          "l": "0",
-          "d": "1",
-          "pts": "1",
-          "gf": "1",
-          "ga": "1",
-          "gd": "0",
-          "_id": "698985a46e8cb0bf61b5ac9a"
         }
       ],
       "createdAt": "2026-02-09T06:58:44.374Z",
       "__v": 0,
-      "updatedAt": "2026-06-21T21:02:11.927Z"
+      "updatedAt": "2026-06-22T03:05:02.916Z"
     },
     {
       "_id": "698985a46e8cb0bf61b5ac74",
