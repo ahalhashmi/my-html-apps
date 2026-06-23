@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-23T01:34:18.153Z",
+  "fetchedAt": "2026-06-23T05:48:21.828Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -909,16 +909,16 @@
       "home_team_id": "36",
       "away_team_id": "34",
       "home_score": "3",
-      "away_score": "1",
+      "away_score": "2",
       "home_scorers": "{\"Markvs Hlmgrn Pdrsn 43'\",\"Erling Haaland 48'\",\"Erling Haaland 58'\"}",
-      "away_scorers": "{\"Ismaïla Sarr 53'\"}",
+      "away_scorers": "{\"Ismaïla Sarr 53'\",\"Ismaïla Sarr 90+3'\"}",
       "group": "I",
       "matchday": "2",
       "local_date": "06/22/2026 20:00",
       "persian_date": "1405-04-01 20:00",
       "stadium_id": "11",
-      "finished": "FALSE",
-      "time_elapsed": "live",
+      "finished": "TRUE",
+      "time_elapsed": "finished",
       "type": "group",
       "home_team_name_en": "Norway",
       "home_team_name_fa": "نروژ",
@@ -952,17 +952,17 @@
       "id": "44",
       "home_team_id": "40",
       "away_team_id": "38",
-      "home_score": "null",
-      "away_score": "null",
-      "home_scorers": "null",
-      "away_scorers": "null",
+      "home_score": "1",
+      "away_score": "2",
+      "home_scorers": "{\"Al Rashdan 36'\"}",
+      "away_scorers": "{\"Nzir Bnbvali 69'\",\"Amine Gouiri 82'\"}",
       "group": "J",
       "matchday": "2",
       "local_date": "06/22/2026 20:00",
       "persian_date": "1405-04-01 20:00",
       "stadium_id": "15",
-      "finished": "FALSE",
-      "time_elapsed": "notstarted",
+      "finished": "TRUE",
+      "time_elapsed": "finished",
       "type": "group",
       "home_team_name_en": "Jordan",
       "home_team_name_fa": "اردن",
@@ -2308,26 +2308,26 @@
         },
         {
           "team_id": "36",
-          "mp": "1",
-          "w": "1",
+          "mp": "2",
+          "w": "2",
           "l": "0",
           "d": "0",
-          "pts": "3",
-          "gf": "4",
-          "ga": "1",
-          "gd": "3",
+          "pts": "6",
+          "gf": "7",
+          "ga": "3",
+          "gd": "4",
           "_id": "698985a46e8cb0bf61b5aca8"
         },
         {
           "team_id": "34",
-          "mp": "1",
+          "mp": "2",
           "w": "0",
-          "l": "1",
+          "l": "2",
           "d": "0",
           "pts": "0",
-          "gf": "1",
-          "ga": "3",
-          "gd": "-2",
+          "gf": "3",
+          "ga": "6",
+          "gd": "-3",
           "_id": "698985a46e8cb0bf61b5aca6"
         },
         {
@@ -2345,7 +2345,7 @@
       ],
       "createdAt": "2026-02-09T06:58:44.383Z",
       "__v": 0,
-      "updatedAt": "2026-06-23T00:51:47.397Z"
+      "updatedAt": "2026-06-23T02:00:44.471Z"
     },
     {
       "_id": "698985a46e8cb0bf61b5ac86",
@@ -2887,33 +2887,33 @@
           "_id": "698985a46e8cb0bf61b5acad"
         },
         {
-          "team_id": "40",
-          "mp": "1",
-          "w": "0",
+          "team_id": "38",
+          "mp": "2",
+          "w": "1",
           "l": "1",
           "d": "0",
-          "pts": "0",
-          "gf": "1",
-          "ga": "3",
+          "pts": "3",
+          "gf": "2",
+          "ga": "4",
           "gd": "-2",
-          "_id": "698985a46e8cb0bf61b5acae"
+          "_id": "698985a46e8cb0bf61b5acac"
         },
         {
-          "team_id": "38",
-          "mp": "1",
+          "team_id": "40",
+          "mp": "2",
           "w": "0",
-          "l": "1",
+          "l": "2",
           "d": "0",
           "pts": "0",
-          "gf": "0",
-          "ga": "3",
+          "gf": "2",
+          "ga": "5",
           "gd": "-3",
-          "_id": "698985a46e8cb0bf61b5acac"
+          "_id": "698985a46e8cb0bf61b5acae"
         }
       ],
       "createdAt": "2026-02-09T06:58:44.388Z",
       "__v": 0,
-      "updatedAt": "2026-06-22T19:04:21.518Z"
+      "updatedAt": "2026-06-23T05:02:08.012Z"
     }
   ],
   "teams": [
