@@ -840,7 +840,7 @@ function matchDetails(game) {
   return `
     <div class="match-details" id="${escapeHtml(matchDetailsId(game))}">
       <div class="goal-list">
-        ${scorers.length ? scorers.map((goal) => goalRow(goal, game)).join("") : `<div class="no-goals">${escapeHtml(t().noGoals)}</div>`}
+        ${scorers.length ? scorers.map(goalRow).join("") : `<div class="no-goals">${escapeHtml(t().noGoals)}</div>`}
       </div>
       <a class="highlight-button" href="${escapeHtml(youtubeSearchUrl(game))}" target="_blank" rel="noopener">
         ${escapeHtml(t().highlights)}
@@ -851,20 +851,16 @@ function matchDetails(game) {
 
 function goalScorers(game) {
   return [
-    ...parseScorers(game.home_scorers, game, "home"),
-    ...parseScorers(game.away_scorers, game, "away")
+    ...parseScorers(game.home_scorers, "home"),
+    ...parseScorers(game.away_scorers, "away")
   ].sort((a, b) => a.sort - b.sort);
 }
 
-function parseScorers(value, game, side) {
-  const team = teamById(teamId(game, side));
-  const fallbackName = side === "home" ? game.homeName : game.awayName;
-  const code = teamCode(team, fallbackName);
+function parseScorers(value, side) {
   return scorerItems(value).map((item) => {
     const parsed = parseScorerText(item);
     return {
       ...parsed,
-      code,
       side,
       sort: minuteSortValue(parsed.minute)
     };
@@ -912,7 +908,7 @@ function minuteSortValue(minute) {
   return Number(match[1]) * 100 + Number(match[2] || 0);
 }
 
-function visualGoalSide(goal, game) {
+function visualGoalSide(goal) {
   const homeIsLeft = state.lang !== "ar";
   if (goal.side === "home") return homeIsLeft ? "left" : "right";
   return homeIsLeft ? "right" : "left";
@@ -920,13 +916,12 @@ function visualGoalSide(goal, game) {
 
 function goalName(goal) {
   return `
-    <span class="goal-code">${escapeHtml(goal.code)}</span>
     <span class="goal-player">${escapeHtml(goal.player)}${goal.note ? ` <span class="goal-note">${escapeHtml(goal.note)}</span>` : ""}</span>
   `;
 }
 
-function goalRow(goal, game) {
-  const side = visualGoalSide(goal, game);
+function goalRow(goal) {
+  const side = visualGoalSide(goal);
   const left = side === "left" ? goalName(goal) : "";
   const right = side === "right" ? goalName(goal) : "";
   return `
