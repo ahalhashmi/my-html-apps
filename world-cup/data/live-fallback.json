@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-25T20:20:02.042Z",
+  "fetchedAt": "2026-06-25T21:54:33.162Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e006",
@@ -1843,9 +1843,9 @@
       "home_team_id": "18",
       "away_team_id": "19",
       "home_score": "0",
-      "away_score": "1",
+      "away_score": "2",
       "home_scorers": "null",
-      "away_scorers": "{\"Nikvlas Ph Ph 7'\"}",
+      "away_scorers": "{\"Nikvlas Ph Ph 7'\",\"Nikvlas Ph Ph 64'\"}",
       "group": "E",
       "matchday": "3",
       "local_date": "06/25/2026 16:00",
@@ -1864,9 +1864,9 @@
       "id": "56",
       "home_team_id": "20",
       "away_team_id": "17",
-      "home_score": "1",
+      "home_score": "2",
       "away_score": "1",
-      "home_scorers": "{\"Nilsvn Angvlv 9'\"}",
+      "home_scorers": "{\"Nilsvn Angvlv 9'\",\"Gvnzalv Plata 77'\"}",
       "away_scorers": "{\"Leroy Sané 2'\"}",
       "group": "E",
       "matchday": "3",
