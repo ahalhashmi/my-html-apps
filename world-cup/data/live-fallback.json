@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-26T13:21:55.499Z",
+  "fetchedAt": "2026-06-26T15:32:25.969Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e006",
@@ -418,8 +418,8 @@
       "id": "61",
       "home_team_id": "34",
       "away_team_id": "35",
-      "home_score": "0",
-      "away_score": "0",
+      "home_score": "null",
+      "away_score": "null",
       "home_scorers": "null",
       "away_scorers": "null",
       "group": "I",
@@ -504,7 +504,7 @@
     {
       "_id": "679c9c8a5749c4077500e082",
       "id": "88",
-      "home_team_id": "0",
+      "home_team_id": "15",
       "away_team_id": "0",
       "home_score": "0",
       "away_score": "0",
@@ -519,7 +519,9 @@
       "time_elapsed": "notstarted",
       "type": "r32",
       "home_team_label": "Runner-up Group D",
-      "away_team_label": "Runner-up Group G"
+      "away_team_label": "Runner-up Group G",
+      "home_team_name_en": "Australia",
+      "home_team_name_fa": "استرالیا"
     },
     {
       "_id": "679c9c8a5749c4077500e08e",
@@ -1004,8 +1006,8 @@
       "id": "62",
       "home_team_id": "36",
       "away_team_id": "33",
-      "home_score": "0",
-      "away_score": "0",
+      "home_score": "null",
+      "away_score": "null",
       "home_scorers": "null",
       "away_scorers": "null",
       "group": "I",
@@ -1113,7 +1115,7 @@
       "_id": "679c9c8a5749c4077500e076",
       "id": "76",
       "home_team_id": "9",
-      "away_team_id": "0",
+      "away_team_id": "22",
       "home_score": "0",
       "away_score": "0",
       "home_scorers": "null",
@@ -1129,7 +1131,9 @@
       "home_team_label": "Winner Group C",
       "away_team_label": "Runner-up Group F",
       "home_team_name_en": "Brazil",
-      "home_team_name_fa": "برزیل"
+      "home_team_name_fa": "برزیل",
+      "away_team_name_en": "Japan",
+      "away_team_name_fa": "ژاپن"
     },
     {
       "_id": "679c9c8a5749c4077500e07d",
@@ -1951,7 +1955,7 @@
       "_id": "679c9c8a5749c4077500e07b",
       "id": "81",
       "home_team_id": "13",
-      "away_team_id": "0",
+      "away_team_id": "6",
       "home_score": "0",
       "away_score": "0",
       "home_scorers": "null",
@@ -1967,7 +1971,9 @@
       "home_team_label": "Winner Group D",
       "away_team_label": "3rd Group B/E/F/I/J",
       "home_team_name_en": "United States",
-      "home_team_name_fa": "آمریکا"
+      "home_team_name_fa": "آمریکا",
+      "away_team_name_en": "Bosnia and Herzegovina",
+      "away_team_name_fa": "بوسنی و هرزگوین"
     },
     {
       "_id": "679c9c8a5749c4077500e091",
@@ -2102,7 +2108,7 @@
     {
       "_id": "679c9c8a5749c4077500e075",
       "id": "75",
-      "home_team_id": "0",
+      "home_team_id": "21",
       "away_team_id": "10",
       "home_score": "0",
       "away_score": "0",
@@ -2118,13 +2124,15 @@
       "type": "r32",
       "home_team_label": "Winner Group F",
       "away_team_label": "Runner-up Group C",
+      "home_team_name_en": "Netherlands",
+      "home_team_name_fa": "هلند",
       "away_team_name_en": "Morocco",
       "away_team_name_fa": "مراکش"
     },
     {
       "_id": "679c9c8a5749c4077500e078",
       "id": "78",
-      "home_team_id": "0",
+      "home_team_id": "19",
       "away_team_id": "0",
       "home_score": "0",
       "away_score": "0",
@@ -2139,7 +2147,9 @@
       "time_elapsed": "notstarted",
       "type": "r32",
       "home_team_label": "Runner-up Group E",
-      "away_team_label": "Runner-up Group I"
+      "away_team_label": "Runner-up Group I",
+      "home_team_name_en": "Ivory Coast",
+      "home_team_name_fa": "ساحل عاج"
     },
     {
       "_id": "679c9c8a5749c4077500e079",
