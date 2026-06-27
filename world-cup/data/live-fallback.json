@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-27T21:57:35.562Z",
+  "fetchedAt": "2026-06-27T22:57:28.430Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e006",
@@ -441,16 +441,16 @@
       "home_team_id": "48",
       "away_team_id": "45",
       "home_score": "0",
-      "away_score": "0",
+      "away_score": "2",
       "home_scorers": "null",
-      "away_scorers": "null",
+      "away_scorers": "{\"Jvd Blingham 62'\",\"Hri Kin 67'\"}",
       "group": "L",
       "matchday": "3",
       "local_date": "06/27/2026 17:00",
       "persian_date": "1405-04-06 17:00",
       "stadium_id": "11",
-      "finished": "FALSE",
-      "time_elapsed": "live",
+      "finished": "TRUE",
+      "time_elapsed": "finished",
       "type": "group",
       "home_team_name_en": "Panama",
       "home_team_name_fa": "پاناما",
@@ -1896,10 +1896,10 @@
       "id": "68",
       "home_team_id": "46",
       "away_team_id": "47",
-      "home_score": "1",
-      "away_score": "0",
-      "home_scorers": "{\"Petar Sučić 31'\"}",
-      "away_scorers": "null",
+      "home_score": "2",
+      "away_score": "1",
+      "home_scorers": "{\"Petar Sučić 31'\",\"Nikola Vlašić 83'\"}",
+      "away_scorers": "{\"Drik Lvkasn 73'\"}",
       "group": "L",
       "matchday": "3",
       "local_date": "06/27/2026 17:00",
@@ -2900,14 +2900,14 @@
       "teams": [
         {
           "team_id": "45",
-          "mp": "2",
-          "w": "1",
+          "mp": "3",
+          "w": "2",
           "l": "0",
           "d": "1",
-          "pts": "4",
-          "gf": "4",
+          "pts": "7",
+          "gf": "6",
           "ga": "2",
-          "gd": "2",
+          "gd": "4",
           "_id": "698985a46e8cb0bf61b5acb7"
         },
         {
@@ -2936,20 +2936,20 @@
         },
         {
           "team_id": "48",
-          "mp": "2",
+          "mp": "3",
           "w": "0",
-          "l": "2",
+          "l": "3",
           "d": "0",
           "pts": "0",
           "gf": "0",
-          "ga": "2",
-          "gd": "-2",
+          "ga": "4",
+          "gd": "-4",
           "_id": "698985a46e8cb0bf61b5acba"
         }
       ],
       "createdAt": "2026-02-09T06:58:44.396Z",
       "__v": 0,
-      "updatedAt": "2026-06-24T00:56:27.862Z"
+      "updatedAt": "2026-06-27T22:56:32.747Z"
     }
   ],
   "teams": [
