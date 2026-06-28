@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-28T18:55:53.598Z",
+  "fetchedAt": "2026-06-28T20:04:40.585Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e006",
@@ -1456,8 +1456,8 @@
       "id": "73",
       "home_team_id": "2",
       "away_team_id": "5",
-      "home_score": "null",
-      "away_score": "null",
+      "home_score": "0",
+      "away_score": "0",
       "home_scorers": "null",
       "away_scorers": "null",
       "group": "R32",
@@ -1466,7 +1466,7 @@
       "persian_date": "1405-04-07 12:00",
       "stadium_id": "16",
       "finished": "FALSE",
-      "time_elapsed": "notstarted",
+      "time_elapsed": "live",
       "type": "r32",
       "home_team_label": "Runner-up Group A",
       "away_team_label": "Runner-up Group B",
