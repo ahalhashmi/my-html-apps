@@ -1,0 +1,44 @@
+name: Update UAE trading data
+
+on:
+  schedule:
+    - cron: "5 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Refresh UAE trading snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd uae-trading/tools
+          python export_static_data.py
+
+      - name: Commit changed data
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- uae-trading/data/latest.json; then
+            echo "No UAE trading data changes."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add uae-trading/data/latest.json
+          git commit -m "Update UAE trading data"
+          git push
