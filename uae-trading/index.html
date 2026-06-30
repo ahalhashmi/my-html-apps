@@ -99,6 +99,76 @@
         </label>
       </section>
 
+      <section class="legend-panel" aria-label="Scanner legend">
+        <details>
+          <summary>Help legend</summary>
+          <div class="legend-grid">
+            <article class="legend-section">
+              <h2>Verdict</h2>
+              <dl>
+                <dt>Buy Candidate</dt>
+                <dd>Strongest shortlist: trend, momentum, liquidity, volume, and risk filters are broadly aligned.</dd>
+                <dt>Setup Forming</dt>
+                <dd>Positive structure is developing, but the price, volume, or risk/reward still needs confirmation.</dd>
+                <dt>Worth Studying</dt>
+                <dd>Interesting enough for manual review, but not yet clean enough to treat as an actionable setup.</dd>
+                <dt>Watch</dt>
+                <dd>Mixed or neutral reading; keep it on the radar until trend or volume improves.</dd>
+                <dt>Sell Pressure</dt>
+                <dd>Weak tape or bearish trend pressure; useful mainly for exits or avoiding new buys.</dd>
+                <dt>Avoid / Ignore</dt>
+                <dd>Failed important filters, has poor data, or is too weak/illiquid for the current model.</dd>
+              </dl>
+            </article>
+
+            <article class="legend-section">
+              <h2>Decision</h2>
+              <dl>
+                <dt>Buy</dt>
+                <dd>Model sees a valid setup near the suggested buy zone with acceptable liquidity and risk/reward.</dd>
+                <dt>Hold</dt>
+                <dd>You marked it as bought, and the position has not hit an exit trigger yet.</dd>
+                <dt>Sell</dt>
+                <dd>A held position hit a stop, trailing stop, target/weakness rule, or time-based exit condition.</dd>
+                <dt>Watch</dt>
+                <dd>Quality is acceptable, but price location or risk/reward is not good enough to buy now.</dd>
+                <dt>Skip</dt>
+                <dd>No current action. Usually caused by weak setup quality, low liquidity, or poor risk/reward.</dd>
+              </dl>
+            </article>
+
+            <article class="legend-section">
+              <h2>Setup</h2>
+              <dl>
+                <dt>Trend Pullback</dt>
+                <dd>Price is in an uptrend and pulling back toward a support/EMA area instead of chasing strength.</dd>
+                <dt>Breakout</dt>
+                <dd>Price is pushing through recent resistance with momentum and volume support.</dd>
+                <dt>Mean Reversion</dt>
+                <dd>Price is extended below recent averages and may rebound, but this is usually lower conviction.</dd>
+                <dt>Exit Weakness</dt>
+                <dd>Structure is deteriorating; this matters most if the stock is already in your portfolio.</dd>
+                <dt>Unqualified</dt>
+                <dd>The stock does not currently match one of the model's actionable technical patterns.</dd>
+              </dl>
+            </article>
+
+            <article class="legend-section">
+              <h2>Tier</h2>
+              <dl>
+                <dt>Tier A</dt>
+                <dd>Best liquidity bucket. The model allows buy decisions only when other filters also pass.</dd>
+                <dt>Tier B</dt>
+                <dd>Tradable but thinner. The model can watch/study it, but it is more conservative on buys.</dd>
+                <dt>Tier C</dt>
+                <dd>Too thin or inactive for this model. Usually skipped unless liquidity improves.</dd>
+              </dl>
+            </article>
+          </div>
+          <p class="legend-note">Buy zone, stop, trailing stop, and targets are rounded to UAE market tick sizes. Treat them as decision-support levels, not automatic orders.</p>
+        </details>
+      </section>
+
       <main class="table-wrap">
         <table>
           <thead>

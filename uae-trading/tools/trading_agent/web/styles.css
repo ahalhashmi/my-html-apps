@@ -169,6 +169,83 @@ button:disabled {
   border-radius: 8px;
 }
 
+.legend-panel {
+  margin-bottom: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.legend-panel details {
+  padding: 0;
+}
+
+.legend-panel summary {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.legend-panel summary::marker {
+  color: var(--blue);
+}
+
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(190px, 1fr));
+  gap: 12px;
+  padding: 0 14px 14px;
+}
+
+.legend-section {
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.legend-section h2 {
+  margin: 0 0 10px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.legend-section dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.legend-section dt {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.legend-section dd {
+  margin: -5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.legend-note {
+  margin: -2px 14px 14px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: #eef4ff;
+  color: var(--blue-dark);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 label {
   display: grid;
   gap: 6px;
@@ -537,6 +614,10 @@ tbody tr:hover {
     grid-template-columns: repeat(2, minmax(140px, 1fr));
   }
 
+  .legend-grid {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+
   .portfolio-form {
     grid-template-columns: repeat(2, minmax(140px, 1fr));
   }
@@ -554,6 +635,7 @@ tbody tr:hover {
 
   .status-strip,
   .toolbar,
+  .legend-grid,
   .portfolio-form {
     grid-template-columns: 1fr;
   }
