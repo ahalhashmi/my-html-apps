@@ -425,6 +425,33 @@ a.match.is-done {
   unicode-bidi: isolate;
 }
 
+.scoreline--penalties {
+  display: inline-grid;
+  grid-template-columns: auto auto auto;
+  align-items: center;
+  column-gap: 7px;
+}
+
+.score-part {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.score-result {
+  color: var(--match-muted);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.score-part--winner .score-result {
+  color: var(--accent);
+}
+
+.score-separator {
+  color: var(--accent);
+}
+
 .pill {
   border-radius: 999px;
   background: var(--accent-soft);

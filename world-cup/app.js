@@ -773,7 +773,7 @@ function renderGroups() {
 function matchCard(game, isScrollTarget = false) {
   const status = statusLabel(game);
   const side = isFinished(game) || isLive(game)
-    ? `<span class="scoreline">${scoreText(game)}</span>`
+    ? scoreLine(game)
     : `<span class="time">${formatDate("time", game.date)}</span>`;
   const stateClass = isLive(game) ? "is-live" : isFinished(game) ? "is-done" : "is-pending";
   const isDone = isFinished(game);
@@ -817,10 +817,60 @@ function matchStageLabel(game) {
   return roundNames[game.type] || game.type || "";
 }
 
+function scoreLine(game) {
+  const penalty = penaltyResult(game);
+  if (!penalty) return `<span class="scoreline">${escapeHtml(scoreText(game))}</span>`;
+
+  const home = scorePart(game.homeScore, penalty.home);
+  const away = scorePart(game.awayScore, penalty.away);
+  const parts = state.lang === "ar" ? [away, home] : [home, away];
+  return `
+    <span class="scoreline scoreline--penalties">
+      ${parts[0]}
+      <span class="score-separator">-</span>
+      ${parts[1]}
+    </span>
+  `;
+}
+
 function scoreText(game) {
   return state.lang === "ar"
     ? `${game.awayScore} - ${game.homeScore}`
     : `${game.homeScore} - ${game.awayScore}`;
+}
+
+function scorePart(score, result) {
+  return `
+    <span class="score-part score-part--${escapeHtml(result)}">
+      <span class="score-number">${escapeHtml(score)}</span>
+      <span class="score-result">${escapeHtml(resultLabel(result))}</span>
+    </span>
+  `;
+}
+
+function resultLabel(result) {
+  if (state.lang === "ar") return result === "winner" ? "ف" : "خ";
+  return result === "winner" ? "W" : "L";
+}
+
+function penaltyResult(game) {
+  if (game.type === "group" || !isFinished(game) || game.homeScore !== game.awayScore) return null;
+
+  const homePenalty = penaltyScore(game.home_penalty_score);
+  const awayPenalty = penaltyScore(game.away_penalty_score);
+  if (homePenalty === null || awayPenalty === null || homePenalty === awayPenalty) return null;
+
+  return homePenalty > awayPenalty
+    ? { home: "winner", away: "loser" }
+    : { home: "loser", away: "winner" };
+}
+
+function penaltyScore(value) {
+  if (value === undefined || value === null) return null;
+  const text = String(value).trim().toLowerCase();
+  if (!text || text === "null") return null;
+  const parsed = Number(text);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function youtubeSearchLabel(game) {
