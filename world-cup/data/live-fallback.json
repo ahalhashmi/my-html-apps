@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-30T17:27:45.146Z",
+  "fetchedAt": "2026-06-30T19:16:02.341Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e006",
@@ -1679,7 +1679,7 @@
       "_id": "679c9c8a5749c4077500e085",
       "id": "91",
       "home_team_id": "9",
-      "away_team_id": "0",
+      "away_team_id": "36",
       "home_score": "0",
       "away_score": "0",
       "home_scorers": "null",
@@ -1695,7 +1695,9 @@
       "home_team_label": "Winner Match 76",
       "away_team_label": "Winner Match 78",
       "home_team_name_en": "Brazil",
-      "home_team_name_fa": "برزیل"
+      "home_team_name_fa": "برزیل",
+      "away_team_name_en": "Norway",
+      "away_team_name_fa": "نروژ"
     },
     {
       "_id": "679c9c8a5749c4077500e08b",
@@ -2176,17 +2178,17 @@
       "id": "78",
       "home_team_id": "19",
       "away_team_id": "36",
-      "home_score": "0",
-      "away_score": "0",
-      "home_scorers": "null",
-      "away_scorers": "null",
+      "home_score": "1",
+      "away_score": "2",
+      "home_scorers": "{\"Amad Diallo 74'\"}",
+      "away_scorers": "{\"Antonio Nusa 39'\",\"Erling Haaland 86'\"}",
       "group": "R32",
       "matchday": "4",
       "local_date": "06/30/2026 12:00",
       "persian_date": "1405-04-09 12:00",
       "stadium_id": "4",
-      "finished": "FALSE",
-      "time_elapsed": "live",
+      "finished": "TRUE",
+      "time_elapsed": "finished",
       "type": "r32",
       "home_team_label": "Runner-up Group E",
       "away_team_label": "Runner-up Group I",
