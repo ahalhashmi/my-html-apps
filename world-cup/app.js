@@ -49,6 +49,7 @@ const labels = {
     themeNight: "Night",
     matches: "Matches",
     groups: "Groups",
+    knockout: "Knockout",
     timezoneButton: "Timezone",
     timezoneTitle: "Select timezone",
     timezoneApply: "Done",
@@ -84,6 +85,7 @@ const labels = {
     themeNight: "ليلي",
     matches: "المباريات",
     groups: "المجموعات",
+    knockout: "خروج المغلوب",
     timezoneButton: "التوقيت",
     timezoneTitle: "اختر التوقيت",
     timezoneApply: "تم",
@@ -213,6 +215,51 @@ const roundNames = {
   final: "Final"
 };
 
+const KNOCKOUT_BOARD = {
+  width: 1320,
+  height: 920,
+  matchWidth: 116,
+  matchHeight: 76
+};
+
+const KNOCKOUT_ZOOM_MIN = 0.45;
+const KNOCKOUT_ZOOM_MAX = 1.5;
+const KNOCKOUT_ZOOM_STEP = 0.1;
+
+const knockoutRounds = {
+  left: {
+    r32: [74, 77, 73, 75, 83, 84, 81, 82],
+    r16: [89, 90, 93, 94],
+    qf: [97, 98],
+    sf: [101]
+  },
+  right: {
+    sf: [102],
+    qf: [99, 100],
+    r16: [91, 92, 95, 96],
+    r32: [76, 78, 79, 80, 86, 88, 85, 87]
+  },
+  final: [104]
+};
+
+const knockoutParents = {
+  89: [74, 77],
+  90: [73, 75],
+  91: [76, 78],
+  92: [79, 80],
+  93: [83, 84],
+  94: [81, 82],
+  95: [86, 88],
+  96: [85, 87],
+  97: [89, 90],
+  98: [93, 94],
+  99: [91, 92],
+  100: [95, 96],
+  101: [97, 98],
+  102: [99, 100],
+  104: [101, 102]
+};
+
 const state = {
   tab: "matches",
   lang: localStorage.getItem(LANG_KEY) === "en" ? "en" : "ar",
@@ -224,7 +271,8 @@ const state = {
   loadedAt: null,
   fallback: false,
   didInitialScroll: false,
-  expandedMatchId: null
+  expandedMatchId: null,
+  knockoutZoom: 0.58
 };
 
 const el = {
@@ -719,6 +767,7 @@ function render() {
 
   if (state.tab === "matches") renderMatches();
   if (state.tab === "groups") renderGroups();
+  if (state.tab === "knockout") renderKnockout();
 }
 
 function renderMatches() {
@@ -768,6 +817,132 @@ function renderGroups() {
       </table>
     </section>
   `).join("");
+}
+
+function renderKnockout() {
+  const layout = knockoutLayout();
+  const scaleWidth = Math.ceil(KNOCKOUT_BOARD.width * state.knockoutZoom);
+  const scaleHeight = Math.ceil(KNOCKOUT_BOARD.height * state.knockoutZoom);
+
+  el.content.innerHTML = `
+    <section class="knockout-panel">
+      <div class="knockout-controls">
+        <button class="knockout-zoom" type="button" data-knockout-zoom="out" aria-label="Zoom out">-</button>
+        <button class="knockout-zoom" type="button" data-knockout-zoom="reset" aria-label="Reset zoom">1x</button>
+        <button class="knockout-zoom" type="button" data-knockout-zoom="in" aria-label="Zoom in">+</button>
+      </div>
+      <div class="knockout-viewport">
+        <div class="knockout-scale" style="--knockout-zoom: ${state.knockoutZoom}; width: ${scaleWidth}px; height: ${scaleHeight}px;">
+          <div class="knockout-board">
+            <svg class="knockout-lines" viewBox="0 0 ${KNOCKOUT_BOARD.width} ${KNOCKOUT_BOARD.height}" aria-hidden="true">
+              ${knockoutLines(layout)}
+            </svg>
+            ${layout.map(knockoutMatchNode).join("")}
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+
+  requestAnimationFrame(() => {
+    const viewport = el.content.querySelector(".knockout-viewport");
+    if (!viewport) return;
+    viewport.scrollLeft = Math.max(0, (viewport.scrollWidth - viewport.clientWidth) / 2);
+  });
+}
+
+function knockoutLayout() {
+  const positions = [];
+  const leftX = { r32: 22, r16: 198, qf: 374, sf: 525 };
+  const rightX = { sf: 679, qf: 830, r16: 1006, r32: 1182 };
+  const yRanges = {
+    r32: [18, 826],
+    r16: [76, 768],
+    qf: [200, 644],
+    sf: [422, 422],
+    final: [422, 422]
+  };
+
+  Object.entries(knockoutRounds.left).forEach(([round, ids]) => {
+    ids.forEach((id, index) => positions.push(knockoutPosition(id, leftX[round], spacedY(index, ids.length, ...yRanges[round]), "left")));
+  });
+  Object.entries(knockoutRounds.right).forEach(([round, ids]) => {
+    ids.forEach((id, index) => positions.push(knockoutPosition(id, rightX[round], spacedY(index, ids.length, ...yRanges[round]), "right")));
+  });
+  positions.push(knockoutPosition(knockoutRounds.final[0], 602, yRanges.final[0], "center"));
+
+  return positions;
+}
+
+function knockoutPosition(id, x, y, side) {
+  return { id: String(id), x, y, side, game: state.games.find((game) => String(game.id) === String(id)) };
+}
+
+function spacedY(index, count, start, end) {
+  if (count <= 1) return start;
+  return Math.round(start + ((end - start) * index) / (count - 1));
+}
+
+function knockoutLines(layout) {
+  const byId = new Map(layout.map((item) => [item.id, item]));
+  return Object.entries(knockoutParents).map(([childId, parentIds]) => {
+    const child = byId.get(String(childId));
+    if (!child) return "";
+    return parentIds.map((parentId) => knockoutLine(byId.get(String(parentId)), child)).join("");
+  }).join("");
+}
+
+function knockoutLine(from, to) {
+  if (!from || !to) return "";
+  const fromRight = from.x < to.x;
+  const startX = from.x + (fromRight ? KNOCKOUT_BOARD.matchWidth : 0);
+  const startY = from.y + KNOCKOUT_BOARD.matchHeight / 2;
+  const endX = to.x + (fromRight ? 0 : KNOCKOUT_BOARD.matchWidth);
+  const endY = to.y + KNOCKOUT_BOARD.matchHeight / 2;
+  const midX = Math.round((startX + endX) / 2);
+  return `<path d="M ${startX} ${startY} H ${midX} V ${endY} H ${endX}" />`;
+}
+
+function knockoutMatchNode(item) {
+  return `
+    <article class="knockout-match knockout-match--${escapeHtml(item.side)}" style="left: ${item.x}px; top: ${item.y}px;">
+      ${knockoutTeam(item.game, "home")}
+      ${knockoutTeam(item.game, "away")}
+    </article>
+  `;
+}
+
+function knockoutTeam(game, side) {
+  const team = game ? teamById(teamId(game, side)) : null;
+  const name = game ? (side === "home" ? game.homeName : game.awayName) : "TBA";
+  const code = bracketTeamCode(team, name);
+  const result = game ? sideResult(game, side) : "";
+  return `
+    <span class="knockout-team ${result ? `is-${result}` : ""}">
+      ${team?.flag ? `<img class="knockout-flag" src="${escapeHtml(team.flag)}" alt="">` : `<span class="knockout-flag knockout-flag--empty"></span>`}
+      <span class="knockout-code">${escapeHtml(code)}</span>
+    </span>
+  `;
+}
+
+function bracketTeamCode(team, fallbackName) {
+  if (team?.fifa_code) return team.fifa_code.toUpperCase().slice(0, 3);
+  const text = String(fallbackName || "");
+  if (!text || text === "TBA" || /^(Winner|Loser|Runner-up|3rd) /i.test(text)) return "TBA";
+  return compactLabel(text).slice(0, 3).padEnd(3, "X");
+}
+
+function sideResult(game, side) {
+  if (!isFinished(game)) return "";
+  if (game.homeScore > game.awayScore) return side === "home" ? "winner" : "loser";
+  if (game.awayScore > game.homeScore) return side === "away" ? "winner" : "loser";
+
+  const homePenalty = penaltyScore(game.home_penalty_score);
+  const awayPenalty = penaltyScore(game.away_penalty_score);
+  if (homePenalty === null || awayPenalty === null || homePenalty === awayPenalty) return "";
+  return homePenalty > awayPenalty
+    ? (side === "home" ? "winner" : "loser")
+    : (side === "away" ? "winner" : "loser");
 }
 
 function matchCard(game, isScrollTarget = false) {
@@ -1132,7 +1307,12 @@ function updateStaticText() {
   el.visitorLabel.textContent = `${t().visitors}:`;
   el.tabsNav.setAttribute("aria-label", t().tabsLabel);
   el.tabs.forEach((tab) => {
-    tab.textContent = tab.dataset.tab === "matches" ? t().matches : t().groups;
+    const tabLabels = {
+      matches: t().matches,
+      groups: t().groups,
+      knockout: t().knockout
+    };
+    tab.textContent = tabLabels[tab.dataset.tab] || "";
   });
   el.visitorBadge.src = visitorBadgeUrl();
   el.visitorBadge.alt = t().visitors;
@@ -1218,12 +1398,47 @@ el.tabs.forEach((tab) => {
 });
 
 el.content.addEventListener("click", (event) => {
+  const zoomButton = event.target.closest("[data-knockout-zoom]");
+  if (zoomButton) {
+    setKnockoutZoom(zoomButton.dataset.knockoutZoom);
+    return;
+  }
+
   const trigger = event.target.closest("[data-match-toggle]");
   if (!trigger) return;
   const matchId = trigger.dataset.matchToggle;
   state.expandedMatchId = state.expandedMatchId === matchId ? null : matchId;
   render();
 });
+
+el.content.addEventListener("wheel", (event) => {
+  const viewport = event.target.closest(".knockout-viewport");
+  if (!viewport || !event.ctrlKey) return;
+  event.preventDefault();
+  setKnockoutZoom(event.deltaY < 0 ? "in" : "out");
+}, { passive: false });
+
+function setKnockoutZoom(action) {
+  if (action === "reset") {
+    state.knockoutZoom = 0.58;
+  } else {
+    const direction = action === "in" ? 1 : -1;
+    state.knockoutZoom = clampZoom(state.knockoutZoom + direction * KNOCKOUT_ZOOM_STEP);
+  }
+  syncKnockoutZoom();
+}
+
+function clampZoom(value) {
+  return Math.max(KNOCKOUT_ZOOM_MIN, Math.min(KNOCKOUT_ZOOM_MAX, Math.round(value * 100) / 100));
+}
+
+function syncKnockoutZoom() {
+  const scale = el.content.querySelector(".knockout-scale");
+  if (!scale) return;
+  scale.style.setProperty("--knockout-zoom", state.knockoutZoom);
+  scale.style.width = `${Math.ceil(KNOCKOUT_BOARD.width * state.knockoutZoom)}px`;
+  scale.style.height = `${Math.ceil(KNOCKOUT_BOARD.height * state.knockoutZoom)}px`;
+}
 
 applyLanguage(state.lang, false);
 applyTheme(localStorage.getItem("worldCupTheme") === "light" ? "light" : "dark");
