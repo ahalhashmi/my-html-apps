@@ -49,6 +49,12 @@ def exponential_moving_average_series(values: list[float], period: int) -> list[
     return series
 
 
+def exponential_moving_average(values: list[float], period: int) -> float | None:
+    if len(values) < period:
+        return None
+    return exponential_moving_average_series(values, period)[-1]
+
+
 def moving_average_convergence_divergence(
     closes: list[float],
     fast_period: int = 12,

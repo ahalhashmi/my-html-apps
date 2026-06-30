@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from datetime import date
-from pathlib import Path
-
-from trading_agent.indicators import average_true_range, resistance_level, simple_moving_average, support_level
+from trading_agent.indicators import average_true_range, exponential_moving_average, resistance_level, support_level
+from trading_agent.market_rules import liquidity_tier_description, round_to_tick, tick_size
 from trading_agent.models import ConsiderationProfile, MarketSeries, Position, TradeDecision
 
 
@@ -14,18 +12,27 @@ def build_trade_decision(
 ) -> TradeDecision:
     closes = [bar.close for bar in series.bars]
     current = series.last.close
+    symbol = series.symbol
     atr = average_true_range(series.bars, 14) or max(current * 0.03, 0.001)
     support = support_level(series.bars, 20)
     resistance = resistance_level(series.bars, 20)
-    sma20 = simple_moving_average(closes, 20)
+    ema20 = consideration.indicators.ema20 or exponential_moving_average(closes, 20)
+    ema100 = consideration.indicators.ema100 or exponential_moving_average(closes, 100)
+    tier = consideration.liquidity_tier
+    setup_type = _setup_type(series, consideration, atr, support, resistance, ema20, ema100, position)
+    tick = tick_size(symbol, current)
 
-    buy_low, buy_high = _buy_zone(current, atr, support, sma20)
-    stop_loss = _stop_loss(current, atr, support, buy_low)
+    buy_low, buy_high = _buy_zone(symbol, current, atr, support, ema20, setup_type)
+    stop_loss, stop_basis = _stop_loss(symbol, current, atr, support, buy_low, setup_type)
     entry = (buy_low + buy_high) / 2
-    risk = max(entry - stop_loss, 0.001)
-    target1 = _target1(entry, risk, resistance)
-    target2 = round(entry + risk * 3.0, 3)
-    risk_reward = (target1 - entry) / risk if risk > 0 else None
+    risk = max(entry - stop_loss, tick)
+    target1 = round_to_tick(symbol, entry + risk, "up")
+    target2 = _target2(symbol, entry, risk, resistance)
+    if target2 <= target1:
+        target2 = round_to_tick(symbol, entry + risk * 2.0, "up")
+    trailing_stop = _trailing_stop(symbol, stop_loss, ema20, atr)
+    risk_reward = (target2 - entry) / risk if risk > 0 else None
+    time_stop_days = _time_stop_days(setup_type)
 
     reasons: list[str] = []
     warnings: list[str] = []
@@ -37,18 +44,28 @@ def build_trade_decision(
     else:
         warnings.append(f"consideration verdict is {consideration.verdict}")
 
+    if setup_type == "unqualified":
+        warnings.append("no coded UAE setup is confirmed yet")
+    elif setup_type == "exit weakness":
+        warnings.append("exit weakness pattern is active")
+    else:
+        reasons.append(f"{setup_type} setup is detected")
+
+    if tier == "A":
+        reasons.append(liquidity_tier_description(tier))
+    elif tier == "B":
+        warnings.append(liquidity_tier_description(tier))
+    else:
+        warnings.append(liquidity_tier_description(tier))
+
     if resistance and resistance > current:
         reasons.append("room remains before recent resistance")
     if consideration.indicators.rsi14 is not None and consideration.indicators.rsi14 >= 75:
         warnings.append(f"RSI is extended at {consideration.indicators.rsi14:.1f}")
-    if risk_reward is not None and risk_reward < 1.5:
+    if risk_reward is not None and risk_reward < 1.8:
         warnings.append(f"risk/reward is weak at {risk_reward:.2f}")
 
     already_bought = position is not None
-    action = _decision_action(consideration, current, buy_high, stop_loss, target1, target2, risk_reward, position)
-    if already_bought and position:
-        reasons.append(f"already bought on {position.buy_date.isoformat()} at {position.buy_price:.3f}")
-
     days_held = None
     unrealized_pl_pct = None
     unrealized_pl_value = None
@@ -62,23 +79,55 @@ def build_trade_decision(
             warnings.append("second target has been reached")
         elif current >= target1:
             warnings.append("first target has been reached")
+        if trailing_stop is not None and current <= trailing_stop:
+            warnings.append("current price is at or below the trailing stop")
+        if (
+            time_stop_days is not None
+            and days_held >= time_stop_days
+            and unrealized_pl_pct is not None
+            and unrealized_pl_pct < 0
+        ):
+            warnings.append(f"time stop review after {time_stop_days} days without progress")
+        reasons.append(f"already bought on {position.buy_date.isoformat()} at {position.buy_price:.3f}")
+
+    action = _decision_action(
+        consideration,
+        current,
+        buy_high,
+        stop_loss,
+        trailing_stop,
+        target2,
+        risk_reward,
+        setup_type,
+        tier,
+        time_stop_days,
+        days_held,
+        unrealized_pl_pct,
+        position,
+    )
 
     return TradeDecision(
         symbol=series.symbol,
         action=action,
-        current_price=round(current, 3),
-        suggested_buy_low=round(buy_low, 3),
-        suggested_buy_high=round(buy_high, 3),
-        stop_loss=round(stop_loss, 3),
-        target1=round(target1, 3),
-        target2=round(target2, 3),
+        setup_type=setup_type,
+        liquidity_tier=tier,
+        current_price=round_to_tick(symbol, current, "nearest"),
+        suggested_buy_low=buy_low,
+        suggested_buy_high=buy_high,
+        stop_loss=stop_loss,
+        trailing_stop=trailing_stop,
+        target1=target1,
+        target2=target2,
         risk_reward=round(risk_reward, 2) if risk_reward is not None else None,
-        support20=round(support, 3) if support is not None else None,
-        resistance20=round(resistance, 3) if resistance is not None else None,
-        atr14=round(atr, 3),
+        stop_basis=stop_basis,
+        time_stop_days=time_stop_days,
+        tick_size=tick,
+        support20=round_to_tick(symbol, support, "nearest") if support is not None else None,
+        resistance20=round_to_tick(symbol, resistance, "nearest") if resistance is not None else None,
+        atr14=round(atr, 4),
         already_bought=already_bought,
         buy_date=position.buy_date if position else None,
-        buy_price=round(position.buy_price, 3) if position else None,
+        buy_price=round_to_tick(symbol, position.buy_price, "nearest") if position else None,
         quantity=position.quantity if position else None,
         days_held=days_held,
         unrealized_pl_pct=round(unrealized_pl_pct, 2) if unrealized_pl_pct is not None else None,
@@ -92,13 +141,19 @@ def trade_decision_to_dict(decision: TradeDecision) -> dict[str, object]:
     return {
         "symbol": decision.symbol,
         "action": decision.action,
+        "setup_type": decision.setup_type,
+        "liquidity_tier": decision.liquidity_tier,
         "current_price": decision.current_price,
         "suggested_buy_low": decision.suggested_buy_low,
         "suggested_buy_high": decision.suggested_buy_high,
         "stop_loss": decision.stop_loss,
+        "trailing_stop": decision.trailing_stop,
         "target1": decision.target1,
         "target2": decision.target2,
         "risk_reward": decision.risk_reward,
+        "stop_basis": decision.stop_basis,
+        "time_stop_days": decision.time_stop_days,
+        "tick_size": decision.tick_size,
         "support20": decision.support20,
         "resistance20": decision.resistance20,
         "atr14": decision.atr14,
@@ -114,8 +169,19 @@ def trade_decision_to_dict(decision: TradeDecision) -> dict[str, object]:
     }
 
 
-def _buy_zone(current: float, atr: float, support: float | None, sma20: float | None) -> tuple[float, float]:
-    reference = sma20 if sma20 is not None else current
+def _buy_zone(
+    symbol: str,
+    current: float,
+    atr: float,
+    support: float | None,
+    ema20: float | None,
+    setup_type: str,
+) -> tuple[float, float]:
+    reference = ema20 if ema20 is not None else current
+    if setup_type == "breakout":
+        high = current
+        low = current - atr * 0.75
+        return round_to_tick(symbol, low, "down"), round_to_tick(symbol, high, "up")
     high = min(current, reference + atr * 0.75)
     low_candidates = [current - atr * 1.25]
     if support is not None:
@@ -123,21 +189,102 @@ def _buy_zone(current: float, atr: float, support: float | None, sma20: float | 
     low = max(min(low_candidates), 0.001)
     if low >= high:
         low = max(high - atr, 0.001)
-    return round(low, 3), round(high, 3)
+    return round_to_tick(symbol, low, "down"), round_to_tick(symbol, high, "up")
 
 
-def _stop_loss(current: float, atr: float, support: float | None, buy_low: float) -> float:
-    candidates = [buy_low - atr * 1.25, current - atr * 2.2]
+def _stop_loss(
+    symbol: str,
+    current: float,
+    atr: float,
+    support: float | None,
+    buy_low: float,
+    setup_type: str,
+) -> tuple[float, str]:
+    multiplier = 0.9 if setup_type == "mean reversion" else 1.3
+    candidates = [buy_low - atr * multiplier, current - atr * 2.2]
     if support is not None:
         candidates.append(support - atr * 0.5)
-    return max(min(candidates), 0.001)
+    return round_to_tick(symbol, max(min(candidates), 0.001), "down"), "structure+atr"
 
 
-def _target1(entry: float, risk: float, resistance: float | None) -> float:
-    target = entry + risk * 2.0
-    if resistance is not None and resistance > entry and resistance < target:
-        return resistance
-    return target
+def _target2(symbol: str, entry: float, risk: float, resistance: float | None) -> float:
+    target = entry + risk * 2.5
+    if resistance is not None and resistance > entry + risk:
+        target = min(target, resistance)
+    return round_to_tick(symbol, target, "up")
+
+
+def _trailing_stop(symbol: str, stop_loss: float, ema20: float | None, atr: float) -> float | None:
+    if ema20 is None:
+        return stop_loss
+    return round_to_tick(symbol, max(stop_loss, ema20 - atr * 0.5), "down")
+
+
+def _setup_type(
+    series: MarketSeries,
+    consideration: ConsiderationProfile,
+    atr: float,
+    support: float | None,
+    resistance: float | None,
+    ema20: float | None,
+    ema100: float | None,
+    position: Position | None,
+) -> str:
+    bars = series.bars
+    current = series.last.close
+    indicators = consideration.indicators
+    adx = indicators.adx14 or 0.0
+    rsi = indicators.rsi14
+    obv_ok = indicators.obv_slope20 is None or indicators.obv_slope20 >= 0
+    trend_up = ema20 is not None and ema100 is not None and current > ema20 > ema100
+    directional_up = (
+        indicators.plus_di14 is None
+        or indicators.minus_di14 is None
+        or indicators.plus_di14 >= indicators.minus_di14
+    )
+
+    if position and ema20 is not None:
+        if current < ema20 and (indicators.macd_histogram or 0) < 0 and (indicators.obv_slope20 or 0) < 0:
+            return "exit weakness"
+
+    prior_resistance = _prior_resistance(bars, 20)
+    breakout_buffer = max(tick_size(series.symbol, current) * 2, atr * 0.10)
+    if (
+        trend_up
+        and prior_resistance is not None
+        and current > prior_resistance + breakout_buffer
+        and (indicators.relative_volume20 or 0) >= 1.3
+        and obv_ok
+    ):
+        return "breakout"
+
+    touched_ema = ema20 is not None and any(bar.low <= ema20 + atr * 0.5 for bar in bars[-5:])
+    if trend_up and adx >= 18 and directional_up and touched_ema and (rsi is None or rsi >= 40) and obv_ok:
+        return "trend pullback"
+
+    near_support = support is not None and current <= support + atr
+    if adx < 18 and near_support and rsi is not None and rsi < 40:
+        return "mean reversion"
+
+    if resistance is not None and current >= resistance and (indicators.rsi14 or 0) >= 75:
+        return "exit weakness"
+    return "unqualified"
+
+
+def _prior_resistance(bars: tuple, period: int) -> float | None:
+    if len(bars) < period + 1:
+        return None
+    return max(bar.high for bar in bars[-period - 1 : -1])
+
+
+def _time_stop_days(setup_type: str) -> int | None:
+    if setup_type == "breakout":
+        return 10
+    if setup_type == "mean reversion":
+        return 7
+    if setup_type == "trend pullback":
+        return 20
+    return None
 
 
 def _decision_action(
@@ -145,24 +292,45 @@ def _decision_action(
     current: float,
     buy_high: float,
     stop_loss: float,
-    target1: float,
+    trailing_stop: float | None,
     target2: float,
     risk_reward: float | None,
+    setup_type: str,
+    tier: str,
+    time_stop_days: int | None,
+    days_held: int | None,
+    unrealized_pl_pct: float | None,
     position: Position | None,
 ) -> str:
     if position:
         if current <= stop_loss:
             return "sell"
+        if trailing_stop is not None and current <= trailing_stop:
+            return "sell"
         if consideration.verdict in {"ignore", "avoid", "sell pressure"}:
+            return "sell"
+        if setup_type == "exit weakness":
+            return "sell"
+        if (
+            time_stop_days is not None
+            and days_held is not None
+            and days_held >= time_stop_days
+            and unrealized_pl_pct is not None
+            and unrealized_pl_pct < 0
+        ):
             return "sell"
         if current >= target2:
             return "sell"
         return "hold"
 
+    if tier == "C" or setup_type in {"unqualified", "exit weakness"}:
+        return "skip"
     if consideration.verdict in {"ignore", "avoid", "sell pressure", "watch"}:
         return "skip"
-    if risk_reward is None or risk_reward < 1.5:
+    if risk_reward is None or risk_reward < 1.8:
         return "skip"
+    if tier == "B":
+        return "watch"
     if consideration.verdict == "buy candidate" and current <= buy_high:
         return "buy"
     if consideration.verdict in {"buy candidate", "setup forming", "worth studying"}:

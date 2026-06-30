@@ -215,7 +215,7 @@ input[type="checkbox"] {
 
 table {
   width: 100%;
-  min-width: 1980px;
+  min-width: 2240px;
   border-collapse: collapse;
 }
 
@@ -291,6 +291,10 @@ tbody tr:hover {
   display: grid;
   gap: 6px;
   min-width: 160px;
+}
+
+.tier-cell {
+  min-width: 78px;
 }
 
 .price-stack {

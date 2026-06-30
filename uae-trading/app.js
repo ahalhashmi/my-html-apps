@@ -163,8 +163,11 @@ function renderRow(profile) {
     cell(formatNumber(profile.last_close, 3)),
     cell(verdictMarkup(consideration)),
     cell(decisionMarkup(decision)),
+    cell(setupMarkup(decision)),
+    cell(tierMarkup(decision.liquidity_tier || consideration.liquidity_tier)),
     cell(rangeMarkup(decision.suggested_buy_low, decision.suggested_buy_high)),
     cell(priceMarkup(decision.stop_loss)),
+    cell(priceMarkup(decision.trailing_stop)),
     cell(targetsMarkup(decision)),
     cell(formatNumber(decision.risk_reward, 2)),
     cell(positionMarkup(decision)),
@@ -261,6 +264,24 @@ function decisionMarkup(decision) {
   return wrapper;
 }
 
+function setupMarkup(decision) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "decision-cell";
+  wrapper.append(badge(decision.setup_type || "unqualified"));
+  const detail = document.createElement("div");
+  detail.className = "muted reason";
+  detail.textContent = decision.stop_basis || "";
+  wrapper.append(detail);
+  return wrapper;
+}
+
+function tierMarkup(tier) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "tier-cell";
+  wrapper.append(badge(tier ? `Tier ${tier}` : "Tier C"));
+  return wrapper;
+}
+
 function rangeMarkup(low, high) {
   const wrapper = document.createElement("div");
   wrapper.className = "price-stack";
@@ -353,13 +374,13 @@ function badge(value) {
 }
 
 function badgeClass(value) {
-  if (value === "buy candidate" || value === "setup forming" || value === "bullish" || value === "buy" || value === "hold") {
+  if (value === "buy candidate" || value === "setup forming" || value === "bullish" || value === "buy" || value === "hold" || value === "trend pullback" || value === "breakout" || value === "Tier A") {
     return "bullish";
   }
-  if (value === "worth studying" || value === "watch" || value === "sideways") {
+  if (value === "worth studying" || value === "watch" || value === "sideways" || value === "mean reversion" || value === "Tier B") {
     return "sideways";
   }
-  if (value === "sell pressure" || value === "avoid" || value === "ignore" || value === "bearish" || value === "sell" || value === "skip") {
+  if (value === "sell pressure" || value === "avoid" || value === "ignore" || value === "bearish" || value === "sell" || value === "skip" || value === "exit weakness" || value === "unqualified" || value === "Tier C") {
     return "bearish";
   }
   return "unknown";

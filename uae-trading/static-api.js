@@ -211,23 +211,39 @@
     const decision = copy.decision || {};
     const current = numberValue(decision.current_price ?? copy.last_close);
     const stopLoss = numberValue(decision.stop_loss);
+    const trailingStop = numberValue(decision.trailing_stop);
     const target1 = numberValue(decision.target1);
     const target2 = numberValue(decision.target2);
     const buyPrice = numberValue(position.buy_price);
     const quantity = numberValue(position.quantity);
     const verdict = copy.consideration?.verdict || "";
     const warnings = [...(decision.warnings || [])];
+    const timeStopDays = decision.time_stop_days;
+    const daysHeld = heldDays(copy, position.buy_date);
+    const unrealizedPct = round((current / buyPrice - 1) * 100, 2);
     let action = "hold";
 
-    if (current <= stopLoss || ["ignore", "avoid", "sell pressure"].includes(verdict) || current >= target2) {
+    if (
+      current <= stopLoss ||
+      (trailingStop && current <= trailingStop) ||
+      ["ignore", "avoid", "sell pressure"].includes(verdict) ||
+      decision.setup_type === "exit weakness" ||
+      (timeStopDays && daysHeld >= timeStopDays && unrealizedPct < 0) ||
+      current >= target2
+    ) {
       action = "sell";
     }
     if (current <= stopLoss) {
       warnings.push("current price is at or below the calculated stop");
+    } else if (trailingStop && current <= trailingStop) {
+      warnings.push("current price is at or below the trailing stop");
     } else if (current >= target2) {
       warnings.push("second target has been reached");
     } else if (current >= target1) {
       warnings.push("first target has been reached");
+    }
+    if (timeStopDays && daysHeld >= timeStopDays && unrealizedPct < 0) {
+      warnings.push(`time stop review after ${timeStopDays} days without progress`);
     }
 
     copy.decision = {
@@ -237,8 +253,8 @@
       buy_date: position.buy_date,
       buy_price: buyPrice,
       quantity,
-      days_held: heldDays(copy, position.buy_date),
-      unrealized_pl_pct: round((current / buyPrice - 1) * 100, 2),
+      days_held: daysHeld,
+      unrealized_pl_pct: unrealizedPct,
       unrealized_pl_value: round((current - buyPrice) * quantity, 2),
       reasons: unique([`already bought on ${position.buy_date} at ${buyPrice.toFixed(3)}`, ...(decision.reasons || [])]),
       warnings: unique(warnings),
@@ -274,12 +290,18 @@
       "current_price",
       "verdict",
       "decision_action",
+      "setup_type",
+      "liquidity_tier",
       "suggested_buy_low",
       "suggested_buy_high",
       "stop_loss",
+      "trailing_stop",
       "target1",
       "target2",
       "risk_reward",
+      "stop_basis",
+      "time_stop_days",
+      "tick_size",
       "already_bought",
       "buy_date",
       "buy_price",
@@ -303,12 +325,18 @@
         profile.last_close,
         consideration.verdict,
         decision.action,
+        decision.setup_type,
+        decision.liquidity_tier || consideration.liquidity_tier,
         decision.suggested_buy_low,
         decision.suggested_buy_high,
         decision.stop_loss,
+        decision.trailing_stop,
         decision.target1,
         decision.target2,
         decision.risk_reward,
+        decision.stop_basis,
+        decision.time_stop_days,
+        decision.tick_size,
         decision.already_bought,
         decision.buy_date,
         decision.buy_price,

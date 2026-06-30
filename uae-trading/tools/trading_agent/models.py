@@ -115,6 +115,9 @@ class IndicatorSnapshot:
     sma20: float | None
     sma50: float | None
     sma200: float | None
+    ema20: float | None
+    ema50: float | None
+    ema100: float | None
     sma20_slope_pct: float | None
     sma50_slope_pct: float | None
     rsi14: float | None
@@ -141,6 +144,7 @@ class ConsiderationProfile:
     verdict: str
     score: float
     last_close: float
+    liquidity_tier: str
     liquidity_score: float
     trend_score: float
     momentum_score: float
@@ -166,13 +170,19 @@ class Position:
 class TradeDecision:
     symbol: str
     action: str
+    setup_type: str
+    liquidity_tier: str
     current_price: float
     suggested_buy_low: float | None
     suggested_buy_high: float | None
     stop_loss: float | None
+    trailing_stop: float | None
     target1: float | None
     target2: float | None
     risk_reward: float | None
+    stop_basis: str
+    time_stop_days: int | None
+    tick_size: float | None
     support20: float | None
     resistance20: float | None
     atr14: float | None

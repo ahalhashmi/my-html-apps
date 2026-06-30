@@ -5,6 +5,7 @@ from trading_agent.indicators import (
     average_directional_index,
     average_traded_value,
     average_volume,
+    exponential_moving_average,
     moving_average_convergence_divergence,
     moving_average_slope_pct,
     normalized_average_true_range_pct,
@@ -15,6 +16,7 @@ from trading_agent.indicators import (
     series_slope_pct,
     simple_moving_average,
 )
+from trading_agent.market_rules import liquidity_tier, liquidity_tier_description
 from trading_agent.models import ConsiderationProfile, IndicatorSnapshot, MarketSeries, TrendProfile
 
 
@@ -25,8 +27,9 @@ class ConsiderationAgent:
         reasons: list[str] = []
         warnings: list[str] = []
         vetoes: list[str] = []
+        tier = liquidity_tier(series.symbol, indicators.avg_value20, indicators.active_volume_days20)
 
-        liquidity_score = _score_liquidity(indicators, reasons, warnings, vetoes)
+        liquidity_score = _score_liquidity(series.symbol, indicators, tier, reasons, warnings, vetoes)
         trend_score = _score_trend(series, indicators, trend, reasons, warnings, vetoes)
         momentum_score = _score_momentum(indicators, reasons, warnings, vetoes)
         volume_score = _score_volume(indicators, reasons, warnings, vetoes)
@@ -44,6 +47,10 @@ class ConsiderationAgent:
             score = min(score, 45)
         if indicators.active_volume_days20 < 12:
             score = min(score, 55)
+        if tier == "B":
+            score = min(score, 78)
+        if tier == "C":
+            score = min(score, 42)
         if trend and trend.overall_direction == "bearish" and trend.overall_score <= -45:
             score = min(score, 45)
         if indicators.rsi14 is not None and indicators.rsi14 >= 82:
@@ -57,6 +64,7 @@ class ConsiderationAgent:
             verdict=verdict,
             score=round(score, 1),
             last_close=series.last.close,
+            liquidity_tier=tier,
             liquidity_score=round(liquidity_score, 1),
             trend_score=round(trend_score, 1),
             momentum_score=round(momentum_score, 1),
@@ -82,6 +90,9 @@ def _build_indicators(series: MarketSeries) -> IndicatorSnapshot:
         sma20=simple_moving_average(closes, 20),
         sma50=simple_moving_average(closes, 50),
         sma200=simple_moving_average(closes, 200),
+        ema20=exponential_moving_average(closes, 20),
+        ema50=exponential_moving_average(closes, 50),
+        ema100=exponential_moving_average(closes, 100),
         sma20_slope_pct=moving_average_slope_pct(closes, 20),
         sma50_slope_pct=moving_average_slope_pct(closes, 50),
         rsi14=relative_strength_index(closes, 14),
@@ -104,7 +115,9 @@ def _build_indicators(series: MarketSeries) -> IndicatorSnapshot:
 
 
 def _score_liquidity(
+    symbol: str,
     indicators: IndicatorSnapshot,
+    tier: str,
     reasons: list[str],
     warnings: list[str],
     vetoes: list[str],
@@ -115,7 +128,17 @@ def _score_liquidity(
         warnings.append("recent volume data is missing")
         return 35
 
-    if avg_value >= 5_000_000:
+    if tier == "A":
+        reasons.append(liquidity_tier_description(tier))
+    elif tier == "B":
+        warnings.append(liquidity_tier_description(tier))
+    else:
+        vetoes.append(liquidity_tier_description(tier))
+
+    if symbol.startswith("DFM:") and avg_value < 1_250_000:
+        score = 25
+        vetoes.append(f"DFM traded value is below the Tier B threshold at {avg_value:,.0f}")
+    elif avg_value >= 5_000_000:
         score = 100
         reasons.append(f"20-day traded value is strong at {avg_value:,.0f}")
     elif avg_value >= 2_000_000:
