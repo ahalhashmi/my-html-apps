@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-01T17:27:50.277Z",
+  "fetchedAt": "2026-07-01T19:16:29.362Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -1788,17 +1788,17 @@
       "id": "80",
       "home_team_id": "45",
       "away_team_id": "42",
-      "home_score": "0",
+      "home_score": "2",
       "away_score": "1",
-      "home_scorers": "null",
+      "home_scorers": "{\"Hri Kin 75'\",\"Hri Kin 86'\"}",
       "away_scorers": "{\"Braian Sipnga 7'\"}",
       "group": "R32",
       "matchday": "4",
       "local_date": "07/01/2026 12:00",
       "persian_date": "1405-04-10 12:00",
       "stadium_id": "7",
-      "finished": "FALSE",
-      "time_elapsed": "live",
+      "finished": "TRUE",
+      "time_elapsed": "finished",
       "type": "r32",
       "home_team_label": "Winner Group L",
       "away_team_label": "3rd Group E/H/I/J/K",
@@ -2087,7 +2087,7 @@
       "_id": "679c9c8a5749c4077500e086",
       "id": "92",
       "home_team_id": "1",
-      "away_team_id": "0",
+      "away_team_id": "45",
       "home_score": "0",
       "away_score": "0",
       "home_scorers": "null",
@@ -2103,7 +2103,9 @@
       "home_team_label": "Winner Match 79",
       "away_team_label": "Winner Match 80",
       "home_team_name_en": "Mexico",
-      "home_team_name_fa": "مکزیک"
+      "home_team_name_fa": "مکزیک",
+      "away_team_name_en": "England",
+      "away_team_name_fa": "انگلستان"
     },
     {
       "_id": "679c9c8a5749c4077500e087",
