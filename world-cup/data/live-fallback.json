@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-01T15:29:30.124Z",
+  "fetchedAt": "2026-07-01T17:27:50.277Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -1788,17 +1788,17 @@
       "id": "80",
       "home_team_id": "45",
       "away_team_id": "42",
-      "home_score": "null",
-      "away_score": "null",
+      "home_score": "0",
+      "away_score": "1",
       "home_scorers": "null",
-      "away_scorers": "null",
+      "away_scorers": "{\"Braian Sipnga 7'\"}",
       "group": "R32",
       "matchday": "4",
       "local_date": "07/01/2026 12:00",
       "persian_date": "1405-04-10 12:00",
       "stadium_id": "7",
       "finished": "FALSE",
-      "time_elapsed": "notstarted",
+      "time_elapsed": "live",
       "type": "r32",
       "home_team_label": "Winner Group L",
       "away_team_label": "3rd Group E/H/I/J/K",
