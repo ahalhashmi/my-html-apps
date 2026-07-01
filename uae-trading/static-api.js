@@ -1,5 +1,6 @@
 (() => {
   const DATA_URL = "data/latest.json";
+  const PERFORMANCE_URL = "data/performance.json";
   const PORTFOLIO_KEY = "uaeTradingPortfolioV1";
   const SCAN_COUNT_KEY = "uaeTradingRefreshCountV1";
   const originalFetch = window.fetch.bind(window);
@@ -36,6 +37,9 @@
           return jsonResponse({ error: "position not found" }, 404);
         }
         return jsonResponse(await buildStatus({ trigger: "portfolio" }));
+      }
+      if (request.path === "/api/performance" && request.method === "GET") {
+        return jsonResponse(await loadPerformance());
       }
       if (request.path === "/api/export.csv" && request.method === "GET") {
         const status = await buildStatus();
@@ -87,6 +91,7 @@
 
   async function buildStatus(options = {}) {
     const latest = await loadLatest(Boolean(options.force));
+    const validation = await loadPerformance();
     const profiles = withPortfolioDecisions(latest.profiles || []);
     return {
       data_dir: DATA_URL,
@@ -101,6 +106,7 @@
       last_error: null,
       last_data_update: latest.last_data_update || null,
       next_daily_scan: nextDubaiDailyScan(),
+      validation,
       latest: {
         ...latest,
         trigger: options.trigger || latest.trigger || "static",
@@ -132,6 +138,53 @@
       return latestSnapshot;
     }
     return latestPromise;
+  }
+
+  async function loadPerformance() {
+    try {
+      const separator = PERFORMANCE_URL.includes("?") ? "&" : "?";
+      const response = await originalFetch(`${PERFORMANCE_URL}${separator}t=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) {
+        return emptyPerformance("Performance history has not been generated yet.");
+      }
+      return response.json();
+    } catch (error) {
+      return emptyPerformance("Performance history is unavailable on this static snapshot.");
+    }
+  }
+
+  function emptyPerformance(note) {
+    return {
+      summary: {
+        scan_count: 0,
+        observation_count: 0,
+        total_signals: 0,
+        open_signals: 0,
+        completed_signals: 0,
+        entered_signals: 0,
+        target1_hits: 0,
+        target2_hits: 0,
+        stopped: 0,
+        expired: 0,
+        invalidated: 0,
+        target1_hit_rate: null,
+        target2_hit_rate: null,
+        stop_rate: null,
+        average_r: null,
+        average_days_to_entry: null,
+        average_days_to_close: null,
+        average_stability: null,
+        more_confident_count: 0,
+        choppy_count: 0,
+      },
+      recent_signals: [],
+      open_signals: [],
+      by_setup: [],
+      by_tier: [],
+      stability: [],
+      note,
+      generated_at: null,
+    };
   }
 
   function getPortfolio() {

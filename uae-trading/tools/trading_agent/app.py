@@ -22,6 +22,7 @@ from trading_agent.consideration_service import (
     write_consideration_csv,
 )
 from trading_agent.portfolio import PortfolioStore, position_to_dict
+from trading_agent.validation import ValidationStore
 
 
 STATIC_ROOT = Path(__file__).with_name("web")
@@ -48,6 +49,7 @@ class DashboardState:
         auto_scan: bool,
         source: str,
         portfolio_path: Path,
+        validation_path: Path,
     ) -> None:
         self.data_dir = data_dir
         self.output_dir = output_dir
@@ -58,9 +60,12 @@ class DashboardState:
         self.auto_scan = auto_scan
         self.source = source
         self.portfolio = PortfolioStore(portfolio_path)
+        self.validation = ValidationStore(validation_path)
         self.last_data_update: UpdateResult | None = None
+        self.latest_validation: dict[str, object] | None = None
         self.latest: ScanSnapshot | None = None
         self.last_error: str | None = None
+        self.last_validation_error: str | None = None
         self.is_scanning = False
         self.scan_started_at: str | None = None
         self.last_auto_scan_date: str | None = None
@@ -89,9 +94,11 @@ class DashboardState:
                 "scan_started_at": self.scan_started_at,
                 "scan_count": self.scan_count,
                 "last_error": self.last_error,
+                "last_validation_error": self.last_validation_error,
                 "last_data_update": self.last_data_update.__dict__ if self.last_data_update else None,
                 "next_daily_scan": self._next_daily_scan().isoformat(timespec="seconds"),
                 "latest": self._latest_payload_locked(),
+                "validation": self.latest_validation,
                 "portfolio": [position_to_dict(position) for position in self.portfolio.list_positions()],
                 "csv_available": self.latest_csv_path.exists(),
             }
@@ -136,8 +143,10 @@ class DashboardState:
                 summary=summarize_considerations(profiles),
             )
             self._persist_snapshot(snapshot, profiles, decisions)
+            validation_report = self._record_validation(snapshot)
             with self.lock:
                 self.latest = snapshot
+                self.latest_validation = validation_report
                 self.scan_count += 1
                 if trigger == "daily":
                     self.last_auto_scan_date = self._now().date().isoformat()
@@ -150,6 +159,9 @@ class DashboardState:
                 self.scan_started_at = None
             self.scan_lock.release()
         return self.status()
+
+    def performance(self) -> dict[str, object]:
+        return self.validation.performance_report()
 
     def add_position(self, payload: dict[str, Any]) -> dict[str, object]:
         self.portfolio.add_position(
@@ -183,6 +195,17 @@ class DashboardState:
             encoding="utf-8",
         )
         write_consideration_csv(profiles, self.latest_csv_path, decisions)
+
+    def _record_validation(self, snapshot: ScanSnapshot) -> dict[str, object]:
+        try:
+            report = self.validation.record_snapshot(snapshot, self.data_dir)
+        except Exception as exc:  # Validation should never block the scanner itself.
+            with self.lock:
+                self.last_validation_error = str(exc)
+            return self.validation.performance_report()
+        with self.lock:
+            self.last_validation_error = None
+        return report
 
     def _latest_payload_locked(self) -> dict[str, object] | None:
         if self.latest is None:
@@ -219,6 +242,9 @@ def make_handler(state: DashboardState) -> type[SimpleHTTPRequestHandler]:
                 return
             if path == "/api/portfolio":
                 self._send_json({"positions": self.app_state.status()["portfolio"]})
+                return
+            if path == "/api/performance":
+                self._send_json(self.app_state.performance())
                 return
             if path == "/api/export.csv":
                 self._send_file(self.app_state.latest_csv_path)
@@ -341,6 +367,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-auto-scan", action="store_true")
     parser.add_argument("--source", choices=["local", "stockanalysis"], default="local")
     parser.add_argument("--portfolio-path", default="output/portfolio.json")
+    parser.add_argument("--validation-path", default="output/validation.sqlite")
     args = parser.parse_args(argv)
 
     state = DashboardState(
@@ -352,6 +379,7 @@ def main(argv: list[str] | None = None) -> int:
         auto_scan=not args.no_auto_scan,
         source=args.source,
         portfolio_path=Path(args.portfolio_path),
+        validation_path=Path(args.validation_path),
     )
     stop_event = threading.Event()
     scheduler = threading.Thread(target=scheduler_loop, args=(state, stop_event), daemon=True)

@@ -25,181 +25,308 @@
         </div>
       </header>
 
-      <section class="status-strip" aria-label="Opportunity summary">
-        <div class="metric">
-          <span>Total</span>
-          <strong id="totalCount">0</strong>
-        </div>
-        <div class="metric bullish">
-          <span>Buy Candidates</span>
-          <strong id="buyCandidateCount">0</strong>
-        </div>
-        <div class="metric bullish">
-          <span>Setup Forming</span>
-          <strong id="setupCount">0</strong>
-        </div>
-        <div class="metric sideways">
-          <span>Worth Studying</span>
-          <strong id="studyCount">0</strong>
-        </div>
-        <div class="metric unknown">
-          <span>Watch</span>
-          <strong id="watchCount">0</strong>
-        </div>
-        <div class="metric bearish">
-          <span>Sell / Avoid</span>
-          <strong id="sellAvoidCount">0</strong>
-        </div>
-      </section>
+      <nav class="page-tabs" aria-label="Dashboard pages">
+        <button id="scannerOpen" class="tab-button active" type="button">Scanner</button>
+        <button id="performanceOpen" class="tab-button" type="button">Decision Performance</button>
+      </nav>
 
-      <section class="toolbar" aria-label="Filters">
-        <label>
-          Search
-          <input id="search" type="search" placeholder="Symbol">
-        </label>
-        <label>
-          Market
-          <select id="marketFilter">
-            <option value="all">All</option>
-            <option value="ADX">ADX</option>
-            <option value="DFM">DFM</option>
-          </select>
-        </label>
-        <label>
-          Verdict
-          <select id="verdictFilter">
-            <option value="all">All</option>
-            <option value="buy candidate">Buy Candidate</option>
-            <option value="setup forming">Setup Forming</option>
-            <option value="worth studying">Worth Studying</option>
-            <option value="watch">Watch</option>
-            <option value="sell pressure">Sell Pressure</option>
-            <option value="avoid">Avoid</option>
-            <option value="ignore">Ignore</option>
-          </select>
-        </label>
-        <label>
-          Sort
-          <select id="sortKey">
-            <option value="score">Opportunity score</option>
-            <option value="liquidity">Liquidity</option>
-            <option value="trend">Trend</option>
-            <option value="momentum">Momentum</option>
-            <option value="volume">Volume</option>
-            <option value="risk">Risk</option>
-          </select>
-        </label>
-        <label class="inline-control">
-          <input id="autoScan" type="checkbox">
-          Daily scan
-        </label>
-        <label>
-          Morning time
-          <input id="dailyTime" type="time">
-        </label>
-      </section>
-
-      <section class="legend-panel" aria-label="Scanner legend">
-        <details>
-          <summary>Help legend</summary>
-          <div class="legend-grid">
-            <article class="legend-section">
-              <h2>Verdict</h2>
-              <dl>
-                <dt>Buy Candidate</dt>
-                <dd>Strongest shortlist: trend, momentum, liquidity, volume, and risk filters are broadly aligned.</dd>
-                <dt>Setup Forming</dt>
-                <dd>Positive structure is developing, but the price, volume, or risk/reward still needs confirmation.</dd>
-                <dt>Worth Studying</dt>
-                <dd>Interesting enough for manual review, but not yet clean enough to treat as an actionable setup.</dd>
-                <dt>Watch</dt>
-                <dd>Mixed or neutral reading; keep it on the radar until trend or volume improves.</dd>
-                <dt>Sell Pressure</dt>
-                <dd>Weak tape or bearish trend pressure; useful mainly for exits or avoiding new buys.</dd>
-                <dt>Avoid / Ignore</dt>
-                <dd>Failed important filters, has poor data, or is too weak/illiquid for the current model.</dd>
-              </dl>
-            </article>
-
-            <article class="legend-section">
-              <h2>Decision</h2>
-              <dl>
-                <dt>Buy</dt>
-                <dd>Model sees a valid setup near the suggested buy zone with acceptable liquidity and risk/reward.</dd>
-                <dt>Hold</dt>
-                <dd>You marked it as bought, and the position has not hit an exit trigger yet.</dd>
-                <dt>Sell</dt>
-                <dd>A held position hit a stop, trailing stop, target/weakness rule, or time-based exit condition.</dd>
-                <dt>Watch</dt>
-                <dd>Quality is acceptable, but price location or risk/reward is not good enough to buy now.</dd>
-                <dt>Skip</dt>
-                <dd>No current action. Usually caused by weak setup quality, low liquidity, or poor risk/reward.</dd>
-              </dl>
-            </article>
-
-            <article class="legend-section">
-              <h2>Setup</h2>
-              <dl>
-                <dt>Trend Pullback</dt>
-                <dd>Price is in an uptrend and pulling back toward a support/EMA area instead of chasing strength.</dd>
-                <dt>Breakout</dt>
-                <dd>Price is pushing through recent resistance with momentum and volume support.</dd>
-                <dt>Mean Reversion</dt>
-                <dd>Price is extended below recent averages and may rebound, but this is usually lower conviction.</dd>
-                <dt>Exit Weakness</dt>
-                <dd>Structure is deteriorating; this matters most if the stock is already in your portfolio.</dd>
-                <dt>Unqualified</dt>
-                <dd>The stock does not currently match one of the model's actionable technical patterns.</dd>
-              </dl>
-            </article>
-
-            <article class="legend-section">
-              <h2>Tier</h2>
-              <dl>
-                <dt>Tier A</dt>
-                <dd>Best liquidity bucket. The model allows buy decisions only when other filters also pass.</dd>
-                <dt>Tier B</dt>
-                <dd>Tradable but thinner. The model can watch/study it, but it is more conservative on buys.</dd>
-                <dt>Tier C</dt>
-                <dd>Too thin or inactive for this model. Usually skipped unless liquidity improves.</dd>
-              </dl>
-            </article>
+      <section id="scannerPage" class="page-view">
+        <section class="status-strip" aria-label="Opportunity summary">
+          <div class="metric">
+            <span>Total</span>
+            <strong id="totalCount">0</strong>
           </div>
-          <p class="legend-note">Buy zone, stop, trailing stop, and targets are rounded to UAE market tick sizes. Treat them as decision-support levels, not automatic orders.</p>
-        </details>
+          <div class="metric bullish">
+            <span>Buy Candidates</span>
+            <strong id="buyCandidateCount">0</strong>
+          </div>
+          <div class="metric bullish">
+            <span>Setup Forming</span>
+            <strong id="setupCount">0</strong>
+          </div>
+          <div class="metric sideways">
+            <span>Worth Studying</span>
+            <strong id="studyCount">0</strong>
+          </div>
+          <div class="metric unknown">
+            <span>Watch</span>
+            <strong id="watchCount">0</strong>
+          </div>
+          <div class="metric bearish">
+            <span>Sell / Avoid</span>
+            <strong id="sellAvoidCount">0</strong>
+          </div>
+        </section>
+
+        <section class="toolbar" aria-label="Filters">
+          <label>
+            Search
+            <input id="search" type="search" placeholder="Symbol">
+          </label>
+          <label>
+            Market
+            <select id="marketFilter">
+              <option value="all">All</option>
+              <option value="ADX">ADX</option>
+              <option value="DFM">DFM</option>
+            </select>
+          </label>
+          <label>
+            Verdict
+            <select id="verdictFilter">
+              <option value="all">All</option>
+              <option value="buy candidate">Buy Candidate</option>
+              <option value="setup forming">Setup Forming</option>
+              <option value="worth studying">Worth Studying</option>
+              <option value="watch">Watch</option>
+              <option value="sell pressure">Sell Pressure</option>
+              <option value="avoid">Avoid</option>
+              <option value="ignore">Ignore</option>
+            </select>
+          </label>
+          <label>
+            Sort
+            <select id="sortKey">
+              <option value="score">Opportunity score</option>
+              <option value="liquidity">Liquidity</option>
+              <option value="trend">Trend</option>
+              <option value="momentum">Momentum</option>
+              <option value="volume">Volume</option>
+              <option value="risk">Risk</option>
+            </select>
+          </label>
+          <label class="inline-control">
+            <input id="autoScan" type="checkbox">
+            Daily scan
+          </label>
+          <label>
+            Morning time
+            <input id="dailyTime" type="time">
+          </label>
+        </section>
+
+        <section class="legend-panel" aria-label="Scanner legend">
+          <details>
+            <summary>Help legend</summary>
+            <div class="legend-grid">
+              <article class="legend-section">
+                <h2>Verdict</h2>
+                <dl>
+                  <dt>Buy Candidate</dt>
+                  <dd>Strongest shortlist: trend, momentum, liquidity, volume, and risk filters are broadly aligned.</dd>
+                  <dt>Setup Forming</dt>
+                  <dd>Positive structure is developing, but the price, volume, or risk/reward still needs confirmation.</dd>
+                  <dt>Worth Studying</dt>
+                  <dd>Interesting enough for manual review, but not yet clean enough to treat as an actionable setup.</dd>
+                  <dt>Watch</dt>
+                  <dd>Mixed or neutral reading; keep it on the radar until trend or volume improves.</dd>
+                  <dt>Sell Pressure</dt>
+                  <dd>Weak tape or bearish trend pressure; useful mainly for exits or avoiding new buys.</dd>
+                  <dt>Avoid / Ignore</dt>
+                  <dd>Failed important filters, has poor data, or is too weak/illiquid for the current model.</dd>
+                </dl>
+              </article>
+
+              <article class="legend-section">
+                <h2>Decision</h2>
+                <dl>
+                  <dt>Buy</dt>
+                  <dd>Model sees a valid setup near the suggested buy zone with acceptable liquidity and risk/reward.</dd>
+                  <dt>Hold</dt>
+                  <dd>You marked it as bought, and the position has not hit an exit trigger yet.</dd>
+                  <dt>Sell</dt>
+                  <dd>A held position hit a stop, trailing stop, target/weakness rule, or time-based exit condition.</dd>
+                  <dt>Watch</dt>
+                  <dd>Quality is acceptable, but price location or risk/reward is not good enough to buy now.</dd>
+                  <dt>Skip</dt>
+                  <dd>No current action. Usually caused by weak setup quality, low liquidity, or poor risk/reward.</dd>
+                </dl>
+              </article>
+
+              <article class="legend-section">
+                <h2>Setup</h2>
+                <dl>
+                  <dt>Trend Pullback</dt>
+                  <dd>Price is in an uptrend and pulling back toward a support/EMA area instead of chasing strength.</dd>
+                  <dt>Breakout</dt>
+                  <dd>Price is pushing through recent resistance with momentum and volume support.</dd>
+                  <dt>Mean Reversion</dt>
+                  <dd>Price is extended below recent averages and may rebound, but this is usually lower conviction.</dd>
+                  <dt>Exit Weakness</dt>
+                  <dd>Structure is deteriorating; this matters most if the stock is already in your portfolio.</dd>
+                  <dt>Unqualified</dt>
+                  <dd>The stock does not currently match one of the model's actionable technical patterns.</dd>
+                </dl>
+              </article>
+
+              <article class="legend-section">
+                <h2>Tier</h2>
+                <dl>
+                  <dt>Tier A</dt>
+                  <dd>Best liquidity bucket. The model allows buy decisions only when other filters also pass.</dd>
+                  <dt>Tier B</dt>
+                  <dd>Tradable but thinner. The model can watch/study it, but it is more conservative on buys.</dd>
+                  <dt>Tier C</dt>
+                  <dd>Too thin or inactive for this model. Usually skipped unless liquidity improves.</dd>
+                </dl>
+              </article>
+            </div>
+            <p class="legend-note">Buy zone, stop, trailing stop, and targets are rounded to UAE market tick sizes. Treat them as decision-support levels, not automatic orders.</p>
+          </details>
+        </section>
+
+        <main class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Current</th>
+                <th>Verdict</th>
+                <th>Decision</th>
+                <th>Setup</th>
+                <th>Tier</th>
+                <th>Buy Zone</th>
+                <th>Stop</th>
+                <th>Trail</th>
+                <th>Targets</th>
+                <th>R/R</th>
+                <th>Position</th>
+                <th>Score</th>
+                <th>Liquidity</th>
+                <th>Trend</th>
+                <th>Momentum</th>
+                <th>Volume</th>
+                <th>Risk</th>
+                <th>1 month</th>
+                <th>6 months</th>
+                <th>1 year</th>
+              </tr>
+            </thead>
+            <tbody id="trendRows"></tbody>
+          </table>
+          <div id="emptyState" class="empty" hidden>No symbols match the current filters.</div>
+        </main>
       </section>
 
-      <main class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Symbol</th>
-              <th>Current</th>
-              <th>Verdict</th>
-              <th>Decision</th>
-              <th>Setup</th>
-              <th>Tier</th>
-              <th>Buy Zone</th>
-              <th>Stop</th>
-              <th>Trail</th>
-              <th>Targets</th>
-              <th>R/R</th>
-              <th>Position</th>
-              <th>Score</th>
-              <th>Liquidity</th>
-              <th>Trend</th>
-              <th>Momentum</th>
-              <th>Volume</th>
-              <th>Risk</th>
-              <th>1 month</th>
-              <th>6 months</th>
-              <th>1 year</th>
-            </tr>
-          </thead>
-          <tbody id="trendRows"></tbody>
-        </table>
-        <div id="emptyState" class="empty" hidden>No symbols match the current filters.</div>
-      </main>
+      <section id="performancePage" class="page-view" hidden>
+        <section class="performance-intro">
+          <div>
+            <h2>Decision Performance</h2>
+            <p>Automated validation of decision stability, signal entries, stops, targets, and time-to-result.</p>
+          </div>
+          <button id="performanceRefresh" class="secondary" type="button">Refresh Performance</button>
+        </section>
+
+        <section class="status-strip performance-strip" aria-label="Decision performance summary">
+          <div class="metric">
+            <span>Total Signals</span>
+            <strong id="perfTotalSignals">0</strong>
+          </div>
+          <div class="metric unknown">
+            <span>Open Signals</span>
+            <strong id="perfOpenSignals">0</strong>
+          </div>
+          <div class="metric bullish">
+            <span>Target 1 Hit</span>
+            <strong id="perfTarget1Rate">-</strong>
+          </div>
+          <div class="metric bullish">
+            <span>Target 2 Hit</span>
+            <strong id="perfTarget2Rate">-</strong>
+          </div>
+          <div class="metric bearish">
+            <span>Stop Rate</span>
+            <strong id="perfStopRate">-</strong>
+          </div>
+          <div class="metric sideways">
+            <span>Avg R</span>
+            <strong id="perfAverageR">-</strong>
+          </div>
+        </section>
+
+        <section class="performance-grid">
+          <article class="performance-panel wide">
+            <div class="panel-header">
+              <h3>Signal Lifecycle</h3>
+              <span id="perfGeneratedAt" class="muted">Waiting</span>
+            </div>
+            <div class="compact-table-wrap">
+              <table class="compact-table">
+                <thead>
+                  <tr>
+                    <th>Symbol</th>
+                    <th>Status</th>
+                    <th>Setup</th>
+                    <th>Opened</th>
+                    <th>Entry</th>
+                    <th>Exit</th>
+                    <th>R</th>
+                    <th>Stability</th>
+                  </tr>
+                </thead>
+                <tbody id="signalRows"></tbody>
+              </table>
+              <div id="signalsEmpty" class="empty" hidden>No validation signals yet. They will appear after actionable buy/watch decisions are recorded.</div>
+            </div>
+          </article>
+
+          <article class="performance-panel">
+            <h3>By Setup</h3>
+            <div class="compact-table-wrap">
+              <table class="compact-table">
+                <thead>
+                  <tr>
+                    <th>Setup</th>
+                    <th>Total</th>
+                    <th>Target 2</th>
+                    <th>Avg R</th>
+                  </tr>
+                </thead>
+                <tbody id="setupPerformanceRows"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="performance-panel">
+            <h3>By Tier</h3>
+            <div class="compact-table-wrap">
+              <table class="compact-table">
+                <thead>
+                  <tr>
+                    <th>Tier</th>
+                    <th>Total</th>
+                    <th>Target 2</th>
+                    <th>Avg R</th>
+                  </tr>
+                </thead>
+                <tbody id="tierPerformanceRows"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="performance-panel wide">
+            <h3>Decision Stability</h3>
+            <div class="compact-table-wrap">
+              <table class="compact-table">
+                <thead>
+                  <tr>
+                    <th>Symbol</th>
+                    <th>Confidence</th>
+                    <th>Stable Days</th>
+                    <th>Changes</th>
+                    <th>Last Verdict</th>
+                    <th>Last Decision</th>
+                    <th>Setup</th>
+                    <th>Score</th>
+                  </tr>
+                </thead>
+                <tbody id="stabilityRows"></tbody>
+              </table>
+              <div id="stabilityEmpty" class="empty" hidden>No decision history yet.</div>
+            </div>
+          </article>
+        </section>
+      </section>
 
       <div id="toast" class="toast" hidden></div>
 

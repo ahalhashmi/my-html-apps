@@ -1,6 +1,8 @@
 const state = {
   profiles: [],
   portfolio: [],
+  performance: null,
+  page: "scanner",
   status: null,
   filters: {
     search: "",
@@ -24,6 +26,24 @@ const els = {
   portfolioRows: document.getElementById("portfolioRows"),
   portfolioEmpty: document.getElementById("portfolioEmpty"),
   portfolioCount: document.getElementById("portfolioCount"),
+  scannerOpen: document.getElementById("scannerOpen"),
+  performanceOpen: document.getElementById("performanceOpen"),
+  scannerPage: document.getElementById("scannerPage"),
+  performancePage: document.getElementById("performancePage"),
+  performanceRefresh: document.getElementById("performanceRefresh"),
+  perfTotalSignals: document.getElementById("perfTotalSignals"),
+  perfOpenSignals: document.getElementById("perfOpenSignals"),
+  perfTarget1Rate: document.getElementById("perfTarget1Rate"),
+  perfTarget2Rate: document.getElementById("perfTarget2Rate"),
+  perfStopRate: document.getElementById("perfStopRate"),
+  perfAverageR: document.getElementById("perfAverageR"),
+  perfGeneratedAt: document.getElementById("perfGeneratedAt"),
+  signalRows: document.getElementById("signalRows"),
+  signalsEmpty: document.getElementById("signalsEmpty"),
+  setupPerformanceRows: document.getElementById("setupPerformanceRows"),
+  tierPerformanceRows: document.getElementById("tierPerformanceRows"),
+  stabilityRows: document.getElementById("stabilityRows"),
+  stabilityEmpty: document.getElementById("stabilityEmpty"),
   scanNow: document.getElementById("scanNow"),
   lastScan: document.getElementById("lastScan"),
   nextScan: document.getElementById("nextScan"),
@@ -52,7 +72,18 @@ async function refreshStatus() {
   state.status = payload;
   state.profiles = payload.latest?.profiles || [];
   state.portfolio = payload.portfolio || [];
+  state.performance = payload.validation || state.performance;
   render();
+}
+
+async function refreshPerformance() {
+  const response = await fetch("/api/performance", { cache: "no-store" });
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.error || "Performance failed");
+  }
+  state.performance = payload;
+  renderPerformance();
 }
 
 async function scanNow() {
@@ -66,8 +97,12 @@ async function scanNow() {
     state.status = payload;
     state.profiles = payload.latest?.profiles || [];
     state.portfolio = payload.portfolio || [];
+    state.performance = payload.validation || state.performance;
     showToast("Scan complete");
     render();
+    if (state.page === "performance") {
+      await refreshPerformance();
+    }
   } catch (error) {
     showToast(error.message || "Scan failed");
   } finally {
@@ -92,6 +127,7 @@ async function saveSettings() {
     state.status = payload;
     state.profiles = payload.latest?.profiles || [];
     state.portfolio = payload.portfolio || [];
+    state.performance = payload.validation || state.performance;
     showToast("Settings saved");
     render();
   } catch (error) {
@@ -128,6 +164,8 @@ function render() {
   els.emptyState.hidden = rows.length > 0;
   renderSymbolList();
   renderPortfolio();
+  renderPage();
+  renderPerformance();
   setBusy(Boolean(status.is_scanning));
 }
 
@@ -209,6 +247,129 @@ function renderPortfolio() {
   els.portfolioRows.replaceChildren(...rows);
   els.portfolioEmpty.hidden = rows.length > 0;
   els.portfolioCount.textContent = `${rows.length} ${rows.length === 1 ? "position" : "positions"}`;
+}
+
+function renderPage() {
+  const performance = state.page === "performance";
+  els.scannerPage.hidden = performance;
+  els.performancePage.hidden = !performance;
+  els.scannerOpen.classList.toggle("active", !performance);
+  els.performanceOpen.classList.toggle("active", performance);
+}
+
+function renderPerformance() {
+  const report = state.performance || {};
+  const summary = report.summary || {};
+  els.perfTotalSignals.textContent = summary.total_signals || 0;
+  els.perfOpenSignals.textContent = summary.open_signals || 0;
+  els.perfTarget1Rate.textContent = formatPercent(summary.target1_hit_rate);
+  els.perfTarget2Rate.textContent = formatPercent(summary.target2_hit_rate);
+  els.perfStopRate.textContent = formatPercent(summary.stop_rate);
+  els.perfAverageR.textContent = formatR(summary.average_r);
+  els.perfGeneratedAt.textContent = report.generated_at ? `Updated ${formatDateTime(report.generated_at)}` : "Waiting";
+
+  const signalRows = (report.recent_signals || []).map(renderSignalRow);
+  els.signalRows.replaceChildren(...signalRows);
+  els.signalsEmpty.hidden = signalRows.length > 0;
+
+  els.setupPerformanceRows.replaceChildren(...(report.by_setup || []).map(renderGroupPerformanceRow));
+  els.tierPerformanceRows.replaceChildren(...(report.by_tier || []).map(renderGroupPerformanceRow));
+
+  const stabilityRows = (report.stability || []).map(renderStabilityRow);
+  els.stabilityRows.replaceChildren(...stabilityRows);
+  els.stabilityEmpty.hidden = stabilityRows.length > 0;
+}
+
+function renderSignalRow(signal) {
+  const row = document.createElement("tr");
+  row.append(
+    cell(signal.symbol || "-"),
+    cell(statusStack(signal.status || "unknown", signal.outcome || "")),
+    cell(setupTierStack(signal.setup_type, signal.liquidity_tier)),
+    cell(dateStack(signal.opened_date, signal.as_of_date ? `data ${signal.as_of_date}` : "")),
+    cell(dateStack(signal.entry_date, signal.entry_price ? formatNumber(signal.entry_price, 3) : "")),
+    cell(dateStack(signal.closed_date, signal.close_price ? formatNumber(signal.close_price, 3) : "")),
+    cell(formatR(signal.r_multiple)),
+    cell(stabilityMarkup(signal.stability_score, signal.observation_count))
+  );
+  return row;
+}
+
+function renderGroupPerformanceRow(group) {
+  const row = document.createElement("tr");
+  row.append(
+    cell(group.name || "-"),
+    cell(group.total || 0),
+    cell(formatPercent(group.target2_hit_rate)),
+    cell(formatR(group.average_r))
+  );
+  return row;
+}
+
+function renderStabilityRow(item) {
+  const row = document.createElement("tr");
+  const changes = `${item.action_changes || 0}/${item.verdict_changes || 0}/${item.setup_changes || 0}`;
+  row.append(
+    cell(item.symbol || "-"),
+    cell(badge(item.confidence || "unknown")),
+    cell(`${item.stable_streak || 0} of ${item.days_tracked || 0}`),
+    cell(changes),
+    cell(badge(item.last_verdict || "unknown")),
+    cell(badge(item.last_action || "unknown")),
+    cell(badge(item.last_setup || "unknown")),
+    cell(scoreMarkup(item.stability_score))
+  );
+  return row;
+}
+
+function statusStack(status, detail) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "status-stack";
+  wrapper.append(badge(status || "unknown"));
+  if (detail) {
+    const note = document.createElement("div");
+    note.className = "mini-stat";
+    note.textContent = detail;
+    wrapper.append(note);
+  }
+  return wrapper;
+}
+
+function setupTierStack(setup, tier) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "status-stack";
+  wrapper.append(badge(setup || "unqualified"));
+  const note = document.createElement("div");
+  note.className = "mini-stat";
+  note.textContent = tier ? `Tier ${tier}` : "Tier -";
+  wrapper.append(note);
+  return wrapper;
+}
+
+function dateStack(date, detail) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "status-stack";
+  const main = document.createElement("div");
+  main.textContent = date || "-";
+  wrapper.append(main);
+  if (detail) {
+    const note = document.createElement("div");
+    note.className = "mini-stat";
+    note.textContent = detail;
+    wrapper.append(note);
+  }
+  return wrapper;
+}
+
+function stabilityMarkup(score, count) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "status-stack";
+  wrapper.append(scoreMarkup(score));
+  const note = document.createElement("div");
+  note.className = "mini-stat";
+  note.textContent = `${count || 0} observations`;
+  wrapper.append(note);
+  return wrapper;
 }
 
 function symbolMarkup(symbol, price) {
@@ -369,21 +530,25 @@ function windowMarkup(window) {
 function badge(value) {
   const item = document.createElement("span");
   item.className = `badge ${badgeClass(value)}`;
-  item.textContent = value || "unknown";
+  item.textContent = labelText(value || "unknown");
   return item;
 }
 
 function badgeClass(value) {
-  if (value === "buy candidate" || value === "setup forming" || value === "bullish" || value === "buy" || value === "hold" || value === "trend pullback" || value === "breakout" || value === "Tier A") {
+  if (value === "buy candidate" || value === "setup forming" || value === "bullish" || value === "buy" || value === "hold" || value === "trend pullback" || value === "breakout" || value === "Tier A" || value === "target1_hit" || value === "target2" || value === "more confident") {
     return "bullish";
   }
-  if (value === "worth studying" || value === "watch" || value === "sideways" || value === "mean reversion" || value === "Tier B") {
+  if (value === "worth studying" || value === "watch" || value === "sideways" || value === "mean reversion" || value === "Tier B" || value === "waiting_entry" || value === "active" || value === "expired" || value === "steady") {
     return "sideways";
   }
-  if (value === "sell pressure" || value === "avoid" || value === "ignore" || value === "bearish" || value === "sell" || value === "skip" || value === "exit weakness" || value === "unqualified" || value === "Tier C") {
+  if (value === "sell pressure" || value === "avoid" || value === "ignore" || value === "bearish" || value === "sell" || value === "skip" || value === "exit weakness" || value === "unqualified" || value === "Tier C" || value === "stopped" || value === "invalidated" || value === "choppy") {
     return "bearish";
   }
   return "unknown";
+}
+
+function labelText(value) {
+  return String(value || "unknown").replace(/_/g, " ");
 }
 
 function deleteButton(positionId) {
@@ -444,6 +609,20 @@ function formatSigned(value, digits = 1) {
   return `${number >= 0 ? "+" : ""}${number.toFixed(digits)}`;
 }
 
+function formatPercent(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return "-";
+  }
+  return `${Number(value).toFixed(0)}%`;
+}
+
+function formatR(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return "-";
+  }
+  return `${Number(value).toFixed(2)}R`;
+}
+
 function formatQuantity(value) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) {
     return "-";
@@ -495,6 +674,7 @@ async function addPosition(event) {
     state.status = payload;
     state.profiles = payload.latest?.profiles || [];
     state.portfolio = payload.portfolio || [];
+    state.performance = payload.validation || state.performance;
     els.portfolioForm.reset();
     setDefaultBuyDate();
     showToast("Position added");
@@ -517,6 +697,7 @@ async function deletePosition(positionId) {
     state.status = payload;
     state.profiles = payload.latest?.profiles || [];
     state.portfolio = payload.portfolio || [];
+    state.performance = payload.validation || state.performance;
     showToast("Position removed");
     render();
   } catch (error) {
@@ -543,6 +724,18 @@ function showToast(message) {
 }
 
 els.scanNow.addEventListener("click", scanNow);
+els.scannerOpen.addEventListener("click", () => {
+  state.page = "scanner";
+  renderPage();
+});
+els.performanceOpen.addEventListener("click", () => {
+  state.page = "performance";
+  renderPage();
+  refreshPerformance().catch((error) => showToast(error.message || "Performance failed"));
+});
+els.performanceRefresh.addEventListener("click", () => {
+  refreshPerformance().catch((error) => showToast(error.message || "Performance failed"));
+});
 els.portfolioOpen.addEventListener("click", () => {
   setDefaultBuyDate();
   els.portfolioDialog.showModal();
