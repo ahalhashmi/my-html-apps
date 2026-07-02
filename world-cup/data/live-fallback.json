@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-02T08:31:02.268Z",
+  "fetchedAt": "2026-07-02T11:07:52.675Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -1850,7 +1850,7 @@
       "away_team_id": "34",
       "home_score": "3",
       "away_score": "2",
-      "home_scorers": "{\"Romelu Lukaku 86'\",\"Youri Tielemans 89'\"}",
+      "home_scorers": "{\"Romelu Lukaku 86'\",\"Youri Tielemans 89'\",\"Youri Tielemans 125(P)'\"}",
       "away_scorers": "{\"Habib Diarra 25'\",\"Ismaïla Sarr 51'\"}",
       "group": "R32",
       "matchday": "4",
