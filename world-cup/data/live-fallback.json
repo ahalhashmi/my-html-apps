@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-02T15:24:20.317Z",
+  "fetchedAt": "2026-07-02T17:05:51.724Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -1902,8 +1902,8 @@
       "id": "84",
       "home_team_id": "29",
       "away_team_id": "39",
-      "home_score": "0",
-      "away_score": "0",
+      "home_score": "null",
+      "away_score": "null",
       "home_scorers": "null",
       "away_scorers": "null",
       "group": "R32",
@@ -1916,6 +1916,12 @@
       "type": "r32",
       "home_team_label": "Winner Group H",
       "away_team_label": "Runner-up Group J",
+      "away_penalty_misses": "null",
+      "away_penalty_score": "null",
+      "away_penalty_scorers": "null",
+      "home_penalty_misses": "null",
+      "home_penalty_score": "null",
+      "home_penalty_scorers": "null",
       "home_team_name_en": "Spain",
       "home_team_name_fa": "اسپانیا",
       "away_team_name_en": "Austria",
