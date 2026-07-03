@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-03T17:43:22.904Z",
+  "fetchedAt": "2026-07-03T18:49:38.335Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -2022,17 +2022,17 @@
       "id": "88",
       "home_team_id": "15",
       "away_team_id": "26",
-      "home_score": "null",
-      "away_score": "null",
+      "home_score": "0",
+      "away_score": "1",
       "home_scorers": "null",
-      "away_scorers": "null",
+      "away_scorers": "{\"Emam Ashour 13'\"}",
       "group": "R32",
       "matchday": "4",
       "local_date": "07/03/2026 13:00",
       "persian_date": "1405-04-12 13:00",
       "stadium_id": "4",
       "finished": "FALSE",
-      "time_elapsed": "notstarted",
+      "time_elapsed": "live",
       "type": "r32",
       "home_team_label": "Runner-up Group D",
       "away_team_label": "Runner-up Group G",
