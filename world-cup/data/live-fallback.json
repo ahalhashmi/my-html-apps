@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-03T18:49:38.335Z",
+  "fetchedAt": "2026-07-03T20:04:59.292Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -2022,9 +2022,9 @@
       "id": "88",
       "home_team_id": "15",
       "away_team_id": "26",
-      "home_score": "0",
+      "home_score": "1",
       "away_score": "1",
-      "home_scorers": "null",
+      "home_scorers": "{\"Mohamed Hany 55'\"}",
       "away_scorers": "{\"Emam Ashour 13'\"}",
       "group": "R32",
       "matchday": "4",
