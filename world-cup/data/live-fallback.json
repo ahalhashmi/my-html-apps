@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-03T22:17:25.617Z",
+  "fetchedAt": "2026-07-03T23:19:29.215Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -1968,9 +1968,9 @@
       "id": "86",
       "home_team_id": "37",
       "away_team_id": "30",
-      "home_score": "0",
+      "home_score": "1",
       "away_score": "0",
-      "home_scorers": "null",
+      "home_scorers": "{\"Lionel Messi 29'\"}",
       "away_scorers": "null",
       "group": "R32",
       "matchday": "4",
