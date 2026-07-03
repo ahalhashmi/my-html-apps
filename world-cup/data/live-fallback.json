@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-02T23:36:24.572Z",
+  "fetchedAt": "2026-07-03T01:12:50.788Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -1878,17 +1878,17 @@
       "id": "83",
       "home_team_id": "41",
       "away_team_id": "46",
-      "home_score": "0",
-      "away_score": "0",
-      "home_scorers": "null",
-      "away_scorers": "null",
+      "home_score": "2",
+      "away_score": "1",
+      "home_scorers": "{\"Gvnchalv Ramvs 90+4'\"}",
+      "away_scorers": "{\"Ivan Perišić 53'\"}",
       "group": "R32",
       "matchday": "4",
       "local_date": "07/02/2026 19:00",
       "persian_date": "1405-04-11 19:00",
       "stadium_id": "12",
-      "finished": "FALSE",
-      "time_elapsed": "live",
+      "finished": "TRUE",
+      "time_elapsed": "finished",
       "type": "r32",
       "home_team_label": "Runner-up Group K",
       "away_team_label": "Runner-up Group L",
@@ -2134,7 +2134,7 @@
     {
       "_id": "679c9c8a5749c4077500e087",
       "id": "93",
-      "home_team_id": "0",
+      "home_team_id": "41",
       "away_team_id": "29",
       "home_score": "0",
       "away_score": "0",
@@ -2150,6 +2150,8 @@
       "type": "r16",
       "home_team_label": "Winner Match 83",
       "away_team_label": "Winner Match 84",
+      "home_team_name_en": "Portugal",
+      "home_team_name_fa": "پرتغال",
       "away_team_name_en": "Spain",
       "away_team_name_fa": "اسپانیا"
     },
