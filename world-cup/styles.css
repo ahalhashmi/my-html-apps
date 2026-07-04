@@ -390,6 +390,27 @@ a {
   font-size: 14px;
 }
 
+.scorer-identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.scorer-flag {
+  width: 22px;
+  height: 15px;
+  flex: 0 0 auto;
+  border-radius: 3px;
+  object-fit: cover;
+  background: var(--accent-soft);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.scorer-flag--empty {
+  display: block;
+}
+
 .scorer-name {
   min-width: 0;
   overflow: hidden;

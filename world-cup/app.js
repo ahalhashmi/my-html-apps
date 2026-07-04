@@ -873,12 +873,17 @@ function topScorers() {
         if (isOwnGoal(goal)) return;
         const key = scorerKey(goal.player);
         if (!key) return;
+        const team = scorerTeam(game, goal);
 
         const entry = scorers.get(key) || {
           name: goal.player,
-          goals: 0
+          goals: 0,
+          flag: team.flag,
+          code: team.code
         };
         entry.goals += 1;
+        if (!entry.flag && team.flag) entry.flag = team.flag;
+        if (!entry.code && team.code) entry.code = team.code;
         scorers.set(key, entry);
       });
     });
@@ -896,11 +901,24 @@ function isOwnGoal(goal) {
   return /\bog\b/i.test(String(goal.note || ""));
 }
 
+function scorerTeam(game, goal) {
+  const side = goal.side === "away" ? "away" : "home";
+  const team = teamById(teamId(game, side));
+  const name = side === "home" ? game.homeName : game.awayName;
+  return {
+    flag: team?.flag || "",
+    code: teamCode(team, name)
+  };
+}
+
 function scorerRow(scorer) {
   return `
     <article class="scorer-row">
       <span class="scorer-rank">${escapeHtml(scorer.rank)}</span>
-      <span class="scorer-name">${escapeHtml(scorer.name)}</span>
+      <span class="scorer-identity">
+        ${scorer.flag ? `<img class="scorer-flag" src="${escapeHtml(scorer.flag)}" alt="">` : `<span class="scorer-flag scorer-flag--empty"></span>`}
+        <span class="scorer-name">${escapeHtml(scorer.name)}</span>
+      </span>
       <span class="scorer-goals">${escapeHtml(scorer.goals)}</span>
     </article>
   `;
