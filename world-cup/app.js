@@ -50,6 +50,7 @@ const labels = {
     matches: "Matches",
     groups: "Groups",
     knockout: "Knockout",
+    scorers: "Scorers",
     timezoneButton: "Timezone",
     timezoneTitle: "Select timezone",
     timezoneApply: "Done",
@@ -86,6 +87,7 @@ const labels = {
     matches: "المباريات",
     groups: "المجموعات",
     knockout: "خروج المغلوب",
+    scorers: "الهدافين",
     timezoneButton: "التوقيت",
     timezoneTitle: "اختر التوقيت",
     timezoneApply: "تم",
@@ -768,6 +770,7 @@ function render() {
   if (state.tab === "matches") renderMatches();
   if (state.tab === "groups") renderGroups();
   if (state.tab === "knockout") renderKnockout();
+  if (state.tab === "scorers") renderScorers();
 }
 
 function renderMatches() {
@@ -849,6 +852,58 @@ function renderKnockout() {
     if (!viewport) return;
     viewport.scrollLeft = Math.max(0, (viewport.scrollWidth - viewport.clientWidth) / 2);
   });
+}
+
+function renderScorers() {
+  const scorers = topScorers();
+  el.content.innerHTML = `
+    <section class="scorers-list">
+      ${scorers.length ? scorers.map(scorerRow).join("") : `<div class="empty">${escapeHtml(t().noGoals)}</div>`}
+    </section>
+  `;
+}
+
+function topScorers() {
+  const scorers = new Map();
+
+  state.games
+    .filter((game) => isFinished(game) || isLive(game))
+    .forEach((game) => {
+      goalScorers(game).forEach((goal) => {
+        if (isOwnGoal(goal)) return;
+        const key = scorerKey(goal.player);
+        if (!key) return;
+
+        const entry = scorers.get(key) || {
+          name: goal.player,
+          goals: 0
+        };
+        entry.goals += 1;
+        scorers.set(key, entry);
+      });
+    });
+
+  return [...scorers.values()]
+    .sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name))
+    .map((scorer, index) => ({ ...scorer, rank: index + 1 }));
+}
+
+function scorerKey(name) {
+  return String(name || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function isOwnGoal(goal) {
+  return /\bog\b/i.test(String(goal.note || ""));
+}
+
+function scorerRow(scorer) {
+  return `
+    <article class="scorer-row">
+      <span class="scorer-rank">${escapeHtml(scorer.rank)}</span>
+      <span class="scorer-name">${escapeHtml(scorer.name)}</span>
+      <span class="scorer-goals">${escapeHtml(scorer.goals)}</span>
+    </article>
+  `;
 }
 
 function knockoutLayout() {
@@ -1310,7 +1365,8 @@ function updateStaticText() {
     const tabLabels = {
       matches: t().matches,
       groups: t().groups,
-      knockout: t().knockout
+      knockout: t().knockout,
+      scorers: t().scorers
     };
     tab.textContent = tabLabels[tab.dataset.tab] || "";
   });
