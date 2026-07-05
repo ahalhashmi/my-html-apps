@@ -48,6 +48,12 @@ def sort_considerations(
         return sorted(rows, key=lambda row: row[1].volume_score, reverse=True)
     if sort_key == "risk":
         return sorted(rows, key=lambda row: row[1].risk_score, reverse=True)
+    if sort_key == "location":
+        return sorted(rows, key=lambda row: row[1].location_score, reverse=True)
+    if sort_key == "confluence":
+        return sorted(rows, key=lambda row: row[1].confluence_score, reverse=True)
+    if sort_key == "zone":
+        return sorted(rows, key=lambda row: row[1].zone_score, reverse=True)
     return sorted(rows, key=lambda row: row[1].score, reverse=True)
 
 
@@ -89,6 +95,21 @@ def consideration_to_dict(profile: ConsiderationProfile) -> dict[str, object]:
         "momentum_score": profile.momentum_score,
         "volume_score": profile.volume_score,
         "risk_score": profile.risk_score,
+        "regime": profile.regime,
+        "regime_score": profile.regime_score,
+        "location": profile.location,
+        "location_score": profile.location_score,
+        "zone_score": profile.zone_score,
+        "confluence_score": profile.confluence_score,
+        "demand_zone_low": profile.demand_zone_low,
+        "demand_zone_high": profile.demand_zone_high,
+        "demand_zone_score": profile.demand_zone_score,
+        "supply_zone_low": profile.supply_zone_low,
+        "supply_zone_high": profile.supply_zone_high,
+        "supply_zone_score": profile.supply_zone_score,
+        "fib_382": profile.fib_382,
+        "fib_500": profile.fib_500,
+        "fib_618": profile.fib_618,
         "indicators": indicators_to_dict(profile.indicators),
         "reasons": list(profile.reasons),
         "warnings": list(profile.warnings),
@@ -158,6 +179,21 @@ def write_consideration_csv(
         "momentum_score",
         "volume_score",
         "risk_score",
+        "regime",
+        "regime_score",
+        "location",
+        "location_score",
+        "zone_score",
+        "confluence_score",
+        "demand_zone_low",
+        "demand_zone_high",
+        "demand_zone_score",
+        "supply_zone_low",
+        "supply_zone_high",
+        "supply_zone_score",
+        "fib_382",
+        "fib_500",
+        "fib_618",
         "rsi14",
         "macd_histogram",
         "adx14",
@@ -171,6 +207,7 @@ def write_consideration_csv(
         "vetoes",
         "decision_action",
         "setup_type",
+        "setup_grade",
         "suggested_buy_low",
         "suggested_buy_high",
         "stop_loss",
@@ -206,6 +243,21 @@ def write_consideration_csv(
                 "momentum_score": profile.momentum_score,
                 "volume_score": profile.volume_score,
                 "risk_score": profile.risk_score,
+                "regime": profile.regime,
+                "regime_score": profile.regime_score,
+                "location": profile.location,
+                "location_score": profile.location_score,
+                "zone_score": profile.zone_score,
+                "confluence_score": profile.confluence_score,
+                "demand_zone_low": profile.demand_zone_low,
+                "demand_zone_high": profile.demand_zone_high,
+                "demand_zone_score": profile.demand_zone_score,
+                "supply_zone_low": profile.supply_zone_low,
+                "supply_zone_high": profile.supply_zone_high,
+                "supply_zone_score": profile.supply_zone_score,
+                "fib_382": profile.fib_382,
+                "fib_500": profile.fib_500,
+                "fib_618": profile.fib_618,
                 "rsi14": _round(indicators.rsi14),
                 "macd_histogram": _round(indicators.macd_histogram),
                 "adx14": _round(indicators.adx14),
@@ -228,6 +280,7 @@ def write_consideration_csv(
                     {
                         "decision_action": decision.action,
                         "setup_type": decision.setup_type,
+                        "setup_grade": decision.setup_grade,
                         "suggested_buy_low": decision.suggested_buy_low,
                         "suggested_buy_high": decision.suggested_buy_high,
                         "stop_loss": decision.stop_loss,

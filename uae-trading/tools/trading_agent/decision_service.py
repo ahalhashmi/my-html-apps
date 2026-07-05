@@ -22,17 +22,18 @@ def build_trade_decision(
     setup_type = _setup_type(series, consideration, atr, support, resistance, ema20, ema100, position)
     tick = tick_size(symbol, current)
 
-    buy_low, buy_high = _buy_zone(symbol, current, atr, support, ema20, setup_type)
-    stop_loss, stop_basis = _stop_loss(symbol, current, atr, support, buy_low, setup_type)
+    buy_low, buy_high = _buy_zone(symbol, current, atr, support, ema20, setup_type, consideration)
+    stop_loss, stop_basis = _stop_loss(symbol, current, atr, support, buy_low, setup_type, consideration)
     entry = (buy_low + buy_high) / 2
     risk = max(entry - stop_loss, tick)
     target1 = round_to_tick(symbol, entry + risk, "up")
-    target2 = _target2(symbol, entry, risk, resistance)
+    target2 = _target2(symbol, entry, risk, resistance, consideration.supply_zone_low)
     if target2 <= target1:
         target2 = round_to_tick(symbol, entry + risk * 2.0, "up")
     trailing_stop = _trailing_stop(symbol, stop_loss, ema20, atr)
     risk_reward = (target2 - entry) / risk if risk > 0 else None
     time_stop_days = _time_stop_days(setup_type)
+    setup_grade = _setup_grade(consideration, setup_type, tier, risk_reward)
 
     reasons: list[str] = []
     warnings: list[str] = []
@@ -50,6 +51,19 @@ def build_trade_decision(
         warnings.append("exit weakness pattern is active")
     else:
         reasons.append(f"{setup_type} setup is detected")
+
+    if setup_grade in {"A", "B"}:
+        reasons.append(f"setup grade is {setup_grade}")
+    else:
+        warnings.append(f"setup grade is {setup_grade}")
+    if consideration.regime in {"uptrend", "accumulation base"}:
+        reasons.append(f"market regime is {consideration.regime}")
+    elif consideration.regime in {"downtrend", "distribution"}:
+        warnings.append(f"market regime is {consideration.regime}")
+    if consideration.location in {"inside demand", "near demand", "lower half of range"}:
+        reasons.append(f"price location is {consideration.location}")
+    elif consideration.location in {"inside supply", "near supply", "middle of range", "upper half of range"}:
+        warnings.append(f"price location is {consideration.location}")
 
     if tier == "A":
         reasons.append(liquidity_tier_description(tier))
@@ -99,6 +113,7 @@ def build_trade_decision(
         target2,
         risk_reward,
         setup_type,
+        setup_grade,
         tier,
         time_stop_days,
         days_held,
@@ -134,6 +149,16 @@ def build_trade_decision(
         unrealized_pl_value=round(unrealized_pl_value, 2) if unrealized_pl_value is not None else None,
         reasons=tuple(dict.fromkeys(reasons)),
         warnings=tuple(dict.fromkeys(warnings)),
+        setup_grade=setup_grade,
+        regime=consideration.regime,
+        location=consideration.location,
+        zone_score=consideration.zone_score,
+        location_score=consideration.location_score,
+        confluence_score=consideration.confluence_score,
+        demand_zone_low=consideration.demand_zone_low,
+        demand_zone_high=consideration.demand_zone_high,
+        supply_zone_low=consideration.supply_zone_low,
+        supply_zone_high=consideration.supply_zone_high,
     )
 
 
@@ -142,7 +167,17 @@ def trade_decision_to_dict(decision: TradeDecision) -> dict[str, object]:
         "symbol": decision.symbol,
         "action": decision.action,
         "setup_type": decision.setup_type,
+        "setup_grade": decision.setup_grade,
         "liquidity_tier": decision.liquidity_tier,
+        "regime": decision.regime,
+        "location": decision.location,
+        "zone_score": decision.zone_score,
+        "location_score": decision.location_score,
+        "confluence_score": decision.confluence_score,
+        "demand_zone_low": decision.demand_zone_low,
+        "demand_zone_high": decision.demand_zone_high,
+        "supply_zone_low": decision.supply_zone_low,
+        "supply_zone_high": decision.supply_zone_high,
         "current_price": decision.current_price,
         "suggested_buy_low": decision.suggested_buy_low,
         "suggested_buy_high": decision.suggested_buy_high,
@@ -176,20 +211,33 @@ def _buy_zone(
     support: float | None,
     ema20: float | None,
     setup_type: str,
+    consideration: ConsiderationProfile,
 ) -> tuple[float, float]:
     reference = ema20 if ema20 is not None else current
     if setup_type == "breakout":
         high = current
-        low = current - atr * 0.75
-        return round_to_tick(symbol, low, "down"), round_to_tick(symbol, high, "up")
+        low = max(current - atr * 0.75, consideration.demand_zone_low or current - atr * 0.75)
+        return _normalized_zone(symbol, low, high, current, atr)
+
+    if consideration.demand_zone_low is not None and consideration.demand_zone_high is not None:
+        zone_low = consideration.demand_zone_low
+        zone_high = consideration.demand_zone_high
+        if setup_type in {"trend pullback", "reversal", "mean reversion"}:
+            high = min(max(zone_high + atr * 0.25, zone_low + tick_size(symbol, current)), current)
+            low = zone_low
+            return _normalized_zone(symbol, low, high, current, atr)
+
+    if setup_type == "continuation":
+        high = min(current, reference + atr * 0.35)
+        low = max(reference - atr * 0.75, current - atr * 1.1)
+        return _normalized_zone(symbol, low, high, current, atr)
+
     high = min(current, reference + atr * 0.75)
     low_candidates = [current - atr * 1.25]
     if support is not None:
         low_candidates.append(support + atr * 0.25)
     low = max(min(low_candidates), 0.001)
-    if low >= high:
-        low = max(high - atr, 0.001)
-    return round_to_tick(symbol, low, "down"), round_to_tick(symbol, high, "up")
+    return _normalized_zone(symbol, low, high, current, atr)
 
 
 def _stop_loss(
@@ -199,16 +247,23 @@ def _stop_loss(
     support: float | None,
     buy_low: float,
     setup_type: str,
+    consideration: ConsiderationProfile,
 ) -> tuple[float, str]:
-    multiplier = 0.9 if setup_type == "mean reversion" else 1.3
+    multiplier = 0.9 if setup_type in {"mean reversion", "reversal"} else 1.3
     candidates = [buy_low - atr * multiplier, current - atr * 2.2]
+    basis = "structure+atr"
     if support is not None:
         candidates.append(support - atr * 0.5)
-    return round_to_tick(symbol, max(min(candidates), 0.001), "down"), "structure+atr"
+    if consideration.demand_zone_low is not None:
+        candidates.append(consideration.demand_zone_low - atr * 0.55)
+        basis = "demand-zone+atr"
+    return round_to_tick(symbol, max(min(candidates), 0.001), "down"), basis
 
 
-def _target2(symbol: str, entry: float, risk: float, resistance: float | None) -> float:
+def _target2(symbol: str, entry: float, risk: float, resistance: float | None, supply_zone_low: float | None) -> float:
     target = entry + risk * 2.5
+    if supply_zone_low is not None and supply_zone_low > entry + risk:
+        target = min(target, supply_zone_low)
     if resistance is not None and resistance > entry + risk:
         target = min(target, resistance)
     return round_to_tick(symbol, target, "up")
@@ -263,12 +318,37 @@ def _setup_type(
         return "trend pullback"
 
     near_support = support is not None and current <= support + atr
-    if adx < 18 and near_support and rsi is not None and rsi < 40:
-        return "mean reversion"
+    near_demand = consideration.location in {"inside demand", "near demand", "lower half of range"}
+    if adx < 18 and (near_support or near_demand) and rsi is not None and rsi < 45:
+        return "reversal"
+
+    if (
+        consideration.regime == "uptrend"
+        and current > (ema20 or current)
+        and adx >= 18
+        and directional_up
+        and obv_ok
+        and (rsi is None or 48 <= rsi <= 74)
+        and (indicators.macd_histogram or 0) >= 0
+    ):
+        return "continuation"
 
     if resistance is not None and current >= resistance and (indicators.rsi14 or 0) >= 75:
         return "exit weakness"
     return "unqualified"
+
+
+def _normalized_zone(symbol: str, low: float, high: float, current: float, atr: float) -> tuple[float, float]:
+    tick = tick_size(symbol, current)
+    low = max(low, tick)
+    high = max(high, low + tick)
+    if low >= high:
+        low = max(high - max(atr, tick), tick)
+    rounded_low = round_to_tick(symbol, low, "down")
+    rounded_high = round_to_tick(symbol, high, "up")
+    if rounded_low >= rounded_high:
+        rounded_low = round_to_tick(symbol, max(rounded_high - max(atr, tick), tick), "down")
+    return rounded_low, rounded_high
 
 
 def _prior_resistance(bars: tuple, period: int) -> float | None:
@@ -280,11 +360,52 @@ def _prior_resistance(bars: tuple, period: int) -> float | None:
 def _time_stop_days(setup_type: str) -> int | None:
     if setup_type == "breakout":
         return 10
-    if setup_type == "mean reversion":
-        return 7
+    if setup_type in {"mean reversion", "reversal"}:
+        return 12
+    if setup_type == "continuation":
+        return 15
     if setup_type == "trend pullback":
         return 20
     return None
+
+
+def _setup_grade(
+    consideration: ConsiderationProfile,
+    setup_type: str,
+    tier: str,
+    risk_reward: float | None,
+) -> str:
+    if tier == "C" or setup_type in {"unqualified", "exit weakness"}:
+        return "D"
+
+    score = 0.0
+    score += min(max(consideration.score, 0), 100) * 0.25
+    score += min(max(consideration.location_score, 0), 100) * 0.25
+    score += min(max(consideration.confluence_score, 0), 100) * 0.25
+    score += min(max(consideration.zone_score / 14 * 100, 0), 100) * 0.15
+    if risk_reward is not None:
+        if risk_reward >= 2.5:
+            score += 10
+        elif risk_reward >= 2.0:
+            score += 7
+        elif risk_reward >= 1.8:
+            score += 4
+        else:
+            score -= 10
+    if consideration.regime in {"downtrend", "distribution"}:
+        score -= 16
+    if consideration.location in {"near supply", "inside supply", "middle of range"}:
+        score -= 12
+    if tier == "B":
+        score -= 8
+
+    if score >= 82:
+        return "A"
+    if score >= 68:
+        return "B"
+    if score >= 52:
+        return "C"
+    return "D"
 
 
 def _decision_action(
@@ -296,6 +417,7 @@ def _decision_action(
     target2: float,
     risk_reward: float | None,
     setup_type: str,
+    setup_grade: str,
     tier: str,
     time_stop_days: int | None,
     days_held: int | None,
@@ -329,9 +451,13 @@ def _decision_action(
         return "skip"
     if risk_reward is None or risk_reward < 1.8:
         return "skip"
+    if setup_grade == "D":
+        return "skip"
     if tier == "B":
         return "watch"
-    if consideration.verdict == "buy candidate" and current <= buy_high:
+    if setup_grade == "C":
+        return "watch"
+    if setup_grade == "A" and consideration.verdict == "buy candidate" and current <= buy_high:
         return "buy"
     if consideration.verdict in {"buy candidate", "setup forming", "worth studying"}:
         return "watch"

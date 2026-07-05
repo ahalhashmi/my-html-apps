@@ -41,6 +41,7 @@ const els = {
   signalRows: document.getElementById("signalRows"),
   signalsEmpty: document.getElementById("signalsEmpty"),
   setupPerformanceRows: document.getElementById("setupPerformanceRows"),
+  gradePerformanceRows: document.getElementById("gradePerformanceRows"),
   tierPerformanceRows: document.getElementById("tierPerformanceRows"),
   stabilityRows: document.getElementById("stabilityRows"),
   stabilityEmpty: document.getElementById("stabilityEmpty"),
@@ -98,7 +99,7 @@ async function scanNow() {
     state.profiles = payload.latest?.profiles || [];
     state.portfolio = payload.portfolio || [];
     state.performance = payload.validation || state.performance;
-    showToast("Data refreshed");
+    showToast("Scan complete");
     render();
     if (state.page === "performance") {
       await refreshPerformance();
@@ -202,7 +203,12 @@ function renderRow(profile) {
     cell(verdictMarkup(consideration)),
     cell(decisionMarkup(decision)),
     cell(setupMarkup(decision)),
+    cell(gradeMarkup(decision)),
     cell(tierMarkup(decision.liquidity_tier || consideration.liquidity_tier)),
+    cell(regimeMarkup(consideration, decision)),
+    cell(locationMarkup(consideration, decision)),
+    cell(zoneMarkup(consideration, decision)),
+    cell(scoreMarkup(decision.confluence_score ?? consideration.confluence_score)),
     cell(rangeMarkup(decision.suggested_buy_low, decision.suggested_buy_high)),
     cell(priceMarkup(decision.stop_loss)),
     cell(priceMarkup(decision.trailing_stop)),
@@ -273,6 +279,7 @@ function renderPerformance() {
   els.signalsEmpty.hidden = signalRows.length > 0;
 
   els.setupPerformanceRows.replaceChildren(...(report.by_setup || []).map(renderGroupPerformanceRow));
+  els.gradePerformanceRows.replaceChildren(...(report.by_grade || []).map(renderGroupPerformanceRow));
   els.tierPerformanceRows.replaceChildren(...(report.by_tier || []).map(renderGroupPerformanceRow));
 
   const stabilityRows = (report.stability || []).map(renderStabilityRow);
@@ -285,7 +292,7 @@ function renderSignalRow(signal) {
   row.append(
     cell(signal.symbol || "-"),
     cell(statusStack(signal.status || "unknown", signal.outcome || "")),
-    cell(setupTierStack(signal.setup_type, signal.liquidity_tier)),
+    cell(setupTierStack(signal.setup_type, signal.liquidity_tier, signal.setup_grade)),
     cell(dateStack(signal.opened_date, signal.as_of_date ? `data ${signal.as_of_date}` : "")),
     cell(dateStack(signal.entry_date, signal.entry_price ? formatNumber(signal.entry_price, 3) : "")),
     cell(dateStack(signal.closed_date, signal.close_price ? formatNumber(signal.close_price, 3) : "")),
@@ -335,13 +342,13 @@ function statusStack(status, detail) {
   return wrapper;
 }
 
-function setupTierStack(setup, tier) {
+function setupTierStack(setup, tier, grade) {
   const wrapper = document.createElement("div");
   wrapper.className = "status-stack";
   wrapper.append(badge(setup || "unqualified"));
   const note = document.createElement("div");
   note.className = "mini-stat";
-  note.textContent = tier ? `Tier ${tier}` : "Tier -";
+  note.textContent = `${grade ? `Grade ${grade}` : "Grade -"} • ${tier ? `Tier ${tier}` : "Tier -"}`;
   wrapper.append(note);
   return wrapper;
 }
@@ -436,11 +443,64 @@ function setupMarkup(decision) {
   return wrapper;
 }
 
+function gradeMarkup(decision) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "tier-cell";
+  wrapper.append(badge(decision.setup_grade ? `Grade ${decision.setup_grade}` : "Grade D"));
+  return wrapper;
+}
+
 function tierMarkup(tier) {
   const wrapper = document.createElement("div");
   wrapper.className = "tier-cell";
   wrapper.append(badge(tier ? `Tier ${tier}` : "Tier C"));
   return wrapper;
+}
+
+function regimeMarkup(consideration, decision) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "status-stack";
+  const regime = decision.regime || consideration.regime || "unknown";
+  wrapper.append(badge(regime));
+  const score = document.createElement("div");
+  score.className = "mini-stat";
+  score.textContent = `${formatNumber(consideration.regime_score, 0)} confidence`;
+  wrapper.append(score);
+  return wrapper;
+}
+
+function locationMarkup(consideration, decision) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "status-stack";
+  const location = decision.location || consideration.location || "structure unclear";
+  wrapper.append(badge(location));
+  const score = document.createElement("div");
+  score.className = "mini-stat";
+  score.textContent = `${formatNumber(decision.location_score ?? consideration.location_score, 0)} location`;
+  wrapper.append(score);
+  return wrapper;
+}
+
+function zoneMarkup(consideration, decision) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "status-stack";
+  const score = decision.zone_score ?? consideration.zone_score;
+  wrapper.append(scoreMarkup(score));
+  const details = document.createElement("div");
+  details.className = "mini-stat";
+  const demand = zoneRange("D", decision.demand_zone_low ?? consideration.demand_zone_low, decision.demand_zone_high ?? consideration.demand_zone_high);
+  const supply = zoneRange("S", decision.supply_zone_low ?? consideration.supply_zone_low, decision.supply_zone_high ?? consideration.supply_zone_high);
+  details.textContent = [demand, supply].filter(Boolean).join(" | ") || "no zone";
+  wrapper.title = details.textContent;
+  wrapper.append(details);
+  return wrapper;
+}
+
+function zoneRange(label, low, high) {
+  if (low === null || low === undefined || high === null || high === undefined) {
+    return "";
+  }
+  return `${label} ${formatNumber(low, 3)}-${formatNumber(high, 3)}`;
 }
 
 function rangeMarkup(low, high) {
@@ -535,13 +595,13 @@ function badge(value) {
 }
 
 function badgeClass(value) {
-  if (value === "buy candidate" || value === "setup forming" || value === "bullish" || value === "buy" || value === "hold" || value === "trend pullback" || value === "breakout" || value === "Tier A" || value === "target1_hit" || value === "target2" || value === "more confident") {
+  if (value === "buy candidate" || value === "setup forming" || value === "bullish" || value === "buy" || value === "hold" || value === "trend pullback" || value === "breakout" || value === "continuation" || value === "uptrend" || value === "accumulation base" || value === "inside demand" || value === "near demand" || value === "lower half of range" || value === "Grade A" || value === "Tier A" || value === "target1_hit" || value === "target2" || value === "more confident") {
     return "bullish";
   }
-  if (value === "worth studying" || value === "watch" || value === "sideways" || value === "mean reversion" || value === "Tier B" || value === "waiting_entry" || value === "active" || value === "expired" || value === "steady") {
+  if (value === "worth studying" || value === "watch" || value === "sideways" || value === "mean reversion" || value === "reversal" || value === "range" || value === "mixed" || value === "trend continuation area" || value === "Grade B" || value === "Grade C" || value === "Tier B" || value === "waiting_entry" || value === "active" || value === "expired" || value === "steady") {
     return "sideways";
   }
-  if (value === "sell pressure" || value === "avoid" || value === "ignore" || value === "bearish" || value === "sell" || value === "skip" || value === "exit weakness" || value === "unqualified" || value === "Tier C" || value === "stopped" || value === "invalidated" || value === "choppy") {
+  if (value === "sell pressure" || value === "avoid" || value === "ignore" || value === "bearish" || value === "sell" || value === "skip" || value === "exit weakness" || value === "unqualified" || value === "downtrend" || value === "distribution" || value === "inside supply" || value === "near supply" || value === "middle of range" || value === "upper half of range" || value === "Grade D" || value === "Tier C" || value === "stopped" || value === "invalidated" || value === "choppy") {
     return "bearish";
   }
   return "unknown";
@@ -649,7 +709,7 @@ function formatDateTime(value) {
 
 function setBusy(isBusy) {
   els.scanNow.disabled = isBusy;
-  els.scanNow.textContent = isBusy ? "Refreshing" : "Refresh data";
+  els.scanNow.textContent = isBusy ? "Scanning" : "Scan now";
 }
 
 async function addPosition(event) {

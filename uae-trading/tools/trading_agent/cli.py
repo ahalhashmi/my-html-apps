@@ -44,7 +44,7 @@ def main(argv: list[str] | None = None) -> int:
     consider.add_argument("--market", choices=["all", "ADX", "DFM"], default="all")
     consider.add_argument(
         "--sort",
-        choices=["score", "liquidity", "trend", "momentum", "volume", "risk", "symbol"],
+        choices=["score", "liquidity", "trend", "momentum", "volume", "risk", "location", "confluence", "zone", "symbol"],
         default="score",
     )
     consider.add_argument("--limit", type=int, default=30)
@@ -137,15 +137,16 @@ def _print_considerations(
 ) -> None:
     print("Consideration scan: long-side opportunity ranking")
     print(
-        f"{'symbol':<14} {'action':<6} {'setup':<14} {'tier':>4} {'verdict':<15} {'score':>6} "
+        f"{'symbol':<14} {'action':<6} {'setup':<14} {'grade':>5} {'tier':>4} {'verdict':<15} {'score':>6} "
         f"{'buy zone':>17} {'stop':>8} {'trail':>8} {'target2':>8} {'rr':>5} {'rsi':>6} {'avg value':>12}"
     )
-    print("-" * 146)
+    print("-" * 154)
     for _, profile in rows:
         indicators = profile.indicators
         decision = decisions[profile.symbol]
         print(
-            f"{profile.symbol:<14} {decision.action:<6} {decision.setup_type:<14} {decision.liquidity_tier:>4} "
+            f"{profile.symbol:<14} {decision.action:<6} {decision.setup_type:<14} {decision.setup_grade:>5} "
+            f"{decision.liquidity_tier:>4} "
             f"{profile.verdict:<15} {profile.score:>6.1f} "
             f"{_fmt_range(decision.suggested_buy_low, decision.suggested_buy_high):>17} "
             f"{_fmt_price(decision.stop_loss):>8} {_fmt_price(decision.trailing_stop):>8} {_fmt_price(decision.target2):>8} "

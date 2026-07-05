@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>UAE Trading Scanner</title>
+    <title>UAE Trend Scanner</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <div class="shell">
       <header class="topbar">
         <div>
-          <h1>UAE Trading Scanner</h1>
+          <h1>UAE Trend Scanner</h1>
           <div class="meta-row">
             <span id="lastScan">Last scan: waiting</span>
             <span id="nextScan">Next daily scan: waiting</span>
@@ -20,7 +20,7 @@
         </div>
         <div class="actions">
           <button id="portfolioOpen" class="secondary">Portfolio</button>
-          <button id="scanNow" class="primary">Refresh data</button>
+          <button id="scanNow" class="primary">Scan now</button>
           <a id="exportCsv" class="button secondary" href="/api/export.csv">Export CSV</a>
         </div>
       </header>
@@ -93,6 +93,9 @@
               <option value="momentum">Momentum</option>
               <option value="volume">Volume</option>
               <option value="risk">Risk</option>
+              <option value="location">Location</option>
+              <option value="confluence">Confluence</option>
+              <option value="zone">Zone quality</option>
             </select>
           </label>
           <label class="inline-control">
@@ -150,12 +153,42 @@
                   <dd>Price is in an uptrend and pulling back toward a support/EMA area instead of chasing strength.</dd>
                   <dt>Breakout</dt>
                   <dd>Price is pushing through recent resistance with momentum and volume support.</dd>
-                  <dt>Mean Reversion</dt>
-                  <dd>Price is extended below recent averages and may rebound, but this is usually lower conviction.</dd>
+                  <dt>Continuation</dt>
+                  <dd>Uptrend is intact and momentum remains supportive, but entry still depends on price location.</dd>
+                  <dt>Reversal</dt>
+                  <dd>Range/base support is holding after weakness. Lower conviction until confirmation improves.</dd>
                   <dt>Exit Weakness</dt>
                   <dd>Structure is deteriorating; this matters most if the stock is already in your portfolio.</dd>
                   <dt>Unqualified</dt>
                   <dd>The stock does not currently match one of the model's actionable technical patterns.</dd>
+                </dl>
+              </article>
+
+              <article class="legend-section">
+                <h2>Grade</h2>
+                <dl>
+                  <dt>Grade A</dt>
+                  <dd>Best technical stack: valid setup, good location, strong confluence, acceptable liquidity, and healthy risk/reward.</dd>
+                  <dt>Grade B</dt>
+                  <dd>Tradable watchlist quality, but one part of the stack still needs improvement.</dd>
+                  <dt>Grade C</dt>
+                  <dd>Interesting but not actionable. Usually needs a better entry, stronger zone, or more confirmation.</dd>
+                  <dt>Grade D</dt>
+                  <dd>Skipped by the model because setup, liquidity, regime, or risk/reward is too weak.</dd>
+                </dl>
+              </article>
+
+              <article class="legend-section">
+                <h2>Structure</h2>
+                <dl>
+                  <dt>Regime</dt>
+                  <dd>Classifies the chart as uptrend, downtrend, range, accumulation base, distribution, or mixed.</dd>
+                  <dt>Location</dt>
+                  <dd>Shows whether price is near demand/support, near supply/resistance, or stuck in the middle.</dd>
+                  <dt>Zone</dt>
+                  <dd>Scores nearby support/resistance from 0-14 using touches, recency, reaction, volume, and confluence.</dd>
+                  <dt>Confluence</dt>
+                  <dd>Scores how many independent factors agree, including zone quality, trend, averages, volume, and momentum.</dd>
                 </dl>
               </article>
 
@@ -184,7 +217,12 @@
                 <th>Verdict</th>
                 <th>Decision</th>
                 <th>Setup</th>
+                <th>Grade</th>
                 <th>Tier</th>
+                <th>Regime</th>
+                <th>Location</th>
+                <th>Zone</th>
+                <th>Confluence</th>
                 <th>Buy Zone</th>
                 <th>Stop</th>
                 <th>Trail</th>
@@ -283,6 +321,23 @@
                   </tr>
                 </thead>
                 <tbody id="setupPerformanceRows"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="performance-panel">
+            <h3>By Grade</h3>
+            <div class="compact-table-wrap">
+              <table class="compact-table">
+                <thead>
+                  <tr>
+                    <th>Grade</th>
+                    <th>Total</th>
+                    <th>Target 2</th>
+                    <th>Avg R</th>
+                  </tr>
+                </thead>
+                <tbody id="gradePerformanceRows"></tbody>
               </table>
             </div>
           </article>
@@ -389,3 +444,4 @@
     <script src="app.js"></script>
   </body>
 </html>
+

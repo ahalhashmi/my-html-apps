@@ -154,6 +154,21 @@ class ConsiderationProfile:
     reasons: tuple[str, ...] = ()
     warnings: tuple[str, ...] = ()
     vetoes: tuple[str, ...] = ()
+    regime: str = "unknown"
+    regime_score: float = 0.0
+    location: str = "structure unclear"
+    location_score: float = 0.0
+    zone_score: float = 0.0
+    confluence_score: float = 0.0
+    demand_zone_low: float | None = None
+    demand_zone_high: float | None = None
+    demand_zone_score: float | None = None
+    supply_zone_low: float | None = None
+    supply_zone_high: float | None = None
+    supply_zone_score: float | None = None
+    fib_382: float | None = None
+    fib_500: float | None = None
+    fib_618: float | None = None
 
 
 @dataclass(frozen=True)
@@ -195,3 +210,13 @@ class TradeDecision:
     unrealized_pl_value: float | None = None
     reasons: tuple[str, ...] = ()
     warnings: tuple[str, ...] = ()
+    setup_grade: str = "D"
+    regime: str = "unknown"
+    location: str = "structure unclear"
+    zone_score: float = 0.0
+    location_score: float = 0.0
+    confluence_score: float = 0.0
+    demand_zone_low: float | None = None
+    demand_zone_high: float | None = None
+    supply_zone_low: float | None = None
+    supply_zone_high: float | None = None

@@ -17,6 +17,7 @@ from trading_agent.indicators import (
     simple_moving_average,
 )
 from trading_agent.market_rules import liquidity_tier, liquidity_tier_description
+from trading_agent.market_structure import analyze_market_structure
 from trading_agent.models import ConsiderationProfile, IndicatorSnapshot, MarketSeries, TrendProfile
 
 
@@ -24,6 +25,7 @@ class ConsiderationAgent:
     def analyze(self, series: MarketSeries, trend: TrendProfile | None = None) -> ConsiderationProfile:
         closes = [bar.close for bar in series.bars]
         indicators = _build_indicators(series)
+        structure = analyze_market_structure(series, indicators, trend)
         reasons: list[str] = []
         warnings: list[str] = []
         vetoes: list[str] = []
@@ -34,14 +36,16 @@ class ConsiderationAgent:
         momentum_score = _score_momentum(indicators, reasons, warnings, vetoes)
         volume_score = _score_volume(indicators, reasons, warnings, vetoes)
         risk_score = _score_risk(series, indicators, reasons, warnings, vetoes)
+        structure_score = _score_structure(structure, reasons, warnings)
 
-        score = (
+        base_score = (
             liquidity_score * 0.25
             + trend_score * 0.30
             + momentum_score * 0.20
             + volume_score * 0.15
             + risk_score * 0.10
         )
+        score = base_score * 0.82 + structure_score * 0.18
 
         if indicators.avg_value20 is not None and indicators.avg_value20 < 100_000:
             score = min(score, 45)
@@ -54,6 +58,14 @@ class ConsiderationAgent:
         if trend and trend.overall_direction == "bearish" and trend.overall_score <= -45:
             score = min(score, 45)
         if indicators.rsi14 is not None and indicators.rsi14 >= 82:
+            score = min(score, 68)
+        if structure.regime in {"downtrend", "distribution"}:
+            score = min(score, 54)
+        if structure.location in {"inside supply", "near supply"}:
+            score = min(score, 58)
+        if structure.location == "middle of range":
+            score = min(score, 64)
+        if structure.confluence_score < 35:
             score = min(score, 68)
         if vetoes:
             score = min(score, 40)
@@ -74,6 +86,21 @@ class ConsiderationAgent:
             reasons=tuple(dict.fromkeys(reasons)),
             warnings=tuple(dict.fromkeys(warnings)),
             vetoes=tuple(dict.fromkeys(vetoes)),
+            regime=structure.regime,
+            regime_score=structure.regime_score,
+            location=structure.location,
+            location_score=structure.location_score,
+            zone_score=structure.zone_score,
+            confluence_score=structure.confluence_score,
+            demand_zone_low=structure.demand_zone.low if structure.demand_zone else None,
+            demand_zone_high=structure.demand_zone.high if structure.demand_zone else None,
+            demand_zone_score=structure.demand_zone.score if structure.demand_zone else None,
+            supply_zone_low=structure.supply_zone.low if structure.supply_zone else None,
+            supply_zone_high=structure.supply_zone.high if structure.supply_zone else None,
+            supply_zone_score=structure.supply_zone.score if structure.supply_zone else None,
+            fib_382=structure.fib_382,
+            fib_500=structure.fib_500,
+            fib_618=structure.fib_618,
         )
 
 
@@ -342,6 +369,34 @@ def _score_risk(
     return _clamp(score)
 
 
+def _score_structure(structure, reasons: list[str], warnings: list[str]) -> float:
+    if structure.regime in {"uptrend", "accumulation base"}:
+        reasons.append(f"market regime is {structure.regime}")
+    elif structure.regime in {"downtrend", "distribution"}:
+        warnings.append(f"market regime is {structure.regime}")
+    else:
+        warnings.append(f"market regime is {structure.regime}")
+
+    if structure.location in {"inside demand", "near demand", "lower half of range"}:
+        reasons.append(f"price location is {structure.location}")
+    elif structure.location in {"inside supply", "near supply", "middle of range", "upper half of range"}:
+        warnings.append(f"price location is {structure.location}")
+
+    if structure.zone_score >= 8:
+        reasons.append(f"nearby zone quality is {structure.zone_score:.1f}/14")
+    elif structure.zone_score < 5:
+        warnings.append("nearby support/resistance zone quality is weak")
+
+    if structure.confluence_score >= 70:
+        reasons.append(f"structure confluence is strong at {structure.confluence_score:.1f}")
+    elif structure.confluence_score < 45:
+        warnings.append(f"structure confluence is weak at {structure.confluence_score:.1f}")
+
+    reasons.extend(structure.reasons)
+    warnings.extend(structure.warnings)
+    return _clamp(structure.location_score * 0.45 + structure.confluence_score * 0.40 + structure.regime_score * 0.15)
+
+
 def _verdict(
     score: float,
     indicators: IndicatorSnapshot,
@@ -366,6 +421,10 @@ def _verdict(
                 "RSI is extended",
                 "RSI is overheated",
                 "ADX trend strength favors sellers",
+                "market regime is downtrend",
+                "market regime is distribution",
+                "price location is inside supply",
+                "price location is near supply",
             )
         )
         for warning in warnings

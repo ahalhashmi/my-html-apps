@@ -13,7 +13,7 @@ from trading_agent.data import load_ohlcv_dir
 from trading_agent.models import Bar, MarketSeries
 
 
-MODEL_VERSION = "uae-trading-model-2026-07-01"
+MODEL_VERSION = "uae-trading-model-2026-07-05-structure"
 TERMINAL_STATUSES = {"target2", "stopped", "expired", "invalidated"}
 SIGNAL_ACTIONS = {"buy", "watch"}
 SIGNAL_VERDICTS = {"buy candidate", "setup forming", "worth studying"}
@@ -57,7 +57,8 @@ class ValidationStore:
                 dict(row)
                 for row in conn.execute(
                     """
-                    SELECT symbol, scan_date, scanned_at, data_date, verdict, action, setup_type, liquidity_tier, score
+                    SELECT symbol, scan_date, scanned_at, data_date, verdict, action, setup_type,
+                           setup_grade, liquidity_tier, regime, location, score
                     FROM decision_observations
                     ORDER BY symbol, scan_date, scanned_at
                     """
@@ -106,6 +107,8 @@ class ValidationStore:
             "recent_signals": [_signal_payload(signal) for signal in signals[:limit]],
             "open_signals": [_signal_payload(signal) for signal in open_signals[:limit]],
             "by_setup": _group_signal_stats(signals, "setup_type"),
+            "by_grade": _group_signal_stats(signals, "setup_grade"),
+            "by_regime": _group_signal_stats(signals, "regime"),
             "by_tier": _group_signal_stats(signals, "liquidity_tier"),
             "stability": stability[:limit],
             "generated_at": datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
@@ -126,7 +129,13 @@ class ValidationStore:
             "initial_action",
             "initial_verdict",
             "setup_type",
+            "setup_grade",
             "liquidity_tier",
+            "regime",
+            "location",
+            "zone_score",
+            "location_score",
+            "confluence_score",
             "entry_low",
             "entry_high",
             "entry_date",
@@ -177,8 +186,18 @@ class ValidationStore:
                     verdict TEXT,
                     action TEXT,
                     setup_type TEXT,
+                    setup_grade TEXT,
                     liquidity_tier TEXT,
+                    regime TEXT,
+                    location TEXT,
                     score REAL,
+                    zone_score REAL,
+                    location_score REAL,
+                    confluence_score REAL,
+                    demand_zone_low REAL,
+                    demand_zone_high REAL,
+                    supply_zone_low REAL,
+                    supply_zone_high REAL,
                     buy_low REAL,
                     buy_high REAL,
                     stop_loss REAL,
@@ -204,7 +223,13 @@ class ValidationStore:
                     initial_verdict TEXT,
                     initial_action TEXT,
                     setup_type TEXT,
+                    setup_grade TEXT,
                     liquidity_tier TEXT,
+                    regime TEXT,
+                    location TEXT,
+                    zone_score REAL,
+                    location_score REAL,
+                    confluence_score REAL,
                     entry_low REAL,
                     entry_high REAL,
                     stop_loss REAL,
@@ -247,6 +272,34 @@ class ValidationStore:
                 ON signals(symbol, status);
                 """
             )
+            self._ensure_columns(
+                conn,
+                "decision_observations",
+                {
+                    "setup_grade": "TEXT",
+                    "regime": "TEXT",
+                    "location": "TEXT",
+                    "zone_score": "REAL",
+                    "location_score": "REAL",
+                    "confluence_score": "REAL",
+                    "demand_zone_low": "REAL",
+                    "demand_zone_high": "REAL",
+                    "supply_zone_low": "REAL",
+                    "supply_zone_high": "REAL",
+                },
+            )
+            self._ensure_columns(
+                conn,
+                "signals",
+                {
+                    "setup_grade": "TEXT",
+                    "regime": "TEXT",
+                    "location": "TEXT",
+                    "zone_score": "REAL",
+                    "location_score": "REAL",
+                    "confluence_score": "REAL",
+                },
+            )
             conn.commit()
 
     def _connect(self) -> sqlite3.Connection:
@@ -255,6 +308,12 @@ class ValidationStore:
         conn.execute("PRAGMA journal_mode=WAL")
         conn.execute("PRAGMA foreign_keys=ON")
         return conn
+
+    def _ensure_columns(self, conn: sqlite3.Connection, table: str, columns: dict[str, str]) -> None:
+        existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+        for column, column_type in columns.items():
+            if column not in existing:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
 
     def _insert_scan(
         self,
@@ -300,10 +359,12 @@ class ValidationStore:
             INSERT OR IGNORE INTO decision_observations
             (
                 scan_id, scan_date, scanned_at, data_date, trigger, symbol, last_close, verdict, action,
-                setup_type, liquidity_tier, score, buy_low, buy_high, stop_loss, trailing_stop,
-                target1, target2, risk_reward, time_stop_days, reasons_json, warnings_json, vetoes_json
+                setup_type, setup_grade, liquidity_tier, regime, location, score, zone_score,
+                location_score, confluence_score, demand_zone_low, demand_zone_high, supply_zone_low,
+                supply_zone_high, buy_low, buy_high, stop_loss, trailing_stop, target1, target2,
+                risk_reward, time_stop_days, reasons_json, warnings_json, vetoes_json
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 scan_id,
@@ -316,8 +377,18 @@ class ValidationStore:
                 consideration.get("verdict"),
                 decision.get("action"),
                 decision.get("setup_type"),
+                decision.get("setup_grade"),
                 decision.get("liquidity_tier") or consideration.get("liquidity_tier"),
+                decision.get("regime") or consideration.get("regime"),
+                decision.get("location") or consideration.get("location"),
                 _number(consideration.get("score")),
+                _number(decision.get("zone_score") or consideration.get("zone_score")),
+                _number(decision.get("location_score") or consideration.get("location_score")),
+                _number(decision.get("confluence_score") or consideration.get("confluence_score")),
+                _number(decision.get("demand_zone_low") or consideration.get("demand_zone_low")),
+                _number(decision.get("demand_zone_high") or consideration.get("demand_zone_high")),
+                _number(decision.get("supply_zone_low") or consideration.get("supply_zone_low")),
+                _number(decision.get("supply_zone_high") or consideration.get("supply_zone_high")),
                 _number(decision.get("suggested_buy_low")),
                 _number(decision.get("suggested_buy_high")),
                 _number(decision.get("stop_loss")),
@@ -627,12 +698,13 @@ class ValidationStore:
                 INSERT INTO signals
                 (
                     symbol, opened_at, opened_date, as_of_date, trigger, model_version,
-                    initial_verdict, initial_action, setup_type, liquidity_tier, entry_low,
+                    initial_verdict, initial_action, setup_type, setup_grade, liquidity_tier,
+                    regime, location, zone_score, location_score, confluence_score, entry_low,
                     entry_high, stop_loss, trailing_stop, target1, target2, risk_reward,
                     time_stop_days, status, outcome, last_seen_at, last_seen_date,
                     last_verdict, last_action, last_setup, updated_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     symbol,
@@ -644,7 +716,13 @@ class ValidationStore:
                     consideration.get("verdict"),
                     decision.get("action"),
                     decision.get("setup_type"),
+                    decision.get("setup_grade"),
                     decision.get("liquidity_tier") or consideration.get("liquidity_tier"),
+                    decision.get("regime") or consideration.get("regime"),
+                    decision.get("location") or consideration.get("location"),
+                    _number(decision.get("zone_score") or consideration.get("zone_score")),
+                    _number(decision.get("location_score") or consideration.get("location_score")),
+                    _number(decision.get("confluence_score") or consideration.get("confluence_score")),
                     _number(decision.get("suggested_buy_low")),
                     _number(decision.get("suggested_buy_high")),
                     _number(decision.get("stop_loss")),
@@ -780,6 +858,9 @@ def _build_stability(observations: list[dict[str, Any]]) -> list[dict[str, objec
                 "last_verdict": last.get("verdict"),
                 "last_action": last.get("action"),
                 "last_setup": last.get("setup_type"),
+                "setup_grade": last.get("setup_grade"),
+                "regime": last.get("regime"),
+                "location": last.get("location"),
                 "liquidity_tier": last.get("liquidity_tier"),
                 "score": _round(last.get("score")),
             }
@@ -823,7 +904,13 @@ def _signal_payload(signal: dict[str, Any]) -> dict[str, object]:
         "initial_verdict",
         "initial_action",
         "setup_type",
+        "setup_grade",
         "liquidity_tier",
+        "regime",
+        "location",
+        "zone_score",
+        "location_score",
+        "confluence_score",
         "entry_low",
         "entry_high",
         "stop_loss",
