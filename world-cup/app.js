@@ -13,6 +13,20 @@ const TIME_ZONE_KEY = "worldCupTimeZone";
 const DEFAULT_TIME_ZONE = "UTC";
 const ESPN_LOOKBACK_DAYS = 1;
 const ESPN_LOOKAHEAD_DAYS = 1;
+const SCORER_NAME_CORRECTIONS = {
+  "CAN|c larin": "Cyle Larin",
+  "CAN|kail larin": "Cyle Larin",
+  "ENG|h kane": "Harry Kane",
+  "ENG|hri kin": "Harry Kane",
+  "GER|d undav": "Deniz Undav",
+  "GER|dniz avndav": "Deniz Undav",
+  "MEX|j quinones": "Julian Quinones",
+  "MEX|jvlian kviinvnz": "Julian Quinones",
+  "SUI|ruben vargas": "Ruben Vargas",
+  "SUI|rvbn vargas": "Ruben Vargas",
+  "USA|f balogun": "Folarin Balogun",
+  "USA|flvrin balvgan": "Folarin Balogun"
+};
 const FALLBACK_TIME_ZONES = [
   "UTC",
   "Asia/Dubai",
@@ -864,38 +878,137 @@ function renderScorers() {
 }
 
 function topScorers() {
+  const entries = scorerGoalEntries();
+  const likelyOwnGoals = likelyOwnGoalKeys(entries);
+  const goals = entries.filter((goal) => !likelyOwnGoals.has(goal.entryKey));
+  const aliases = scorerAliasMap(goals);
   const scorers = new Map();
 
-  state.games
-    .filter((game) => isFinished(game) || isLive(game))
-    .forEach((game) => {
-      goalScorers(game).forEach((goal) => {
-        if (isOwnGoal(goal)) return;
-        const name = cleanScorerName(goal.player);
-        const key = scorerKey(name);
-        if (!key) return;
-        const team = scorerTeam(game, goal);
+  goals.forEach(({ name, team }) => {
+    const canonicalName = aliases.get(scorerIdentityKey(name, team.code)) || name;
+    const key = scorerIdentityKey(canonicalName, team.code);
+    if (!key) return;
 
-        const entry = scorers.get(key) || {
-          name,
-          goals: 0,
-          flag: team.flag,
-          code: team.code
-        };
-        entry.goals += 1;
-        if (!entry.flag && team.flag) entry.flag = team.flag;
-        if (!entry.code && team.code) entry.code = team.code;
-        scorers.set(key, entry);
-      });
-    });
+    const entry = scorers.get(key) || {
+      name: canonicalName,
+      goals: 0,
+      flag: team.flag,
+      code: team.code
+    };
+    entry.goals += 1;
+    entry.name = bestScorerDisplayName(entry.name, canonicalName);
+    if (!entry.flag && team.flag) entry.flag = team.flag;
+    if (!entry.code && team.code) entry.code = team.code;
+    scorers.set(key, entry);
+  });
 
   return [...scorers.values()]
     .sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name))
     .map((scorer, index) => ({ ...scorer, rank: index + 1 }));
 }
 
+function scorerGoalEntries() {
+  return state.games
+    .filter((game) => isFinished(game) || isLive(game))
+    .flatMap((game) => goalScorers(game)
+      .filter((goal) => !isOwnGoal(goal))
+      .map((goal) => {
+        const team = scorerTeam(game, goal);
+        const opponent = scorerOpponentTeam(game, goal);
+        const name = canonicalScorerName(cleanScorerName(goal.player), team.code);
+        return {
+          name,
+          team,
+          opponent,
+          gameId: String(game.id || game._id || ""),
+          side: goal.side,
+          sort: goal.sort,
+          entryKey: scorerGoalEntryKey(game, goal, name)
+        };
+      })
+      .filter((goal) => scorerKey(goal.name)));
+}
+
+function canonicalScorerName(name, code) {
+  return SCORER_NAME_CORRECTIONS[`${code || ""}|${scorerKey(name)}`] || name;
+}
+
+function likelyOwnGoalKeys(goals) {
+  const likelyOwnGoals = new Set();
+  const byName = new Map();
+
+  goals.forEach((goal) => {
+    const key = scorerKey(goal.name);
+    const current = byName.get(key) || [];
+    current.push(goal);
+    byName.set(key, current);
+  });
+
+  byName.forEach((items) => {
+    const teamCodes = new Set(items.map((item) => item.team.code).filter(Boolean));
+    if (teamCodes.size < 2) return;
+
+    const opponentCodes = items.map((item) => item.opponent.code).filter(Boolean);
+    const likelyTeam = opponentCodes.find((code) => opponentCodes.every((value) => value === code));
+    if (likelyTeam) {
+      items
+        .filter((item) => item.team.code !== likelyTeam)
+        .forEach((item) => likelyOwnGoals.add(item.entryKey));
+    }
+
+    const byGame = new Map();
+    items.forEach((item) => {
+      const current = byGame.get(item.gameId) || [];
+      current.push(item);
+      byGame.set(item.gameId, current);
+    });
+
+    byGame.forEach((gameItems) => {
+      const sides = new Set(gameItems.map((item) => item.side));
+      if (sides.size < 2) return;
+      [...gameItems]
+        .sort((a, b) => a.sort - b.sort)
+        .slice(1)
+        .forEach((item) => likelyOwnGoals.add(item.entryKey));
+    });
+  });
+
+  return likelyOwnGoals;
+}
+
+function scorerAliasMap(goals) {
+  const fullByLastName = new Map();
+
+  goals.forEach(({ name, team }) => {
+    if (isAbbreviatedScorerName(name)) return;
+    const parts = scorerNameParts(name);
+    if (parts.length < 2) return;
+    const key = scorerLastNameKey(team.code, parts[parts.length - 1]);
+    const current = fullByLastName.get(key) || new Map();
+    current.set(scorerKey(name), name);
+    fullByLastName.set(key, current);
+  });
+
+  const aliases = new Map();
+  goals.forEach(({ name, team }) => {
+    if (!isAbbreviatedScorerName(name)) return;
+    const parts = scorerNameParts(name);
+    const candidates = [...(fullByLastName.get(scorerLastNameKey(team.code, parts[parts.length - 1])) || new Map()).values()];
+    const matchingInitial = candidates.filter((candidate) => scorerNameParts(candidate)[0]?.[0] === parts[0]);
+    const match = matchingInitial.length === 1 ? matchingInitial[0] : candidates.length === 1 ? candidates[0] : "";
+    if (match) aliases.set(scorerIdentityKey(name, team.code), match);
+  });
+
+  return aliases;
+}
+
 function scorerKey(name) {
-  return cleanScorerName(name).toLowerCase().replace(/\s+/g, " ");
+  return latinizeText(cleanScorerName(name))
+    .toLowerCase()
+    .replace(/([a-z])\.(?=[a-z])/g, "$1 ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function cleanScorerName(name) {
@@ -905,6 +1018,42 @@ function cleanScorerName(name) {
     .replace(/\s+\(?o\.?\s*g\.?\)?$/i, "")
     .replace(/\s+\(?p\)?$/i, "")
     .trim();
+}
+
+function latinizeText(value) {
+  return String(value || "")
+    .replace(/[øØ]/g, (letter) => letter === "Ø" ? "O" : "o")
+    .replace(/[ðÐ]/g, (letter) => letter === "Ð" ? "D" : "d")
+    .replace(/[þÞ]/g, (letter) => letter === "Þ" ? "Th" : "th")
+    .replace(/[łŁ]/g, (letter) => letter === "Ł" ? "L" : "l")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function scorerIdentityKey(name, code) {
+  const key = scorerKey(name);
+  return key ? `${code || ""}|${key}` : "";
+}
+
+function scorerNameParts(name) {
+  return scorerKey(name).split(" ").filter(Boolean);
+}
+
+function scorerLastNameKey(code, lastName) {
+  return `${code || ""}|${lastName || ""}`;
+}
+
+function isAbbreviatedScorerName(name) {
+  const parts = scorerNameParts(name);
+  return parts.length === 2 && parts[0].length === 1 && parts[1].length > 1;
+}
+
+function bestScorerDisplayName(current, candidate) {
+  if (!current) return candidate;
+  if (isAbbreviatedScorerName(current) && !isAbbreviatedScorerName(candidate)) return candidate;
+  return candidate.length > current.length && isAbbreviatedScorerName(current) === isAbbreviatedScorerName(candidate)
+    ? candidate
+    : current;
 }
 
 function isOwnGoal(goal) {
@@ -923,6 +1072,25 @@ function scorerTeam(game, goal) {
     flag: team?.flag || "",
     code: teamCode(team, name)
   };
+}
+
+function scorerOpponentTeam(game, goal) {
+  const side = goal.side === "away" ? "home" : "away";
+  const team = teamById(teamId(game, side));
+  const name = side === "home" ? game.homeName : game.awayName;
+  return {
+    flag: team?.flag || "",
+    code: teamCode(team, name)
+  };
+}
+
+function scorerGoalEntryKey(game, goal, name) {
+  return [
+    game.id || game._id || "",
+    goal.side || "",
+    goal.sort || "",
+    scorerKey(name)
+  ].join("|");
 }
 
 function scorerRow(scorer) {
@@ -1223,7 +1391,7 @@ function parseScorerText(value) {
 }
 
 function normalizeScorerNote(value) {
-  const text = String(value || "").trim();
+  const text = String(value || "").trim().replace(/^['"]+|['"]+$/g, "");
   if (!text) return "";
   if (isOwnGoalText(text)) return "(OG)";
   if (/^\(?p\)?$|\bpen(?:alty)?\b/i.test(text)) return "(p)";
