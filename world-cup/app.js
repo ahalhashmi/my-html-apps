@@ -862,13 +862,6 @@ function renderKnockout() {
       <div class="knockout-viewport">
         <div class="knockout-scale" style="--knockout-zoom: ${state.knockoutZoom}; width: ${scaleWidth}px; height: ${scaleHeight}px;">
           <div class="knockout-board">
-            <div class="knockout-centerpiece" aria-hidden="true">
-              <span class="knockout-trophy">
-                <span class="knockout-trophy-cup"></span>
-                <span class="knockout-trophy-stem"></span>
-                <span class="knockout-trophy-base"></span>
-              </span>
-            </div>
             <svg class="knockout-lines" viewBox="0 0 ${KNOCKOUT_BOARD.width} ${KNOCKOUT_BOARD.height}" aria-hidden="true">
               ${knockoutLines(layout)}
             </svg>
