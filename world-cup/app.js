@@ -871,12 +871,13 @@ function topScorers() {
     .forEach((game) => {
       goalScorers(game).forEach((goal) => {
         if (isOwnGoal(goal)) return;
-        const key = scorerKey(goal.player);
+        const name = cleanScorerName(goal.player);
+        const key = scorerKey(name);
         if (!key) return;
         const team = scorerTeam(game, goal);
 
         const entry = scorers.get(key) || {
-          name: goal.player,
+          name,
           goals: 0,
           flag: team.flag,
           code: team.code
@@ -894,11 +895,24 @@ function topScorers() {
 }
 
 function scorerKey(name) {
-  return String(name || "").trim().toLowerCase().replace(/\s+/g, " ");
+  return cleanScorerName(name).toLowerCase().replace(/\s+/g, " ");
+}
+
+function cleanScorerName(name) {
+  return String(name || "")
+    .replace(/[\u200e\u200f\u202a-\u202e]/g, "")
+    .replace(/\s+\d{1,3}(?:'?\+\d{1,2})?'?\s*(?:\((?:p|pen|og|o\.g\.)\))?$/i, "")
+    .replace(/\s+\(?o\.?\s*g\.?\)?$/i, "")
+    .replace(/\s+\(?p\)?$/i, "")
+    .trim();
 }
 
 function isOwnGoal(goal) {
-  return /\bog\b/i.test(String(goal.note || ""));
+  return isOwnGoalText(`${goal.note || ""} ${goal.raw || ""}`);
+}
+
+function isOwnGoalText(value) {
+  return /(?:^|[\s(])o\.?\s*g\.?(?:[\s)]|$)|\bown\s+goal\b/i.test(String(value || ""));
 }
 
 function scorerTeam(game, goal) {
@@ -1159,6 +1173,7 @@ function parseScorers(value, side) {
     const parsed = parseScorerText(item);
     return {
       ...parsed,
+      raw: item,
       side,
       sort: minuteSortValue(parsed.minute)
     };
@@ -1191,17 +1206,32 @@ function scorerItems(value) {
 
 function parseScorerText(value) {
   const text = String(value || "").replace(/\s+/g, " ").trim();
-  const match = text.match(/^(.*?)\s+(\d{1,3}'(?:\+\d{1,2}')?)\s*(.*)$/);
-  if (!match) return { player: text, minute: "", note: "" };
+  const match = text.match(/^(.*?)\s+(\d{1,3})(?:'?\+(\d{1,2}))?'?\s*(.*)$/);
+  if (!match) {
+    return {
+      player: cleanScorerName(text),
+      minute: "",
+      note: normalizeScorerNote(text)
+    };
+  }
+
   return {
-    player: match[1].trim(),
-    minute: match[2],
-    note: match[3].trim()
+    player: cleanScorerName(match[1]),
+    minute: `${match[2]}${match[3] ? `+${match[3]}` : ""}'`,
+    note: normalizeScorerNote(match[4])
   };
 }
 
+function normalizeScorerNote(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  if (isOwnGoalText(text)) return "(OG)";
+  if (/^\(?p\)?$|\bpen(?:alty)?\b/i.test(text)) return "(p)";
+  return text;
+}
+
 function minuteSortValue(minute) {
-  const match = String(minute || "").match(/^(\d{1,3})'(?:\+(\d{1,2})')?/);
+  const match = String(minute || "").match(/^(\d{1,3})(?:'?\+(\d{1,2}))?'?/);
   if (!match) return Number.MAX_SAFE_INTEGER;
   return Number(match[1]) * 100 + Number(match[2] || 0);
 }
