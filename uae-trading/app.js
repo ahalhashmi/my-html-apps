@@ -27,9 +27,20 @@ const els = {
   portfolioEmpty: document.getElementById("portfolioEmpty"),
   portfolioCount: document.getElementById("portfolioCount"),
   scannerOpen: document.getElementById("scannerOpen"),
+  buyOpen: document.getElementById("buyOpen"),
   performanceOpen: document.getElementById("performanceOpen"),
   scannerPage: document.getElementById("scannerPage"),
+  buyPage: document.getElementById("buyPage"),
   performancePage: document.getElementById("performancePage"),
+  buyPortfolioOpen: document.getElementById("buyPortfolioOpen"),
+  buyActiveCount: document.getElementById("buyActiveCount"),
+  buyWaitCount: document.getElementById("buyWaitCount"),
+  buyStrongCount: document.getElementById("buyStrongCount"),
+  sellPlanCount: document.getElementById("sellPlanCount"),
+  buySuggestionRows: document.getElementById("buySuggestionRows"),
+  buySuggestionsEmpty: document.getElementById("buySuggestionsEmpty"),
+  sellSuggestionRows: document.getElementById("sellSuggestionRows"),
+  sellSuggestionsEmpty: document.getElementById("sellSuggestionsEmpty"),
   performanceRefresh: document.getElementById("performanceRefresh"),
   perfTotalSignals: document.getElementById("perfTotalSignals"),
   perfOpenSignals: document.getElementById("perfOpenSignals"),
@@ -165,6 +176,7 @@ function render() {
   els.emptyState.hidden = rows.length > 0;
   renderSymbolList();
   renderPortfolio();
+  renderBuySuggestions();
   renderPage();
   renderPerformance();
   setBusy(Boolean(status.is_scanning));
@@ -256,11 +268,192 @@ function renderPortfolio() {
 }
 
 function renderPage() {
+  const buy = state.page === "buy";
   const performance = state.page === "performance";
-  els.scannerPage.hidden = performance;
+  els.scannerPage.hidden = buy || performance;
+  els.buyPage.hidden = !buy;
   els.performancePage.hidden = !performance;
-  els.scannerOpen.classList.toggle("active", !performance);
+  els.scannerOpen.classList.toggle("active", !buy && !performance);
+  els.buyOpen.classList.toggle("active", buy);
   els.performanceOpen.classList.toggle("active", performance);
+}
+
+function renderBuySuggestions() {
+  const buys = buySuggestionProfiles();
+  const sells = sellSuggestionProfiles();
+  const active = buys.filter((profile) => ["Buy now", "Buy zone active"].includes(buyInstruction(profile))).length;
+  const wait = buys.length - active;
+
+  els.buyActiveCount.textContent = active;
+  els.buyWaitCount.textContent = wait;
+  els.buyStrongCount.textContent = buys.length;
+  els.sellPlanCount.textContent = sells.length;
+  els.buySuggestionRows.replaceChildren(...buys.map(renderBuySuggestionRow));
+  els.buySuggestionsEmpty.hidden = buys.length > 0;
+  els.sellSuggestionRows.replaceChildren(...sells.map(renderSellSuggestionRow));
+  els.sellSuggestionsEmpty.hidden = sells.length > 0;
+}
+
+function buySuggestionProfiles() {
+  return state.profiles
+    .filter((profile) => {
+      const decision = profile.decision || {};
+      const consideration = profile.consideration || {};
+      if (decision.already_bought) {
+        return false;
+      }
+      if (!["A", "B"].includes(decision.setup_grade)) {
+        return false;
+      }
+      if (!["buy", "watch"].includes(decision.action)) {
+        return false;
+      }
+      if (["unqualified", "exit weakness"].includes(decision.setup_type)) {
+        return false;
+      }
+      if (!decision.suggested_buy_low || !decision.suggested_buy_high || !decision.stop_loss || !decision.target2) {
+        return false;
+      }
+      return (consideration.score || 0) >= 70;
+    })
+    .sort((a, b) => {
+      const aDecision = a.decision || {};
+      const bDecision = b.decision || {};
+      return (
+        gradeRank(bDecision.setup_grade) - gradeRank(aDecision.setup_grade) ||
+        activeBuyRank(b) - activeBuyRank(a) ||
+        ((b.consideration || {}).score || 0) - ((a.consideration || {}).score || 0) ||
+        (bDecision.risk_reward || 0) - (aDecision.risk_reward || 0)
+      );
+    });
+}
+
+function sellSuggestionProfiles() {
+  return state.profiles
+    .filter((profile) => Boolean((profile.decision || {}).already_bought))
+    .sort((a, b) => {
+      const aDecision = a.decision || {};
+      const bDecision = b.decision || {};
+      return sellUrgencyRank(bDecision) - sellUrgencyRank(aDecision) || String(a.symbol).localeCompare(String(b.symbol));
+    });
+}
+
+function renderBuySuggestionRow(profile) {
+  const row = document.createElement("tr");
+  const consideration = profile.consideration || {};
+  const decision = profile.decision || {};
+  row.append(
+    cell(symbolMarkup(profile.symbol, profile.last_close)),
+    cell(badge(buyInstruction(profile))),
+    cell(gradeMarkup(decision)),
+    cell(priceMarkup(profile.last_close)),
+    cell(buyPriceMarkup(decision)),
+    cell(priceMarkup(decision.stop_loss)),
+    cell(takeProfitMarkup(decision)),
+    cell(formatNumber(decision.risk_reward, 2)),
+    cell(setupStack(decision, consideration)),
+    cell(whyMarkup(decision, consideration))
+  );
+  return row;
+}
+
+function renderSellSuggestionRow(profile) {
+  const row = document.createElement("tr");
+  const consideration = profile.consideration || {};
+  const decision = profile.decision || {};
+  row.append(
+    cell(symbolMarkup(profile.symbol, profile.last_close)),
+    cell(positionSummaryMarkup(decision)),
+    cell(currentPlMarkup(decision)),
+    cell(badge(sellInstruction(decision))),
+    cell(priceMarkup(decision.stop_loss)),
+    cell(priceMarkup(decision.trailing_stop)),
+    cell(priceMarkup(decision.target1)),
+    cell(priceMarkup(decision.target2)),
+    cell(timeStopMarkup(decision)),
+    cell(whyMarkup(decision, consideration))
+  );
+  return row;
+}
+
+function buyInstruction(profile) {
+  const decision = profile.decision || {};
+  const current = Number(decision.current_price ?? profile.last_close);
+  const low = Number(decision.suggested_buy_low);
+  const high = Number(decision.suggested_buy_high);
+  if (decision.action === "buy") {
+    return "Buy now";
+  }
+  if (Number.isFinite(current) && Number.isFinite(low) && Number.isFinite(high) && current >= low && current <= high) {
+    return "Buy zone active";
+  }
+  if (Number.isFinite(current) && Number.isFinite(high) && current > high) {
+    return "Wait for pullback";
+  }
+  if (Number.isFinite(current) && Number.isFinite(low) && current < low) {
+    return "Wait for reclaim";
+  }
+  return "Watch only";
+}
+
+function sellInstruction(decision) {
+  if (decision.action === "sell") {
+    return "Sell / review now";
+  }
+  if (Number(decision.current_price) >= Number(decision.target2)) {
+    return "Take profit 2";
+  }
+  if (Number(decision.current_price) >= Number(decision.target1)) {
+    return "Take partial profit";
+  }
+  if (decision.action === "hold") {
+    return "Hold";
+  }
+  return "Review";
+}
+
+function activeBuyRank(profile) {
+  const instruction = buyInstruction(profile);
+  if (instruction === "Buy now") {
+    return 3;
+  }
+  if (instruction === "Buy zone active") {
+    return 2;
+  }
+  if (instruction === "Wait for pullback") {
+    return 1;
+  }
+  return 0;
+}
+
+function sellUrgencyRank(decision) {
+  const instruction = sellInstruction(decision);
+  if (instruction === "Sell / review now") {
+    return 4;
+  }
+  if (instruction === "Take profit 2") {
+    return 3;
+  }
+  if (instruction === "Take partial profit") {
+    return 2;
+  }
+  if (instruction === "Hold") {
+    return 1;
+  }
+  return 0;
+}
+
+function gradeRank(grade) {
+  if (grade === "A") {
+    return 4;
+  }
+  if (grade === "B") {
+    return 3;
+  }
+  if (grade === "C") {
+    return 2;
+  }
+  return 1;
 }
 
 function renderPerformance() {
@@ -348,7 +541,7 @@ function setupTierStack(setup, tier, grade) {
   wrapper.append(badge(setup || "unqualified"));
   const note = document.createElement("div");
   note.className = "mini-stat";
-  note.textContent = `${grade ? `Grade ${grade}` : "Grade -"} • ${tier ? `Tier ${tier}` : "Tier -"}`;
+  note.textContent = `${grade ? `Grade ${grade}` : "Grade -"} - ${tier ? `Tier ${tier}` : "Tier -"}`;
   wrapper.append(note);
   return wrapper;
 }
@@ -517,6 +710,92 @@ function targetsMarkup(decision) {
   return wrapper;
 }
 
+function buyPriceMarkup(decision) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "price-stack";
+  wrapper.append(rangeMarkup(decision.suggested_buy_low, decision.suggested_buy_high));
+  const note = document.createElement("div");
+  note.className = "mini-stat";
+  note.textContent = "buy zone";
+  wrapper.append(note);
+  return wrapper;
+}
+
+function takeProfitMarkup(decision) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "price-stack";
+  const first = document.createElement("div");
+  first.textContent = `TP1 ${formatNumber(decision.target1, 3)}`;
+  const second = document.createElement("div");
+  second.textContent = `TP2 ${formatNumber(decision.target2, 3)}`;
+  wrapper.append(first, second);
+  return wrapper;
+}
+
+function setupStack(decision, consideration) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "status-stack";
+  wrapper.append(badge(decision.setup_type || "unqualified"));
+  const note = document.createElement("div");
+  note.className = "mini-stat";
+  note.textContent = `${consideration.regime || decision.regime || "unknown"} - ${
+    consideration.location || decision.location || "structure unclear"
+  }`;
+  wrapper.append(note);
+  return wrapper;
+}
+
+function whyMarkup(decision, consideration) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "why-cell";
+  const text =
+    (decision.reasons && decision.reasons[0]) ||
+    (consideration.reasons && consideration.reasons[0]) ||
+    (decision.warnings && decision.warnings[0]) ||
+    (consideration.warnings && consideration.warnings[0]) ||
+    "-";
+  wrapper.textContent = text;
+  wrapper.title = [
+    ...(decision.reasons || []),
+    ...(decision.warnings || []),
+    ...(consideration.reasons || []),
+    ...(consideration.warnings || []),
+  ].join("\n");
+  return wrapper;
+}
+
+function positionSummaryMarkup(decision) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "status-stack";
+  const buy = document.createElement("div");
+  buy.textContent = `${decision.buy_date || "-"} @ ${formatNumber(decision.buy_price, 3)}`;
+  const qty = document.createElement("div");
+  qty.className = "mini-stat";
+  qty.textContent = `${formatQuantity(decision.quantity)} shares`;
+  wrapper.append(buy, qty);
+  return wrapper;
+}
+
+function currentPlMarkup(decision) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "status-stack";
+  const current = document.createElement("div");
+  current.textContent = formatNumber(decision.current_price, 3);
+  const pl = document.createElement("div");
+  pl.className = `return ${decision.unrealized_pl_pct >= 0 ? "positive" : "negative"}`;
+  pl.textContent = `${formatSigned(decision.unrealized_pl_pct, 2)}% / ${formatSigned(decision.unrealized_pl_value, 2)}`;
+  wrapper.append(current, pl);
+  return wrapper;
+}
+
+function timeStopMarkup(decision) {
+  if (!decision.time_stop_days) {
+    return "-";
+  }
+  const held = decision.days_held === null || decision.days_held === undefined ? "-" : decision.days_held;
+  return `${held}/${decision.time_stop_days} days`;
+}
+
 function positionMarkup(decision) {
   const wrapper = document.createElement("div");
   wrapper.className = "position-cell";
@@ -595,13 +874,13 @@ function badge(value) {
 }
 
 function badgeClass(value) {
-  if (value === "buy candidate" || value === "setup forming" || value === "bullish" || value === "buy" || value === "hold" || value === "trend pullback" || value === "breakout" || value === "continuation" || value === "uptrend" || value === "accumulation base" || value === "inside demand" || value === "near demand" || value === "lower half of range" || value === "Grade A" || value === "Tier A" || value === "target1_hit" || value === "target2" || value === "more confident") {
+  if (value === "buy candidate" || value === "setup forming" || value === "bullish" || value === "buy" || value === "Buy now" || value === "Buy zone active" || value === "hold" || value === "Hold" || value === "trend pullback" || value === "breakout" || value === "continuation" || value === "uptrend" || value === "accumulation base" || value === "inside demand" || value === "near demand" || value === "lower half of range" || value === "Grade A" || value === "Tier A" || value === "target1_hit" || value === "target2" || value === "Take profit 2" || value === "Take partial profit" || value === "more confident") {
     return "bullish";
   }
-  if (value === "worth studying" || value === "watch" || value === "sideways" || value === "mean reversion" || value === "reversal" || value === "range" || value === "mixed" || value === "trend continuation area" || value === "Grade B" || value === "Grade C" || value === "Tier B" || value === "waiting_entry" || value === "active" || value === "expired" || value === "steady") {
+  if (value === "worth studying" || value === "watch" || value === "Watch only" || value === "Wait for pullback" || value === "Wait for reclaim" || value === "Review" || value === "sideways" || value === "mean reversion" || value === "reversal" || value === "range" || value === "mixed" || value === "trend continuation area" || value === "Grade B" || value === "Grade C" || value === "Tier B" || value === "waiting_entry" || value === "active" || value === "expired" || value === "steady") {
     return "sideways";
   }
-  if (value === "sell pressure" || value === "avoid" || value === "ignore" || value === "bearish" || value === "sell" || value === "skip" || value === "exit weakness" || value === "unqualified" || value === "downtrend" || value === "distribution" || value === "inside supply" || value === "near supply" || value === "middle of range" || value === "upper half of range" || value === "Grade D" || value === "Tier C" || value === "stopped" || value === "invalidated" || value === "choppy") {
+  if (value === "sell pressure" || value === "avoid" || value === "ignore" || value === "bearish" || value === "sell" || value === "Sell / review now" || value === "skip" || value === "exit weakness" || value === "unqualified" || value === "downtrend" || value === "distribution" || value === "inside supply" || value === "near supply" || value === "middle of range" || value === "upper half of range" || value === "Grade D" || value === "Tier C" || value === "stopped" || value === "invalidated" || value === "choppy") {
     return "bearish";
   }
   return "unknown";
@@ -788,6 +1067,11 @@ els.scannerOpen.addEventListener("click", () => {
   state.page = "scanner";
   renderPage();
 });
+els.buyOpen.addEventListener("click", () => {
+  state.page = "buy";
+  renderPage();
+  renderBuySuggestions();
+});
 els.performanceOpen.addEventListener("click", () => {
   state.page = "performance";
   renderPage();
@@ -797,6 +1081,10 @@ els.performanceRefresh.addEventListener("click", () => {
   refreshPerformance().catch((error) => showToast(error.message || "Performance failed"));
 });
 els.portfolioOpen.addEventListener("click", () => {
+  setDefaultBuyDate();
+  els.portfolioDialog.showModal();
+});
+els.buyPortfolioOpen.addEventListener("click", () => {
   setDefaultBuyDate();
   els.portfolioDialog.showModal();
 });

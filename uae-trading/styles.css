@@ -585,6 +585,14 @@ tbody tr:hover {
   box-shadow: none;
 }
 
+.suggestions-table {
+  min-width: 1280px;
+}
+
+.sell-table {
+  min-width: 1240px;
+}
+
 .compact-table th,
 .compact-table td {
   padding: 10px 12px;
@@ -604,6 +612,13 @@ tbody tr:hover {
 .mini-stat {
   color: var(--muted);
   font-size: 12px;
+}
+
+.why-cell {
+  max-width: 260px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .toast {

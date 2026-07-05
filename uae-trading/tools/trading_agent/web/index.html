@@ -27,6 +27,7 @@
 
       <nav class="page-tabs" aria-label="Dashboard pages">
         <button id="scannerOpen" class="tab-button active" type="button">Scanner</button>
+        <button id="buyOpen" class="tab-button" type="button">Buy Suggestions</button>
         <button id="performanceOpen" class="tab-button" type="button">Decision Performance</button>
       </nav>
 
@@ -244,6 +245,91 @@
           </table>
           <div id="emptyState" class="empty" hidden>No symbols match the current filters.</div>
         </main>
+      </section>
+
+      <section id="buyPage" class="page-view" hidden>
+        <section class="performance-intro">
+          <div>
+            <h2>Buy Suggestions</h2>
+            <p>Simplified model shortlist for possible entries, plus sell levels for stocks you marked as bought.</p>
+          </div>
+          <button id="buyPortfolioOpen" class="secondary" type="button">Portfolio</button>
+        </section>
+
+        <section class="status-strip performance-strip" aria-label="Buy suggestion summary">
+          <div class="metric bullish">
+            <span>Buy Zone Active</span>
+            <strong id="buyActiveCount">0</strong>
+          </div>
+          <div class="metric sideways">
+            <span>Wait For Price</span>
+            <strong id="buyWaitCount">0</strong>
+          </div>
+          <div class="metric bullish">
+            <span>Grade A/B</span>
+            <strong id="buyStrongCount">0</strong>
+          </div>
+          <div class="metric unknown">
+            <span>Held Stocks</span>
+            <strong id="sellPlanCount">0</strong>
+          </div>
+        </section>
+
+        <section class="performance-grid">
+          <article class="performance-panel wide">
+            <div class="panel-header">
+              <h3>What To Buy</h3>
+              <span class="muted">Sorted by grade, active buy zone, score, and risk/reward</span>
+            </div>
+            <div class="compact-table-wrap">
+              <table class="compact-table suggestions-table">
+                <thead>
+                  <tr>
+                    <th>Symbol</th>
+                    <th>Action</th>
+                    <th>Grade</th>
+                    <th>Current</th>
+                    <th>Buy Price</th>
+                    <th>Stop Loss</th>
+                    <th>Take Profit</th>
+                    <th>R/R</th>
+                    <th>Setup</th>
+                    <th>Why</th>
+                  </tr>
+                </thead>
+                <tbody id="buySuggestionRows"></tbody>
+              </table>
+              <div id="buySuggestionsEmpty" class="empty" hidden>No Grade A/B buy opportunities right now.</div>
+            </div>
+          </article>
+
+          <article class="performance-panel wide">
+            <div class="panel-header">
+              <h3>When To Sell If Bought</h3>
+              <span class="muted">Uses your Portfolio buy date and buy price</span>
+            </div>
+            <div class="compact-table-wrap">
+              <table class="compact-table sell-table">
+                <thead>
+                  <tr>
+                    <th>Symbol</th>
+                    <th>Position</th>
+                    <th>Current / P&L</th>
+                    <th>Action</th>
+                    <th>Stop Loss</th>
+                    <th>Trailing Stop</th>
+                    <th>Take Profit 1</th>
+                    <th>Take Profit 2</th>
+                    <th>Time Stop</th>
+                    <th>Why</th>
+                  </tr>
+                </thead>
+                <tbody id="sellSuggestionRows"></tbody>
+              </table>
+              <div id="sellSuggestionsEmpty" class="empty" hidden>Add a bought stock in Portfolio to see sell targets and stop-loss levels.</div>
+            </div>
+          </article>
+        </section>
       </section>
 
       <section id="performancePage" class="page-view" hidden>
