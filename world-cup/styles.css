@@ -249,18 +249,23 @@ a {
 }
 
 .knockout-viewport {
-  height: min(74vh, 760px);
+  height: min(76vh, 860px);
   overflow: auto;
-  border: 1px solid var(--line);
+  border: 2px solid rgba(211, 185, 91, 0.28);
   border-radius: 8px;
-  background: #020807;
+  background:
+    linear-gradient(180deg, rgba(7, 24, 37, 0.95), rgba(2, 12, 18, 0.98)),
+    repeating-linear-gradient(135deg, rgba(211, 185, 91, 0.06) 0 1px, transparent 1px 18px);
   direction: ltr;
   overscroll-behavior: contain;
   touch-action: pan-x pan-y;
+  box-shadow: inset 0 0 90px rgba(0, 0, 0, 0.58);
 }
 
 :root[data-theme="light"] .knockout-viewport {
-  background: #f9fbfa;
+  background:
+    linear-gradient(180deg, rgba(230, 243, 244, 0.96), rgba(206, 225, 222, 0.98)),
+    repeating-linear-gradient(135deg, rgba(121, 91, 28, 0.08) 0 1px, transparent 1px 18px);
 }
 
 .knockout-scale {
@@ -270,54 +275,151 @@ a {
 .knockout-board {
   position: absolute;
   inset: 0 auto auto 0;
-  width: 1320px;
-  height: 920px;
+  width: 1180px;
+  height: 1480px;
   transform: scale(var(--knockout-zoom));
   transform-origin: top left;
+  background:
+    linear-gradient(90deg, rgba(38, 150, 125, 0.24), transparent 28%, transparent 72%, rgba(8, 59, 107, 0.28)),
+    linear-gradient(180deg, rgba(5, 39, 62, 0.92), rgba(3, 21, 31, 0.96) 48%, rgba(4, 16, 22, 0.98));
+  overflow: hidden;
 }
 
 .knockout-board::before {
   content: "";
   position: absolute;
-  inset: 190px 530px 70px;
-  border: 2px solid rgba(244, 201, 106, 0.12);
-  border-radius: 50% 50% 42% 42%;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 0 44%, rgba(244, 201, 106, 0.08) 44% 44.4%, transparent 44.4% 55.6%, rgba(244, 201, 106, 0.08) 55.6% 56%, transparent 56%),
+    repeating-linear-gradient(90deg, transparent 0 54px, rgba(255, 255, 255, 0.025) 54px 55px),
+    repeating-linear-gradient(0deg, transparent 0 54px, rgba(255, 255, 255, 0.018) 54px 55px);
   pointer-events: none;
+}
+
+.knockout-board::after {
+  content: "";
+  position: absolute;
+  inset: 110px 390px 170px;
+  border: 2px solid rgba(244, 201, 106, 0.08);
+  border-radius: 46% 46% 28% 28%;
+  pointer-events: none;
+}
+
+.knockout-centerpiece {
+  position: absolute;
+  left: 494px;
+  top: 430px;
+  width: 192px;
+  height: 560px;
+  display: grid;
+  place-items: center;
+  opacity: 0.92;
+  pointer-events: none;
+}
+
+.knockout-trophy {
+  position: relative;
+  width: 118px;
+  height: 292px;
+  filter: drop-shadow(0 28px 34px rgba(0, 0, 0, 0.55));
+}
+
+.knockout-trophy-cup {
+  position: absolute;
+  left: 20px;
+  top: 8px;
+  width: 78px;
+  height: 150px;
+  border-radius: 46% 46% 34% 34%;
+  background:
+    linear-gradient(90deg, rgba(116, 76, 17, 0.35), transparent 26%, rgba(255, 242, 151, 0.8) 48%, rgba(168, 105, 20, 0.5) 72%, rgba(71, 46, 12, 0.42)),
+    linear-gradient(180deg, #f8df72, #b97822 58%, #5f3d16);
+}
+
+.knockout-trophy-cup::before,
+.knockout-trophy-cup::after {
+  content: "";
+  position: absolute;
+  top: 36px;
+  width: 32px;
+  height: 72px;
+  border: 9px solid rgba(218, 164, 47, 0.82);
+  border-bottom-color: transparent;
+  border-radius: 50%;
+}
+
+.knockout-trophy-cup::before {
+  right: 54px;
+}
+
+.knockout-trophy-cup::after {
+  left: 54px;
+}
+
+.knockout-trophy-stem {
+  position: absolute;
+  left: 47px;
+  top: 148px;
+  width: 24px;
+  height: 82px;
+  border-radius: 45% 45% 20% 20%;
+  background: linear-gradient(90deg, #6d4417, #f2cd61 50%, #7c4c18);
+}
+
+.knockout-trophy-base {
+  position: absolute;
+  left: 24px;
+  bottom: 18px;
+  width: 70px;
+  height: 40px;
+  border-radius: 12px 12px 8px 8px;
+  background: linear-gradient(90deg, #3f2a13, #d89e32 48%, #4a3013);
+  box-shadow: 0 18px 0 -8px rgba(22, 80, 54, 0.92);
 }
 
 .knockout-lines {
   position: absolute;
   inset: 0;
-  width: 1320px;
-  height: 920px;
+  width: 1180px;
+  height: 1480px;
   fill: none;
-  stroke: rgba(238, 247, 244, 0.72);
+  stroke: rgba(226, 197, 97, 0.82);
   stroke-linecap: square;
   stroke-linejoin: round;
-  stroke-width: 4;
+  stroke-width: 3.5;
+  filter: drop-shadow(0 0 3px rgba(226, 197, 97, 0.2));
 }
 
 :root[data-theme="light"] .knockout-lines {
-  stroke: rgba(19, 32, 32, 0.55);
+  stroke: rgba(139, 105, 28, 0.68);
 }
 
 .knockout-match {
   position: absolute;
-  width: 116px;
-  height: 76px;
+  width: 92px;
+  height: 108px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 4px;
+  grid-template-rows: repeat(2, 1fr);
+  gap: 7px;
   align-items: center;
+}
+
+.knockout-match--center {
+  width: 92px;
 }
 
 .knockout-team {
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
   opacity: 0.82;
+  padding: 4px 3px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(244, 201, 106, 0.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
 }
 
 .knockout-team.is-winner {
@@ -329,9 +431,9 @@ a {
 }
 
 .knockout-flag {
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
+  width: 54px;
+  height: 36px;
+  border-radius: 5px;
   object-fit: cover;
   background: var(--accent-soft);
   border: 2px solid rgba(255, 255, 255, 0.88);
@@ -350,7 +452,7 @@ a {
 .knockout-code {
   color: var(--ink);
   direction: ltr;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 950;
   line-height: 1;
   text-align: center;

@@ -238,15 +238,20 @@ const roundNames = {
 };
 
 const KNOCKOUT_BOARD = {
-  width: 1320,
-  height: 920,
-  matchWidth: 116,
-  matchHeight: 76
+  width: 1180,
+  height: 1480,
+  matchWidth: 92,
+  matchHeight: 108
 };
 
-const KNOCKOUT_ZOOM_MIN = 0.45;
+const KNOCKOUT_ZOOM_MIN = 0.38;
 const KNOCKOUT_ZOOM_MAX = 1.5;
 const KNOCKOUT_ZOOM_STEP = 0.1;
+
+function initialKnockoutZoom() {
+  const width = window.innerWidth || document.documentElement.clientWidth || 0;
+  return width && width < 620 ? 0.38 : 0.62;
+}
 
 const knockoutRounds = {
   left: {
@@ -294,7 +299,7 @@ const state = {
   fallback: false,
   didInitialScroll: false,
   expandedMatchId: null,
-  knockoutZoom: 0.58
+  knockoutZoom: initialKnockoutZoom()
 };
 
 const el = {
@@ -857,6 +862,13 @@ function renderKnockout() {
       <div class="knockout-viewport">
         <div class="knockout-scale" style="--knockout-zoom: ${state.knockoutZoom}; width: ${scaleWidth}px; height: ${scaleHeight}px;">
           <div class="knockout-board">
+            <div class="knockout-centerpiece" aria-hidden="true">
+              <span class="knockout-trophy">
+                <span class="knockout-trophy-cup"></span>
+                <span class="knockout-trophy-stem"></span>
+                <span class="knockout-trophy-base"></span>
+              </span>
+            </div>
             <svg class="knockout-lines" viewBox="0 0 ${KNOCKOUT_BOARD.width} ${KNOCKOUT_BOARD.height}" aria-hidden="true">
               ${knockoutLines(layout)}
             </svg>
@@ -1114,14 +1126,14 @@ function scorerRow(scorer) {
 
 function knockoutLayout() {
   const positions = [];
-  const leftX = { r32: 22, r16: 198, qf: 374, sf: 525 };
-  const rightX = { sf: 679, qf: 830, r16: 1006, r32: 1182 };
+  const leftX = { r32: 24, r16: 156, qf: 300, sf: 426 };
+  const rightX = { sf: 662, qf: 788, r16: 932, r32: 1064 };
   const yRanges = {
-    r32: [18, 826],
-    r16: [76, 768],
-    qf: [200, 644],
-    sf: [422, 422],
-    final: [422, 422]
+    r32: [32, 1266],
+    r16: [120, 1178],
+    qf: [286, 1012],
+    sf: [642, 642],
+    final: [1168, 1168]
   };
 
   Object.entries(knockoutRounds.left).forEach(([round, ids]) => {
@@ -1130,7 +1142,7 @@ function knockoutLayout() {
   Object.entries(knockoutRounds.right).forEach(([round, ids]) => {
     ids.forEach((id, index) => positions.push(knockoutPosition(id, rightX[round], spacedY(index, ids.length, ...yRanges[round]), "right")));
   });
-  positions.push(knockoutPosition(knockoutRounds.final[0], 602, yRanges.final[0], "center"));
+  positions.push(knockoutPosition(knockoutRounds.final[0], 544, yRanges.final[0], "center"));
 
   return positions;
 }
@@ -1698,7 +1710,7 @@ el.content.addEventListener("wheel", (event) => {
 
 function setKnockoutZoom(action) {
   if (action === "reset") {
-    state.knockoutZoom = 0.58;
+    state.knockoutZoom = initialKnockoutZoom();
   } else {
     const direction = action === "in" ? 1 : -1;
     state.knockoutZoom = clampZoom(state.knockoutZoom + direction * KNOCKOUT_ZOOM_STEP);
