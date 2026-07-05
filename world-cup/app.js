@@ -11,28 +11,9 @@ const REFRESH_INTERVAL_MS = 60000;
 const LANG_KEY = "worldCupLangV2";
 const TIME_ZONE_KEY = "worldCupTimeZone";
 const DEFAULT_TIME_ZONE = "UTC";
-const ESPN_LOOKBACK_DAYS = 1;
-const ESPN_LOOKAHEAD_DAYS = 1;
-const SCORER_NAME_CORRECTIONS = {
-  "CAN|c larin": "Cyle Larin",
-  "CAN|kail larin": "Cyle Larin",
-  "ENG|h kane": "Harry Kane",
-  "ENG|hri kin": "Harry Kane",
-  "GER|d undav": "Deniz Undav",
-  "GER|dniz avndav": "Deniz Undav",
-  "MEX|j quinones": "Julian Quinones",
-  "MEX|jvlian kviinvnz": "Julian Quinones",
-  "MAR|sofiane rahimi": "Soufiane Rahimi",
-  "MAR|soufian rahimi": "Soufiane Rahimi",
-  "MAR|soufiane rahimi": "Soufiane Rahimi",
-  "MAR|sufiane rahimi": "Soufiane Rahimi",
-  "MAR|sufyan rahimi": "Soufiane Rahimi",
-  "MAR|svfian rhimi": "Soufiane Rahimi",
-  "SUI|ruben vargas": "Ruben Vargas",
-  "SUI|rvbn vargas": "Ruben Vargas",
-  "USA|f balogun": "Folarin Balogun",
-  "USA|flvrin balvgan": "Folarin Balogun"
-};
+const ESPN_TOURNAMENT_START = "20260611";
+const ESPN_TOURNAMENT_END = "20260719";
+const ESPN_TOURNAMENT_LIMIT = 300;
 const FALLBACK_TIME_ZONES = [
   "UTC",
   "Asia/Dubai",
@@ -82,6 +63,7 @@ const labels = {
     live: "Live",
     highlights: "Match highlights",
     noGoals: "No goals",
+    scorersUnavailable: "Scorer data unavailable",
     expandMatch: "Show match details",
     collapseMatch: "Hide match details",
     pointAbbr: "pts",
@@ -119,6 +101,7 @@ const labels = {
     live: "مباشر",
     highlights: "ملخص المباراة",
     noGoals: "لا توجد أهداف",
+    scorersUnavailable: "بيانات الهدافين غير متاحة",
     expandMatch: "عرض تفاصيل المباراة",
     collapseMatch: "إخفاء تفاصيل المباراة",
     pointAbbr: "نقطه",
@@ -294,6 +277,7 @@ const state = {
   games: [],
   groups: [],
   teams: [],
+  espnEvents: [],
   liveGroupStats: new Map(),
   loadedAt: null,
   fallback: false,
@@ -475,6 +459,11 @@ function teamById(id) {
   return state.teams.find((team) => String(team.id) === String(id));
 }
 
+function teamByCode(code) {
+  const normalized = normalizeCode(code);
+  return state.teams.find((team) => normalizeCode(team.fifa_code) === normalized);
+}
+
 function teamCode(team, fallbackName) {
   if (team?.fifa_code) return team.fifa_code.toUpperCase();
   return compactLabel(fallbackName);
@@ -532,22 +521,8 @@ function cacheBustedUrl(url) {
   return `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`;
 }
 
-function addUtcDays(date, days) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + days));
-}
-
-function espnDateKey(date) {
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  return `${year}${month}${day}`;
-}
-
 function espnScoreboardUrl() {
-  const now = new Date();
-  const start = espnDateKey(addUtcDays(now, -ESPN_LOOKBACK_DAYS));
-  const end = espnDateKey(addUtcDays(now, ESPN_LOOKAHEAD_DAYS));
-  return `${ESPN_SCOREBOARD_URL}?dates=${start}-${end}&limit=60`;
+  return `${ESPN_SCOREBOARD_URL}?dates=${ESPN_TOURNAMENT_START}-${ESPN_TOURNAMENT_END}&limit=${ESPN_TOURNAMENT_LIMIT}`;
 }
 
 function normalizeCode(code) {
@@ -673,9 +648,11 @@ async function getJson(url) {
 async function addFastScoreData(data) {
   try {
     const scoreboard = await getJson(espnScoreboardUrl());
+    const espnEvents = scoreboard.events || [];
     return {
       ...data,
-      games: mergeEspnScores(data.games || [], data.teams || [], scoreboard.events || []),
+      games: mergeEspnScores(data.games || [], data.teams || [], espnEvents),
+      espnEvents,
       liveFetchedAt: new Date().toISOString()
     };
   } catch (error) {
@@ -712,6 +689,7 @@ function applyData(data, fallback) {
   state.games = (data.games || []).map(hydrateGame).sort((a, b) => a.date - b.date);
   state.groups = data.groups || [];
   state.teams = data.teams || [];
+  state.espnEvents = data.espnEvents || [];
   state.liveGroupStats = computeLiveGroupStats();
   const liveTime = data.liveFetchedAt ? new Date(data.liveFetchedAt) : null;
   const fallbackTime = fallback && data.fetchedAt ? new Date(data.fetchedAt) : null;
@@ -883,31 +861,27 @@ function renderScorers() {
   const scorers = topScorers();
   el.content.innerHTML = `
     <section class="scorers-list">
-      ${scorers.length ? scorers.map(scorerRow).join("") : `<div class="empty">${escapeHtml(t().noGoals)}</div>`}
+      ${hasEspnScorerData()
+        ? (scorers.length ? scorers.map(scorerRow).join("") : `<div class="empty">${escapeHtml(t().noGoals)}</div>`)
+        : `<div class="empty">${escapeHtml(t().scorersUnavailable)}</div>`}
     </section>
   `;
 }
 
 function topScorers() {
-  const entries = scorerGoalEntries();
-  const likelyOwnGoals = likelyOwnGoalKeys(entries);
-  const goals = entries.filter((goal) => !likelyOwnGoals.has(goal.entryKey));
-  const aliases = scorerAliasMap(goals);
   const scorers = new Map();
 
-  goals.forEach(({ name, team }) => {
-    const canonicalName = aliases.get(scorerIdentityKey(name, team.code)) || name;
-    const key = scorerIdentityKey(canonicalName, team.code);
+  espnScorerGoals().forEach(({ playerId, name, team }) => {
+    const key = playerId || scorerIdentityKey(name, team.code);
     if (!key) return;
 
     const entry = scorers.get(key) || {
-      name: canonicalName,
+      name,
       goals: 0,
       flag: team.flag,
       code: team.code
     };
     entry.goals += 1;
-    entry.name = bestScorerDisplayName(entry.name, canonicalName);
     if (!entry.flag && team.flag) entry.flag = team.flag;
     if (!entry.code && team.code) entry.code = team.code;
     scorers.set(key, entry);
@@ -918,99 +892,39 @@ function topScorers() {
     .map((scorer, index) => ({ ...scorer, rank: index + 1 }));
 }
 
-function scorerGoalEntries() {
-  return state.games
-    .filter((game) => isFinished(game) || isLive(game))
-    .flatMap((game) => goalScorers(game)
-      .filter((goal) => !isOwnGoal(goal))
-      .map((goal) => {
-        const team = scorerTeam(game, goal);
-        const opponent = scorerOpponentTeam(game, goal);
-        const name = canonicalScorerName(cleanScorerName(goal.player), team.code);
+function hasEspnScorerData() {
+  return espnScorerGoals().length > 0;
+}
+
+function espnScorerGoals() {
+  return (state.espnEvents || []).flatMap((event) => {
+    const competition = event?.competitions?.[0] || {};
+    const competitors = competition.competitors || [];
+    return (competition.details || [])
+      .filter((detail) => detail?.scoringPlay && !detail.shootout && !detail.ownGoal)
+      .map((detail) => {
+        const athlete = detail.athletesInvolved?.[0] || {};
+        const name = String(athlete.displayName || athlete.fullName || athlete.shortName || "").trim();
         return {
+          playerId: athlete.id ? `espn:${athlete.id}` : "",
           name,
-          team,
-          opponent,
-          gameId: String(game.id || game._id || ""),
-          side: goal.side,
-          sort: goal.sort,
-          entryKey: scorerGoalEntryKey(game, goal, name)
+          team: espnScorerTeam(detail, competitors)
         };
       })
-      .filter((goal) => scorerKey(goal.name)));
+      .filter((goal) => goal.name);
+  });
 }
 
-function canonicalScorerName(name, code) {
-  return SCORER_NAME_CORRECTIONS[`${code || ""}|${scorerKey(name)}`] || name;
-}
-
-function likelyOwnGoalKeys(goals) {
-  const likelyOwnGoals = new Set();
-  const byName = new Map();
-
-  goals.forEach((goal) => {
-    const key = scorerKey(goal.name);
-    const current = byName.get(key) || [];
-    current.push(goal);
-    byName.set(key, current);
-  });
-
-  byName.forEach((items) => {
-    const teamCodes = new Set(items.map((item) => item.team.code).filter(Boolean));
-    if (teamCodes.size < 2) return;
-
-    const opponentCodes = items.map((item) => item.opponent.code).filter(Boolean);
-    const likelyTeam = opponentCodes.find((code) => opponentCodes.every((value) => value === code));
-    if (likelyTeam) {
-      items
-        .filter((item) => item.team.code !== likelyTeam)
-        .forEach((item) => likelyOwnGoals.add(item.entryKey));
-    }
-
-    const byGame = new Map();
-    items.forEach((item) => {
-      const current = byGame.get(item.gameId) || [];
-      current.push(item);
-      byGame.set(item.gameId, current);
-    });
-
-    byGame.forEach((gameItems) => {
-      const sides = new Set(gameItems.map((item) => item.side));
-      if (sides.size < 2) return;
-      [...gameItems]
-        .sort((a, b) => a.sort - b.sort)
-        .slice(1)
-        .forEach((item) => likelyOwnGoals.add(item.entryKey));
-    });
-  });
-
-  return likelyOwnGoals;
-}
-
-function scorerAliasMap(goals) {
-  const fullByLastName = new Map();
-
-  goals.forEach(({ name, team }) => {
-    if (isAbbreviatedScorerName(name)) return;
-    const parts = scorerNameParts(name);
-    if (parts.length < 2) return;
-    const key = scorerLastNameKey(team.code, parts[parts.length - 1]);
-    const current = fullByLastName.get(key) || new Map();
-    current.set(scorerKey(name), name);
-    fullByLastName.set(key, current);
-  });
-
-  const aliases = new Map();
-  goals.forEach(({ name, team }) => {
-    if (!isAbbreviatedScorerName(name)) return;
-    const parts = scorerNameParts(name);
-    const candidates = [...(fullByLastName.get(scorerLastNameKey(team.code, parts[parts.length - 1])) || new Map()).values()];
-    const matchingInitial = candidates.filter((candidate) => scorerNameParts(candidate)[0]?.[0] === parts[0]);
-    const match = matchingInitial.length === 1 ? matchingInitial[0] : candidates.length === 1 ? candidates[0] : "";
-    if (match) aliases.set(scorerIdentityKey(name, team.code), match);
-  });
-
-  return aliases;
+function espnScorerTeam(detail, competitors) {
+  const teamIdValue = String(detail.team?.id || detail.athletesInvolved?.[0]?.team?.id || "");
+  const competitor = competitors.find((item) => String(item.team?.id || "") === teamIdValue);
+  const espnCode = normalizeCode(competitor?.team?.abbreviation);
+  const team = teamByCode(espnCode);
+  const name = competitor?.team?.displayName || competitor?.team?.name || "";
+  return {
+    flag: team?.flag || competitor?.team?.logo || "",
+    code: team ? teamCode(team, name) : (espnCode || compactLabel(name))
+  };
 }
 
 function scorerKey(name) {
@@ -1046,62 +960,8 @@ function scorerIdentityKey(name, code) {
   return key ? `${code || ""}|${key}` : "";
 }
 
-function scorerNameParts(name) {
-  return scorerKey(name).split(" ").filter(Boolean);
-}
-
-function scorerLastNameKey(code, lastName) {
-  return `${code || ""}|${lastName || ""}`;
-}
-
-function isAbbreviatedScorerName(name) {
-  const parts = scorerNameParts(name);
-  return parts.length === 2 && parts[0].length === 1 && parts[1].length > 1;
-}
-
-function bestScorerDisplayName(current, candidate) {
-  if (!current) return candidate;
-  if (isAbbreviatedScorerName(current) && !isAbbreviatedScorerName(candidate)) return candidate;
-  return candidate.length > current.length && isAbbreviatedScorerName(current) === isAbbreviatedScorerName(candidate)
-    ? candidate
-    : current;
-}
-
-function isOwnGoal(goal) {
-  return isOwnGoalText(`${goal.note || ""} ${goal.raw || ""}`);
-}
-
 function isOwnGoalText(value) {
   return /(?:^|[\s(])o\.?\s*g\.?(?:[\s)]|$)|\bown\s+goal\b/i.test(String(value || ""));
-}
-
-function scorerTeam(game, goal) {
-  const side = goal.side === "away" ? "away" : "home";
-  const team = teamById(teamId(game, side));
-  const name = side === "home" ? game.homeName : game.awayName;
-  return {
-    flag: team?.flag || "",
-    code: teamCode(team, name)
-  };
-}
-
-function scorerOpponentTeam(game, goal) {
-  const side = goal.side === "away" ? "home" : "away";
-  const team = teamById(teamId(game, side));
-  const name = side === "home" ? game.homeName : game.awayName;
-  return {
-    flag: team?.flag || "",
-    code: teamCode(team, name)
-  };
-}
-
-function scorerGoalEntryKey(game, goal, name) {
-  return [
-    game.id || game._id || "",
-    goal.side || "",
-    goal.sort || "",
-    scorerKey(name)
-  ].join("|");
 }
 
 function scorerRow(scorer) {
