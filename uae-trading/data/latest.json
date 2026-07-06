@@ -1,6 +1,6 @@
 {
   "trigger": "github-action",
-  "scanned_at": "2026-07-05T09:57:16+00:00",
+  "scanned_at": "2026-07-06T08:39:10+00:00",
   "data_dir": "github-action",
   "market": "all",
   "profiles": [
@@ -19523,9 +19523,9 @@
           "minus_di14": 4.3814,
           "atr14_pct": 1.2649,
           "roc20_pct": 1.0526,
-          "avg_volume20": 484077.7,
-          "avg_value20": 462516.3915,
-          "relative_volume20": 0.0058,
+          "avg_volume20": 484180.7,
+          "avg_value20": 462615.2715,
+          "relative_volume20": 0.0101,
           "active_volume_days20": 20,
           "obv_slope20": 1151.6325,
           "high_252": 1.01,
@@ -19555,7 +19555,7 @@
         ],
         "vetoes": [
           "Tier C liquidity: avoid automation until liquidity improves",
-          "DFM traded value is below the Tier B threshold at 462,516"
+          "DFM traded value is below the Tier B threshold at 462,615"
         ]
       },
       "decision": {
@@ -29629,8 +29629,8 @@
   },
   "last_data_update": {
     "source": "stockanalysis",
-    "data_dir": "C:\\Users\\user\\AppData\\Local\\Temp\\uae-trading-ohlcv",
-    "updated_at": "2026-07-05T09:57:13+00:00",
+    "data_dir": "/tmp/uae-trading-ohlcv",
+    "updated_at": "2026-07-06T08:39:04+00:00",
     "symbols_total": 163,
     "files_written": 163,
     "failures": []
