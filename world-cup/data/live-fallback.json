@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-06T18:24:18.864Z",
+  "fetchedAt": "2026-07-06T20:18:39.521Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -2180,8 +2180,8 @@
       "id": "93",
       "home_team_id": "41",
       "away_team_id": "29",
-      "home_score": "null",
-      "away_score": "null",
+      "home_score": "0",
+      "away_score": "0",
       "home_scorers": "null",
       "away_scorers": "null",
       "group": "R16",
@@ -2190,7 +2190,7 @@
       "persian_date": "1405-04-15 14:00",
       "stadium_id": "4",
       "finished": "FALSE",
-      "time_elapsed": "notstarted",
+      "time_elapsed": "live",
       "type": "r16",
       "home_team_label": "Winner Match 83",
       "away_team_label": "Winner Match 84",
