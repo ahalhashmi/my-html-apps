@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<meta name="theme-color" content="#07141c" />
+<title>ReelLab — Procedural Fishing Sound & Fight Simulator</title>
+<style>
+  :root{
+    --bg:#06131b;
+    --panel:#0b1d27;
+    --panel2:#102733;
+    --line:#21404e;
+    --text:#eef8fb;
+    --muted:#91acb8;
+    --accent:#2ed6c5;
+    --accent2:#79e9df;
+    --warn:#ffbf69;
+    --danger:#ff6b6b;
+    --good:#75e6a4;
+    --shadow:0 16px 40px rgba(0,0,0,.28);
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:
+      radial-gradient(circle at 12% -8%,rgba(46,214,197,.16),transparent 31%),
+      radial-gradient(circle at 100% 10%,rgba(53,126,199,.13),transparent 27%),
+      var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  body{padding:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .app{max-width:1480px;margin:0 auto}
+  header{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin:2px 0 14px}
+  h1{font-size:clamp(25px,4vw,42px);line-height:1;margin:0;letter-spacing:-.04em}
+  h1 span{color:var(--accent)}
+  .subtitle{color:var(--muted);font-size:13px;max-width:700px;line-height:1.45}
+  .badge{border:1px solid var(--line);padding:7px 10px;border-radius:999px;color:var(--accent2);font-size:11px;white-space:nowrap;background:rgba(255,255,255,.025)}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .btn{border:1px solid var(--line);background:linear-gradient(180deg,#14303d,#0d222c);color:var(--text);padding:10px 13px;border-radius:11px;font-weight:750;box-shadow:0 4px 12px rgba(0,0,0,.16)}
+  .btn:hover{border-color:#3b6575}
+  .btn.primary{background:linear-gradient(180deg,#2ed6c5,#1f9e96);color:#032a28;border-color:#5be6da}
+  .btn.warn{background:linear-gradient(180deg,#ffc77f,#df9343);color:#341c00;border-color:#ffd59d}
+  .btn.danger{background:linear-gradient(180deg,#ff7f7f,#cc4f55);border-color:#ff9b9b}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .layout{display:grid;grid-template-columns:minmax(360px,1.02fr) minmax(420px,.98fr);gap:14px}
+  .panel{background:linear-gradient(180deg,rgba(16,39,51,.96),rgba(9,27,37,.98));border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+  .panel-title{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.025)}
+  .panel-title h2{font-size:15px;margin:0}
+  .panel-title small{color:var(--muted)}
+  .section{padding:14px 16px;border-bottom:1px solid rgba(33,64,78,.72)}
+  .section:last-child{border-bottom:0}
+  .section h3{font-size:12px;text-transform:uppercase;letter-spacing:.13em;color:var(--accent2);margin:0 0 12px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  label.control{display:block;background:rgba(0,0,0,.13);border:1px solid rgba(57,91,104,.52);padding:10px;border-radius:12px;min-width:0}
+  .control-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:7px}
+  .control-head span:first-child{font-size:12px;font-weight:750}
+  .value{font-variant-numeric:tabular-nums;color:var(--accent2);font-size:11px}
+  input[type=range]{width:100%;accent-color:var(--accent);height:18px}
+  input[type=number],input[type=text],select,textarea{width:100%;background:#071821;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 10px;outline:none}
+  select:focus,input:focus,textarea:focus{border-color:var(--accent)}
+  textarea{min-height:150px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.45}
+  .switch-row{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid rgba(57,91,104,.52);background:rgba(0,0,0,.13);padding:9px 11px;border-radius:11px}
+  .switch-row span{font-size:12px;font-weight:700}
+  .switch-row input{width:18px;height:18px;accent-color:var(--accent)}
+  .hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:8px}
+  .sim{padding:14px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+  .stat{background:#071821;border:1px solid var(--line);border-radius:12px;padding:9px}
+  .stat .k{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.09em}
+  .stat .v{font-size:19px;font-weight:850;margin-top:2px;font-variant-numeric:tabular-nums}
+  .state{display:flex;align-items:center;gap:8px;font-weight:850}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 4px rgba(145,172,184,.08)}
+  .dot.fight{background:var(--warn);box-shadow:0 0 18px rgba(255,191,105,.5)}
+  .dot.strike{background:var(--danger);box-shadow:0 0 18px rgba(255,107,107,.65)}
+  .dot.landed{background:var(--good);box-shadow:0 0 18px rgba(117,230,164,.55)}
+  .meter-wrap{display:grid;gap:9px;background:#071821;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+  .meter-row{display:grid;grid-template-columns:88px 1fr 48px;align-items:center;gap:9px;font-size:11px}
+  .meter{height:11px;border-radius:999px;background:#122b37;overflow:hidden;border:1px solid #294957}
+  .fill{height:100%;width:0;background:linear-gradient(90deg,#2ed6c5,#ffd166,#ff6b6b);transition:width .08s linear}
+  .fill.stamina{background:linear-gradient(90deg,#ff8b6a,#ffd166,#75e6a4)}
+  .fill.line{background:linear-gradient(90deg,#79e9df,#4c9ad5)}
+  canvas{width:100%;height:170px;background:
+      linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px),
+      #071821;background-size:24px 24px;border:1px solid var(--line);border-radius:14px;display:block;margin-bottom:12px}
+  .reel-zone{display:grid;grid-template-columns:1fr 145px;gap:12px;align-items:stretch}
+  .fight-card{border:1px solid var(--line);border-radius:15px;padding:13px;background:
+      radial-gradient(circle at 15% 10%,rgba(46,214,197,.08),transparent 36%),
+      rgba(0,0,0,.13)}
+  .fish-name{font-size:20px;font-weight:900;letter-spacing:-.02em}
+  .signature{color:var(--muted);font-size:12px;line-height:1.5;margin:5px 0 11px;min-height:54px}
+  .event{font-size:12px;color:var(--accent2);font-weight:750;min-height:20px}
+  .reel-button{border:2px solid #56e6d9;background:
+      radial-gradient(circle at 35% 30%,#52e4d8,#159f96 45%,#0c615e 70%,#073c3d);
+      color:#032c2a;border-radius:999px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+      font-weight:1000;font-size:19px;letter-spacing:.02em;user-select:none;-webkit-user-select:none;touch-action:none;
+      box-shadow:inset 0 0 0 9px rgba(255,255,255,.08),0 12px 30px rgba(46,214,197,.19);
+      transform:scale(1);transition:transform .08s,filter .08s}
+  .reel-button.active{transform:scale(.94);filter:brightness(1.25)}
+  .reel-button .inner{text-align:center}
+  .reel-button small{display:block;font-size:10px;margin-top:3px;letter-spacing:.13em}
+  .mini-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .log{height:125px;overflow:auto;background:#06141c;border:1px solid var(--line);border-radius:12px;padding:9px;font:11px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#a9c4ce}
+  .log div+div{margin-top:3px}
+  .log .hot{color:#ffb3b3}.log .good{color:#9cf0bc}.log .info{color:#8ce7df}
+  details{border-bottom:1px solid rgba(33,64,78,.72)}
+  details:last-child{border-bottom:0}
+  summary{list-style:none;padding:14px 16px;font-weight:850;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";color:var(--accent2);font-size:18px}
+  details[open] summary::after{content:"–"}
+  .json-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+  .fineprint{font-size:10px;color:var(--muted);line-height:1.5}
+  .recording{animation:pulse 1s infinite}
+  @keyframes pulse{50%{filter:brightness(1.35)}}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){
+    body{padding-left:9px;padding-right:9px}
+    header{align-items:flex-start;flex-direction:column}
+    .grid2,.grid3{grid-template-columns:1fr}
+    .reel-zone{grid-template-columns:1fr 125px}
+    .meter-row{grid-template-columns:76px 1fr 42px}
+    .mini-actions{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>Reel<span>Lab</span></h1>
+      <div class="subtitle">A procedural fishing reel, drag, strike and fish-fight sound simulator. Every sound is generated live with the Web Audio API—no audio samples.</div>
+    </div>
+    <div class="badge">Single-file prototype • v1.0</div>
+  </header>
+
+  <div class="toolbar">
+    <button class="btn primary" id="enableAudio">Enable Audio</button>
+    <button class="btn warn" id="armStrike">Arm Random Strike</button>
+    <button class="btn" id="playStrike">Play Strike</button>
+    <button class="btn" id="startFight">Start Fight</button>
+    <button class="btn danger" id="resetGame">Reset</button>
+    <button class="btn" id="recordAudio">Record Audio</button>
+  </div>
+
+  <div class="layout">
+    <div class="panel">
+      <div class="panel-title">
+        <h2>Parameter Lab</h2>
+        <small>Adjust while sound is playing</small>
+      </div>
+
+      <div class="section">
+        <h3>Fish & setup</h3>
+        <div class="grid2">
+          <label class="control">
+            <div class="control-head"><span>Species preset</span></div>
+            <select id="species" data-param="species">
+              <option value="small_trevally">Small Trevally</option>
+              <option value="snapper">Snapper</option>
+              <option value="small_queenfish">Small Queenfish</option>
+              <option value="grouper">Medium Grouper</option>
+              <option value="medium_gt">Medium GT</option>
+              <option value="kingfish">Kingfish</option>
+              <option value="cobia">Cobia</option>
+              <option value="tuna">Tuna</option>
+              <option value="shark">Shark</option>
+              <option value="mystery">Mystery Fish</option>
+            </select>
+          </label>
+          <label class="control">
+            <div class="control-head"><span>Fish size multiplier</span><span class="value" data-value="fishSize"></span></div>
+            <input type="range" min=".55" max="2.2" value="1" step=".01" data-param="fishSize">
+          </label>
+          <label class="control">
+            <div class="control-head"><span>Gear level</span><span class="value" data-value="gearLevel"></span></div>
+            <input type="range" min="1" max="10" value="5" step="1" data-param="gearLevel">
+          </label>
+          <label class="control">
+            <div class="control-head"><span>Player reel speed</span><span class="value" data-value="reelPower"></span></div>
+            <input type="range" min=".35" max="1.8" value="1" step=".01" data-param="reelPower">
+          </label>
+        </div>
+      </div>
+
+      <details open>
+        <summary>Fish fight behavior</summary>
+        <div class="section">
+          <div class="grid2">
+            <label class="control">
+              <div class="control-head"><span>Initial run strength</span><span class="value" data-value="initialRunStrength"></span></div>
+              <input type="range" min="0" max="1.4" value=".85" step=".01" data-param="initialRunStrength">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Initial run duration</span><span class="value" data-value="initialRunDuration"></span></div>
+              <input type="range" min=".2" max="12" value="3" step=".1" data-param="initialRunDuration">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Burst strength</span><span class="value" data-value="burstStrength"></span></div>
+              <input type="range" min="0" max="1.4" value=".72" step=".01" data-param="burstStrength">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Burst duration</span><span class="value" data-value="burstDuration"></span></div>
+              <input type="range" min=".15" max="10" value="2.2" step=".05" data-param="burstDuration">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Time between bursts</span><span class="value" data-value="burstInterval"></span></div>
+              <input type="range" min=".5" max="18" value="5" step=".1" data-param="burstInterval">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Steady heavy pull</span><span class="value" data-value="steadyPull"></span></div>
+              <input type="range" min="0" max="1.1" value=".28" step=".01" data-param="steadyPull">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Stamina</span><span class="value" data-value="stamina"></span></div>
+              <input type="range" min="10" max="180" value="65" step="1" data-param="stamina">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Fatigue rate</span><span class="value" data-value="fatigueRate"></span></div>
+              <input type="range" min=".05" max="1.8" value=".65" step=".01" data-param="fatigueRate">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Head-shake activity</span><span class="value" data-value="headShake"></span></div>
+              <input type="range" min="0" max="1" value=".35" step=".01" data-param="headShake">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Body-roll / pulse</span><span class="value" data-value="bodyRoll"></span></div>
+              <input type="range" min="0" max="1" value=".22" step=".01" data-param="bodyRoll">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Direction randomness</span><span class="value" data-value="directionChaos"></span></div>
+              <input type="range" min="0" max="1" value=".25" step=".01" data-param="directionChaos">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Weight / inertia</span><span class="value" data-value="fishInertia"></span></div>
+              <input type="range" min=".25" max="2" value=".8" step=".01" data-param="fishInertia">
+            </label>
+          </div>
+        </div>
+      </details>
+
+      <details open>
+        <summary>Reel and drag sound</summary>
+        <div class="section">
+          <div class="grid2">
+            <label class="control">
+              <div class="control-head"><span>Reel RPM</span><span class="value" data-value="reelRPM"></span></div>
+              <input type="range" min="40" max="700" value="270" step="1" data-param="reelRPM">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Clicks per revolution</span><span class="value" data-value="clicksPerRev"></span></div>
+              <input type="range" min="1" max="30" value="12" step="1" data-param="clicksPerRev">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Click pitch</span><span class="value" data-value="clickPitch"></span></div>
+              <input type="range" min="300" max="6000" value="1750" step="10" data-param="clickPitch">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Click sharpness</span><span class="value" data-value="clickSharpness"></span></div>
+              <input type="range" min=".003" max=".06" value=".017" step=".001" data-param="clickSharpness">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Mechanical reel body</span><span class="value" data-value="mechanicalVolume"></span></div>
+              <input type="range" min="0" max="1" value=".52" step=".01" data-param="mechanicalVolume">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Gear whine</span><span class="value" data-value="gearWhine"></span></div>
+              <input type="range" min="0" max="1" value=".28" step=".01" data-param="gearWhine">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Drag scream volume</span><span class="value" data-value="dragVolume"></span></div>
+              <input type="range" min="0" max="1.25" value=".88" step=".01" data-param="dragVolume">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Drag pitch</span><span class="value" data-value="dragPitch"></span></div>
+              <input type="range" min="0" max="1" value=".58" step=".01" data-param="dragPitch">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Line hum</span><span class="value" data-value="lineHum"></span></div>
+              <input type="range" min="0" max="1" value=".5" step=".01" data-param="lineHum">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Rod creak</span><span class="value" data-value="rodCreak"></span></div>
+              <input type="range" min="0" max="1" value=".55" step=".01" data-param="rodCreak">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Water / hull bed</span><span class="value" data-value="waterBed"></span></div>
+              <input type="range" min="0" max="1" value=".08" step=".01" data-param="waterBed">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Master volume</span><span class="value" data-value="masterVolume"></span></div>
+              <input type="range" min="0" max="1" value=".72" step=".01" data-param="masterVolume">
+            </label>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>Strike event and reaction</summary>
+        <div class="section">
+          <div class="grid2">
+            <label class="control">
+              <div class="control-head"><span>Strike thump</span><span class="value" data-value="strikeThump"></span></div>
+              <input type="range" min="0" max="1.3" value=".9" step=".01" data-param="strikeThump">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Line ping</span><span class="value" data-value="strikePing"></span></div>
+              <input type="range" min="0" max="1.3" value=".72" step=".01" data-param="strikePing">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Initial drag scream</span><span class="value" data-value="strikeScream"></span></div>
+              <input type="range" min="0" max="1.5" value="1" step=".01" data-param="strikeScream">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Strike sound duration</span><span class="value" data-value="strikeDuration"></span></div>
+              <input type="range" min=".15" max="4" value="1.35" step=".05" data-param="strikeDuration">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Reaction window</span><span class="value" data-value="reactionWindow"></span></div>
+              <input type="range" min="1" max="20" value="7" step=".5" data-param="reactionWindow">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Random delay minimum</span><span class="value" data-value="armMin"></span></div>
+              <input type="range" min="1" max="45" value="3" step="1" data-param="armMin">
+            </label>
+            <label class="control">
+              <div class="control-head"><span>Random delay maximum</span><span class="value" data-value="armMax"></span></div>
+              <input type="range" min="2" max="90" value="12" step="1" data-param="armMax">
+            </label>
+            <div class="switch-row"><span>Vibration when supported</span><input type="checkbox" checked data-param="vibration"></div>
+          </div>
+          <div class="hint">Arm Random Strike simulates the waiting phase. When the strike happens, press and hold REEL within the reaction window.</div>
+        </div>
+      </details>
+
+      <details>
+        <summary>Save, import and developer JSON</summary>
+        <div class="section">
+          <div class="grid2">
+            <input id="presetName" type="text" placeholder="Custom preset name">
+            <select id="savedPresets"><option value="">Saved presets</option></select>
+          </div>
+          <div class="json-actions">
+            <button class="btn" id="savePreset">Save Preset</button>
+            <button class="btn" id="loadPreset">Load</button>
+            <button class="btn danger" id="deletePreset">Delete</button>
+          </div>
+          <textarea id="jsonBox" spellcheck="false" aria-label="Parameter JSON"></textarea>
+          <div class="json-actions">
+            <button class="btn primary" id="copyJson">Copy JSON</button>
+            <button class="btn" id="refreshJson">Refresh JSON</button>
+            <button class="btn" id="importJson">Import JSON</button>
+            <button class="btn" id="downloadJson">Download JSON</button>
+          </div>
+          <p class="fineprint">The JSON contains both the named species and the final resolved values. A developer can map these values to AVAudioEngine, AudioKit, FMOD, Wwise, Unity DSP, or a custom native sound engine.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        <div class="state"><span class="dot" id="stateDot"></span><span id="stateText">IDLE</span></div>
+        <small id="audioState">Audio locked</small>
+      </div>
+      <div class="sim">
+        <div class="stats">
+          <div class="stat"><div class="k">Line distance</div><div class="v"><span id="lineDistance">0.0</span> m</div></div>
+          <div class="stat"><div class="k">Line speed</div><div class="v"><span id="lineSpeed">0.0</span> m/s</div></div>
+          <div class="stat"><div class="k">Tension</div><div class="v"><span id="tensionText">0</span>%</div></div>
+          <div class="stat"><div class="k">Fish stamina</div><div class="v"><span id="staminaText">100</span>%</div></div>
+        </div>
+
+        <div class="meter-wrap">
+          <div class="meter-row"><span>Tension</span><div class="meter"><div class="fill" id="tensionFill"></div></div><strong id="tensionMeterText">0%</strong></div>
+          <div class="meter-row"><span>Stamina</span><div class="meter"><div class="fill stamina" id="staminaFill"></div></div><strong id="staminaMeterText">100%</strong></div>
+          <div class="meter-row"><span>Line remaining</span><div class="meter"><div class="fill line" id="lineFill"></div></div><strong id="lineMeterText">0 m</strong></div>
+        </div>
+
+        <canvas id="scope" width="900" height="300" aria-label="Fight tension history"></canvas>
+
+        <div class="reel-zone">
+          <div class="fight-card">
+            <div class="fish-name" id="fishName">Small Trevally</div>
+            <div class="signature" id="signature"></div>
+            <div class="event" id="eventText">Enable audio, then test the strike or start a fight.</div>
+            <div class="mini-actions">
+              <button class="btn" id="testReel">Toggle Free Reel</button>
+              <button class="btn" id="fishPull">Trigger Fish Burst</button>
+              <button class="btn" id="testCreak">Rod Creak</button>
+            </div>
+          </div>
+          <button class="reel-button" id="reelButton" aria-label="Hold to reel">
+            <span class="inner">HOLD<br>REEL<small>PRESS &amp; HOLD</small></span>
+          </button>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const deepCopy = obj => JSON.parse(JSON.stringify(obj));
+
+const speciesPresets = {
+  small_trevally: {
+    name: "Small Trevally",
+    category: "small",
+    signature: "Quick darting runs, lively head shakes and low overall weight. Recovers briefly, then makes another short burst.",
+    fight: {fishSize:.72, initialRunStrength:.56, initialRunDuration:1.5, burstStrength:.48, burstDuration:.75, burstInterval:2.8, steadyPull:.12, stamina:34, fatigueRate:1.15, headShake:.72, bodyRoll:.18, directionChaos:.65, fishInertia:.42},
+    sound: {dragPitch:.72, rodCreak:.18, lineHum:.38}
+  },
+  snapper: {
+    name: "Snapper",
+    category: "small",
+    signature: "Short sharp taps and sudden downward pulls. Less speed than queenfish, with a more abrupt, punchy fight.",
+    fight: {fishSize:.82, initialRunStrength:.48, initialRunDuration:1.25, burstStrength:.55, burstDuration:.65, burstInterval:3.4, steadyPull:.18, stamina:40, fatigueRate:1.0, headShake:.62, bodyRoll:.28, directionChaos:.38, fishInertia:.55},
+    sound: {dragPitch:.56, rodCreak:.34, lineHum:.4}
+  },
+  small_queenfish: {
+    name: "Small Queenfish",
+    category: "small",
+    signature: "Fast, erratic acceleration and repeated surface-style runs. High-pitched drag sound and frequent direction changes.",
+    fight: {fishSize:.88, initialRunStrength:.78, initialRunDuration:2.2, burstStrength:.72, burstDuration:1.15, burstInterval:3.0, steadyPull:.10, stamina:46, fatigueRate:.95, headShake:.55, bodyRoll:.14, directionChaos:.85, fishInertia:.38},
+    sound: {dragPitch:.88, rodCreak:.16, lineHum:.55}
+  },
+  grouper: {
+    name: "Medium Grouper",
+    category: "medium",
+    signature: "A heavy, stubborn dive rather than a high-speed run. It stays weighty even after tiring and loads the rod continuously.",
+    fight: {fishSize:1.15, initialRunStrength:.74, initialRunDuration:3.4, burstStrength:.42, burstDuration:2.4, burstInterval:6.8, steadyPull:.68, stamina:78, fatigueRate:.46, headShake:.22, bodyRoll:.42, directionChaos:.12, fishInertia:1.35},
+    sound: {dragPitch:.28, rodCreak:.92, lineHum:.64}
+  },
+  medium_gt: {
+    name: "Medium GT",
+    category: "medium",
+    signature: "Explosive first drive followed by repeated hard surges. Stronger and more aggressive than its size suggests.",
+    fight: {fishSize:1.18, initialRunStrength:1.05, initialRunDuration:4.1, burstStrength:.92, burstDuration:2.15, burstInterval:4.3, steadyPull:.38, stamina:88, fatigueRate:.52, headShake:.36, bodyRoll:.2, directionChaos:.42, fishInertia:.88},
+    sound: {dragPitch:.66, rodCreak:.62, lineHum:.74}
+  },
+  kingfish: {
+    name: "Kingfish",
+    category: "large",
+    signature: "Very fast and powerful opening run. It burns energy quickly, then becomes easier to reel, with a few sudden strong pulls later.",
+    fight: {fishSize:1.38, initialRunStrength:1.35, initialRunDuration:6.0, burstStrength:.88, burstDuration:1.65, burstInterval:7.0, steadyPull:.18, stamina:84, fatigueRate:1.08, headShake:.18, bodyRoll:.08, directionChaos:.46, fishInertia:.56},
+    sound: {dragPitch:.95, rodCreak:.48, lineHum:.88}
+  },
+  cobia: {
+    name: "Cobia",
+    category: "large",
+    signature: "Long, powerful and steady runs with slow body rolls. It does not always sprint, but it keeps pressure on the setup.",
+    fight: {fishSize:1.48, initialRunStrength:.98, initialRunDuration:5.4, burstStrength:.82, burstDuration:4.0, burstInterval:6.5, steadyPull:.54, stamina:110, fatigueRate:.44, headShake:.22, bodyRoll:.76, directionChaos:.22, fishInertia:1.1},
+    sound: {dragPitch:.48, rodCreak:.78, lineHum:.78}
+  },
+  tuna: {
+    name: "Tuna",
+    category: "large",
+    signature: "Sustained high-speed line loss, deep circling load and long stamina. Fewer dead moments than most fish.",
+    fight: {fishSize:1.55, initialRunStrength:1.22, initialRunDuration:7.4, burstStrength:1.0, burstDuration:5.8, burstInterval:5.2, steadyPull:.64, stamina:145, fatigueRate:.30, headShake:.08, bodyRoll:.52, directionChaos:.18, fishInertia:.94},
+    sound: {dragPitch:.82, rodCreak:.72, lineHum:.94}
+  },
+  shark: {
+    name: "Shark",
+    category: "huge",
+    signature: "Long, forceful runs with slow fatigue, heavy tail pulses and persistent pressure. It can pull hard for much longer.",
+    fight: {fishSize:1.92, initialRunStrength:1.28, initialRunDuration:9.5, burstStrength:1.1, burstDuration:7.5, burstInterval:6.0, steadyPull:.72, stamina:175, fatigueRate:.20, headShake:.10, bodyRoll:.68, directionChaos:.18, fishInertia:1.55},
+    sound: {dragPitch:.53, rodCreak:1.0, lineHum:1.0}
+  },
+  mystery: {
+    name: "Mystery Fish",
+    category: "huge",
+    signature: "Unknown behavior. Each fight randomizes speed, weight, stamina, bursts and sound character.",
+    fight: {fishSize:1.6, initialRunStrength:1.05, initialRunDuration:6.5, burstStrength:.95, burstDuration:4.5, burstInterval:5.5, steadyPull:.48, stamina:125, fatigueRate:.38, headShake:.35, bodyRoll:.55, directionChaos:.55, fishInertia:1.15},
+    sound: {dragPitch:.62, rodCreak:.75, lineHum:.82}
+  }
+};
+
+const defaultParams = {
+  species:"small_trevally",
+  fishSize:.72, gearLevel:5, reelPower:1,
+  initialRunStrength:.56, initialRunDuration:1.5, burstStrength:.48, burstDuration:.75,
+  burstInterval:2.8, steadyPull:.12, stamina:34, fatigueRate:1.15,
+  headShake:.72, bodyRoll:.18, directionChaos:.65, fishInertia:.42,
+  reelRPM:270, clicksPerRev:12, clickPitch:1750, clickSharpness:.017,
+  mechanicalVolume:.52, gearWhine:.28, dragVolume:.88, dragPitch:.72,
+  lineHum:.38, rodCreak:.18, waterBed:.08, masterVolume:.72,
+  strikeThump:.9, strikePing:.72, strikeScream:1, strikeDuration:1.35,
+  reactionWindow:7, armMin:3, armMax:12, vibration:true
+};
+
+const params = {...defaultParams};
+const paramEls = [...document.querySelectorAll("[data-param]")];
+const valEls = [...document.querySelectorAll("[data-value]")];
+const $ = id => document.getElementById(id);
+
+function formatParam(name, v){
+  const units = {
+    reelRPM:" rpm", clickPitch:" Hz", clicksPerRev:"", clickSharpness:" s",
+    initialRunDuration:" s", burstDuration:" s", burstInterval:" s", stamina:" pts",
+    reactionWindow:" s", armMin:" s", armMax:" s", gearLevel:"", fishSize:"×"
+  };
+  if(name === "fishSize") return Number(v).toFixed(2) + "×";
+  if(["gearLevel","clicksPerRev","reelRPM","stamina","armMin","armMax"].includes(name)) return Math.round(v) + (units[name] || "");
+  if(["initialRunDuration","burstDuration","burstInterval","reactionWindow","clickSharpness"].includes(name)) return Number(v).toFixed(name==="clickSharpness"?3:1) + (units[name] || "");
+  return Number(v).toFixed(2);
+}
+
+function updateValueLabels(){
+  valEls.forEach(el => {
+    const name = el.dataset.value;
+    if(params[name] !== undefined) el.textContent = formatParam(name, params[name]);
+  });
+}
+
+function syncControlsFromParams(){
+  paramEls.forEach(el => {
+    const name = el.dataset.param;
+    if(params[name] === undefined) return;
+    if(el.type === "checkbox") el.checked = !!params[name];
+    else el.value = params[name];
+  });
+  updateValueLabels();
+  updateFishUI();
+  refreshJson();
+}
+
+function readControl(el){
+  if(el.type === "checkbox") return el.checked;
+  if(el.tagName === "SELECT" || el.type === "text") return el.value;
+  return Number(el.value);
+}
+
+paramEls.forEach(el => {
+  el.addEventListener("input", () => {
+    const name = el.dataset.param;
+    params[name] = readControl(el);
+    if(name === "species") applySpecies(el.value);
+    else {
+      updateValueLabels();
+      updateFishUI();
+      refreshJson();
+    }
+  });
+});
+
+function applySpecies(key){
+  const preset = speciesPresets[key] || speciesPresets.small_trevally;
+  params.species = key;
+  Object.assign(params, deepCopy(preset.fight), deepCopy(preset.sound));
+  syncControlsFromParams();
+  logMsg(`Loaded ${preset.name} behavior preset.`, "info");
+}
+
+function randomizeMystery(){
+  Object.assign(params, {
+    fishSize:rand(1.15,2.2),
+    initialRunStrength:rand(.7,1.4),
+    initialRunDuration:rand(2,11),
+    burstStrength:rand(.55,1.35),
+    burstDuration:rand(.5,8),
+    burstInterval:rand(2,10),
+    steadyPull:rand(.12,.9),
+    stamina:rand(55,180),
+    fatigueRate:rand(.12,1.15),
+    headShake:rand(0,.85),
+    bodyRoll:rand(0,.9),
+    directionChaos:rand(.05,.95),
+    fishInertia:rand(.4,1.9),
+    dragPitch:rand(.2,1),
+    rodCreak:rand(.2,1),
+    lineHum:rand(.35,1)
+  });
+  syncControlsFromParams();
+  logMsg("Mystery Fish generated a new hidden fight profile.", "hot");
+}
+
+class AudioEngine {
+  constructor(){
+    this.ctx = null;
+    this.master = null;
+    this.compressor = null;
+    this.streamDest = null;
+    this.noiseBuffer = null;
+    this.noiseSource = null;
+    this.mechGain = null;
+    this.mechFilter = null;
+    this.dragGain = null;
+    this.dragFilter = null;
+    this.waterGain = null;
+    this.waterFilter = null;
+    this.spoolOsc = null;
+    this.spoolGain = null;
+    this.spoolFilter = null;
+    this.gearOsc = null;
+    this.gearGain = null;
+    this.lineOsc = null;
+    this.lineGain = null;
+    this.clickPhase = 0;
+  }
+  async enable(){
+    if(this.ctx){
+      await this.ctx.resume();
+      return;
+    }
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) throw new Error("Web Audio API is not supported in this browser.");
+    this.ctx = new Ctx({latencyHint:"interactive"});
+    const c = this.ctx;
+
+    this.master = c.createGain();
+    this.master.gain.value = 0.0001;
+    this.compressor = c.createDynamicsCompressor();
+    this.compressor.threshold.value = -13;
+    this.compressor.knee.value = 14;
+    this.compressor.ratio.value = 6;
+    this.compressor.attack.value = .003;
+    this.compressor.release.value = .18;
+    this.master.connect(this.compressor);
+    this.compressor.connect(c.destination);
+
+    try{
+      this.streamDest = c.createMediaStreamDestination();
+      this.compressor.connect(this.streamDest);
+    }catch(_){}
+
+    const len = c.sampleRate * 3;
+    this.noiseBuffer = c.createBuffer(1, len, c.sampleRate);
+    const d = this.noiseBuffer.getChannelData(0);
+    let brown = 0;
+    for(let i=0;i<len;i++){
+      const white = Math.random()*2-1;
+      brown = (brown + .02*white) / 1.02;
+      d[i] = clamp(white*.74 + brown*2.4, -1, 1);
+    }
+    this.noiseSource = c.createBufferSource();
+    this.noiseSource.buffer = this.noiseBuffer;
+    this.noiseSource.loop = true;
+
+    this.mechFilter = c.createBiquadFilter();
+    this.mechFilter.type = "bandpass";
+    this.mechFilter.frequency.value = 980;
+    this.mechFilter.Q.value = 1.25;
+    this.mechGain = c.createGain();
+    this.mechGain.gain.value = 0.0001;
+    this.noiseSource.connect(this.mechFilter).connect(this.mechGain).connect(this.master);
+
+    this.dragFilter = c.createBiquadFilter();
+    this.dragFilter.type = "bandpass";
+    this.dragFilter.frequency.value = 2100;
+    this.dragFilter.Q.value = 1.8;
+    this.dragGain = c.createGain();
+    this.dragGain.gain.value = 0.0001;
+    this.noiseSource.connect(this.dragFilter).connect(this.dragGain).connect(this.master);
+
+    this.waterFilter = c.createBiquadFilter();
+    this.waterFilter.type = "lowpass";
+    this.waterFilter.frequency.value = 330;
+    this.waterGain = c.createGain();
+    this.waterGain.gain.value = 0.0001;
+    this.noiseSource.connect(this.waterFilter).connect(this.waterGain).connect(this.master);
+    this.noiseSource.start();
+
+    this.spoolOsc = c.createOscillator();
+    this.spoolOsc.type = "sawtooth";
+    this.spoolFilter = c.createBiquadFilter();
+    this.spoolFilter.type = "lowpass";
+    this.spoolFilter.frequency.value = 900;
+    this.spoolGain = c.createGain();
+    this.spoolGain.gain.value = 0.0001;
+    this.spoolOsc.connect(this.spoolFilter).connect(this.spoolGain).connect(this.master);
+    this.spoolOsc.start();
+
+    this.gearOsc = c.createOscillator();
+    this.gearOsc.type = "triangle";
+    this.gearGain = c.createGain();
+    this.gearGain.gain.value = 0.0001;
+    this.gearOsc.connect(this.gearGain).connect(this.master);
+    this.gearOsc.start();
+
+    this.lineOsc = c.createOscillator();
+    this.lineOsc.type = "sine";
+    this.lineGain = c.createGain();
+    this.lineGain.gain.value = 0.0001;
+    this.lineOsc.connect(this.lineGain).connect(this.master);
+    this.lineOsc.start();
+
+    this.master.gain.setTargetAtTime(params.masterVolume, c.currentTime, .04);
+  }
+  setParam(nodeParam, value, time=.03){
+    if(!this.ctx || !nodeParam) return;
+    nodeParam.setTargetAtTime(Math.max(.0001,value), this.ctx.currentTime, time);
+  }
+  update(s){
+    if(!this.ctx) return;
+    const p = params;
+    const c = this.ctx;
+    this.setParam(this.master.gain, p.masterVolume, .05);
+
+    const reelOn = s.reelHeld || s.freeReel;
+    const load = clamp(s.tension,0,1.4);
+    const out = Math.max(0,s.lineOutSpeed);
+    const inSpeed = Math.max(0,-s.netLineSpeed);
+    const spoolHz = Math.max(18, p.reelRPM/60 * (5.2 + inSpeed*.24));
+    this.setParam(this.spoolOsc.frequency, spoolHz * (1-load*.12), .025);
+    this.setParam(this.spoolFilter.frequency, 650 + p.reelRPM*1.4 + load*480, .04);
+    this.setParam(this.spoolGain.gain, reelOn ? (.008 + p.mechanicalVolume*.025)*(1+load*.75) : .0001, .025);
+
+    this.setParam(this.gearOsc.frequency, spoolHz*3.1 + 90, .025);
+    this.setParam(this.gearGain.gain, reelOn ? p.gearWhine*.012*(.55+load) : .0001, .03);
+
+    this.setParam(this.mechFilter.frequency, 580 + p.reelRPM*1.6 - load*180, .04);
+    this.setParam(this.mechGain.gain, reelOn ? p.mechanicalVolume*.026*(.45+load*.8) : .0001, .025);
+
+    const dragActivity = clamp(out/9,0,1.35);
+    const dragFreq = 650 + p.dragPitch*3100 + out*75;
+    this.setParam(this.dragFilter.frequency, dragFreq, .02);
+    this.setParam(this.dragFilter.Q, 1.2 + p.dragPitch*2.4, .05);
+    this.setParam(this.dragGain.gain, dragActivity*p.dragVolume*.055*(.4+load*.75), .018);
+
+    const lineFreq = 520 + load*1500 + Math.abs(s.netLineSpeed)*42;
+    this.setParam(this.lineOsc.frequency, lineFreq, .025);
+    this.setParam(this.lineGain.gain, p.lineHum*.012*clamp(load-.10,0,1.2), .03);
+
+    this.setParam(this.waterGain.gain, p.waterBed*.023, .3);
+  }
+  tickClicks(dt, s){
+    if(!this.ctx || !(s.reelHeld || s.freeReel)) {
+      this.clickPhase = 0;
+      return;
+    }
+    const rate = params.reelRPM/60 * params.clicksPerRev * (s.freeReel?1:.82);
+    this.clickPhase += dt*rate;
+    let count = 0;
+    while(this.clickPhase >= 1 && count < 10){
+      this.clickPhase -= 1;
+      this.playClick(clamp(s.tension,0,1.2));
+      count++;
+    }
+  }
+  playClick(load=0){
+    if(!this.ctx) return;
+    const c=this.ctx, now=c.currentTime;
+    const osc=c.createOscillator(), g=c.createGain(), f=c.createBiquadFilter();
+    osc.type = "square";
+    const jitter = rand(.93,1.07);
+    osc.frequency.setValueAtTime(params.clickPitch*jitter*(1-load*.18),now);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(120,params.clickPitch*.55),now+params.clickSharpness);
+    f.type="highpass"; f.frequency.value=260;
+    g.gain.setValueAtTime(.0001,now);
+    g.gain.exponentialRampToValueAtTime(.035 + params.mechanicalVolume*.018,now+.0015);
+    g.gain.exponentialRampToValueAtTime(.0001,now+params.clickSharpness);
+    osc.connect(f).connect(g).connect(this.master);
+    osc.start(now); osc.stop(now+params.clickSharpness+.01);
+  }
+  noiseBurst(duration, frequency, gainValue, q=1.2){
+    if(!this.ctx) return;
+    const c=this.ctx, now=c.currentTime;
+    const src=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain();
+    src.buffer=this.noiseBuffer;
+    f.type="bandpass"; f.frequency.value=frequency; f.Q.value=q;
+    g.gain.setValueAtTime(.0001,now);
+    g.gain.exponentialRampToValueAtTime(Math.max(.0002,gainValue),now+.012);
+    g.gain.exponentialRampToValueAtTime(.0001,now+duration);
+    src.connect(f).connect(g).connect(this.master);
+    src.start(now); src.stop(now+duration+.03);
+  }
+  playStrike(){
+    if(!this.ctx) return;
+    const c=this.ctx, now=c.currentTime;
+    const thump=c.createOscillator(), tg=c.createGain();
+    thump.type="sine";
+    thump.frequency.setValueAtTime(118,now);
+    thump.frequency.exponentialRampToValueAtTime(42,now+.19);
+    tg.gain.setValueAtTime(.0001,now);
+    tg.gain.exponentialRampToValueAtTime(.19*params.strikeThump,now+.006);
+    tg.gain.exponentialRampToValueAtTime(.0001,now+.34);
+    thump.connect(tg).connect(this.master); thump.start(now); thump.stop(now+.37);
+
+    const ping=c.createOscillator(), pg=c.createGain();
+    ping.type="sine";
+    ping.frequency.setValueAtTime(2500+params.dragPitch*1000,now+.014);
+    ping.frequency.exponentialRampToValueAtTime(760,now+.36);
+    pg.gain.setValueAtTime(.0001,now);
+    pg.gain.exponentialRampToValueAtTime(.075*params.strikePing,now+.018);
+    pg.gain.exponentialRampToValueAtTime(.0001,now+.44);
+    ping.connect(pg).connect(this.master); ping.start(now); ping.stop(now+.48);
+
+    this.noiseBurst(params.strikeDuration, 900+params.dragPitch*2800, .095*params.strikeScream, 1.7);
+    for(let i=0;i<6;i++) setTimeout(()=>this.playClick(.85), i*38);
+  }
+  playRodCreak(intensity=.6){
+    if(!this.ctx) return;
+    const c=this.ctx, now=c.currentTime;
+    const o=c.createOscillator(), f=c.createBiquadFilter(), g=c.createGain();
+    o.type="sawtooth";
+    o.frequency.setValueAtTime(rand(92,128),now);
+    o.frequency.linearRampToValueAtTime(rand(48,72),now+.24);
+    f.type="lowpass"; f.frequency.value=340;
+    g.gain.setValueAtTime(.0001,now);
+    g.gain.exponentialRampToValueAtTime(.035*params.rodCreak*intensity,now+.025);
+    g.gain.exponentialRampToValueAtTime(.0001,now+.38);
+    o.connect(f).connect(g).connect(this.master);
+    o.start(now); o.stop(now+.42);
+    this.noiseBurst(.28, 230, .025*params.rodCreak*intensity, .8);
+  }
+  playHeadShake(intensity=.5){
+    if(!this.ctx) return;
+    const c=this.ctx, now=c.currentTime;
+    for(let i=0;i<3;i++){
+      const o=c.createOscillator(), g=c.createGain();
+      o.type="sine";
+      const t=now+i*.085;
+      o.frequency.setValueAtTime(120+rand(-20,35),t);
+      o.frequency.exponentialRampToValueAtTime(62,t+.07);
+      g.gain.setValueAtTime(.0001,t);
+      g.gain.exponentialRampToValueAtTime(.028*intensity,t+.006);
+      g.gain.exponentialRampToValueAtTime(.0001,t+.08);
+      o.connect(g).connect(this.master); o.start(t); o.stop(t+.1);
+    }
+  }
+}
+
+const audio = new AudioEngine();
+
+const game = {
+  mode:"idle",
+  reelHeld:false,
+  freeReel:false,
+  lineDistance:0,
+  initialDistance:0,
+  netLineSpeed:0,
+  lineOutSpeed:0,
+  tension:0,
+  staminaPct:1,
+  staminaValue:0,
+  burstRemaining:0,
+  burstTotal:0,
+  burstKind:"",
+  nextBurst:2,
+  elapsed:0,
+  breakExposure:0,
+  slackExposure:0,
+  armedTimer:null,
+  reactionDeadline:0,
+  strikeAt:0,
+  lastCreak:0,
+  lastShake:0,
+  lastFrame:performance.now(),
+  history:new Array(220).fill(0),
+  fightSerial:0
+};
+
+function setMode(mode, eventText){
+  game.mode=mode;
+  $("stateText").textContent=mode.toUpperCase().replace("_"," ");
+  $("stateDot").className="dot " + (["fight","strike","landed"].includes(mode)?mode:"");
+  if(eventText) $("eventText").textContent=eventText;
+}
+
+function updateFishUI(){
+  const preset=speciesPresets[params.species]||speciesPresets.small_trevally;
+  $("fishName").textContent=preset.name;
+  $("signature").textContent=preset.signature;
+}
+
+function logMsg(text, cls=""){
+  const time=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const div=document.createElement("div");
+  div.className=cls;
+  div.textContent=`${time}  ${text}`;
+  $("log").prepend(div);
+}
+
+async function ensureAudio(){
+  try{
+    await audio.enable();
+    $("audioState").textContent=`Audio ready • ${audio.ctx.sampleRate} Hz`;
+    $("enableAudio").textContent="Audio Enabled";
+    $("enableAudio").disabled=true;
+    logMsg("Audio engine enabled.", "good");
+    return true;
+  }catch(err){
+    logMsg(err.message, "hot");
+    return false;
+  }
+}
+
+function clearArmTimer(){
+  if(game.armedTimer){ clearTimeout(game.armedTimer); game.armedTimer=null; }
+}
+
+function resetGame(){
+  clearArmTimer();
+  game.fightSerial++;
+  Object.assign(game,{
+    mode:"idle", reelHeld:false, freeReel:false, lineDistance:0, initialDistance:0,
+    netLineSpeed:0, lineOutSpeed:0, tension:0, staminaPct:1, staminaValue:0,
+    burstRemaining:0, burstTotal:0, burstKind:"", nextBurst:2, elapsed:0,
+    breakExposure:0, slackExposure:0, reactionDeadline:0, strikeAt:0
+  });
+  $("reelButton").classList.remove("active");
+  setMode("idle","Enable audio, then test the strike or start a fight.");
+  logMsg("Simulator reset.");
+}
+
+function triggerStrike(fromArm=false){
+  if(!audio.ctx){ ensureAudio().then(ok=>{if(ok) triggerStrike(fromArm)}); return; }
+  clearArmTimer();
+  audio.playStrike();
+  if(params.vibration && navigator.vibrate) navigator.vibrate([55,35,90]);
+  game.strikeAt=performance.now();
+  game.reactionDeadline=game.strikeAt+params.reactionWindow*1000;
+  setMode("strike",`FISH ON — hold REEL within ${params.reactionWindow.toFixed(1)} seconds!`);
+  logMsg(fromArm?"Random fish strike triggered.":"Strike sound preview triggered.","hot");
+}
+
+function armRandomStrike(){
+  if(!audio.ctx){ ensureAudio().then(ok=>{if(ok) armRandomStrike()}); return; }
+  resetGame();
+  const min=Math.min(params.armMin,params.armMax);
+  const max=Math.max(params.armMin,params.armMax);
+  const delay=rand(min,max);
+  setMode("armed",`Waiting… random strike in ${min}–${max} seconds.`);
+  game.armedTimer=setTimeout(()=>triggerStrike(true),delay*1000);
+  logMsg(`Strike armed. Hidden delay: ${delay.toFixed(1)} s.`, "info");
+}
+
+function startFight(source="manual"){
+  if(!audio.ctx){ ensureAudio().then(ok=>{if(ok) startFight(source)}); return; }
+  clearArmTimer();
+  if(params.species==="mystery") randomizeMystery();
+  game.fightSerial++;
+  game.elapsed=0;
+  game.initialDistance=clamp(22 + params.fishSize*26 + params.stamina*.11,20,82);
+  game.lineDistance=game.initialDistance;
+  game.tension=.28;
+  game.staminaValue=params.stamina;
+  game.staminaPct=1;
+  game.burstRemaining=params.initialRunDuration;
+  game.burstTotal=params.initialRunDuration;
+  game.burstKind="initial";
+  game.nextBurst=params.burstInterval;
+  game.breakExposure=0;
+  game.slackExposure=0;
+  setMode("fight","Initial run — let the drag work, then keep reeling.");
+  logMsg(`Fight started: ${speciesPresets[params.species].name} (${source}).`, "good");
+  audio.playStrike();
+}
+
+function triggerManualBurst(){
+  if(game.mode!=="fight"){ startFight("manual burst test"); return; }
+  game.burstRemaining=params.burstDuration;
+  game.burstTotal=params.burstDuration;
+  game.burstKind="manual";
+  game.nextBurst=params.burstInterval;
+  $("eventText").textContent="Fish burst triggered.";
+  logMsg("Manual fish burst triggered.", "hot");
+}
+
+function holdReel(on){
+  game.reelHeld=on;
+  $("reelButton").classList.toggle("active",on);
+  if(on && game.mode==="strike"){
+    const reaction=(performance.now()-game.strikeAt)/1000;
+    if(performance.now()<=game.reactionDeadline){
+      logMsg(`Hooked in ${reaction.toFixed(2)} s.`, "good");
+      startFight(`reaction ${reaction.toFixed(2)} s`);
+    }else{
+      setMode("lost","Too late — the fish dropped the bait.");
+      logMsg(`Missed reaction window (${reaction.toFixed(2)} s).`, "hot");
+    }
+  }
+}
+
+function fightStep(dt){
+  game.elapsed += dt;
+
+  if(game.mode==="strike" && performance.now()>game.reactionDeadline){
+    setMode("lost","Reaction window expired — fish lost.");
+    logMsg("Reaction window expired.", "hot");
+  }
+
+  if(game.mode!=="fight"){
+    game.lineOutSpeed=0;
+    game.netLineSpeed=0;
+    game.tension=lerp(game.tension,0,clamp(dt*4,0,1));
+    return;
+  }
+
+  const fatigue=clamp(game.staminaValue/Math.max(1,params.stamina),0,1);
+  game.staminaPct=fatigue;
+
+  let burst=0;
+  if(game.burstRemaining>0){
+    const progress=1-game.burstRemaining/Math.max(.001,game.burstTotal);
+    const envelope=Math.sin(clamp(progress,0,1)*Math.PI)*.32+.68;
+    const strength=game.burstKind==="initial"?params.initialRunStrength:params.burstStrength;
+    burst=strength*envelope*(.45+.55*fatigue);
+    game.burstRemaining-=dt;
+    if(game.burstRemaining<=0){
+      game.burstRemaining=0;
+      game.nextBurst=params.burstInterval*rand(.72,1.35)*(1+(1-fatigue)*.6);
+      game.burstKind="";
+      $("eventText").textContent="The fish eased off — gain line now.";
+    }
+  }else{
+    game.nextBurst-=dt;
+    const chanceBoost=params.directionChaos*.45;
+    if(game.nextBurst<=0){
+      game.burstRemaining=params.burstDuration*rand(.75,1.25);
+      game.burstTotal=game.burstRemaining;
+      game.burstKind="natural";
+      game.nextBurst=params.burstInterval;
+      $("eventText").textContent="The fish surges and takes line!";
+      logMsg("Fish began a new run.", "hot");
+    }else if(Math.random()<dt*.015*chanceBoost){
+      game.nextBurst=Math.min(game.nextBurst,.25);
+    }
+  }
+
+  const headWave=Math.sin(game.elapsed*(10+params.directionChaos*18))*params.headShake*.10;
+  const bodyWave=Math.sin(game.elapsed*(1.2+params.bodyRoll*2.5))*params.bodyRoll*.12;
+  const randomJitter=(Math.random()-.5)*params.directionChaos*.11;
+  const fatigueFloor=.25 + params.steadyPull*.35;
+  let fishPull=(params.steadyPull*(fatigueFloor+.75*fatigue) + burst + headWave + bodyWave + randomJitter);
+  fishPull=Math.max(0,fishPull)*params.fishSize;
+
+  const gearTorque=(.46+params.gearLevel*.105)*params.reelPower;
+  const inertiaPenalty=.55+params.fishInertia*.58;
+  const reelInput=game.reelHeld ? gearTorque : 0;
+  const reelGain=Math.max(0,reelInput*5.8 - fishPull*2.6*inertiaPenalty);
+  const lineOut=Math.max(0,fishPull*7.5 - reelInput*3.0);
+  game.lineOutSpeed=lineOut;
+  game.netLineSpeed=lineOut-reelGain;
+  game.lineDistance=clamp(game.lineDistance+game.netLineSpeed*dt,0,150);
+
+  const tensionTarget=clamp(
+    .10 + fishPull*.55 + (game.reelHeld?.27:0) + params.fishInertia*.08 - (lineOut>2?.08:0),
+    0,1.5
+  );
+  game.tension=lerp(game.tension,tensionTarget,clamp(dt*(3.6/(.6+params.fishInertia)),0,1));
+
+  const work=(burst>0?1.0:.28)+game.tension*.36+(game.reelHeld?.35:0);
+  game.staminaValue=Math.max(0,game.staminaValue-dt*params.fatigueRate*work);
+  game.staminaPct=clamp(game.staminaValue/Math.max(1,params.stamina),0,1);
+
+  const safeTension=.52+params.gearLevel*.072;
+  if(game.tension>safeTension) game.breakExposure+=dt*(1+(game.tension-safeTension)*4);
+  else game.breakExposure=Math.max(0,game.breakExposure-dt*1.8);
+
+  if(game.breakExposure>.9){
+    setMode("broken","Line or leader failed under excessive tension.");
+    logMsg(`Tackle failure: tension exceeded gear level ${params.gearLevel}.`, "hot");
+    game.reelHeld=false;
+    $("reelButton").classList.remove("active");
+    audio.playRodCreak(1.2);
+    return;
+  }
+
+  if(game.tension<.075 && !game.reelHeld && game.burstRemaining<=0) game.slackExposure+=dt;
+  else game.slackExposure=Math.max(0,game.slackExposure-dt*2);
+  if(game.slackExposure>4.5){
+    setMode("lost","Too much slack — the hook came free.");
+    logMsg("Fish lost due to prolonged slack line.", "hot");
+    return;
+  }
+
+  const now=performance.now();
+  if(params.rodCreak>0 && game.tension>.65 && now-game.lastCreak>rand(650,1500)){
+    game.lastCreak=now;
+    audio.playRodCreak(clamp(game.tension,0,1.2));
+  }
+  if(params.headShake>.15 && Math.abs(headWave)>.055 && now-game.lastShake>rand(500,1200)){
+    game.lastShake=now;
+    audio.playHeadShake(params.headShake*(.45+.55*fatigue));
+  }
+
+  if(game.lineDistance<=.08){
+    setMode("landed",`${speciesPresets[params.species].name} landed.`);
+    logMsg(`${speciesPresets[params.species].name} landed in ${game.elapsed.toFixed(1)} s.`, "good");
+    game.reelHeld=false;
+    $("reelButton").classList.remove("active");
+    audio.playRodCreak(.55);
+  }
+}
+
+function updateUI(){
+  const maxLine=Math.max(1,game.initialDistance||1);
+  const tensionPct=Math.round(clamp(game.tension,0,1.25)*100);
+  const staminaPct=Math.round(clamp(game.staminaPct,0,1)*100);
+  $("lineDistance").textContent=game.lineDistance.toFixed(1);
+  $("lineSpeed").textContent=game.netLineSpeed.toFixed(1);
+  $("tensionText").textContent=tensionPct;
+  $("staminaText").textContent=staminaPct;
+  $("tensionFill").style.width=clamp(tensionPct,0,100)+"%";
+  $("staminaFill").style.width=staminaPct+"%";
+  $("lineFill").style.width=clamp(game.lineDistance/maxLine*100,0,100)+"%";
+  $("tensionMeterText").textContent=tensionPct+"%";
+  $("staminaMeterText").textContent=staminaPct+"%";
+  $("lineMeterText").textContent=game.lineDistance.toFixed(0)+" m";
+}
+
+function drawScope(){
+  const canvas=$("scope"), ctx=canvas.getContext("2d");
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const grad=ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0,"rgba(46,214,197,.35)");
+  grad.addColorStop(1,"rgba(46,214,197,0)");
+  ctx.beginPath();
+  game.history.forEach((v,i)=>{
+    const x=i/(game.history.length-1)*w;
+    const y=h-clamp(v,0,1.4)/1.4*h;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  ctx.beginPath();
+  game.history.forEach((v,i)=>{
+    const x=i/(game.history.length-1)*w;
+    const y=h-clamp(v,0,1.4)/1.4*h;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle="#79e9df";ctx.lineWidth=3;ctx.stroke();
+
+  const safe=.52+params.gearLevel*.072;
+  const sy=h-clamp(safe,0,1.4)/1.4*h;
+  ctx.setLineDash([10,8]);ctx.strokeStyle="rgba(255,107,107,.72)";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(0,sy);ctx.lineTo(w,sy);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle="rgba(255,179,179,.9)";ctx.font="18px system-ui";
+  ctx.fillText("gear safety limit",12,Math.max(20,sy-8));
+}
+
+let historyAccumulator=0;
+function frame(now){
+  const dt=clamp((now-game.lastFrame)/1000,0,.05);
+  game.lastFrame=now;
+  fightStep(dt);
+  audio.update(game);
+  audio.tickClicks(dt,game);
+  historyAccumulator+=dt;
+  if(historyAccumulator>.05){
+    historyAccumulator=0;
+    game.history.push(game.tension);game.history.shift();
+  }
+  updateUI();
+  drawScope();
+  requestAnimationFrame(frame);
+}
+
+function exportPayload(){
+  const preset=speciesPresets[params.species]||speciesPresets.small_trevally;
+  return {
+    schema:"ReelLabFishingSoundPreset",
+    version:1,
+    generatedAt:new Date().toISOString(),
+    speciesKey:params.species,
+    speciesName:preset.name,
+    category:preset.category,
+    behaviorSignature:preset.signature,
+    parameters:{...params},
+    units:{
+      fishSize:"multiplier", gearLevel:"1-10", reelPower:"multiplier",
+      durations:"seconds", reelRPM:"revolutions per minute", clickPitch:"Hz",
+      clickSharpness:"seconds", reactionWindow:"seconds", volumeParameters:"0-1 nominal"
+    }
+  };
+}
+
+function refreshJson(){
+  $("jsonBox").value=JSON.stringify(exportPayload(),null,2);
+}
+
+function importJson(){
+  try{
+    const data=JSON.parse($("jsonBox").value);
+    const incoming=data.parameters||data;
+    Object.keys(defaultParams).forEach(k=>{
+      if(incoming[k]!==undefined) params[k]=incoming[k];
+    });
+    syncControlsFromParams();
+    logMsg("JSON parameters imported.", "good");
+  }catch(err){
+    logMsg("JSON import failed: "+err.message, "hot");
+  }
+}
+
+async function copyJson(){
+  refreshJson();
+  try{
+    await navigator.clipboard.writeText($("jsonBox").value);
+    logMsg("Parameter JSON copied.", "good");
+  }catch(_){
+    $("jsonBox").select();
+    document.execCommand("copy");
+    logMsg("Parameter JSON copied using fallback.", "good");
+  }
+}
+
+function downloadJson(){
+  refreshJson();
+  const blob=new Blob([$("jsonBox").value],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`reellab-${params.species}-${Date.now()}.json`;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+const customKey="reellab_custom_presets_v1";
+function getCustomPresets(){
+  try{return JSON.parse(localStorage.getItem(customKey)||"{}")}catch(_){return{}}
+}
+function rebuildSavedPresetSelect(){
+  const data=getCustomPresets(), sel=$("savedPresets");
+  sel.innerHTML='<option value="">Saved presets</option>';
+  Object.keys(data).sort().forEach(name=>{
+    const o=document.createElement("option");o.value=name;o.textContent=name;sel.appendChild(o);
+  });
+}
+function saveCustomPreset(){
+  const name=$("presetName").value.trim();
+  if(!name){logMsg("Enter a custom preset name first.","hot");return}
+  const all=getCustomPresets();
+  all[name]=exportPayload();
+  localStorage.setItem(customKey,JSON.stringify(all));
+  rebuildSavedPresetSelect();$("savedPresets").value=name;
+  logMsg(`Saved custom preset: ${name}.`,"good");
+}
+function loadCustomPreset(){
+  const name=$("savedPresets").value, all=getCustomPresets();
+  if(!name||!all[name]){logMsg("Select a saved preset.","hot");return}
+  $("jsonBox").value=JSON.stringify(all[name],null,2);
+  importJson();$("presetName").value=name;
+}
+function deleteCustomPreset(){
+  const name=$("savedPresets").value, all=getCustomPresets();
+  if(!name||!all[name]){logMsg("Select a saved preset.","hot");return}
+  delete all[name];localStorage.setItem(customKey,JSON.stringify(all));
+  rebuildSavedPresetSelect();
+  logMsg(`Deleted custom preset: ${name}.`);
+}
+
+let recorder=null, recordedChunks=[];
+async function toggleRecording(){
+  if(!$("recordAudio").classList.contains("recording")){
+    const ok=await ensureAudio(); if(!ok)return;
+    if(!audio.streamDest || !window.MediaRecorder){
+      logMsg("Audio recording is not supported by this browser.","hot");return;
+    }
+    try{
+      recordedChunks=[];
+      recorder=new MediaRecorder(audio.streamDest.stream);
+      recorder.ondataavailable=e=>{if(e.data.size)recordedChunks.push(e.data)};
+      recorder.onstop=()=>{
+        const type=recorder.mimeType||"audio/webm";
+        const blob=new Blob(recordedChunks,{type});
+        const a=document.createElement("a");
+        a.href=URL.createObjectURL(blob);
+        a.download=`reellab-recording-${Date.now()}.${type.includes("mp4")?"m4a":"webm"}`;
+        a.click();
+        setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+        logMsg("Recording saved.","good");
+      };
+      recorder.start();
+      $("recordAudio").textContent="Stop & Save Recording";
+      $("recordAudio").classList.add("recording","danger");
+      logMsg("Audio recording started.","hot");
+    }catch(err){logMsg("Recording failed: "+err.message,"hot")}
+  }else{
+    if(recorder && recorder.state!=="inactive") recorder.stop();
+    $("recordAudio").textContent="Record Audio";
+    $("recordAudio").classList.remove("recording","danger");
+  }
+}
+
+$("enableAudio").addEventListener("click",ensureAudio);
+$("armStrike").addEventListener("click",armRandomStrike);
+$("playStrike").addEventListener("click",()=>triggerStrike(false));
+$("startFight").addEventListener("click",()=>startFight("manual"));
+$("resetGame").addEventListener("click",resetGame);
+$("recordAudio").addEventListener("click",toggleRecording);
+$("testReel").addEventListener("click",async()=>{
+  if(!audio.ctx) await ensureAudio();
+  game.freeReel=!game.freeReel;
+  $("testReel").textContent=game.freeReel?"Stop Free Reel":"Toggle Free Reel";
+  logMsg(game.freeReel?"Free reel sound started.":"Free reel sound stopped.","info");
+});
+$("fishPull").addEventListener("click",triggerManualBurst);
+$("testCreak").addEventListener("click",async()=>{if(!audio.ctx)await ensureAudio();audio.playRodCreak(1)});
+$("refreshJson").addEventListener("click",refreshJson);
+$("copyJson").addEventListener("click",copyJson);
+$("importJson").addEventListener("click",importJson);
+$("downloadJson").addEventListener("click",downloadJson);
+$("savePreset").addEventListener("click",saveCustomPreset);
+$("loadPreset").addEventListener("click",loadCustomPreset);
+$("deletePreset").addEventListener("click",deleteCustomPreset);
+
+const reelBtn=$("reelButton");
+reelBtn.addEventListener("pointerdown",async e=>{
+  e.preventDefault();
+  try{reelBtn.setPointerCapture(e.pointerId)}catch(_){}
+  if(!audio.ctx) await ensureAudio();
+  holdReel(true);
+});
+["pointerup","pointercancel","lostpointercapture","pointerleave"].forEach(evt=>{
+  reelBtn.addEventListener(evt,e=>{e.preventDefault();holdReel(false)});
+});
+window.addEventListener("keydown",e=>{
+  if(e.code==="Space" && !e.repeat){e.preventDefault();ensureAudio().then(()=>holdReel(true))}
+});
+window.addEventListener("keyup",e=>{
+  if(e.code==="Space"){e.preventDefault();holdReel(false)}
+});
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden) holdReel(false);
+});
+
+applySpecies("small_trevally");
+rebuildSavedPresetSelect();
+refreshJson();
+updateFishUI();
+updateUI();
+logMsg("Ready. Tap Enable Audio first.", "info");
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
