@@ -75,6 +75,12 @@
     border-color:#65eadf;
   }
 
+  button.danger{
+    background:#4b252b;
+    color:#ffd8d8;
+    border-color:#74404a;
+  }
+
   button.active{
     filter:brightness(1.2);
     transform:scale(.98);
@@ -193,6 +199,7 @@
       <button id="reelIn">Toggle Reel In</button>
       <button id="lineOut">Toggle Line Out</button>
       <button id="stopAll">Stop</button>
+      <button class="danger" id="resetDefaults">Reset to Default</button>
     </div>
 
     <div class="section">
@@ -232,6 +239,16 @@
         </label>
 
         <label class="control">
+          <div class="head"><span>Movement shape</span></div>
+          <select id="movementShape" data-param="movementShape">
+            <option value="sine" selected>Smooth wave</option>
+            <option value="triangle">Triangle</option>
+            <option value="saw">Rising ramp</option>
+            <option value="reverseSaw">Falling ramp</option>
+          </select>
+        </label>
+
+        <label class="control">
           <div class="head"><span>Sound speed</span><span class="value" data-value="speed"></span></div>
           <input type="range" min=".1" max="4" step=".01" value="1" data-param="speed">
         </label>
@@ -244,28 +261,75 @@
     </div>
 
     <div class="section">
-      <h2>Reel clicks</h2>
+      <h2>Reel click tone and shape</h2>
       <div class="grid">
+        <label class="control">
+          <div class="head"><span>Click waveform</span></div>
+          <select id="clickWaveform" data-param="clickWaveform">
+            <option value="sine">Soft rounded</option>
+            <option value="triangle">Mechanical</option>
+            <option value="sawtooth">Metallic</option>
+            <option value="square" selected>Hard click</option>
+          </select>
+        </label>
+
         <label class="control">
           <div class="head"><span>Click rate</span><span class="value" data-value="clickRate"></span></div>
           <input type="range" min="1" max="100" step="1" value="18" data-param="clickRate">
         </label>
 
         <label class="control">
-          <div class="head"><span>Click pitch</span><span class="value" data-value="clickPitch"></span></div>
+          <div class="head"><span>Click start pitch</span><span class="value" data-value="clickPitch"></span></div>
           <input type="range" min="200" max="7000" step="10" value="1900" data-param="clickPitch">
         </label>
 
         <label class="control">
-          <div class="head"><span>Click sharpness</span><span class="value" data-value="clickSharpness"></span></div>
-          <input type="range" min=".003" max=".12" step=".001" value=".018" data-param="clickSharpness">
+          <div class="head"><span>Pitch drop</span><span class="value" data-value="clickPitchDrop"></span></div>
+          <input type="range" min="0" max=".95" step=".01" value=".50" data-param="clickPitchDrop">
+        </label>
+
+        <label class="control">
+          <div class="head"><span>Attack</span><span class="value" data-value="clickAttack"></span></div>
+          <input type="range" min=".0005" max=".03" step=".0005" value=".0015" data-param="clickAttack">
+        </label>
+
+        <label class="control">
+          <div class="head"><span>Decay / click length</span><span class="value" data-value="clickDecay"></span></div>
+          <input type="range" min=".003" max=".15" step=".001" value=".018" data-param="clickDecay">
         </label>
 
         <label class="control">
           <div class="head"><span>Click volume</span><span class="value" data-value="clickVolume"></span></div>
           <input type="range" min="0" max="1" step=".01" value=".55" data-param="clickVolume">
         </label>
+
+        <label class="control">
+          <div class="head"><span>Pitch randomness</span><span class="value" data-value="clickPitchRandom"></span></div>
+          <input type="range" min="0" max=".5" step=".01" value=".05" data-param="clickPitchRandom">
+        </label>
+
+        <label class="control">
+          <div class="head"><span>Volume randomness</span><span class="value" data-value="clickVolumeRandom"></span></div>
+          <input type="range" min="0" max=".8" step=".01" value=".10" data-param="clickVolumeRandom">
+        </label>
+
+        <label class="control">
+          <div class="head"><span>Click body tone</span><span class="value" data-value="clickBody"></span></div>
+          <input type="range" min="0" max="1" step=".01" value=".28" data-param="clickBody">
+        </label>
+
+        <label class="control">
+          <div class="head"><span>Body frequency</span><span class="value" data-value="clickBodyFrequency"></span></div>
+          <input type="range" min="60" max="1800" step="5" value="420" data-param="clickBodyFrequency">
+        </label>
+
+        <label class="control">
+          <div class="head"><span>High-pass sharpness</span><span class="value" data-value="clickHighPass"></span></div>
+          <input type="range" min="20" max="3000" step="10" value="180" data-param="clickHighPass">
+        </label>
       </div>
+
+      <button id="testClick" style="margin-top:10px">Test Single Click</button>
     </div>
 
     <div class="section">
@@ -350,8 +414,9 @@
   const $ = id => document.getElementById(id);
   const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
 
-  const params = {
+  const defaults = {
     waveform: "triangle",
+    movementShape: "sine",
     mode: "reel",
 
     basePitch: 380,
@@ -359,10 +424,18 @@
     speed: 1,
     toneVolume: .32,
 
+    clickWaveform: "square",
     clickRate: 18,
     clickPitch: 1900,
-    clickSharpness: .018,
+    clickPitchDrop: .50,
+    clickAttack: .0015,
+    clickDecay: .018,
     clickVolume: .55,
+    clickPitchRandom: .05,
+    clickVolumeRandom: .10,
+    clickBody: .28,
+    clickBodyFrequency: 420,
+    clickHighPass: 180,
 
     gearWhine: .24,
     mechanicalNoise: .38,
@@ -376,6 +449,8 @@
 
     masterVolume: .65
   };
+
+  const params = {...defaults};
 
   let ctx = null;
   let master = null;
@@ -499,33 +574,91 @@
     if(!ctx) return;
 
     const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const filter = ctx.createBiquadFilter();
 
-    osc.type = "square";
-    osc.frequency.setValueAtTime(params.clickPitch*(.95+Math.random()*.1),now);
-    osc.frequency.exponentialRampToValueAtTime(
-      Math.max(100,params.clickPitch*.5),
-      now+params.clickSharpness
+    const pitchVariation =
+      1 + (Math.random()*2-1)*params.clickPitchRandom;
+
+    const volumeVariation =
+      1 + (Math.random()*2-1)*params.clickVolumeRandom;
+
+    const startPitch = Math.max(50,params.clickPitch*pitchVariation);
+    const endPitch = Math.max(
+      40,
+      startPitch*(1-params.clickPitchDrop)
     );
 
-    filter.type = "highpass";
-    filter.frequency.value = 180;
+    const attack = Math.max(.0005,params.clickAttack);
+    const decay = Math.max(attack+.001,params.clickDecay);
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const highPass = ctx.createBiquadFilter();
+
+    osc.type = params.clickWaveform;
+    osc.frequency.setValueAtTime(startPitch,now);
+    osc.frequency.exponentialRampToValueAtTime(endPitch,now+decay);
+
+    highPass.type = "highpass";
+    highPass.frequency.value = params.clickHighPass;
 
     gain.gain.setValueAtTime(.0001,now);
     gain.gain.exponentialRampToValueAtTime(
-      .075*params.clickVolume,
-      now+.001
+      Math.max(.0002,.08*params.clickVolume*volumeVariation),
+      now+attack
     );
-    gain.gain.exponentialRampToValueAtTime(
-      .0001,
-      now+params.clickSharpness
-    );
+    gain.gain.exponentialRampToValueAtTime(.0001,now+decay);
 
-    osc.connect(filter).connect(gain).connect(master);
+    osc.connect(highPass).connect(gain).connect(master);
     osc.start(now);
-    osc.stop(now+params.clickSharpness+.01);
+    osc.stop(now+decay+.02);
+
+    if(params.clickBody>0){
+      const bodyOsc = ctx.createOscillator();
+      const bodyGain = ctx.createGain();
+      const bodyFilter = ctx.createBiquadFilter();
+
+      bodyOsc.type = "sine";
+      bodyOsc.frequency.setValueAtTime(
+        Math.max(40,params.clickBodyFrequency*pitchVariation),
+        now
+      );
+      bodyOsc.frequency.exponentialRampToValueAtTime(
+        Math.max(35,params.clickBodyFrequency*.55),
+        now+decay*1.5
+      );
+
+      bodyFilter.type = "lowpass";
+      bodyFilter.frequency.value = Math.max(100,params.clickBodyFrequency*2.3);
+
+      bodyGain.gain.setValueAtTime(.0001,now);
+      bodyGain.gain.exponentialRampToValueAtTime(
+        .05*params.clickBody*params.clickVolume*volumeVariation,
+        now+attack
+      );
+      bodyGain.gain.exponentialRampToValueAtTime(
+        .0001,
+        now+decay*1.5
+      );
+
+      bodyOsc.connect(bodyFilter).connect(bodyGain).connect(master);
+      bodyOsc.start(now);
+      bodyOsc.stop(now+decay*1.6+.02);
+    }
+  }
+
+  function movementValue(timeSeconds){
+    const phase = ((timeSeconds*params.speed)%1+1)%1;
+
+    switch(params.movementShape){
+      case "triangle":
+        return 1 - 4*Math.abs(phase-.5);
+      case "saw":
+        return phase*2-1;
+      case "reverseSaw":
+        return 1-phase*2;
+      default:
+        return Math.sin(timeSeconds*params.speed*Math.PI*2);
+    }
   }
 
   function startMode(mode){
@@ -580,8 +713,8 @@
 
       toneOsc.type = params.waveform;
 
-      const pulse =
-        Math.sin(now/1000 * params.speed * Math.PI*2) * params.pitchMovement;
+      const movement = movementValue(now/1000);
+      const pulse = movement*params.pitchMovement;
 
       const toneFrequency = Math.max(20,params.basePitch + pulse);
 
@@ -637,7 +770,7 @@
       else if(activeMode==="drag"){
         const dragPulse =
           1 +
-          Math.sin(now/1000 * params.speed * Math.PI*2) *
+          movement *
           params.dragPulse;
 
         setGain(toneGain.gain,params.toneVolume*.018);
@@ -668,14 +801,21 @@
       const key = el.dataset.value;
       const value = params[key];
 
-      if(["basePitch","clickPitch","noiseFrequency","dragFrequency"].includes(key)){
+      if([
+        "basePitch",
+        "clickPitch",
+        "clickBodyFrequency",
+        "clickHighPass",
+        "noiseFrequency",
+        "dragFrequency"
+      ].includes(key)){
         el.textContent = Math.round(value)+" Hz";
       }
       else if(key==="clickRate"){
         el.textContent = Math.round(value)+"/s";
       }
-      else if(key==="clickSharpness"){
-        el.textContent = Number(value).toFixed(3)+" s";
+      else if(["clickAttack","clickDecay"].includes(key)){
+        el.textContent = Number(value).toFixed(4)+" s";
       }
       else if(key==="speed"){
         el.textContent = Number(value).toFixed(2)+"×";
@@ -686,10 +826,31 @@
     });
   }
 
+  function syncControls(){
+    document.querySelectorAll("[data-param]").forEach(el => {
+      const key = el.dataset.param;
+      el.value = params[key];
+    });
+
+    updateLabels();
+    refreshJson();
+  }
+
+  function resetDefaults(){
+    stopSound();
+
+    Object.keys(defaults).forEach(key => {
+      params[key] = defaults[key];
+    });
+
+    syncControls();
+    $("status").textContent = "All parameters reset to default.";
+  }
+
   function refreshJson(){
     $("jsonOutput").value = JSON.stringify({
       schema:"ReelSoundParameters",
-      version:1,
+      version:2,
       parameters:{...params}
     },null,2);
   }
@@ -719,6 +880,13 @@
     activeMode==="drag" ? stopSound() : startMode("drag");
   });
   $("stopAll").addEventListener("click",stopSound);
+  $("resetDefaults").addEventListener("click",resetDefaults);
+
+  $("testClick").addEventListener("click",async() => {
+    await enableAudio();
+    playClick();
+    $("status").textContent = "Single click played.";
+  });
 
   const holdButton = $("holdButton");
 
@@ -761,8 +929,7 @@
     }
   });
 
-  updateLabels();
-  refreshJson();
+  syncControls();
 })();
 </script>
 </body>
