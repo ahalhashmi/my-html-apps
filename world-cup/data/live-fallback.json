@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-11T22:59:21.734Z",
+  "fetchedAt": "2026-07-11T23:53:02.483Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -2360,16 +2360,16 @@
       "home_team_id": "36",
       "away_team_id": "45",
       "home_score": "1",
-      "away_score": "1",
+      "away_score": "2",
       "home_scorers": "{\"Andrias Shldrvp 36'\"}",
-      "away_scorers": "{\"Jvd Blingham 45+2'\"}",
+      "away_scorers": "{\"Jvd Blingham 45+2'\",\"Jvd Blingham 93'\"}",
       "group": "QF",
       "matchday": "6",
       "local_date": "07/11/2026 17:00",
       "persian_date": "1405-04-20 17:00",
       "stadium_id": "8",
-      "finished": "FALSE",
-      "time_elapsed": "live",
+      "finished": "TRUE",
+      "time_elapsed": "finished",
       "type": "qf",
       "home_team_label": "Winner Match 91",
       "away_team_label": "Winner Match 92",
@@ -2436,7 +2436,7 @@
     {
       "_id": "679c9c8a5749c4077500e090",
       "id": "102",
-      "home_team_id": "0",
+      "home_team_id": "45",
       "away_team_id": "0",
       "home_score": "0",
       "away_score": "0",
@@ -2451,7 +2451,9 @@
       "time_elapsed": "notstarted",
       "type": "sf",
       "home_team_label": "Winner Match 99",
-      "away_team_label": "Winner Match 100"
+      "away_team_label": "Winner Match 100",
+      "home_team_name_en": "England",
+      "home_team_name_fa": "انگلستان"
     },
     {
       "_id": "679c9c8a5749c4077500e091",
