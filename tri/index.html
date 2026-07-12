@@ -565,7 +565,7 @@
         <div class="loader-glyph"></div>
         <strong>Building the tetrahedron rig…</strong>
         <div style="margin-top:8px;color:#9fb0c9;font-size:12px;line-height:1.5">
-          Every visible body segment is one four-face pyramid.
+          Every visible body segment is one four-face pyramid. Includes both the original and the flat-face-aligned version.
         </div>
       </div>
     </div>
@@ -574,12 +574,13 @@
       <header class="panel-header">
         <div class="brand-mark" aria-hidden="true"></div>
         <div class="title-wrap">
-          <h1>TetraHuman Rig</h1>
+          <h1>TetraHuman Rig — 2 Versions</h1>
           <p class="subtitle">Articulated human made from true four-face pyramids, with human-like joint limits.</p>
           <div class="header-badges">
             <span class="badge">Tetrahedrons</span>
             <span class="badge">Joint limits</span>
             <span class="badge">Single HTML</span>
+            <span class="badge">2 versions</span>
           </div>
         </div>
         <button id="minimizePanel" class="icon-btn" type="button" title="Minimize controls" aria-label="Minimize controls">−</button>
@@ -645,6 +646,14 @@
                 </select>
               </div>
 
+              <div class="select-card" style="grid-column:1 / -1">
+                <label for="figureVersion">Figure version</label>
+                <select id="figureVersion">
+                  <option value="classic">Existing version</option>
+                  <option value="orthogonal">Flat-face aligned version</option>
+                </select>
+              </div>
+
               <button id="frontView" class="action-btn" type="button">Front view</button>
               <button id="threeQuarterView" class="action-btn" type="button">3/4 view</button>
             </div>
@@ -656,7 +665,7 @@
     </aside>
 
     <div id="hint">
-      Drag to orbit · pinch or wheel to zoom · right-drag to pan · use presets or move each joint slider
+      Drag to orbit · pinch or wheel to zoom · right-drag to pan · switch between the 2 figure versions, then use presets or move each joint slider
     </div>
 
     <div id="error"></div>
@@ -940,6 +949,8 @@
     let jointMarkers = [];
     let parts = [];
     let autoRotate = false;
+    let currentVariant = "classic";
+    const partRefs = {};
 
     const joint = {};
     const root = new THREE.Group();
@@ -1067,9 +1078,40 @@
 
     function addTetra(parent, ...args) {
       const { mesh, edges } = makeTetraMesh(...args);
+      partRefs[mesh.name] = { mesh, edges };
       parent.add(mesh);
       parent.add(edges);
       return mesh;
+    }
+
+    function syncEdgesFor(mesh) {
+      const edges = mesh?.userData?.edges;
+      if (!edges) return;
+      edges.scale.copy(mesh.scale);
+      edges.position.copy(mesh.position);
+      edges.rotation.copy(mesh.rotation);
+    }
+
+    function setPartTransform(name, config) {
+      const ref = partRefs[name];
+      if (!ref || !config) return;
+      const { mesh, edges } = ref;
+
+      if (config.scale) {
+        mesh.scale.set(config.scale[0], config.scale[1], config.scale[2]);
+      }
+      if (config.position) {
+        mesh.position.set(config.position[0], config.position[1], config.position[2]);
+      }
+      if (config.rotation) {
+        mesh.rotation.set(config.rotation[0], config.rotation[1], config.rotation[2]);
+      }
+
+      if (edges) {
+        edges.scale.copy(mesh.scale);
+        edges.position.copy(mesh.position);
+        edges.rotation.copy(mesh.rotation);
+      }
     }
 
     function makeJoint(name, position, parent) {
@@ -1150,6 +1192,7 @@
       buildArm("r", 1, joint.torso);
       buildLeg("l", -1, joint.pelvis);
       buildLeg("r", 1, joint.pelvis);
+      applyBuildVariant(currentVariant);
     }
 
     function buildArm(prefix, sideSign, parent) {
@@ -1231,6 +1274,65 @@
         [0, -0.15, 0.38],
         [-0.16, 0, Math.PI]
       );
+    }
+
+    const buildVariants = {
+      classic: {
+        label: "Existing version",
+        parts: {
+          pelvis:   { scale: [1.45, 1.05, 1.05], position: [0, -0.02, 0],   rotation: [0, 0, Math.PI] },
+          torso:    { scale: [2.85, 3.05, 1.35], position: [0,  1.525, 0],  rotation: [0, 0, 0] },
+          neck:     { scale: [0.72, 0.58, 0.62], position: [0,  0.27, 0],   rotation: [0, 0, Math.PI] },
+          head:     { scale: [1.50, 1.42, 1.12], position: [0,  0.71, 0],   rotation: [0, 0, 0] },
+
+          lUpperArm:{ scale: [0.96, 1.60, 0.82], position: [0, -0.80, 0],   rotation: [0, 0, 0] },
+          rUpperArm:{ scale: [0.96, 1.60, 0.82], position: [0, -0.80, 0],   rotation: [0, 0, 0] },
+          lForearm: { scale: [0.76, 1.48, 0.68], position: [0, -0.74, 0],   rotation: [0, 0, 0] },
+          rForearm: { scale: [0.76, 1.48, 0.68], position: [0, -0.74, 0],   rotation: [0, 0, 0] },
+          lHand:    { scale: [0.58, 0.62, 0.54], position: [0, -0.30, 0],   rotation: [0, 0, 0] },
+          rHand:    { scale: [0.58, 0.62, 0.54], position: [0, -0.30, 0],   rotation: [0, 0, 0] },
+
+          lThigh:   { scale: [1.05, 2.00, 0.95], position: [0, -1.00, 0],   rotation: [0, 0, 0] },
+          rThigh:   { scale: [1.05, 2.00, 0.95], position: [0, -1.00, 0],   rotation: [0, 0, 0] },
+          lShin:    { scale: [0.82, 1.88, 0.80], position: [0, -0.94, 0],   rotation: [0, 0, 0] },
+          rShin:    { scale: [0.82, 1.88, 0.80], position: [0, -0.94, 0],   rotation: [0, 0, 0] },
+          lFoot:    { scale: [0.85, 0.52, 1.28], position: [0, -0.15, 0.38], rotation: [-0.16, 0, Math.PI] },
+          rFoot:    { scale: [0.85, 0.52, 1.28], position: [0, -0.15, 0.38], rotation: [-0.16, 0, Math.PI] }
+        }
+      },
+
+      orthogonal: {
+        label: "Flat-face aligned version",
+        parts: {
+          pelvis:   { scale: [1.45, 1.05, 1.05], position: [0, -0.02, 0.02], rotation: [-Math.PI / 2, 0, 0] },
+          torso:    { scale: [2.85, 3.05, 1.35], position: [0,  1.60, 0.03], rotation: [ Math.PI / 2, 0, 0] },
+          neck:     { scale: [0.72, 0.58, 0.62], position: [0,  0.34, 0.00], rotation: [-Math.PI / 2, 0, 0] },
+          head:     { scale: [1.50, 1.42, 1.12], position: [0,  0.82, 0.00], rotation: [-Math.PI / 2, 0, 0] },
+
+          lUpperArm:{ scale: [0.96, 1.60, 0.82], position: [0, -0.80, 0],    rotation: [0, -Math.PI / 2, 0] },
+          rUpperArm:{ scale: [0.96, 1.60, 0.82], position: [0, -0.80, 0],    rotation: [0,  Math.PI / 2, 0] },
+          lForearm: { scale: [0.76, 1.48, 0.68], position: [0, -0.74, 0],    rotation: [0, -Math.PI / 2, 0] },
+          rForearm: { scale: [0.76, 1.48, 0.68], position: [0, -0.74, 0],    rotation: [0,  Math.PI / 2, 0] },
+          lHand:    { scale: [0.58, 0.62, 0.54], position: [0, -0.30, 0],    rotation: [0, -Math.PI / 2, 0] },
+          rHand:    { scale: [0.58, 0.62, 0.54], position: [0, -0.30, 0],    rotation: [0,  Math.PI / 2, 0] },
+
+          lThigh:   { scale: [1.05, 2.00, 0.95], position: [0, -1.00, 0],    rotation: [0, -Math.PI / 2, 0] },
+          rThigh:   { scale: [1.05, 2.00, 0.95], position: [0, -1.00, 0],    rotation: [0,  Math.PI / 2, 0] },
+          lShin:    { scale: [0.82, 1.88, 0.80], position: [0, -0.94, 0],    rotation: [0, -Math.PI / 2, 0] },
+          rShin:    { scale: [0.82, 1.88, 0.80], position: [0, -0.94, 0],    rotation: [0,  Math.PI / 2, 0] },
+          lFoot:    { scale: [0.85, 0.52, 1.28], position: [0, -0.06, 0.38], rotation: [-Math.PI / 2, 0, Math.PI] },
+          rFoot:    { scale: [0.85, 0.52, 1.28], position: [0, -0.06, 0.38], rotation: [-Math.PI / 2, 0, Math.PI] }
+        }
+      }
+    };
+
+    function applyBuildVariant(name) {
+      currentVariant = buildVariants[name] ? name : "classic";
+      const variant = buildVariants[currentVariant];
+      for (const [partName, config] of Object.entries(variant.parts)) {
+        setPartTransform(partName, config);
+      }
+      applyPose();
     }
 
     function applyPose() {
@@ -1443,6 +1545,10 @@
 
     document.getElementById("palette").addEventListener("change", (event) => {
       setPalette(event.target.value);
+    });
+
+    document.getElementById("figureVersion").addEventListener("change", (event) => {
+      applyBuildVariant(event.target.value);
     });
 
     document.getElementById("frontView").addEventListener("click", () => {
