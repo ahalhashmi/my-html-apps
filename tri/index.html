@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#08101f" />
+  <title>TetraHuman — Articulated Pyramid Rig</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07101e;
+      --panel: rgba(10, 19, 35, 0.88);
+      --panel-2: rgba(15, 27, 48, 0.92);
+      --line: rgba(255, 255, 255, 0.10);
+      --text: #f3f7ff;
+      --muted: #9fb0c9;
+      --accent: #66e3ff;
+      --accent-2: #8c7bff;
+      --danger: #ff6f91;
+      --control-height: 32px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 72% 18%, rgba(65, 112, 190, 0.23), transparent 36%),
+        linear-gradient(145deg, #091629 0%, #050a13 70%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    #app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    #viewport {
+      position: absolute;
+      inset: 0;
+      touch-action: none;
+    }
+
+    #viewport canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      outline: none;
+    }
+
+    #loading {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      background: #07101e;
+      transition: opacity 240ms ease;
+    }
+
+    #loading.hidden {
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .loader-card {
+      width: min(340px, calc(100vw - 36px));
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(11, 22, 40, 0.88);
+      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.42);
+      text-align: center;
+      backdrop-filter: blur(18px);
+    }
+
+    .loader-glyph {
+      width: 70px;
+      height: 62px;
+      margin: 0 auto 18px;
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      filter: drop-shadow(0 0 18px rgba(102, 227, 255, 0.35));
+      animation: pulse 1.3s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: translateY(3px) scale(0.96); opacity: 0.72; }
+      to   { transform: translateY(-3px) scale(1.03); opacity: 1; }
+    }
+
+    #panel {
+      position: absolute;
+      z-index: 10;
+      top: 14px;
+      right: 14px;
+      width: min(390px, calc(100vw - 28px));
+      max-height: calc(100vh - 28px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel);
+      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.40);
+      backdrop-filter: blur(20px) saturate(120%);
+    }
+
+    #panel.minimized {
+      width: 232px;
+    }
+
+    #panel.minimized .panel-body,
+    #panel.minimized .subtitle,
+    #panel.minimized .header-badges {
+      display: none;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 16px 13px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent);
+    }
+
+    .brand-mark {
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      background: linear-gradient(145deg, #65e6ff, #7865ff 72%);
+      filter: drop-shadow(0 6px 14px rgba(71, 194, 255, 0.28));
+    }
+
+    .title-wrap {
+      min-width: 0;
+      flex: 1;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.4;
+    }
+
+    .header-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 9px;
+    }
+
+    .badge {
+      padding: 4px 7px;
+      border: 1px solid rgba(102, 227, 255, 0.20);
+      border-radius: 999px;
+      background: rgba(102, 227, 255, 0.08);
+      color: #b9f3ff;
+      font-size: 10px;
+      letter-spacing: 0.03em;
+    }
+
+    .icon-btn {
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      transition: background 140ms ease, transform 140ms ease;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.10);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.96);
+    }
+
+    .panel-body {
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(142, 166, 201, 0.45) transparent;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .action-btn,
+    .preset-btn {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.045);
+      cursor: pointer;
+      font-size: 11.5px;
+      transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+    }
+
+    .action-btn:hover,
+    .preset-btn:hover {
+      border-color: rgba(102, 227, 255, 0.35);
+      background: rgba(102, 227, 255, 0.09);
+    }
+
+    .action-btn:active,
+    .preset-btn:active {
+      transform: translateY(1px);
+    }
+
+    .action-btn.primary {
+      border-color: rgba(102, 227, 255, 0.32);
+      background: linear-gradient(135deg, rgba(69, 194, 255, 0.22), rgba(128, 102, 255, 0.20));
+    }
+
+    .section {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:last-child {
+      border-bottom: 0;
+    }
+
+    .section-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 12px 14px;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .section-toggle:hover {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .section-title {
+      flex: 1;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .section-count {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .chevron {
+      color: var(--muted);
+      transition: transform 160ms ease;
+    }
+
+    .section.closed .chevron {
+      transform: rotate(-90deg);
+    }
+
+    .section-content {
+      padding: 0 12px 12px;
+    }
+
+    .section.closed .section-content {
+      display: none;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .toggle-card,
+    .select-card {
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.032);
+    }
+
+    .toggle-card span,
+    .select-card label {
+      color: #dbe6f7;
+      font-size: 11px;
+    }
+
+    .switch {
+      position: relative;
+      width: 38px;
+      height: 22px;
+      flex: 0 0 auto;
+    }
+
+    .switch input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .switch-track {
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      transition: background 160ms ease;
+    }
+
+    .switch-track::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #d7e2f2;
+      transition: transform 160ms ease, background 160ms ease;
+    }
+
+    .switch input:checked + .switch-track {
+      background: rgba(102, 227, 255, 0.25);
+      border-color: rgba(102, 227, 255, 0.35);
+    }
+
+    .switch input:checked + .switch-track::after {
+      transform: translateX(16px);
+      background: var(--accent);
+    }
+
+    select {
+      min-width: 96px;
+      height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #101d32;
+      color: var(--text);
+      padding: 0 8px;
+      font-size: 11px;
+      outline: none;
+    }
+
+    .control-row {
+      padding: 9px 2px 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+    }
+
+    .control-row:last-child {
+      border-bottom: 0;
+    }
+
+    .control-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .control-label {
+      flex: 1;
+      color: #dce7f8;
+      font-size: 11.5px;
+    }
+
+    .control-value {
+      min-width: 48px;
+      padding: 3px 6px;
+      border-radius: 7px;
+      background: rgba(102, 227, 255, 0.08);
+      color: #bdefff;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-size: 10.5px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 18px;
+      margin: 0;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 4px;
+      border-radius: 999px;
+      background:
+        linear-gradient(90deg, rgba(102, 227, 255, 0.80), rgba(132, 111, 255, 0.75)) 0 / var(--range-fill, 50%) 100% no-repeat,
+        rgba(255, 255, 255, 0.11);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      width: 15px;
+      height: 15px;
+      margin-top: -5.5px;
+      appearance: none;
+      border: 2px solid #eafaff;
+      border-radius: 50%;
+      background: #63dcff;
+      box-shadow: 0 0 0 4px rgba(99, 220, 255, 0.12);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.11);
+    }
+
+    input[type="range"]::-moz-range-progress {
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #66e3ff, #8c7bff);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 13px;
+      height: 13px;
+      border: 2px solid #eafaff;
+      border-radius: 50%;
+      background: #63dcff;
+      box-shadow: 0 0 0 4px rgba(99, 220, 255, 0.12);
+    }
+
+    #hint {
+      position: absolute;
+      left: 16px;
+      bottom: 15px;
+      z-index: 5;
+      max-width: min(520px, calc(100vw - 32px));
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(7, 15, 28, 0.68);
+      color: #aebbd0;
+      font-size: 11px;
+      line-height: 1.45;
+      pointer-events: none;
+      backdrop-filter: blur(12px);
+    }
+
+    #error {
+      position: absolute;
+      inset: auto 16px 16px 16px;
+      z-index: 30;
+      display: none;
+      max-width: 720px;
+      margin: auto;
+      padding: 16px;
+      border: 1px solid rgba(255, 111, 145, 0.35);
+      border-radius: 14px;
+      background: rgba(62, 13, 29, 0.94);
+      color: #ffd8e2;
+      font-size: 13px;
+      line-height: 1.5;
+      box-shadow: 0 16px 50px rgba(0, 0, 0, 0.45);
+    }
+
+    @media (max-width: 720px) {
+      #panel {
+        top: auto;
+        right: 8px;
+        bottom: 8px;
+        left: 8px;
+        width: auto;
+        max-height: min(58vh, 640px);
+        border-radius: 20px;
+      }
+
+      #panel.minimized {
+        right: 8px;
+        left: auto;
+        width: 220px;
+      }
+
+      .panel-header {
+        padding: 12px 13px 10px;
+      }
+
+      .brand-mark {
+        width: 34px;
+        height: 34px;
+      }
+
+      h1 {
+        font-size: 15px;
+      }
+
+      .subtitle {
+        display: none;
+      }
+
+      #hint {
+        top: 10px;
+        bottom: auto;
+        font-size: 10px;
+      }
+    }
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <div id="app">
+    <div id="viewport" aria-label="Interactive articulated tetrahedron human"></div>
+
+    <div id="loading">
+      <div class="loader-card">
+        <div class="loader-glyph"></div>
+        <strong>Building the tetrahedron rig…</strong>
+        <div style="margin-top:8px;color:#9fb0c9;font-size:12px;line-height:1.5">
+          Every visible body segment is one four-face pyramid.
+        </div>
+      </div>
+    </div>
+
+    <aside id="panel">
+      <header class="panel-header">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div class="title-wrap">
+          <h1>TetraHuman Rig</h1>
+          <p class="subtitle">Articulated human made from true four-face pyramids, with human-like joint limits.</p>
+          <div class="header-badges">
+            <span class="badge">Tetrahedrons</span>
+            <span class="badge">Joint limits</span>
+            <span class="badge">Single HTML</span>
+          </div>
+        </div>
+        <button id="minimizePanel" class="icon-btn" type="button" title="Minimize controls" aria-label="Minimize controls">−</button>
+      </header>
+
+      <div class="panel-body">
+        <div class="toolbar">
+          <button class="action-btn primary" type="button" data-preset="neutral">Reset</button>
+          <button class="preset-btn" type="button" data-preset="tpose">T-pose</button>
+          <button class="preset-btn" type="button" data-preset="walk">Walk</button>
+          <button class="preset-btn" type="button" data-preset="run">Run</button>
+          <button class="preset-btn" type="button" data-preset="wave">Wave</button>
+          <button class="preset-btn" type="button" data-preset="crouch">Crouch</button>
+        </div>
+
+        <section class="section" data-section="scene">
+          <button class="section-toggle" type="button">
+            <span class="section-title">Scene & behavior</span>
+            <span class="section-count">6 settings</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="section-content">
+            <div class="settings-grid">
+              <div class="toggle-card">
+                <span>Mirror sides</span>
+                <label class="switch">
+                  <input id="mirrorSides" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+
+              <div class="toggle-card">
+                <span>Auto rotate</span>
+                <label class="switch">
+                  <input id="autoRotate" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+
+              <div class="toggle-card">
+                <span>Joint markers</span>
+                <label class="switch">
+                  <input id="showJoints" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+
+              <div class="toggle-card">
+                <span>Ground grid</span>
+                <label class="switch">
+                  <input id="showGrid" type="checkbox" checked />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+
+              <div class="select-card" style="grid-column:1 / -1">
+                <label for="palette">Color palette</label>
+                <select id="palette">
+                  <option value="ocean">Ocean</option>
+                  <option value="spectrum">Spectrum</option>
+                  <option value="ember">Ember</option>
+                  <option value="mono">Graphite</option>
+                </select>
+              </div>
+
+              <button id="frontView" class="action-btn" type="button">Front view</button>
+              <button id="threeQuarterView" class="action-btn" type="button">3/4 view</button>
+            </div>
+          </div>
+        </section>
+
+        <div id="controlsHost"></div>
+      </div>
+    </aside>
+
+    <div id="hint">
+      Drag to orbit · pinch or wheel to zoom · right-drag to pan · use presets or move each joint slider
+    </div>
+
+    <div id="error"></div>
+  </div>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+    const DEG = Math.PI / 180;
+    const viewport = document.getElementById("viewport");
+    const loading = document.getElementById("loading");
+    const errorBox = document.getElementById("error");
+
+    const pose = Object.create(null);
+    const sliderElements = new Map();
+    const valueElements = new Map();
+    const sections = new Map();
+
+    const controlGroups = [
+      {
+        id: "headTorso",
+        title: "Head & torso",
+        controls: [
+          { key: "headYaw", label: "Head left / right", min: -75, max: 75, value: 0 },
+          { key: "headPitch", label: "Head up / down", min: -45, max: 45, value: 0 },
+          { key: "headRoll", label: "Head tilt", min: -35, max: 35, value: 0 },
+          { key: "torsoPitch", label: "Torso forward / back", min: -30, max: 35, value: 0 },
+          { key: "torsoYaw", label: "Torso twist", min: -45, max: 45, value: 0 },
+          { key: "torsoRoll", label: "Torso side bend", min: -25, max: 25, value: 0 }
+        ]
+      },
+      {
+        id: "leftArm",
+        title: "Left arm",
+        controls: [
+          { key: "lShoulderFlex", label: "Shoulder forward / back", min: -60, max: 180, value: 0, mirror: "rShoulderFlex" },
+          { key: "lShoulderSide", label: "Shoulder side raise", min: 0, max: 170, value: 8, mirror: "rShoulderSide" },
+          { key: "lShoulderTwist", label: "Upper-arm rotation", min: -90, max: 90, value: 0, mirror: "rShoulderTwist" },
+          { key: "lElbow", label: "Elbow bend", min: 0, max: 150, value: 6, mirror: "rElbow" },
+          { key: "lForearmTwist", label: "Forearm rotation", min: -80, max: 80, value: 0, mirror: "rForearmTwist" },
+          { key: "lWristPitch", label: "Wrist up / down", min: -70, max: 70, value: 0, mirror: "rWristPitch" },
+          { key: "lWristSide", label: "Wrist side bend", min: -30, max: 30, value: 0, mirror: "rWristSide" }
+        ]
+      },
+      {
+        id: "rightArm",
+        title: "Right arm",
+        controls: [
+          { key: "rShoulderFlex", label: "Shoulder forward / back", min: -60, max: 180, value: 0, mirror: "lShoulderFlex" },
+          { key: "rShoulderSide", label: "Shoulder side raise", min: 0, max: 170, value: 8, mirror: "lShoulderSide" },
+          { key: "rShoulderTwist", label: "Upper-arm rotation", min: -90, max: 90, value: 0, mirror: "lShoulderTwist" },
+          { key: "rElbow", label: "Elbow bend", min: 0, max: 150, value: 6, mirror: "lElbow" },
+          { key: "rForearmTwist", label: "Forearm rotation", min: -80, max: 80, value: 0, mirror: "lForearmTwist" },
+          { key: "rWristPitch", label: "Wrist up / down", min: -70, max: 70, value: 0, mirror: "lWristPitch" },
+          { key: "rWristSide", label: "Wrist side bend", min: -30, max: 30, value: 0, mirror: "lWristSide" }
+        ]
+      },
+      {
+        id: "leftLeg",
+        title: "Left leg",
+        controls: [
+          { key: "lHipFlex", label: "Hip forward / back", min: -30, max: 120, value: 0, mirror: "rHipFlex" },
+          { key: "lHipSide", label: "Hip side raise", min: 0, max: 45, value: 4, mirror: "rHipSide" },
+          { key: "lHipTwist", label: "Thigh rotation", min: -45, max: 45, value: 0, mirror: "rHipTwist" },
+          { key: "lKnee", label: "Knee bend", min: 0, max: 140, value: 3, mirror: "rKnee" },
+          { key: "lAnklePitch", label: "Ankle up / down", min: -30, max: 50, value: 0, mirror: "rAnklePitch" },
+          { key: "lAnkleRoll", label: "Ankle side tilt", min: -20, max: 20, value: 0, mirror: "rAnkleRoll" }
+        ]
+      },
+      {
+        id: "rightLeg",
+        title: "Right leg",
+        controls: [
+          { key: "rHipFlex", label: "Hip forward / back", min: -30, max: 120, value: 0, mirror: "lHipFlex" },
+          { key: "rHipSide", label: "Hip side raise", min: 0, max: 45, value: 4, mirror: "lHipSide" },
+          { key: "rHipTwist", label: "Thigh rotation", min: -45, max: 45, value: 0, mirror: "lHipTwist" },
+          { key: "rKnee", label: "Knee bend", min: 0, max: 140, value: 3, mirror: "lKnee" },
+          { key: "rAnklePitch", label: "Ankle up / down", min: -30, max: 50, value: 0, mirror: "lAnklePitch" },
+          { key: "rAnkleRoll", label: "Ankle side tilt", min: -20, max: 20, value: 0, mirror: "lAnkleRoll" }
+        ]
+      }
+    ];
+
+    const defaultPose = {};
+    for (const group of controlGroups) {
+      for (const control of group.controls) {
+        pose[control.key] = control.value;
+        defaultPose[control.key] = control.value;
+      }
+    }
+
+    const presets = {
+      neutral: { ...defaultPose },
+      tpose: {
+        ...defaultPose,
+        lShoulderSide: 90,
+        rShoulderSide: 90,
+        lElbow: 0,
+        rElbow: 0,
+        lHipSide: 7,
+        rHipSide: 7
+      },
+      walk: {
+        ...defaultPose,
+        torsoYaw: -5,
+        torsoRoll: 2,
+        headYaw: 5,
+        lShoulderFlex: 28,
+        rShoulderFlex: -25,
+        lElbow: 16,
+        rElbow: 20,
+        lHipFlex: -22,
+        rHipFlex: 29,
+        lKnee: 15,
+        rKnee: 8,
+        lAnklePitch: -5,
+        rAnklePitch: 8
+      },
+      run: {
+        ...defaultPose,
+        torsoPitch: 15,
+        torsoYaw: -8,
+        headPitch: -7,
+        lShoulderFlex: 58,
+        rShoulderFlex: -50,
+        lElbow: 78,
+        rElbow: 84,
+        lHipFlex: -25,
+        rHipFlex: 70,
+        lKnee: 84,
+        rKnee: 42,
+        lAnklePitch: -12,
+        rAnklePitch: 19
+      },
+      wave: {
+        ...defaultPose,
+        headYaw: 15,
+        headRoll: -5,
+        rShoulderFlex: 18,
+        rShoulderSide: 112,
+        rShoulderTwist: -18,
+        rElbow: 105,
+        rForearmTwist: 25,
+        rWristPitch: 18,
+        rWristSide: -12,
+        lShoulderSide: 12
+      },
+      crouch: {
+        ...defaultPose,
+        torsoPitch: 16,
+        lHipFlex: 58,
+        rHipFlex: 58,
+        lHipSide: 14,
+        rHipSide: 14,
+        lKnee: 86,
+        rKnee: 86,
+        lAnklePitch: 18,
+        rAnklePitch: 18,
+        lShoulderFlex: 18,
+        rShoulderFlex: 18,
+        lElbow: 35,
+        rElbow: 35
+      }
+    };
+
+    function makeControlsUI() {
+      const host = document.getElementById("controlsHost");
+
+      for (const group of controlGroups) {
+        const section = document.createElement("section");
+        section.className = "section";
+        section.dataset.section = group.id;
+
+        const button = document.createElement("button");
+        button.className = "section-toggle";
+        button.type = "button";
+        button.innerHTML = `
+          <span class="section-title">${group.title}</span>
+          <span class="section-count">${group.controls.length} joints</span>
+          <span class="chevron">▾</span>
+        `;
+
+        const content = document.createElement("div");
+        content.className = "section-content";
+
+        for (const control of group.controls) {
+          const row = document.createElement("div");
+          row.className = "control-row";
+
+          const top = document.createElement("div");
+          top.className = "control-top";
+
+          const label = document.createElement("label");
+          label.className = "control-label";
+          label.htmlFor = control.key;
+          label.textContent = control.label;
+
+          const value = document.createElement("span");
+          value.className = "control-value";
+          value.textContent = `${control.value}°`;
+
+          const input = document.createElement("input");
+          input.id = control.key;
+          input.type = "range";
+          input.min = String(control.min);
+          input.max = String(control.max);
+          input.step = "1";
+          input.value = String(control.value);
+          input.dataset.mirror = control.mirror || "";
+
+          top.append(label, value);
+          row.append(top, input);
+          content.append(row);
+
+          sliderElements.set(control.key, input);
+          valueElements.set(control.key, value);
+
+          input.addEventListener("input", () => {
+            setPoseValue(control.key, Number(input.value), true);
+          });
+
+          updateRangeFill(input);
+        }
+
+        button.addEventListener("click", () => {
+          section.classList.toggle("closed");
+        });
+
+        section.append(button, content);
+        host.append(section);
+        sections.set(group.id, section);
+      }
+    }
+
+    function updateRangeFill(input) {
+      const min = Number(input.min);
+      const max = Number(input.max);
+      const value = Number(input.value);
+      const percent = ((value - min) / (max - min)) * 100;
+      input.style.setProperty("--range-fill", `${percent}%`);
+    }
+
+    function setPoseValue(key, value, fromUser = false) {
+      pose[key] = value;
+
+      const input = sliderElements.get(key);
+      if (input) {
+        input.value = String(value);
+        updateRangeFill(input);
+      }
+
+      const output = valueElements.get(key);
+      if (output) output.textContent = `${Math.round(value)}°`;
+
+      if (fromUser && document.getElementById("mirrorSides").checked) {
+        const mirrorKey = input?.dataset.mirror;
+        if (mirrorKey) setPoseValue(mirrorKey, value, false);
+      }
+
+      applyPose();
+    }
+
+    function applyPreset(name) {
+      const preset = presets[name] || presets.neutral;
+      for (const [key, value] of Object.entries(preset)) {
+        setPoseValue(key, value, false);
+      }
+      applyPose();
+    }
+
+    makeControlsUI();
+
+    let renderer;
+    let scene;
+    let camera;
+    let controls;
+    let rig;
+    let grid;
+    let ground;
+    let jointMarkers = [];
+    let parts = [];
+    let autoRotate = false;
+
+    const joint = {};
+    const root = new THREE.Group();
+
+    const palettes = {
+      ocean: {
+        head: 0x725cff,
+        neck: 0x8d7cff,
+        torso: 0x2369c8,
+        pelvis: 0x143a6b,
+        upperArm: 0x19b7c8,
+        forearm: 0x42dbc3,
+        hand: 0xb3f4e4,
+        thigh: 0x7159d9,
+        shin: 0x2faeb5,
+        foot: 0x1a3559
+      },
+      spectrum: {
+        head: 0x7c3ff2,
+        neck: 0x9a63ff,
+        torso: 0x2569db,
+        pelvis: 0xff9b27,
+        upperArm: 0x20bee4,
+        forearm: 0x35d19d,
+        hand: 0xffd43b,
+        thigh: 0xf04b45,
+        shin: 0xe63896,
+        foot: 0x773bd1
+      },
+      ember: {
+        head: 0xffc857,
+        neck: 0xff8a42,
+        torso: 0xe94735,
+        pelvis: 0x7e2631,
+        upperArm: 0xf36d35,
+        forearm: 0xff9e42,
+        hand: 0xffd089,
+        thigh: 0xb63254,
+        shin: 0x792f63,
+        foot: 0x3b2448
+      },
+      mono: {
+        head: 0xb8c2d0,
+        neck: 0x7b8797,
+        torso: 0x455267,
+        pelvis: 0x252e3c,
+        upperArm: 0x68768a,
+        forearm: 0x8895a6,
+        hand: 0xc7d0db,
+        thigh: 0x596579,
+        shin: 0x7c8899,
+        foot: 0x293343
+      }
+    };
+
+    let activePalette = palettes.ocean;
+
+    function createTetrahedronGeometry() {
+      // Exactly four triangular faces.
+      // Three vertices form a slightly recessed flat back face; one vertex is the forward apex.
+      const positions = new Float32Array([
+        -0.50,  0.50, -0.30,
+         0.50,  0.50, -0.30,
+         0.00, -0.50, -0.30,
+         0.00,  0.00,  0.78
+      ]);
+
+      const indices = [
+        0, 1, 2, // flat back face, outward winding
+        0, 3, 1,
+        1, 3, 2,
+        2, 3, 0
+      ];
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+      geometry.computeBoundingSphere();
+      return geometry;
+    }
+
+    const tetraGeometry = createTetrahedronGeometry();
+
+    function makeMaterial(color) {
+      return new THREE.MeshPhysicalMaterial({
+        color,
+        roughness: 0.30,
+        metalness: 0.05,
+        clearcoat: 0.25,
+        clearcoatRoughness: 0.35,
+        flatShading: true
+      });
+    }
+
+    function makeTetraMesh(name, category, scale, position = [0, 0, 0], rotation = [0, 0, 0]) {
+      const material = makeMaterial(activePalette[category]);
+      const mesh = new THREE.Mesh(tetraGeometry, material);
+      mesh.name = name;
+      mesh.scale.set(scale[0], scale[1], scale[2]);
+      mesh.position.set(position[0], position[1], position[2]);
+      mesh.rotation.set(rotation[0], rotation[1], rotation[2]);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      mesh.userData.category = category;
+
+      const edges = new THREE.LineSegments(
+        new THREE.EdgesGeometry(tetraGeometry, 1),
+        new THREE.LineBasicMaterial({
+          color: 0xe7f2ff,
+          transparent: true,
+          opacity: 0.16,
+          depthWrite: false
+        })
+      );
+      edges.scale.copy(mesh.scale);
+      edges.position.copy(mesh.position);
+      edges.rotation.copy(mesh.rotation);
+      edges.renderOrder = 2;
+      mesh.userData.edges = edges;
+
+      parts.push(mesh);
+      return { mesh, edges };
+    }
+
+    function addTetra(parent, ...args) {
+      const { mesh, edges } = makeTetraMesh(...args);
+      parent.add(mesh);
+      parent.add(edges);
+      return mesh;
+    }
+
+    function makeJoint(name, position, parent) {
+      const group = new THREE.Group();
+      group.name = name;
+      group.position.set(position[0], position[1], position[2]);
+      group.rotation.order = "ZXY";
+      parent.add(group);
+
+      const marker = new THREE.Mesh(
+        tetraGeometry,
+        new THREE.MeshBasicMaterial({
+          color: 0xffec89,
+          wireframe: true,
+          transparent: true,
+          opacity: 0.72,
+          depthTest: false
+        })
+      );
+      marker.scale.setScalar(0.16);
+      marker.visible = false;
+      marker.renderOrder = 10;
+      group.add(marker);
+      jointMarkers.push(marker);
+
+      return group;
+    }
+
+    function buildRig() {
+      rig = new THREE.Group();
+      rig.name = "TetraHuman";
+      rig.position.y = 0.45;
+      scene.add(rig);
+      rig.add(root);
+
+      // Pelvis / root
+      joint.pelvis = makeJoint("pelvisJoint", [0, 4.15, 0], root);
+      addTetra(
+        joint.pelvis,
+        "pelvis",
+        "pelvis",
+        [1.45, 1.05, 1.05],
+        [0, -0.02, 0],
+        [0, 0, Math.PI]
+      );
+
+      // Torso pivots around the waist.
+      joint.torso = makeJoint("torsoJoint", [0, 0.26, 0], joint.pelvis);
+      addTetra(
+        joint.torso,
+        "torso",
+        "torso",
+        [2.85, 3.05, 1.35],
+        [0, 1.525, 0]
+      );
+
+      // Neck and head.
+      joint.neck = makeJoint("neckJoint", [0, 3.14, 0], joint.torso);
+      addTetra(
+        joint.neck,
+        "neck",
+        "neck",
+        [0.72, 0.58, 0.62],
+        [0, 0.27, 0],
+        [0, 0, Math.PI]
+      );
+
+      joint.head = makeJoint("headJoint", [0, 0.58, 0], joint.neck);
+      addTetra(
+        joint.head,
+        "head",
+        "head",
+        [1.50, 1.42, 1.12],
+        [0, 0.71, 0]
+      );
+
+      buildArm("l", -1, joint.torso);
+      buildArm("r", 1, joint.torso);
+      buildLeg("l", -1, joint.pelvis);
+      buildLeg("r", 1, joint.pelvis);
+    }
+
+    function buildArm(prefix, sideSign, parent) {
+      const shoulderX = 1.55 * sideSign;
+      const shoulder = makeJoint(`${prefix}ShoulderJoint`, [shoulderX, 2.62, 0], parent);
+      joint[`${prefix}Shoulder`] = shoulder;
+
+      addTetra(
+        shoulder,
+        `${prefix}UpperArm`,
+        "upperArm",
+        [0.96, 1.60, 0.82],
+        [0, -0.80, 0],
+        [0, 0, 0]
+      );
+
+      const elbow = makeJoint(`${prefix}ElbowJoint`, [0, -1.58, 0], shoulder);
+      joint[`${prefix}Elbow`] = elbow;
+
+      const forearmTwist = makeJoint(`${prefix}ForearmTwistJoint`, [0, 0, 0], elbow);
+      joint[`${prefix}ForearmTwist`] = forearmTwist;
+
+      addTetra(
+        forearmTwist,
+        `${prefix}Forearm`,
+        "forearm",
+        [0.76, 1.48, 0.68],
+        [0, -0.74, 0],
+        [0, 0, 0]
+      );
+
+      const wrist = makeJoint(`${prefix}WristJoint`, [0, -1.46, 0], forearmTwist);
+      joint[`${prefix}Wrist`] = wrist;
+
+      addTetra(
+        wrist,
+        `${prefix}Hand`,
+        "hand",
+        [0.58, 0.62, 0.54],
+        [0, -0.30, 0],
+        [0, 0, 0]
+      );
+    }
+
+    function buildLeg(prefix, sideSign, parent) {
+      const hip = makeJoint(`${prefix}HipJoint`, [0.62 * sideSign, -0.35, 0], parent);
+      joint[`${prefix}Hip`] = hip;
+
+      addTetra(
+        hip,
+        `${prefix}Thigh`,
+        "thigh",
+        [1.05, 2.00, 0.95],
+        [0, -1.00, 0],
+        [0, 0, 0]
+      );
+
+      const knee = makeJoint(`${prefix}KneeJoint`, [0, -1.98, 0], hip);
+      joint[`${prefix}Knee`] = knee;
+
+      addTetra(
+        knee,
+        `${prefix}Shin`,
+        "shin",
+        [0.82, 1.88, 0.80],
+        [0, -0.94, 0],
+        [0, 0, 0]
+      );
+
+      const ankle = makeJoint(`${prefix}AnkleJoint`, [0, -1.84, 0], knee);
+      joint[`${prefix}Ankle`] = ankle;
+
+      // One four-face pyramid for each foot, stretched forward.
+      addTetra(
+        ankle,
+        `${prefix}Foot`,
+        "foot",
+        [0.85, 0.52, 1.28],
+        [0, -0.15, 0.38],
+        [-0.16, 0, Math.PI]
+      );
+    }
+
+    function applyPose() {
+      if (!joint.head) return;
+
+      joint.head.rotation.set(
+        pose.headPitch * DEG,
+        pose.headYaw * DEG,
+        pose.headRoll * DEG
+      );
+
+      joint.torso.rotation.set(
+        pose.torsoPitch * DEG,
+        pose.torsoYaw * DEG,
+        pose.torsoRoll * DEG
+      );
+
+      applyArm("l", -1);
+      applyArm("r", 1);
+      applyLeg("l", -1);
+      applyLeg("r", 1);
+    }
+
+    function applyArm(prefix, sideSign) {
+      const shoulder = joint[`${prefix}Shoulder`];
+      const elbow = joint[`${prefix}Elbow`];
+      const forearmTwist = joint[`${prefix}ForearmTwist`];
+      const wrist = joint[`${prefix}Wrist`];
+
+      shoulder.rotation.set(
+        -pose[`${prefix}ShoulderFlex`] * DEG,
+        sideSign * pose[`${prefix}ShoulderTwist`] * DEG,
+        sideSign * pose[`${prefix}ShoulderSide`] * DEG
+      );
+
+      // Positive bend folds the forearm toward the front of the body.
+      elbow.rotation.set(-pose[`${prefix}Elbow`] * DEG, 0, 0);
+
+      forearmTwist.rotation.set(
+        0,
+        sideSign * pose[`${prefix}ForearmTwist`] * DEG,
+        0
+      );
+
+      wrist.rotation.set(
+        -pose[`${prefix}WristPitch`] * DEG,
+        0,
+        sideSign * pose[`${prefix}WristSide`] * DEG
+      );
+    }
+
+    function applyLeg(prefix, sideSign) {
+      const hip = joint[`${prefix}Hip`];
+      const knee = joint[`${prefix}Knee`];
+      const ankle = joint[`${prefix}Ankle`];
+
+      hip.rotation.set(
+        -pose[`${prefix}HipFlex`] * DEG,
+        sideSign * pose[`${prefix}HipTwist`] * DEG,
+        sideSign * pose[`${prefix}HipSide`] * DEG
+      );
+
+      // Positive knee bend folds backward.
+      knee.rotation.set(pose[`${prefix}Knee`] * DEG, 0, 0);
+
+      ankle.rotation.set(
+        -pose[`${prefix}AnklePitch`] * DEG,
+        0,
+        sideSign * pose[`${prefix}AnkleRoll`] * DEG
+      );
+    }
+
+    function setPalette(name) {
+      activePalette = palettes[name] || palettes.ocean;
+      for (const mesh of parts) {
+        const category = mesh.userData.category;
+        if (mesh.material && activePalette[category] !== undefined) {
+          mesh.material.color.setHex(activePalette[category]);
+        }
+      }
+    }
+
+    function setJointMarkers(visible) {
+      for (const marker of jointMarkers) marker.visible = visible;
+    }
+
+    function init() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x07101e);
+      scene.fog = new THREE.Fog(0x07101e, 18, 35);
+
+      camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+      camera.position.set(8.7, 6.3, 13.5);
+
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: false,
+        powerPreference: "high-performance"
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.08;
+      renderer.domElement.tabIndex = 0;
+      viewport.appendChild(renderer.domElement);
+
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.target.set(0, 4.2, 0);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.065;
+      controls.minDistance = 7;
+      controls.maxDistance = 28;
+      controls.maxPolarAngle = Math.PI * 0.92;
+      controls.autoRotateSpeed = 1.15;
+
+      const hemi = new THREE.HemisphereLight(0xbddcff, 0x132039, 2.1);
+      scene.add(hemi);
+
+      const key = new THREE.DirectionalLight(0xffffff, 4.2);
+      key.position.set(7, 12, 10);
+      key.castShadow = true;
+      key.shadow.mapSize.set(2048, 2048);
+      key.shadow.camera.left = -8;
+      key.shadow.camera.right = 8;
+      key.shadow.camera.top = 12;
+      key.shadow.camera.bottom = -3;
+      key.shadow.camera.near = 1;
+      key.shadow.camera.far = 35;
+      key.shadow.bias = -0.00025;
+      scene.add(key);
+
+      const rim = new THREE.DirectionalLight(0x6acfff, 2.2);
+      rim.position.set(-9, 7, -8);
+      scene.add(rim);
+
+      const fill = new THREE.PointLight(0x8d6fff, 16, 24, 2);
+      fill.position.set(-5, 7, 7);
+      scene.add(fill);
+
+      ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(60, 60),
+        new THREE.MeshStandardMaterial({
+          color: 0x0a1425,
+          roughness: 0.86,
+          metalness: 0.03
+        })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      grid = new THREE.GridHelper(28, 28, 0x315070, 0x1c2f48);
+      grid.position.y = 0.012;
+      grid.material.transparent = true;
+      grid.material.opacity = 0.32;
+      scene.add(grid);
+
+      buildRig();
+      applyPose();
+      resize();
+
+      window.addEventListener("resize", resize);
+      renderer.setAnimationLoop(animate);
+
+      requestAnimationFrame(() => {
+        loading.classList.add("hidden");
+      });
+    }
+
+    function resize() {
+      if (!renderer || !camera) return;
+      const rect = viewport.getBoundingClientRect();
+      const width = Math.max(1, rect.width);
+      const height = Math.max(1, rect.height);
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+
+    function animate() {
+      controls.autoRotate = autoRotate;
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    function cameraTo(position, target = [0, 4.2, 0]) {
+      camera.position.set(position[0], position[1], position[2]);
+      controls.target.set(target[0], target[1], target[2]);
+      controls.update();
+    }
+
+    document.querySelectorAll("[data-preset]").forEach((button) => {
+      button.addEventListener("click", () => applyPreset(button.dataset.preset));
+    });
+
+    document.getElementById("autoRotate").addEventListener("change", (event) => {
+      autoRotate = event.target.checked;
+    });
+
+    document.getElementById("showJoints").addEventListener("change", (event) => {
+      setJointMarkers(event.target.checked);
+    });
+
+    document.getElementById("showGrid").addEventListener("change", (event) => {
+      grid.visible = event.target.checked;
+    });
+
+    document.getElementById("palette").addEventListener("change", (event) => {
+      setPalette(event.target.value);
+    });
+
+    document.getElementById("frontView").addEventListener("click", () => {
+      cameraTo([0, 4.8, 15.5]);
+    });
+
+    document.getElementById("threeQuarterView").addEventListener("click", () => {
+      cameraTo([8.7, 6.3, 13.5]);
+    });
+
+    document.getElementById("minimizePanel").addEventListener("click", (event) => {
+      const panel = document.getElementById("panel");
+      panel.classList.toggle("minimized");
+      event.currentTarget.textContent = panel.classList.contains("minimized") ? "+" : "−";
+      setTimeout(resize, 50);
+    });
+
+    document.querySelectorAll(".section-toggle").forEach((button) => {
+      if (!button.closest("#controlsHost")) {
+        button.addEventListener("click", () => {
+          button.closest(".section").classList.toggle("closed");
+        });
+      }
+    });
+
+    try {
+      init();
+    } catch (error) {
+      console.error(error);
+      loading.classList.add("hidden");
+      errorBox.style.display = "block";
+      errorBox.innerHTML = `
+        <strong>Could not start the 3D viewer.</strong><br>
+        ${String(error.message || error)}<br><br>
+        This file requires an internet connection the first time it loads because Three.js is imported from a pinned CDN version.
+      `;
+    }
+  </script>
+</body>
+</html>
