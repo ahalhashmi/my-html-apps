@@ -1,935 +1,311 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Reel Sound Lab</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fishing Reel Sound Presets</title>
 <style>
-  :root{
-    --bg:#07141c;
-    --panel:#0d222c;
-    --line:#244554;
-    --text:#eef8fb;
-    --muted:#9bb4be;
-    --accent:#32d7c8;
-  }
-
-  *{box-sizing:border-box}
-
-  body{
-    margin:0;
-    min-height:100vh;
-    padding:16px;
-    background:
-      radial-gradient(circle at top left,rgba(50,215,200,.14),transparent 30%),
-      var(--bg);
-    color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  }
-
-  .app{
-    max-width:760px;
-    margin:0 auto;
-  }
-
-  h1{
-    margin:0 0 6px;
-    font-size:30px;
-  }
-
-  .subtitle{
-    color:var(--muted);
-    font-size:13px;
-    line-height:1.5;
-    margin-bottom:16px;
-  }
-
-  .panel{
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:18px;
-    overflow:hidden;
-  }
-
-  .topbar{
-    padding:14px;
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    border-bottom:1px solid var(--line);
-  }
-
-  button{
-    border:1px solid var(--line);
-    background:#14313e;
-    color:var(--text);
-    border-radius:11px;
-    padding:11px 14px;
-    font-weight:800;
-    cursor:pointer;
-  }
-
-  button.primary{
-    background:var(--accent);
-    color:#032e2a;
-    border-color:#65eadf;
-  }
-
-  button.danger{
-    background:#4b252b;
-    color:#ffd8d8;
-    border-color:#74404a;
-  }
-
-  button.active{
-    filter:brightness(1.2);
-    transform:scale(.98);
-  }
-
-  .section{
-    padding:14px;
-    border-bottom:1px solid var(--line);
-  }
-
-  .section:last-child{
-    border-bottom:0;
-  }
-
-  .section h2{
-    margin:0 0 12px;
-    font-size:13px;
-    color:var(--accent);
-    text-transform:uppercase;
-    letter-spacing:.1em;
-  }
-
-  .grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-  }
-
-  .control{
-    display:block;
-    padding:10px;
-    border:1px solid var(--line);
-    border-radius:12px;
-    background:rgba(0,0,0,.12);
-  }
-
-  .head{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    margin-bottom:7px;
-  }
-
-  .head span:first-child{
-    font-size:12px;
-    font-weight:750;
-  }
-
-  .value{
-    color:var(--accent);
-    font-size:11px;
-    font-variant-numeric:tabular-nums;
-  }
-
-  input[type=range]{
-    width:100%;
-    accent-color:var(--accent);
-  }
-
-  select{
-    width:100%;
-    padding:9px;
-    border-radius:9px;
-    border:1px solid var(--line);
-    background:#081921;
-    color:var(--text);
-  }
-
-  textarea{
-    width:100%;
-    min-height:240px;
-    resize:vertical;
-    border:1px solid var(--line);
-    border-radius:12px;
-    background:#06141b;
-    color:#c9e4eb;
-    padding:12px;
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:11px;
-    line-height:1.45;
-  }
-
-  .status{
-    padding:10px 14px;
-    color:var(--muted);
-    font-size:12px;
-    border-top:1px solid var(--line);
-  }
-
-  .hold{
-    width:100%;
-    padding:20px;
-    margin-top:10px;
-    font-size:17px;
-    touch-action:none;
-    user-select:none;
-    -webkit-user-select:none;
-  }
-
-  @media(max-width:620px){
-    .grid{grid-template-columns:1fr}
-  }
+:root{
+  --bg:#07141c;--panel:#0d222c;--line:#274957;--text:#edf8fb;
+  --muted:#9eb6c0;--accent:#32d7c8;--left:#61a9ff;--right:#ffb25a;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:16px;background:radial-gradient(circle at top left,rgba(50,215,200,.13),transparent 32%),var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.app{max-width:760px;margin:auto}
+h1{margin:0 0 5px;font-size:30px}
+.subtitle{margin-bottom:15px;color:var(--muted);font-size:13px;line-height:1.5}
+.panel{overflow:hidden;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
+.toolbar,.section{padding:14px;border-bottom:1px solid var(--line)}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap}.section:last-child{border-bottom:0}
+button{padding:11px 14px;border:1px solid var(--line);border-radius:11px;background:#15333f;color:var(--text);font-weight:800;cursor:pointer}
+button.primary{border-color:#69ece1;background:var(--accent);color:#032d2a}button:disabled{opacity:.55;cursor:default}
+h2{margin:0 0 11px;color:var(--accent);font-size:13px;letter-spacing:.09em;text-transform:uppercase}
+select,textarea{width:100%;border:1px solid var(--line);border-radius:11px;background:#071921;color:var(--text)}
+select{padding:11px;font-size:15px;font-weight:750}
+.preset-description{min-height:44px;margin-top:9px;color:var(--muted);font-size:12px;line-height:1.5}
+.motion-card{padding:14px;border:1px solid var(--line);border-radius:15px;background:rgba(0,0,0,.13)}
+.motion-labels{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:10px;font-size:12px;font-weight:800}
+.motion-labels span:first-child{color:var(--left)}.motion-labels span:nth-child(2){color:var(--muted)}.motion-labels span:last-child{color:var(--right);text-align:right}
+input[type=range]{width:100%;accent-color:var(--accent)}.main-slider{height:38px}
+.readout{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.stat{padding:9px;border:1px solid var(--line);border-radius:11px;background:#071921;text-align:center}.stat .name{color:var(--muted);font-size:10px;text-transform:uppercase}.stat .value{margin-top:3px;font-size:17px;font-weight:900}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.control{display:block;padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.12)}
+.control-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:7px;font-size:12px;font-weight:750}.control-value{color:var(--accent);font-size:11px;font-variant-numeric:tabular-nums}
+.small-note{margin-top:8px;color:var(--muted);font-size:11px;line-height:1.45}
+textarea{min-height:225px;padding:11px;resize:vertical;font:11px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}.status{color:var(--muted);font-size:12px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.readout{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="app">
-  <h1>Reel Sound Lab</h1>
-  <div class="subtitle">
-    Tune only the fishing reel sound. Use Reel In for handle and gear noise, or Line Out for a fish taking drag.
-  </div>
+  <h1>Fishing Reel Sound Presets</h1>
+  <div class="subtitle">No continuous beep or musical tone. The sound is built from the two uploaded reel-click recordings plus filtered mechanical texture.</div>
 
   <div class="panel">
-    <div class="topbar">
+    <div class="toolbar">
       <button class="primary" id="enableAudio">Enable Audio</button>
-      <button id="reelIn">Toggle Reel In</button>
-      <button id="lineOut">Toggle Line Out</button>
-      <button id="stopAll">Stop</button>
-      <button class="danger" id="resetDefaults">Reset to Default</button>
+      <button id="resetButton">Reset Preset</button>
+      <button id="stopButton">Stop / Center</button>
+      <button id="testClickButton">Test Click</button>
     </div>
 
     <div class="section">
-      <h2>Sound mode</h2>
-      <div class="grid">
-        <label class="control">
-          <div class="head"><span>Waveform tone</span></div>
-          <select id="waveform" data-param="waveform">
-            <option value="sine">Smooth</option>
-            <option value="triangle" selected>Mechanical</option>
-            <option value="sawtooth">Rough / metallic</option>
-            <option value="square">Sharp / digital</option>
-          </select>
-        </label>
+      <h2>1. Select a preset</h2>
+      <select id="presetSelect"></select>
+      <div class="preset-description" id="presetDescription"></div>
+    </div>
 
-        <label class="control">
-          <div class="head"><span>Reel mode</span></div>
-          <select id="mode" data-param="mode">
-            <option value="reel">Reeling In</option>
-            <option value="drag">Fish Taking Line</option>
-          </select>
-        </label>
+    <div class="section">
+      <h2>2. Select the real click recording</h2>
+      <select id="sampleSelect">
+        <option value="friction">Reel Friction 01 — short, sharp click</option>
+        <option value="salt">Reel Salt Friction 01 — rougher click with longer tail</option>
+        <option value="mix">Layer both recordings</option>
+      </select>
+      <div class="small-note">Both recordings are embedded inside this HTML. No separate sound files are required.</div>
+    </div>
+
+    <div class="section">
+      <h2>3. Simulate line movement</h2>
+      <div class="motion-card">
+        <div class="motion-labels"><span>◀ Reeling in</span><span>No movement</span><span>Fish pulling ▶</span></div>
+        <input class="main-slider" id="movementSlider" type="range" min="-100" max="100" step="1" value="0">
+        <div class="readout">
+          <div class="stat"><div class="name">Direction</div><div class="value" id="directionValue">Stopped</div></div>
+          <div class="stat"><div class="name">Speed</div><div class="value" id="speedValue">0%</div></div>
+          <div class="stat"><div class="name">Sample pitch</div><div class="value" id="pitchValue">1.00×</div></div>
+        </div>
       </div>
     </div>
 
     <div class="section">
-      <h2>Main tone</h2>
+      <h2>4. Simple tuning</h2>
       <div class="grid">
-        <label class="control">
-          <div class="head"><span>Base pitch</span><span class="value" data-value="basePitch"></span></div>
-          <input type="range" min="40" max="3000" step="1" value="380" data-param="basePitch">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Pitch movement</span><span class="value" data-value="pitchMovement"></span></div>
-          <input type="range" min="0" max="1200" step="1" value="240" data-param="pitchMovement">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Movement shape</span></div>
-          <select id="movementShape" data-param="movementShape">
-            <option value="sine" selected>Smooth wave</option>
-            <option value="triangle">Triangle</option>
-            <option value="saw">Rising ramp</option>
-            <option value="reverseSaw">Falling ramp</option>
-          </select>
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Sound speed</span><span class="value" data-value="speed"></span></div>
-          <input type="range" min=".1" max="4" step=".01" value="1" data-param="speed">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Tone volume</span><span class="value" data-value="toneVolume"></span></div>
-          <input type="range" min="0" max="1" step=".01" value=".32" data-param="toneVolume">
-        </label>
+        <label class="control"><div class="control-head"><span>Base sample pitch</span><span class="control-value" id="baseRateValue"></span></div><input id="baseRate" type="range" min="0.65" max="1.55" step="0.01"></label>
+        <label class="control"><div class="control-head"><span>Pitch increase with speed</span><span class="control-value" id="pitchRiseValue"></span></div><input id="pitchRise" type="range" min="0" max="8" step="0.1"></label>
+        <label class="control"><div class="control-head"><span>Click density</span><span class="control-value" id="clickDensityValue"></span></div><input id="clickDensity" type="range" min="3" max="42" step="1"></label>
+        <label class="control"><div class="control-head"><span>Mechanical texture</span><span class="control-value" id="textureValue"></span></div><input id="texture" type="range" min="0" max="1" step="0.01"></label>
+        <label class="control"><div class="control-head"><span>Fish-pull difference</span><span class="control-value" id="pullDifferenceValue"></span></div><input id="pullDifference" type="range" min="0" max="1" step="0.01"></label>
+        <label class="control"><div class="control-head"><span>Master volume</span><span class="control-value" id="masterVolumeValue"></span></div><input id="masterVolume" type="range" min="0" max="1" step="0.01"></label>
       </div>
+      <div class="small-note">Speed raises sample playback rate slightly, which raises pitch naturally without adding a separate beep.</div>
     </div>
 
     <div class="section">
-      <h2>Reel click tone and shape</h2>
-      <div class="grid">
-        <label class="control">
-          <div class="head"><span>Click waveform</span></div>
-          <select id="clickWaveform" data-param="clickWaveform">
-            <option value="sine">Soft rounded</option>
-            <option value="triangle">Mechanical</option>
-            <option value="sawtooth">Metallic</option>
-            <option value="square" selected>Hard click</option>
-          </select>
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Click rate</span><span class="value" data-value="clickRate"></span></div>
-          <input type="range" min="1" max="100" step="1" value="18" data-param="clickRate">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Click start pitch</span><span class="value" data-value="clickPitch"></span></div>
-          <input type="range" min="200" max="7000" step="10" value="1900" data-param="clickPitch">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Pitch drop</span><span class="value" data-value="clickPitchDrop"></span></div>
-          <input type="range" min="0" max=".95" step=".01" value=".50" data-param="clickPitchDrop">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Attack</span><span class="value" data-value="clickAttack"></span></div>
-          <input type="range" min=".0005" max=".03" step=".0005" value=".0015" data-param="clickAttack">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Decay / click length</span><span class="value" data-value="clickDecay"></span></div>
-          <input type="range" min=".003" max=".15" step=".001" value=".018" data-param="clickDecay">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Click volume</span><span class="value" data-value="clickVolume"></span></div>
-          <input type="range" min="0" max="1" step=".01" value=".55" data-param="clickVolume">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Pitch randomness</span><span class="value" data-value="clickPitchRandom"></span></div>
-          <input type="range" min="0" max=".5" step=".01" value=".05" data-param="clickPitchRandom">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Volume randomness</span><span class="value" data-value="clickVolumeRandom"></span></div>
-          <input type="range" min="0" max=".8" step=".01" value=".10" data-param="clickVolumeRandom">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Click body tone</span><span class="value" data-value="clickBody"></span></div>
-          <input type="range" min="0" max="1" step=".01" value=".28" data-param="clickBody">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Body frequency</span><span class="value" data-value="clickBodyFrequency"></span></div>
-          <input type="range" min="60" max="1800" step="5" value="420" data-param="clickBodyFrequency">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>High-pass sharpness</span><span class="value" data-value="clickHighPass"></span></div>
-          <input type="range" min="20" max="3000" step="10" value="180" data-param="clickHighPass">
-        </label>
-      </div>
-
-      <button id="testClick" style="margin-top:10px">Test Single Click</button>
-    </div>
-
-    <div class="section">
-      <h2>Mechanical character</h2>
-      <div class="grid">
-        <label class="control">
-          <div class="head"><span>Gear whine</span><span class="value" data-value="gearWhine"></span></div>
-          <input type="range" min="0" max="1" step=".01" value=".24" data-param="gearWhine">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Mechanical noise</span><span class="value" data-value="mechanicalNoise"></span></div>
-          <input type="range" min="0" max="1" step=".01" value=".38" data-param="mechanicalNoise">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Noise frequency</span><span class="value" data-value="noiseFrequency"></span></div>
-          <input type="range" min="100" max="5000" step="10" value="1100" data-param="noiseFrequency">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Resonance</span><span class="value" data-value="resonance"></span></div>
-          <input type="range" min=".1" max="20" step=".1" value="2.2" data-param="resonance">
-        </label>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>Fish taking line / drag</h2>
-      <div class="grid">
-        <label class="control">
-          <div class="head"><span>Drag scream</span><span class="value" data-value="dragVolume"></span></div>
-          <input type="range" min="0" max="1" step=".01" value=".65" data-param="dragVolume">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Drag frequency</span><span class="value" data-value="dragFrequency"></span></div>
-          <input type="range" min="200" max="6000" step="10" value="2400" data-param="dragFrequency">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Drag roughness</span><span class="value" data-value="dragRoughness"></span></div>
-          <input type="range" min=".1" max="12" step=".1" value="2.6" data-param="dragRoughness">
-        </label>
-
-        <label class="control">
-          <div class="head"><span>Drag pulse</span><span class="value" data-value="dragPulse"></span></div>
-          <input type="range" min="0" max="1" step=".01" value=".18" data-param="dragPulse">
-        </label>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>Output</h2>
-      <div class="grid">
-        <label class="control">
-          <div class="head"><span>Master volume</span><span class="value" data-value="masterVolume"></span></div>
-          <input type="range" min="0" max="1" step=".01" value=".65" data-param="masterVolume">
-        </label>
-      </div>
-
-      <button class="hold primary" id="holdButton">Hold to Play Selected Mode</button>
-    </div>
-
-    <div class="section">
-      <h2>Selected parameters</h2>
+      <h2>Selected settings</h2>
       <textarea id="jsonOutput" spellcheck="false"></textarea>
-      <div class="topbar" style="padding:10px 0 0;border:0">
-        <button id="copyJson">Copy Parameters</button>
-        <button id="refreshJson">Refresh</button>
-      </div>
+      <div class="toolbar" style="padding:10px 0 0;border:0"><button id="copyButton">Copy Settings</button></div>
     </div>
 
-    <div class="status" id="status">Audio is disabled.</div>
+    <div class="section status" id="status">Audio is disabled. Press Enable Audio first.</div>
   </div>
 </div>
 
 <script>
 (() => {
   "use strict";
-
   const $ = id => document.getElementById(id);
   const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
 
-  const defaults = {
-    waveform: "triangle",
-    movementShape: "sine",
-    mode: "reel",
-
-    basePitch: 380,
-    pitchMovement: 240,
-    speed: 1,
-    toneVolume: .32,
-
-    clickWaveform: "square",
-    clickRate: 18,
-    clickPitch: 1900,
-    clickPitchDrop: .50,
-    clickAttack: .0015,
-    clickDecay: .018,
-    clickVolume: .55,
-    clickPitchRandom: .05,
-    clickVolumeRandom: .10,
-    clickBody: .28,
-    clickBodyFrequency: 420,
-    clickHighPass: 180,
-
-    gearWhine: .24,
-    mechanicalNoise: .38,
-    noiseFrequency: 1100,
-    resonance: 2.2,
-
-    dragVolume: .65,
-    dragFrequency: 2400,
-    dragRoughness: 2.6,
-    dragPulse: .18,
-
-    masterVolume: .65
+  const EMBEDDED_AUDIO = {
+    friction: "data:audio/wav;base64,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9//7//3/AAAYACcADQAPAA0A2//c/wQAAgAAAAcAAQDz/+L/9/8LAPX/BwAnAAgA+/8JAAUADQACAOj/7//1////DQDz/+j/+//5/wQAFwAUABYABADx////9v/5/xUA+P/p/wUA7v/u/xkACwD8/wQA9f8BAA0A9v8JABsA7//p/wMA7P/u/yAAGADz//3/AwD8/wYAAgD4//v/8v///w8A7v/4/yQA+f/d/xMAEgD2/w8AEgD8//v/8v/p/+3/8/8HAA0A/v8FAA4AAAACAA8ACQD///r/9/8GAAQA4//r/wkA9f/v/wsAAwAGAB8ADQABAAAA7v8HABIA6v/2/wMA4P/y/wcA9f8QABkA+f8HAAoA9v8RABIA7f/x////9//0//b/+P/5/wMAGwAYAP3/8v/2/wcAEwAJAAMA+v/m/+j/8f/0/wgADgAHABMADgD7/wMACgD6//b/AQD6/+r/+P8HAPn//P8IAPj/+P8QABUAFAAHAPL//P8CAPP/+f/2/+n/AgAIAPf/BQAFAP7/GQATAPr/CAAAAOr//P/6/+3/AgAAAPL/BAAEAPv/DgATAA4ADAD4//L//v/z//T/CAD///L//f////v/BwAQAAQA+/8HAA4ABQD///r/9f/z/+//8f/9/wUADgASAAIA9v8BAA0ADwAKAPv/7//y//j/8v/4/wYA/P/6/xAACAD+/w8ABwABABUAAADq//7/8f/j////AgD4/wkABQD8/wgACgAQAA8A+f8BAA4A8P/o//z/7//u/wsACQD4/wEABgAIABAACAACAAgA+//0/wEA+//y//b/9f/6/wMAAwAKAAgAAQARAA0A8v/+/wcA7v/3/wgA9P/v////AgAHAA0AAgD//wEABAANAAgA9P/3//z/6//z/wkAAQD9/woABQABAAYABAAKAAcA9v/5//r/8P/8/wMA+P/+/wAA+f8BAAsADwAPAAUA/v/8//r//P/4//X//P/5//f/AAD+/wEACwAHAAgACgAAAAEABQD///v/9//2//r/+P/+/wIA8//5/wsABgAIABMACQD+/////P/5//n//P/6//b//f8AAPr//v8DAAMADAAOAAgAAwD8//r//P/2//z////1//3/AQD4/wQACwD//wYADAD//wIAAwD3//v//v/2//n/+//5/wMABwABAAcABwD+/wMACAABAP7/+//4//3//f/5//7//v/5/wAACAAFAAcACgADAPn/+v8AAAAA/f/9//z//f/8//3/AgAAAPz/BgAKAAAAAgAGAP3/+//8//v//v////3/AAD8//f///8IAAYAAwAEAAQA/f/9/wMA/v/5//7//v/7//v//P8CAAMAAgAIAAYA+////wMA//8AAP//+f/6//3//f////7//v8CAAcACQAGAAEA/v/6//v/AAD+//z//f/9//z//f///wIABQAFAAYABQABAP///v/5//f//P////7//v//////AQAEAAUAAwABAAQABAD+//z/+//5//r//P///wAA/f8BAAYAAQAAAAYABAACAAMA/v/6//r/+v/9//3/+/8AAAIA//8DAAcAAwACAAMAAQAAAP///P/7//r/+v/8/////////wMABAAEAAUABgACAAAA///9//r/+f/7//3//v/+//////8BAAQABQAFAAUABAABAPz/+v/7//r//P/9//3///8BAAAAAgAEAAQABQAEAAIAAAD9//r/+//8//r//P/+//7/AQAEAAIAAgAGAAQAAQABAP///f/7//n//P/+//v//v8BAP//AgAHAAMAAgADAAIAAQD+//v/+//6//r//v////7/AQADAAMAAwADAAIAAQABAAEA/v/7//v//P/8//z//v8AAAIAAwABAAMABAADAAEA///+//7//f/8//v/+v/8/wAAAQACAAMAAwACAAMAAwAAAP7///////3//P/7//v//P///wEAAwAEAAQABAABAP//AAD///3//v/9//v//f/8//z///8CAAQABQAEAAMAAgD////////9//z//f/8//v//f///wAAAQAEAAQAAgADAAIAAAD+//7//v/8//v//f/9//3/AAABAAIAAwADAAIAAQAAAAAAAAD+//3//P/7//3/////////AAADAAQAAgACAAAA//8AAAAA/v/9//3//f/8//3//////wAABAADAAEAAgABAP///v/+//7//v/9//7//v/9//7/AQACAAEAAgAEAAMA///+//7//f/+/////f/8//7/AQAAAP//AQADAAEAAgADAAAA/v/9//3//v/9//3/AAAAAP//AQACAAAAAAACAAIAAAAAAAAA/v/7//7////+//7/AAABAAAAAQABAAEAAQACAAEA///9//3////+//z///8AAP7/AAABAAAAAgACAAIAAAD+//7////9//7////8//7/AQAAAAAAAAABAAMAAwAAAP//AAD+//3//v/+//7////+//7/AAACAAIAAgABAAAAAAAAAP///v/8//7////+/wAA///+/wEAAgABAAIAAgD//wAAAAD+//3//v///////f/+/wAAAAAAAAIAAQAAAAEAAQAAAAAA///+//3//f/+/wAA/v/+/wEAAQD//wIAAgD//wAAAgAAAP///f/9//7//v///wAA/v///wIAAgABAAEAAQABAAEA///+//3//P/9//7//v8AAAEAAQAAAAAAAQACAAEAAAAAAP////////3//f/9//7/AQACAAAA//8CAAEAAAABAP///v8AAAAA/v/+//7////+//3/AAABAAEAAgABAAAA//8AAAAA///9//7////+/wAAAAD/////AAAAAAEAAAABAAEA/////wAA/f/9/////////wEAAQAAAAAAAQAAAAAAAAD/////AAD//////v/9////AAD//wEAAgAAAAAAAAD///////8AAAEA///+/////v/+/wAAAAABAAIAAQAAAAAAAAD////////////////+//3//v///wAAAgACAAEAAAAAAAEA/v/+/////////wAA/v/+//////8BAAIAAAABAAEA//8BAAAA/f////7//f8AAAAA//8AAP////8BAAEAAQABAAAA//////7///////7///8AAAAA///+/wAAAQAAAAIAAAD//////////wAA//////////8AAAAA/////wAAAQABAAEAAAD///7/////////AAAAAP//////////AAAAAAEAAQAAAAAA///+//7/AAAAAAAA//////7///8BAAEAAAAAAAAAAAAAAP///v////7///8AAP//AAAAAP//AAABAAEAAAD//////////////////wAAAAAAAAAA/////wEAAAABAAEA/////////v///wAA/v8AAAAA//8BAAEA//8AAP////8BAAAA//8AAP7//v8AAP////8AAAAAAAAAAP///////wAAAAAAAP//////////////////AAAAAAAAAAAAAP////8AAP//AAABAAAA//////7/////////AAAAAP//AAAAAP//AAAAAAAAAAD/////////////AAD/////AAAAAAAAAAAAAP////8AAP////8AAAAA//8AAP//////////AAAAAP//AAD/////AAAAAP///////wAAAAAAAAAAAAD/////AAAAAAAAAAAAAAAA/////wAA//8AAAAA/////wAAAAD//////////wAAAAAAAP///////wAAAAD/////AAAAAAAAAAAAAP////////////8AAAAA////////AAAAAP////8AAAAA//8AAP///////wAAAAD/////AAAAAP//AAAAAP//AAAAAAAA////////AAAAAP////////////8AAAAAAAAAAP////8AAAAA////////////////AAAAAP//AAAAAP//AAAAAAAAAAAAAP//////////////////AAAAAAAAAAD/////AAAAAAAAAAD/////////////AAAAAP///////wAAAAD/////AAAAAP//AAD//////////wAAAAD//wAAAAD//wAAAAD/////AAD/////AAAAAAAA//////////8AAAAAAAAAAP//AAD///////8AAAAA//8AAP///////wAAAAD//wAAAAD//wAAAAD//////////wAA/////wAAAAD//wAAAAAAAP//AAAAAAAA/////////////wAA//8AAAAAAAAAAP//AAAAAP//AAAAAP//////////////////AAD//wAAAAAAAAAAAAAAAP//AAAAAP///////////////////////wAAAAAAAAAAAAD//////////////////////////wAAAAAAAAAAAAAAAP//AAAAAP///////////////wAA/////wAAAAAAAAAAAAAAAAAAAAD//////////////////wAAAAAAAAAAAAAAAAAAAAAAAP///////wAA//////////8AAAAAAAAAAAAAAAAAAP///////wAA////////AAD//wAAAAD//wAAAAAAAP////////////////////8AAAAAAAD/////AAAAAAAA/////////////////////wAAAAD//wAAAAAAAAAAAAD//////////////////wAAAAD/////AAAAAAAAAAAAAP////8AAP//////////////////AAAAAAAAAAAAAP////8AAAAA/////////////////////wAAAAAAAAAAAAAAAAAA/////////////////////wAAAAAAAP////8AAAAA/////wAA////////////////AAAAAAAAAAAAAAAA////////////////////////AAAAAP////8AAAAAAAAAAAAA////////////////AAAAAAAAAAAAAAAA//8AAP///////wAA////////////////AAAAAAAAAAAAAAAA/////wAA////////////////AAAAAAAAAAAAAAAA//8AAAAAAAD/////////////////////AAAAAAAA/////wAAAAAAAAAAAAD///////////////8AAAAAAAAAAAAAAAD//////////wAAAAAAAP////////////8AAAAAAAAAAAAA////////AAAAAP////////////8AAAAAAAAAAAAA////////AAAAAP////8AAP///////wAAAAAAAAAAAAD///////8AAP//AAAAAP////////////8AAAAAAAD///////////////8AAP////8AAP////8AAAAAAAAAAAAAAAAAAP////////////8AAAAA//8AAAAAAAD//wAAAAAAAAAAAAD//////////////////wAAAAAAAAAAAAAAAAAAAAD///////8AAP///////wAA/////wAAAAAAAAAAAAAAAP////////////8AAAAAAAAAAAAA////////AAAAAP//AAAAAP///////wAAAAAAAAAAAAD/////AAAAAP//AAAAAP////////////8AAAAAAAD/////AAAAAAAAAAAAAP///////////////wAAAAD//wAAAAAAAAAAAAAAAP///////////////wAAAAD//wAAAAD//wAAAAAAAAAAAAAAAP///////////////wAAAAAAAAAAAAAAAP//AAAAAAAA/////////////////////wAAAAAAAAAAAAAAAP////8AAAAA/////////////wAAAAAAAAAAAAAAAAAAAAAAAAAA/////////////wAAAAAAAAAAAAAAAP////8AAAAAAAAAAP//////////AAAAAAAAAAAAAAAA//8AAAAA//8AAAAA////////////////AAAAAAAAAAAAAAAAAAAAAAAA////////////////AAAAAAAAAAAAAAAAAAAAAAAA////////////////AAAAAP//AAAAAP//AAAAAAAAAAAAAAAA//////////8AAAAAAAAAAP////8AAAAAAAAAAAAAAAD/////////////AAAAAAAAAAAAAAAAAAAAAAAAAAD/////////////AAAAAP////8AAAAAAAAAAAAAAAD/////////////////////AAAAAAAA//8AAAAAAAAAAAAAAAD///////////////8AAAAAAAAAAAAAAAD//wAAAAD//wAAAAD///////////////8AAAAAAAAAAAAAAAD//wAAAAD///////////////8AAAAAAAAAAAAA/////wAAAAAAAP////////////8AAAAA//8AAAAA/////wAAAAAAAAAAAAD///////8AAAAA//8AAAAA////////AAAAAAAAAAAAAP////////////8AAAAAAAAAAAAAAAD/////AAD///////8AAP///////wAAAAAAAAAAAAAAAAAAAAD//////////////////wAAAAAAAAAAAAD//wAAAAAAAP//AAAAAP////////////8AAAAAAAAAAAAAAAAAAP////8AAP////8AAP///////////////wAAAAAAAP////////////8AAAAA//8AAP///////wAAAAAAAAAAAAD///////8AAP////8AAAAA////////AAAAAAAAAAAAAP////////////8AAAAA////////AAAAAAAAAAAAAP////////////8AAAAAAAD//////////wAAAAAAAAAAAAAAAP///////////////wAAAAAAAAAAAAD/////AAAAAAAA/////////////////////wAAAAAAAP//AAAAAAAAAAAAAAAA////////////////AAD/////AAAAAAAAAAAAAAAA////////////////AAD///////8AAP//AAAAAAAAAAAAAAAA////////////////AAAAAAAAAAAAAP////8AAAAA////////////////////////AAAAAAAAAAAAAAAA////////////////AAD/////AAAAAP////8AAAAAAAD/////////////////////AAAAAAAAAAAAAAAAAAAAAP///////wAA////////AAAAAP////8AAAAAAAAAAAAA//////////////////8AAP////8AAAAAAAAAAAAA/////wAAAAD//////////////////wAAAAAAAAAAAAAAAAAAAAD/////////////////////AAAAAAAAAAAAAAAAAAAAAA==",
+    salt: "data:audio/wav;base64,UklGRqSlAABXQVZFZm10IBAAAAABAAEAgLsAAAB3AQACABAAZGF0YYClAAD/////////////AAAAAAAAAQABAAAA/v/+//7///8AAAEAAgABAP///v/9//3//v8AAAIAAgABAAAA/v/8//3///8BAAMAAwABAP///f/8//3///8CAAMAAgABAP7//P/8//7/AAACAAMAAQD///7//f/+////AAABAAEAAQD///7//v/+////AAABAAEAAAAAAP////////////8AAAAAAAAAAAAA//////////////////////7///8AAAAAAQABAAAAAAD+//3//f///wAAAQABAAEAAAD///7//v///wAAAQABAAAA/////////////////////wAAAAAAAAAAAAD/////////////AAABAAEAAAAAAP7//v/+/wAAAgACAAAA/v/9//3///8BAAEA/////wEAAgABAAAA//8AAP/////+////AAD///3//f8BAAIA/f/8/wEAAwAAAAUACQD+//X/+/////v/+v8BAAwADAD///r//f/7//v//v8BAAQAAwADAAgAAwDy//D/+/8EAAMA//8IABUABgDv//X//f/1//j/BgAHAP7/AQAJAAUA+P/0//7/CAAMAAsABgD+//b/7v/r//j/DAASAAMA9/8AAAgA/v/+/wMA9P/1/xIAFQACAPD/3//u/woABAAKACUADQDp//T/+v/y/wQAGAAPAPP/5P/s/wQACgAFAB4A///i/y4ARQAqAOj/l/8MAOP/F/8XAJYAl/9nAM8AR/+u/+IA5f///gEAXgEvAST/Fv4VAYEDiP/r+4H+1wBMAMr+tP24ANcCDwC8AAUExQOmANL6Gvqr/0v+l/x2AroCfAAvBIcDGwCkAnUChfyq/HIAG/3G+3L/hPsp+xUEUwM9AoMKGwiR/Vj4bfhO/6YAA/og/rQEDAJw/zn+dwN4DDoEkfYs/L4F+gAC+MX3xADECBkDu/lCAEcFxvvn/Q8DEvqFAFYL/P4e+2sEgwP9/zz6lPjdAdABR/7G/y/8EwFAB94A1gA+APv6LgIzCpgK/P047iH9RAVm8D75iwY3+j8IMBVgBJICbgJ298/2L/Ng894CSxUaGi71cc8l6IUbYzIQEbr2vDsJPa6tkZ8qD8cQyPN882jM8dCFAiEmvUl4KBbt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7f8CABUAGgATAAYA+f/x/+//8P/2/wAACQASABcADgD8/+v/4v/p//n/CQAYAB0AFAAFAPL/4P/c/+j/BQAkADAAIAAAAN7/z//Z//X/FAAoACgAGAD+/+H/0P/W//L/GAAyADAAFwDw/9P/0f/l/wMAHQAkAB4ADADy/+H/3v/o////FgAfABsACADw/+f/6f/y/wIADQARABAACAD///r/8//v//T//P8GABAAEwANAAAA8P/o/+3/9/8GABQAGQAWAAcA8f/f/9v/6P8GACQALgAfAAEA4//W/93/8/8OACEAJAAYAAAA5f/T/9f/8f8VAC4AKwATAPT/3P/Z/+v/AgAWAB8AGgAOAPv/5v/g/+n/+v8PABkAEwAGAPX/6//x//r///8GAAsADAAMAAYA/f/2/+//7//6/wYADQARAA0ABAD4/+3/6v/y////DgAYABgACgDz/+H/3//s/wQAHAAlABwAAgDo/97/4//z/woAHAAhABgAAQDn/9r/3P/x/xMAKAAlABAA9P/i/+L/7P/9/w4AFAATAA0A/v/v/+f/6//9/xIAFwARAAQA9//y//X/+v/8//7/AQAIAA0ACQD+//X/8v/0//z/BQALAA4ADAAEAP3/8v/p/+///v8OABoAFwAGAPP/4v/e/+7/BAAVAB4AFwADAPD/4v/j//T/BwAXACAAGAADAO3/4f/p/wEAGQAoACMACwDu/9r/1P/b/+n/+v8MABcAFQALAP7/9//7/wcAFAAYAA4AAAD3//T/9v/2//b/+v8BAAcACwAFAPf/7P/o/+7/+v8FAA4AGAAaABQABwD1/+j/5//y/wYAFgAUAAcA9//r/+n/8v8BABAAGAAUAAcA9//p/+b/8v8FABYAGwASAP7/6v/f/+T/+P8OABsAHAAQAP7/7//o/+z/9/8DAA0AEwAOAAEA9f/v//T/AgANABAACgD+//X/9P/1//b/9//9/wcAEQATAAwA///z/+//8//8/wIABQAJAAwACQD+/+//5//s//7/EgAeABoACAD2/+v/6v/x//7/CgAUABUACAD3/+f/4f/t/wQAGAAgABgABADx/+b/5v/z/wQADgASAA0AAAD0/+3/7//8/wsAFQAZABEA///v/+f/6//4/wQACwAOAAsABgAAAPr/9P/x//T///8KAAwABgD9//f/9v/6/wAABAAIAAwADwALAP//7v/l/+z//P8OABgAEwAFAPb/7f/t//P/+/8JABcAGgAQAP3/6P/h/+n/+/8QABkAEgAFAPj/8P/x//b///8MABEADQAEAPb/6v/r//X/BQATABQADQAEAPf/8f/0//n/AgAJAAkACAAEAPv/9f/z//P/+/8EAAoADQAGAPz/+P/4//r/AAADAAcADAAMAAcA///x/+r/8v8AAA4AEwALAP7/9P/t/+7/9P/9/wkAFgAaABIA/v/q/+P/7P///xAAFgAQAAMA9//w/+//8v/7/wkAFAAWAAsA+P/q/+f/7/8BABAAFAAPAAYA/P/1//L/8//6/wQACwAOAAsAAAD3//L/8//8/wUACAAKAAYA/f/5//f/9f/5//7/BAAOABAACAAAAPT/7f/0////CQAQAAsABAABAPr/8//z//T//P8LABAADAABAPD/6//3/wMADQARAAoAAwD///b/8//0//f/AwASABQACgD6/+r/6v/1/wEADAAQAAsABgABAPr/9P/y//f/AwAOAA0ABgD8//P/8f/4/wAABwAJAAcABAABAPv/9//3//r/AQAIAAsACQADAPn/9P/2//r/AQAIAAoACAADAP3/+f/1//P/+P8CAAwAEQALAP//9P/v//P//v8HAAoACQAGAAQA/f/0//H/9/8CABAAFgANAP3/7v/q//P//v8FAAkACQAHAAQA+//z//H/9v8DABEAEgAIAPv/8f/y//n/AAAFAAgABwAFAAMA/f/2//T/+P8BAAkACgAGAAAA+v/3//n//P/9/wEABAAGAAkABgD///r/9//2//3/BQAIAAcAAAD5//j/+f/7/wEABAAHAAsACQAAAPf/7//x////CwAPAAoA/f/z//P/+P8AAAUABwAKAAoABQD8//H/7v/3/wUAEQARAAMA9//y//T//v8EAAMABAAFAAIAAQD8//T/9////wcADgAJAP3/+f/5//v/AQABAP7/AAAAAAIABgAAAPn/+P/4//z/AwAGAAgACAADAP//+//1//X/+v8BAAoADQAIAP//9f/u//T/AgANABIADQABAPf/8f/x//f///8GAA0ADgAHAPr/7//s//j/BwAQAA8ABQD4//T/+P/9/wMABAADAAUABgAAAPn/9f/2////CAAIAAQA+//2//z/BQAGAAIA/f/6//7/AwAEAAQA///6//v//v/+//7/AAADAAgABgD+//j/9P/1/wAACwAOAAoA/v/0//L/9v/+/wkADwALAAQA/P/1//P/9v/8/wcADgALAAIA9v/t/+//+/8KABIADgABAPn/9//5////BAAFAAUABgADAPz/9P/x//j/BQAMAAoAAAD2//X//P8FAAgAAgD7//n///8FAAUAAgD///3///////z/+v/8/wMADAAMAAEA9v/x//X/AgANAA0ABgD7//P/8v/3//3/BgANAA8ACQD+//P/7//y//7/DAATAA8AAwD1/+//8v/8/wcADAAJAAEA+v/2//f/+v///wUACQAIAAMA/P/2//f//v8HAAoAAwD4//T/+f8CAAkACgADAPr/+P/6////AgACAAMABQACAPz/9v/z//v/CAAPAA4AAgDy/+z/9f8BAAwADwAHAP//+f/1//j//P8AAAoAEQAMAAAA8//q//H/AAAMABEACgD7//H/8P/2/wAACgAPAA0ABQD6//X/9f/5/wIACgAMAAcA+v/v//D/+P8DAA4AEAAFAPr/9P/2////BgAFAAIA///7//z//f/8////BQAHAAcAAAD1//H/+v8HAA8ADQD///L/8P/4/wQADAAKAAMA/v/6//f/9v/4/wAADAATAAwA/v/u/+f/8v8GABQAFgAKAPn/8f/w//f/AgAFAAUACAAEAP3/+v/1//f/BAAMAAwABwD7//L/9f/8/wYADQAIAPz/9f/x//X/AQAKAA0ACgACAPr/9f/0//v/BwANAA0ABAD2/+3/7//8/wwAEgAMAP7/8f/u//b/AAAIAAwACAABAP//+//0//b/AwAQABIACgD6/+v/5//0/wUAEAAQAAQA+P/0//b/+v8BAAkADgAOAAgA+v/v/+7/9f8HABUAEgACAPP/6f/v//7/CAAPAA4A/v/0//X/9/8AAAoACwALAAYA+P/w//X/+/8HABEACwABAPf/7v/x//v/BAARAA8A///3//T/8v/9/wgACQALAAkA/v/2//T/9P8AABEAEQAFAPf/7P/u//z/CQAQABAAAgD1//P/8v/0/wAACwARABQABwDx/+f/6v/6/xIAGgAPAAAA8P/q//T/AAAKABEADQADAPr/8v/y//f//f8IAA8ACAD8//T/7//4/woAEgANAAAA9f/z//n/AgAGAAgACAACAPn/9//2//f/AQALAA0ACwD9/+7/7v/1/wMAFQATAAIA9//u/+z//P8KAA0ADgAFAPf/9v/5//j/AgALAA0ADgADAO7/5P/t/wAAFwAeAA0A+f/q/+n/+f8GAAkADwALAPz/9f/w/+3//P8GAAgAEgAPAPn/8P/1//z/CgAPAAsACAD8/+//8//6//z/BQALAAUA/f/0/+3/9P8CAAwADwAMAP//8v/z//7/CQATABAAAADz//D/7//6/woADwAMAAMA9f/v//D/9v8GABEAEgAOAPv/6P/s//n/CgAcABYAAADy/+n/6f/5/wYADQARAAoAAQD8//H/6//2/wYAEwAZAA4A+f/p/+f/9f8JABUAEQAFAPv/7v/m//P/BAANABQADwD9//T/8//1/wQADgAKAAMA9//x//f/AAAKABEACAD8//f/7//w//r/BQARABYACgD8/+//5//x/wUAEgAYAA0A9//o/+X/7/8FABYAGwATAAEA9P/s/+z/+v8IABEAFwALAPf/7v/o/+7/BgARAA8ACgD2/+v/+P8AAAQADQAKAAcABAD4//T/9//1//3/DAAPAAkA+v/t//b/BAAKAA0AAgD0//X/+f///woABwADAAQA/P/0//T/+f8FAA8ADAAEAPf/7P/y//3/CQAXABQAAwDx/+T/6/8DABAAFwAWAAAA7v/p/+f/9P8KABIAGQAYAAAA6f/i/+X/+f8SAB8AGwAIAPD/5P/m//P/BQAQABYAEwAGAPj/7//r//b/CgAVABAAAADw/+r/7f/9/w8AEgAJAP7/9P/2////BQAIAAUA/v////7/+f/7////CAASAAcA8f/t//D/9/8KABcAFAAJAPb/5v/l//P/BwAXABsAEgD8/+j/5v/s//r/EAAZABMACAD5/+7/7v/2/wYAEwARAAYA/P/x/+3/8f/7/wsAEwAMAAAA9P/s//D//v8NABcAFQAHAPT/6//3/wUAAwABAAQA/P/1//n//v8CAAQAAwACAAEA///6//n/BAASABEABQD0/+f/7P/6/wMACwAOAAQA+//2//P/+/8JABIAFAAOAP7/7//m/+j/+/8RABYADgABAPH/6f/u//r/CQAYABgABgD4//H/7v/0/wAACgAPAA0AAQDy/+v/8/8DAAoADwAQAAQA9//2//n/AAAGAAEA/v8CAPz/9f/4//r/AAALAAkA///+//3//P8DAAsADAACAO//6P/2/wYADQATAA4A/f/2//T/8P/0////CQAUABIAAQDx/+j/6P/8/xEAGQAWAAMA7v/r/+//+P8LABIAEAAPAP7/8P/z//H/9f8KABEABwABAPf/8v/7/wEABgALAAIA+f/5//r/AAAGAAIA/v////7/AQADAAIAAwACAAIAAgD9//b/9P/4/wQAEAAOAAQA9f/n/+v//v8QABUADgACAPr/8//y//b//v8PABgADQABAPT/5f/u/wEACQAQABEAAwD2/+3/6//4/wQADAAVAA8A/v/2//D/8/8CAAsADQAMAP3/9P/3//f//P8EAAIAAwACAPv/AQALAAUA///6//T/+f/+//r/AgAOAAsABQABAPj/8//2//7/CAAPAAsA///y//D/9//8/wUAEQASAAUA9v/q/+n/9/8IABYAGQAOAP3/7f/j/+3/BQAWABUADAD9//L/7//v//X/AwARABoAFwADAO3/5P/s//3/CwATABIAAQDv/+3/9f8AAAoABwACAAUAAgD//wIAAAD9/wIAAwD9//f/9v/+/wUAAwABAAAA+v/2//j/AgAOABEADQABAPD/7P/1//v/BwATAAsAAAD8//P/7//1/wEAEgAZAAsA/v/w/+b/8P8AAAkADwANAAcAAgDx/+f/8//+/wkAFgATAAgA/P/q/+v//P8EAAwAEAADAPv/+//x//H/+v/+/wkAEAAJAAYAAgD9/wIAAgAAAAIA+//8/w4ACgD6//H/2v/P/+b/+v8UADQAJQAGAAAA+P/8/xAADwAWACYACgDw/+L/vf/B/+r/8v8PADkAGwDx/+T/2f/+/ywAIgAsAC8A+//1//7/2//m//j/4f8IACEA9//7/+7/vP/v/ysAIgA7AC0A4v/Z/9D/0f8uAFAAGQD+/8f/p//u/wwAEABGADMABAAMAOf/1v8IAPj/2P/s/+7/EgBAABUA9P/w/9D/7P8aAAQACwAYAPH/9v8PAAkAGAARAPH/9f/q/9//AwADAPT/BgD9//7/GgAMABMAIwDq/9H/7P/e/+n/DwARADAAPwAJAPH/1/+1//j/KgACAA8AIQABAAwA+v/L//f/EQDz/wUA+P/a/wwAFADx/w0ABgD3/ywAHAD2/xkA/P/P//7/+v/n/xQA+v/Z/wkA+//s/x8ADQD9/yMA+//q/yQADwD8/wkAzf/Q/xUAAAD5/xEA4//1/ycA+v/8/yYACgARABcA5f/9/xAA3//v//H/yf/8/xEA4/8GABAA6f8SAC4AJAA+AB8A6//v/9P/0/8OAPz/6P8LAPH/4v8CAPb/AQAcAPf/9/8TAAwALQA0APH/6P/6/+z/BQAEAOL/9P/y/+D/AwD+/+7/HwAoABEAGwABAOz/+v/p//X/GgAGAAoAGADh/87/4P/Z/wAAJgAVACgALAD6//f/+f/k/wUAEgD8/w8AAgDe//D/6f/b/wcAEgAKACEABwDr/wIA9v/w/xwAJgAjABkA2//I/+n/6v/9/xgA9v/y/xIABwAFAA0A+/8GAAwA6//y/w0ADwAZAAkA3//l//X/8/8IABEABQAJAP//8P/8//z//v8UAAwA/v8GAPn/7f/1//P/AAASAAkADgAVAPb/5//t/+//BwAVAAYACQAGAPT/+P/x/+P//P8UAB0AJwAFAN//5//q//n/HwAYAAkADwDu/9T/5v/t/wMAIwAXABAAEgD2//X//f/f/+z/DwAIABQAHgD9//P/8v/j//L/9v/u/xMAJAASABcAAgDl//f/8//n/wsAFQAMABUA+//k//D/4v/n/xEAGwAkACQA9f/p//v/5f/t/w8ADQAXABoA9v/p/9n/y//7/xkAEAArACUA9f/z/+//5P8FABAAEAAiAAEA5v8AAOz/2P/2//X//P8bAAcA//8SAAEACQAYAPX/9v8IAPL/AQASAO//7//5/+j/AQAQAP3/EwAPAOX/8v/7//n/IQAjAAsAFgD5/9T/6f/n/+P/EAAYAAsADADv/+3/CgD2//r/IgAUAAwAHAD8/+b/6f/a/+3/DwALABsAGQDj/9v/8f/u/wgAIwAVABcAFAD3//X/7//h//7/EgADAAoACQDx//L/9f/y/wAAAQABABcAEwABAAkAAwDu/+7/9P/7/wgABwAGAAgA9v/u//z////+/woAEAANAAcA+v/x/+3/9P8GAA4ACwANAAgA9//p/+L/7P///w4AHgAdAAMA8v/p/+P/+f8WABoAGgAMAPD/7v/w/+n/+v8LAAsAEAAHAPf/9v/o/+b/CwAZAA8AFgAKAPD/8P/x//X/CQAHAAEADAAGAP//AwDv/+T/9//7/wIAFAAQAAsADQD4/+z/8v/w//v/FgAcABQABgDs/+D/5v/y/wcAFwAVABAABADs/+D/7f/+/wsAGgAlABoA/P/i/9j/4f/1/wkAHQAgAAsA+//1/+T/5f///w0AFgAgABUAAwDw/9v/5P/6//7/DgAYAAEA/f8FAPH/7f/5//n/DwAiABQAEQAEAN7/4f/0/+7/AwAaABAAEQAFAOb/6//u/+P/CAAjABcAIgAVAOX/4P/j/+P/CgAaABAAIwARAOX/5v/g/9z/BgAcACAAKwAEAN//6v/j/+v/HAAdAA0AFAD4/+L/6//l//X/FQAQABkAHQDz/+X/8//r/wEAGgANAAwACADy//r/+//p//v/BgD9/wcAAADz/wMAAAD8/w8AAwD4/wsABQAAAA4AAAD2//j/5//0/xAACAAMABAA8v/s//L/5v/8/xMAEAAiAB0A9P/u/+j/2v/+/xsAGgAfAAQA3v/l/+j/7v8VABoACwAWAAMA6P/w/+3/8f8RABMADwAXAPv/5v/0/+//8f8OAA4ABwANAP7/9//+//D/9f8LAAUABgASAP3/8/////n/+f8CAPf//f8QAAsABgD//+j/6v/9/wMAEgAcAAsAAwD6/+f/6//1//b/CwAcABEABwD7/+b/4v/s/wEAHQAjABYABgDs/9//6v/z/wAAGQAhABgAAgDn/+D/5P/u/woAHQAdABgAAQDn/+n/7//4/wsADAALABIAAwD1//b/7P/v/wQABwANABMA///6////8f/1/wEA+v8JABcACQAIAP//5P/o//f/+f8OABUACAAKAAAA7v/y/+//8P8QACAAHAAVAPb/2P/d/+n/AAAcABwAEgAIAO7/3//k//H/DgAmACUAFwD8/+T/4P/k//L/EAAeABcABQDv/+j/7f/z/wUAEAALABEADwD+//r/9f/u//7/BgABAAgAAwD6/wEA+v/z//3/9//2/wkACgAMABcAAwDx//X/7v/0/wsACgANABcAAgDw/+v/3//u/wwAFgAhABsA9v/m/+n/6P///xUAEAAUABAA9f/s/+z/6P/7/xEAFwAcAAoA7P/p/+r/8f8NABcADAALAAAA8P/1//X/9/8IAAsABgAHAPv/9P/7//f/+/8LAAcABAAKAAIA//8AAPT/9P/7//n/BgASAAQAAAAAAPT/9v/5//X/BQAPAAkADwAIAPL/8P/s/+//DwAdABUAFAD4/9r/4//t//z/HAAdAA4ACgDz/+T/6//o//z/IQAgABgADwDo/9v/8v/0/wAAFwASAAsABADr/+v/9v/z/woAHQANAAcAAgDs//H//P/3/wQACgD8/wQACgAAAAEA+f/u//r/AgACAA8AEAAFAAMA9//s//L/9v/+/xAAFQAPAAgA8f/f/+T/9f8OACEAHwANAPX/5P/k/+7///8UAB4AFgAHAPT/5v/j/+7/BQAXABkAFQAEAOv/4//r//f/CAAUABQAEQACAPD/8P/z//X/BgASAA0ABgD6//H/9//9//7/BAABAP3/BgAHAAAAAQD8//T/+////wIADAAMAAQAAgD5/+7/8f/0//r/DgAaABQABwDx/+T/6//4/woAIAAcAAcA+v/r/9//6f/5/wkAGwAdAA4A+//o/+H/8f8GABUAHgAVAAIA9P/n/+P/8/8EAA0AFgARAP//9v/w/+r/+P8KAA8AEgALAP3/+P/1//P///8EAP3/AQADAAEACAAEAPX/9//7//v/BgAIAAQADQAKAPj/8f/q/+v/AgASABYAFwACAO3/7P/r//L/DQAaABcAEgD+/+r/5f/k//P/EAAbABoAEwD3/+H/4v/s/wEAGgAfABYABgDu/+f/7f/y/wEAEQAQAAwABQD0/+v/7//4/woAEwAMAAYA///4//r/+v/3//3/AAACAAkABgD/////+v/3//z//P/+/wcACwAOAAkA+f/w/+//7////xEAFAATAAcA7//m/+n/8/8KABkAGAASAAIA7P/k/+T/8v8PAB4AGwAQAPb/4f/k//D/AAAWABsAFAAJAPb/6f/q/+///v8RABUAEAAGAPL/6P/v//n/BgASAA0ABgACAPr/9//6//j/+/8DAAYACQAIAAAA+//5//X/+P/9////BgAMAAsACAD+//D/7P/y////EQAYAA8AAwD0/+j/6P/z/wQAFgAcABYABADs/97/5P/2/w0AHwAeAA4A+P/m/+L/7f8AABIAGgAVAAkA+P/p/+X/7v8AABMAGwATAAIA8f/p/+//+/8GAAwADAAHAAEA+v/3//j/+//+/wMABQAGAAYAAgD8//r/+v/6//z//v8CAAwAEAAJAPv/7v/q//L/AAAPABcAEQAEAPf/6v/n//H/AQAUAB8AGAAEAO3/3//j//b/DQAfAB4ADgD4/+f/4//s//z/DQAaABoADQD5/+f/4//t/wAAEwAaABMAAwD0/+z/7//4/wMACwAMAAkAAwD7//j/9v/2//v/AwAIAAgABAABAAAA/P/4//b/9//9/wgADwAQAAgA+f/t/+v/8v8AAA4AFAASAAcA+P/t/+f/7v///xIAHQAaAAcA7//g/+H/8/8KABoAHQARAP3/7v/m/+j/9/8JABgAHQAQAPv/6f/i/+v///8QABgAEwAEAPf/8P/u//b/AQAIAA0ADQAGAP3/9f/x//f/AAAFAAcABQADAAMAAQD9//n/9//3//3/BwAOAA8ABwD5//D/7f/z////CwASABMACgD6/+3/5v/s////EwAeABoABgDu/+L/4//y/wkAGQAbABIAAADu/+X/5v/0/woAGwAeABEA+v/o/+T/7P///xAAFgARAAQA+P/y//H/9P/8/wcADgAOAAcA/P/1//X/+f///wMABAAEAAUABAACAP7/9//z//b//v8IAA8ADgAFAPv/8f/u//T//f8IABIAEwALAPz/6//l/+3//v8TAB0AFwAGAPL/5P/m//P/BAAUABoAEwAEAPL/5f/m//L/BwAZAB0AEQD9/+r/5v/u//z/CwATABEACgD+//P/7v/w//n/BwAPABAACQD9//T/8//3//7/AwAEAAUABgAGAAIA+//0//T/+f8BAAkADAAKAAQA/P/1//H/8//7/wcAEAATAAwA/f/t/+b/7f/+/xAAGgAWAAYA9v/p/+f/8f8AABAAGgAXAAcA9P/k/+T/8v8GABgAHAAQAP7/7v/n/+3/+/8IABIAEwALAAAA9P/t/+//+f8HABEAEAAGAPv/9f/1//r//f8AAAIABgAJAAcAAQD5//X/9f/6/wEABwALAAkABQD9//b/8v/z//n/BQARABQADAD7/+z/6P/v/wAADwAWABIABwD4/+3/6P/v////EAAZABYABgD0/+f/5v/z/wYAFAAZABAA///x/+v/7v/4/wQADgATAA4AAgD1/+z/7v/6/wYADwAPAAcA/v/4//b/9//6//7/BAAJAAoABwAAAPf/8//2//z/BAAIAAgABwAEAP7/9//y//L/+v8HABEAEgAKAPv/7//s//P//v8LABEAEAAKAPz/8P/q/+3/+/8OABgAFgAKAPX/6P/o//L/AwASABUAEQAEAPX/7P/s//P/AgAPABUAEQADAPP/6//u//n/BwAOAA4ACAD///j/9f/2//r///8FAAoACgAFAP3/9v/1//n//v8CAAUABQAGAAYAAQD5//L/8f/6/wYADwARAAkA/P/y/+7/8f/8/wcAEAASAAwA///x/+j/6//7/w0AGQAXAAgA9f/p/+n/8v8CAA8AFQASAAYA9//s/+r/8v8CABAAFQAQAAEA8//t//D/+v8GAAwADAAIAAAA+v/3//X/+P///wUACgALAAQA/f/4//b/+v/+/wAABAAHAAgABwAAAPb/8v/z//v/CAAOAA4ACQD9//P/8f/z//v/BgANABEADgAAAPH/6f/r//v/DQAWABUACAD3/+7/7P/y//7/CwATABQACQD5/+z/6f/x/wEADwAVABEAAwD0/+7/8P/4/wMACwANAAsAAwD6//T/8//3/wEACAALAAkAAgD6//j/+f/7//7/AAACAAYACAAFAAAA+P/z//X//P8FAAwADAAHAAAA+P/z//L/9/8CAA0AEwAPAAIA8v/o/+v/+v8LABUAFAAJAPr/8P/r/+//+/8KABQAFgALAPn/6v/n//H/AwAQABUADwABAPX/7//w//j/AwAKAA4ACwADAPr/8//y//n/AgAIAAoABgD///z/+//7//v/+//+/wMABgAIAAYA///4//X/9v/8/wMACQALAAkAAgD5//L/8P/2/wEADgAUAA8AAQDx/+n/7f/7/woAEwASAAoA/f/x/+z/7//5/wkAFQAWAAsA+f/r/+j/8v8CAA8AEwANAAMA+P/x//H/9v///wkADwAOAAUA+f/x//H/+f8DAAkACQAFAAAA/f/8//r/+v/7////BAAIAAcABAD+//j/9//4//3/AgAGAAkACQAEAPz/9P/v//X/AQANABMADgABAPT/7P/u//n/BgAQABMADAAAAPT/6//s//f/BwAWABgADAD6/+v/6P/y/wEADQASAA4ABQD6//H/7//0////CwARAA4ABAD3//D/8v/7/wUACgAIAAMAAAD+//z/+//5//z/AAAEAAYABQACAP7/+//5//r//P///wQACQALAAcA/f/y/+7/9P8BAA0AEgANAAIA9v/u/+7/9v8DAA8AEwAPAAIA9P/q/+r/9/8JABYAFwALAPn/7f/q//P/AAALABEADwAHAPv/8f/t//P///8LABIADQACAPf/8f/0//z/AwAHAAcABAACAP//+//6//r//P8BAAUABQAEAAEA/v/9//v/+v/6//3/AwAKAAwABgD8//P/8P/2/wAACwAQAAwABAD5//D/7//1/wAADQAUABEABAD0/+r/6v/2/wgAFQAVAAsA/P/v/+z/8f/8/wkAEQARAAoA/P/w/+z/8v8AAA0AEgANAAEA9v/y//X/+/8CAAcABwAGAAIA/v/6//j/+v///wMABAADAAEAAAAAAAAA/f/6//j/+/8CAAkACwAGAP3/9f/y//b//v8HAA0ADQAHAP3/8v/t//H//v8NABUAEgAFAPT/6f/r//f/BwATABUADAD+//H/7P/v//r/CAASABMACgD7/+7/6//z/wEADQARAAsAAQD3//P/9v/7/wIABgAIAAYAAgD9//n/+f/8/wEABAADAAAA//8AAAIAAgD+//n/9//7/wIACQALAAYA/v/2//T/9v/8/wUACwAOAAkA///z/+z/8P/9/wwAFQATAAUA9f/r/+z/9/8FABAAEwANAAEA9P/s/+3/+P8HABMAFAAKAPv/7v/s//T/AQAMAA8ACgABAPn/9f/2//r/AQAGAAkABwABAPv/+P/6//7/AgADAAEA///+/wEAAwADAP//+v/3//r/AQAHAAoABgAAAPn/9f/1//r/AgAKAA8ACwABAPT/7P/v//v/CwAVABMABgD3/+z/7P/1/wMADgASAA4AAwD1/+z/7P/3/wYAEwAUAAoA+//v/+3/9f8BAAsADgAKAAIA+v/2//X/+v8AAAcACQAGAAAA+v/4//v/AAADAAIA///9//7/AgAEAAMA///6//j/+/8AAAUACAAHAAIA/P/2//T/+P8AAAoAEAANAAIA9P/s/+//+/8KABMAEgAHAPn/7//t//T/AAAMABMAEAAEAPb/7P/s//f/BgASABMACgD8//H/7//1/wAACQAMAAoAAwD7//b/9f/5/wAABwAJAAYA///6//n//f8BAAMAAQD+//3///8DAAQAAwD+//r/+f/7////BAAHAAgABAD+//b/8//2////CwARAA0AAQD0/+3/8P/7/wgAEQAQAAgA+//x/+3/8v/+/wsAEwARAAUA9v/s/+z/+P8GABEAEQAJAPz/8//x//X//v8HAAwACwAFAPz/9v/0//n/AQAHAAgABAD+//r/+//+/wEAAQD///7//v8AAAMABAACAP7/+//6//v//v8DAAcACQAGAP7/9v/x//X/AAALABEADQABAPT/7v/x//v/BwAPAA8ACQD9//P/7f/x//3/CwAUABIABQD2/+z/7f/4/wYADwAPAAgA/v/1//L/9f/8/wUACwAMAAYA/f/1//T/+v8CAAcABwADAP7//P/9////AAD///7//v///wIAAwADAAEA///8//v/+v/8/wIACAAKAAcA/v/0//D/9f8BAAwAEAAMAAAA9f/v//L/+v8FAA4AEAAKAP//8//s//D//P8LABQAEQAFAPb/7f/v//n/BQANAA4ACAAAAPf/8//0//v/BAALAAwABgD9//X/9P/6/wIABwAGAAIA/v/9//7/AAD///7//f/+/wAAAgADAAIAAQD///3/+v/5//v/AgAJAAsABwD9//P/8P/2/wEADAAPAAoAAQD3//H/8v/5/wMADQARAAwAAADz/+z/8P/9/wsAEwAQAAQA9//v//D/+P8DAAsADgAKAAIA+P/y//P/+v8EAAwADAAGAP3/9v/2//v/AQAFAAQAAgAAAP/////+//7//f/+////AQABAAIAAgACAAAA/f/6//j//P8DAAkACwAGAPz/9P/y//f/AgAKAA0ACgACAPj/8v/x//j/AwANABEADAAAAPL/7P/w//3/CwASAA8ABAD5//H/8f/3/wEACgAOAAwAAwD4//H/8v/6/wUADAAMAAUA/f/3//f/+////wMABAAEAAIAAAD+//z//P/+/wAAAQABAAAAAQACAAIAAAD8//n/+P/9/wQACgAKAAQA+//1//T/+f8BAAgADAAKAAMA+v/y//H/9/8DAA4AEgAMAP//8v/t//L//v8KABAADgAFAPr/8v/x//b///8JAA8ADQADAPj/8f/y//r/BQAMAAsABQD9//j/+P/6//7/AgAEAAUABAAAAP3/+//7//7/AQACAAEAAAAAAAIAAwAAAPz/+P/5//7/BQAJAAgAAgD7//f/9v/6/wAABwALAAoABAD6//L/8P/3/wMADgARAAoA/v/z/+//8//+/wgADgANAAYA/P/z//D/9P///woAEAANAAMA9//x//L/+/8FAAsACgAFAP7/+f/3//n//f8CAAYABwAEAAAA+//6//v///8CAAIAAQAAAAAAAgACAAAA/P/5//v///8FAAcABgABAPz/+P/3//r///8FAAoACgAEAPv/8//x//j/AwANABAACQD+//T/8P/0//3/BwANAA0ABwD9//T/8P/0////CgAQAA0AAgD3//H/8//7/wUACgAKAAUA///6//f/+P/8/wIABwAIAAQA/v/6//n//P8AAAIAAgAAAAAAAAABAAEA///8//v//P8AAAQABQAEAAEA/f/6//j/+v///wUACQAJAAQA+//z//L/+f8DAAwADgAIAP7/9f/y//X//f8GAAwADQAHAP3/9P/w//T///8KAA8ADAACAPf/8v/0//v/BAAJAAoABgAAAPr/9v/3//z/AwAIAAgABAD9//n/+f/9/wAAAgACAAEAAAABAAEAAAD+//z//P/+/wEAAwADAAMAAQD+//v/+f/6//7/BAAJAAkAAwD6//T/9P/6/wMACgALAAcA///4//T/9f/7/wQADAANAAgA/f/0//D/9f8AAAoADgAKAAEA+f/0//X/+/8CAAgACgAHAAEA+v/1//b//P8EAAgACAADAP3/+v/6//3/AAABAAEAAQABAAEAAAD+//3//f/+/wAAAQABAAIAAgACAP///P/5//r//v8EAAkACAACAPr/9f/2//v/AwAIAAkABgAAAPr/9f/1//r/AwALAA0ACAD9//T/8f/2/wAACQAMAAkAAgD6//b/9f/5/wAABwAKAAgAAgD6//X/9v/8/wQACAAHAAIA/f/7//v//f///wAAAgADAAMAAQD///3//P/+////AAAAAAAAAQACAAIAAAD8//n/+v///wUACAAGAAEA+//3//j//P8BAAYACAAHAAIA+//1//X/+v8DAAsADQAHAP3/9f/z//f///8HAAoACQADAPz/9//1//j///8HAAsACQACAPr/9f/2//3/AwAHAAYAAwD///z/+//7//3/AAADAAQABAABAP3//P/8//7/AAABAAAAAAABAAIAAgD///v/+v/7/wAABQAGAAUAAAD8//n/+f/8/wAABAAIAAcAAwD7//X/9f/6/wMACgALAAYA/v/3//X/+P/+/wUACQAJAAUA/v/3//T/9//+/wcACwAJAAIA+v/1//f//P8CAAYABgAEAAAA/f/6//r//P8AAAQABgAEAAAA/P/7//3///8AAAAAAAAAAAIAAgABAP7/+//7//3/AQAEAAUAAwAAAP3/+//6//v///8EAAgACAADAPv/9f/1//v/AwAJAAoABgD///j/9v/4//3/AwAIAAoABgD///f/8//2//7/BwALAAkAAgD6//b/9//8/wEABQAHAAUAAgD9//n/+P/7/wAABQAGAAQA///8//v//f///wAAAAAAAAEAAgACAAAA/f/7//z//v8BAAMAAwACAAEA/v/8//r/+v/+/wQACAAIAAMA+//2//b/+/8DAAgACQAGAAAA+v/3//f/+/8CAAgACwAHAP//9//z//b//v8HAAsACAACAPz/+P/3//r///8EAAcABwADAP3/+P/3//v/AQAGAAYAAwD///z//P/9//7///8AAAEAAgADAAEA///8//z//f///wEAAgACAAIAAgD///z/+f/6//7/BAAIAAgAAgD7//f/9//7/wIABgAIAAYAAQD7//f/9v/6/wEACQAMAAgA///3//P/9//+/wYACgAIAAMA/f/4//f/+f/+/wQACAAIAAMA/P/3//f//P8CAAYABgADAP///f/8//3//v///wAAAgADAAIAAAD9//z//f/+/wAAAAAAAAIAAwADAAAA/P/5//r//v8EAAgABwACAPz/+P/4//v/AAAFAAgABwADAPz/9v/1//n/AQAJAAwACAD///f/9P/3//7/BQAJAAgABAD+//j/9v/4//7/BQAKAAkAAwD7//b/9//8/wIABgAGAAMA///9//z//P/9////AgADAAMAAQD+//3//f///wAAAAD//wAAAQADAAMAAAD8//n/+v///wQABgAGAAIA/f/6//n/+v/+/wQACAAIAAQA/P/2//T/+f8CAAkADAAHAP//+P/1//f//f8EAAkACQAGAP//+P/0//f//v8GAAsACQACAPr/9v/3//z/AgAFAAYAAwAAAP3/+//7//3/AAADAAQAAgD///3//f/+/wAAAAD///7///8BAAMAAgAAAPz/+v/7////AwAFAAUAAgD///v/+f/5//3/AwAIAAkABAD8//b/9P/5/wIACQALAAcAAAD5//X/9//8/wMACQAKAAcA///3//P/9v/+/wcACwAJAAEA+v/2//j//P8CAAUABgAEAAAA/P/6//r//f8BAAUABQACAP7//P/9////AQAAAP///v///wEAAwACAP///f/7//z///8BAAMABAADAAAA/P/5//j//P8DAAgACQAEAPz/9v/1//n/AQAIAAoABwABAPr/9v/2//v/AgAJAAsABwD///f/8//3////BwALAAgAAgD7//f/+P/8/wEABQAHAAUAAAD8//n/+v/9/wIABQAEAAEA/v/8//3///8BAAAA////////AQACAAEAAAD+//z//P/+/wAAAwAEAAQAAQD8//j/+P/8/wMACAAJAAQA/f/3//X/+f8AAAcACgAIAAIA+//2//X/+v8CAAkADAAHAP//9v/z//f///8GAAoACAACAPz/+P/3//v/AAAFAAcABgABAPv/+P/5//7/AwAFAAQAAAD+//3//v///wAAAAD/////AAABAAEAAQAAAP///v/9//3///8CAAUABQACAPz/+P/4//z/AwAIAAgABAD9//j/9v/5////BQAJAAkAAwD8//X/9P/5/wIACgAMAAcA///3//T/9//+/wUACQAIAAMA/f/4//f/+f///wUACAAGAAEA+//4//r//v8DAAQAAwAAAP7//v/+/////////wAAAAAAAAAAAAAAAAEAAAD+//z//P/+/wMABgAGAAEA/P/4//j//f8DAAcACAAEAP//+f/2//j//f8EAAoACgAFAPz/9f/z//n/AgAKAAwABwD///j/9f/3//3/BAAIAAkABQD+//j/9f/4////BgAJAAcAAQD7//j/+v/+/wIAAwADAAEAAAD+//7//v/+////AAABAAAAAAAAAAAAAQAAAP7//P/7//7/AwAGAAYAAQD7//j/+P/9/wMABwAIAAUA///6//b/9//8/wQACgALAAYA/P/0//P/+P8BAAkADAAIAAAA+f/1//b//P8CAAgACgAGAP//+P/1//f//v8GAAkABwABAPv/+f/6//3/AQADAAMAAgABAP///f/9//7/AAABAAEAAAD//wAAAQABAAAA/f/7//v///8DAAYABQABAPz/+P/4//z/AQAGAAgABgAAAPn/9f/2//z/BAALAAsABQD8//X/8//4/wAACAALAAkAAgD6//X/9f/6/wIACQALAAcA///4//X/9//+/wUACAAHAAIA/f/5//n//P8AAAMABAADAAEA/v/8//z//v8AAAEAAQAAAAAAAQACAAEA///8//v//P8AAAQABgAFAAEA/P/5//n//P8BAAYACQAHAAEA+f/0//X/+/8FAAwADAAFAPz/9P/z//j/AAAIAAsACQADAPv/9f/0//n/AgAKAAwACAD///f/9P/3////BQAIAAYAAgD+//r/+f/7//7/AgAFAAUAAgD+//z//P/+/wAAAQAAAP//AAABAAIAAQD+//v/+v/8/wAABAAGAAQAAQD8//n/+P/7/wAABgAKAAgAAQD5//P/9f/8/wUADAALAAUA/P/1//P/9////wcADAAKAAQA+//0//P/+f8CAAoADAAHAP//9//1//j//v8EAAcABwADAP7/+v/4//r//v8DAAUABAABAP7//P/9////AAAAAP//AAABAAIAAgAAAP7/+//7//3/AAADAAUABQACAP3/+f/3//r/AAAHAAoACAAAAPj/9P/1//3/BQALAAsABQD9//b/8//2//7/BwAMAAsABAD6//P/8//5/wMACgALAAcA///4//b/+P/9/wMABwAHAAQA///6//j/+v///wMABQAEAAEA/v/9//7///////////8AAAEAAgACAAAA/f/8//v//f8AAAMABQAFAAIA/f/5//f/+v8AAAcACwAIAAAA+P/0//b//f8FAAoACgAFAP3/9//0//b//v8GAAwACwAEAPr/8//z//r/AwAKAAoABgD///n/9//4//3/AgAHAAcABAD///r/+P/6////BAAFAAMAAAD+//3//v///////v///wAAAgACAAIAAAD+//z//P/9////AgAFAAUAAwD+//j/9v/6/wEACAAKAAcAAAD4//X/9//9/wQACQAKAAYA///3//T/9v/+/wcADAALAAMA+v/0//T/+/8DAAgACQAGAAAA+v/3//j//P8CAAYACAAFAP//+v/4//v/AAAEAAQAAgAAAP7//v///////v/+////AQACAAIAAQD///7//f/9//3//v8BAAQABgADAP7/+P/2//r/AQAIAAoABgD///n/9v/4//3/AwAIAAkABgAAAPj/9P/2//3/BgAMAAoAAwD6//X/9f/7/wIABwAIAAYAAQD7//j/+P/7/wIABwAIAAQA///6//n//P8AAAIAAwACAAEA//////7//v/+////AAABAAEAAQABAAAA///9//z//P/+/wIABQAGAAIA/f/5//j/+/8BAAYACAAGAAEA+//3//f/+/8CAAgACgAHAP//+P/0//f//v8GAAoACQAEAPz/9//2//r/AAAGAAkABwACAPv/9//3//z/AgAGAAcABAD///v/+v/8//7/AQACAAMAAgAAAP///v/9//3///8AAAEAAQABAAEAAQD///3/+//7//7/AgAGAAYAAgD9//j/+P/7/wEABQAHAAYAAQD8//j/9//6/wEABwALAAgAAAD4//T/9v/+/wUACgAJAAMA/f/4//f/+f/+/wQACAAIAAQA/f/3//b/+v8BAAYABwAEAP///P/7//z//v8AAAEAAgADAAIAAAD9//z//f///wEAAQABAAEAAQABAAAA/f/7//v//v8DAAYABgACAPz/+P/4//z/AQAFAAcABgACAP3/+P/2//n/AAAHAAsACAABAPj/9P/2//3/BAAJAAgABAD+//n/9//4//3/AwAIAAkABAD9//j/9//6/wAABQAGAAQAAAD9//z/+//8//7/AQADAAQAAgD///3//P/9//7/AAAAAAEAAgACAAIA///8//r/+////wQABgAFAAEA/f/6//n/+////wQABwAHAAMA/f/3//X/+f8BAAgACgAHAAAA+f/2//f//P8CAAcACQAGAAAA+v/2//f//P8DAAkACQAEAP3/+f/4//v///8DAAUABQADAP///P/6//v//f8BAAQABQADAP///f/8//3//v///wAAAgADAAQAAgD+//r/+f/7/wAABAAGAAUAAQD9//r/+f/7//7/AwAHAAgABAD9//f/9f/5/wEABwAKAAcAAAD6//f/9//7/wEABgAJAAcAAgD7//b/9v/7/wMACAAJAAQA/v/6//j/+v/+/wIABAAFAAQAAQD9//r/+f/8/wEABAAFAAMAAAD9//z//P/9//7/AAADAAQABAABAP3/+v/5//z/AAAEAAYABQABAP3/+v/5//r///8EAAcABwADAP3/+P/2//n/AAAGAAkABwACAPv/9//3//r/AAAGAAgABwACAPz/9//2//v/AQAHAAkABgAAAPv/+P/5//z/AQAEAAYABQABAP3/+v/5//z/AAAEAAUABAABAP7//P/7//z//v8BAAMABQAEAAEA/f/6//r//P8AAAQABQAEAAIA/v/7//n/+v/+/wMABwAHAAMA/f/4//f/+v8AAAUABwAHAAMA/f/5//f/+f///wUACQAIAAMA/P/3//f/+/8BAAUABwAGAAIA/f/5//j/+v///wUACAAGAAEA/P/5//n//P8AAAMABQAEAAIA///8//r/+v/+/wIABQAFAAMA///8//v/+//9////AgAEAAUAAwD///r/+P/6////BAAHAAYAAgD+//r/+f/6//7/AwAHAAgABQD///n/9v/4//7/BQAJAAgAAwD9//j/9//6////BAAHAAcAAwD+//n/9//5////BQAIAAYAAgD8//n/+f/8/wAAAwAFAAQAAgD///z/+v/7//7/AgAFAAUAAwD///3/+//8//3///8CAAQABAADAP//+//5//r//v8DAAYABgADAP//+//5//r//f8CAAYACAAFAAAA+v/2//f//f8EAAgACAAEAP7/+f/3//n//v8DAAcACAAEAP7/+f/2//n///8FAAgABgACAP3/+v/5//z///8DAAUABQADAP//+//6//v//v8CAAQABAACAAAA/v/8//z//f/+/wEABAAEAAMAAAD8//r/+v/9/wEABQAGAAQAAAD8//n/+f/8/wEABgAIAAYAAAD6//f/9//8/wMABwAIAAUA///6//f/+P/9/wMABwAIAAUA/v/5//f/+f///wQABwAGAAIA/f/6//n/+////wIABQAFAAMA///8//r//P///wIAAwADAAIAAAD///3//P/8//7/AAADAAUAAwAAAPz/+v/7//3/AAADAAUABQACAP3/+f/4//r/AAAGAAkABwABAPr/9//4//z/AgAHAAgABQAAAPv/9//3//z/AgAIAAkABQD+//j/9//5////BAAGAAYAAgD+//v/+f/7//7/AgAFAAUAAgD+//v/+//9////AQACAAIAAQABAP///v/8//z//v8AAAMABAADAAAA/f/7//v//P///wMABQAFAAMA/v/5//j/+v///wUACAAHAAEA+//3//f/+/8BAAYACAAGAAEA+//3//f//P8CAAgACQAFAP//+f/3//n//v8EAAYABgADAP7/+//5//v//v8CAAUABQACAP7//P/7//3///8BAAIAAgABAAEAAAD+//3//P/+/wAAAgADAAMAAQD+//z/+//8//7/AgAFAAYAAwD///r/9//5////BQAIAAcAAgD8//j/9//7/wAABQAIAAcAAgD7//b/9v/7/wIACAAJAAUA///5//f/+f/+/wMABgAGAAMA///7//n/+v/+/wMABQAFAAIA/v/7//z//f///wEAAQABAAEAAQAAAP7//f/9//7/AAACAAMAAgABAP///f/8//v//f8BAAUABgAEAP//+v/3//n///8EAAcABwADAP3/+f/3//r///8FAAkACAADAPv/9v/2//v/AgAIAAkABQD///r/9//5//3/AgAGAAcABAD///r/+P/6//7/AwAGAAUAAQD+//z//P/9////AQACAAIAAgAAAP///v/9//7///8AAAEAAgACAAIAAAD9//v/+//9/wEABQAGAAQA///7//j/+v/+/wMABwAHAAQA/v/5//f/+f///wUACQAIAAMA/P/3//b/+v8BAAcACQAGAAAA+v/3//j//P8CAAcACAAEAP//+v/4//r///8DAAYABQABAP7//P/8//3///8BAAIAAgABAAAA/v/+//7//v///wAAAAABAAIAAgABAP7/+//7//3/AQAFAAYABAD///v/+f/6//3/AgAGAAcABQD///n/9v/4//7/BQAKAAkAAwD7//b/9v/7/wEABwAIAAYAAQD7//f/9//8/wIABwAIAAUA/v/5//f/+v///wQABQAEAAEA/v/8//z//f///wEAAwADAAEA///+//7//v///////////wEAAgACAAEA/v/7//v//f8BAAQABQAEAAAA/P/5//n//f8CAAYACAAFAP//+f/2//j//v8FAAkACAADAPz/9//2//r/AQAGAAkABwABAPv/9//3//z/AwAIAAgABAD+//n/+P/7////BAAFAAQAAQD+//z/+//9////AgADAAIAAAD///7//v//////////////AQACAAIAAQD+//z/+//9/wAAAwAFAAQAAAD8//r/+f/8/wEABgAIAAUA///5//b/+P/+/wUACQAIAAIA/P/3//f/+v8AAAYACQAHAAEA+v/2//f//P8DAAgACAADAP7/+f/5//v///8DAAUABAABAP7//P/7//3/AAACAAMAAQD///7//v///wAA//////7///8BAAIAAgABAP7//P/8//3/AAADAAQABAABAP3/+v/5//z/AQAGAAgABQD///n/9//5////BQAIAAcAAgD9//j/9//6/wAABgAIAAYAAQD6//f/+P/9/wMABwAHAAMA/v/6//r//P///wMABAAEAAEA/v/8//z//f8AAAIAAgABAP///v///wAAAAD///7//v///wEAAgACAAAA/v/8//z//f8AAAIABAAEAAEA/f/6//n//P8BAAYABwAEAP//+f/3//r///8EAAcABgADAP3/+f/4//r/AAAFAAgABgABAPr/9//5//7/AwAGAAUAAgD+//v/+//8////AgAEAAQAAQD+//z//P/+/wAAAgABAAAA/////wAAAAAAAP7//f/+/wAAAQACAAIAAAD///3//P/9////AgAEAAUAAgD9//n/+f/8/wIABgAHAAQA///6//j/+v/+/wMABgAGAAMA/v/5//j/+v8AAAUABwAGAAAA+//4//r//v8CAAUABQACAP///P/7//z///8BAAMAAwABAP///f/9//7/AAABAAEAAAD//wAAAAAAAP///v/+//7///8BAAIAAgABAP///f/8//z///8CAAQABAACAP3/+v/5//z/AQAFAAcABAD///v/+P/6//7/AwAGAAYAAwD+//r/+P/6////BAAHAAUAAQD8//n/+v/9/wEABAAFAAMA///9//v//P/+/wEAAwADAAEA///9//3//v8AAAAAAAAAAAAAAAABAAAA///+//3//v///wEAAgACAAEA///9//v//P///wIABQAFAAIA/f/6//n//P8BAAUABgAEAAAA/P/5//n//f8CAAYABwAEAP7/+v/4//r///8EAAYABQABAP3/+v/6//3/AAADAAQAAwAAAP3/+//8//7/AQADAAMAAQD///7//v///////////wAAAAABAAEAAAD///7//f/+////AQACAAIAAgAAAP3/+//7//7/AgAFAAUAAgD9//n/+f/8/wEABQAGAAQAAAD8//n/+f/9/wEABgAHAAQA///6//j/+v///wQABgAFAAEA/f/6//r//f8AAAMABAADAAEA/f/7//v//v8BAAMAAwABAP///v/+////////////AAAAAAEAAQAAAP///v/9//7///8BAAIAAwACAP///f/7//v//v8CAAUABQACAP3/+v/5//z/AAAEAAYABAAAAPz/+f/5//3/AQAGAAcABAD///r/+P/6////AwAGAAUAAgD9//r/+v/8/wAAAwAEAAMAAQD9//v//P/+/wAAAgACAAEAAAD+//7//v//////AAAAAAEAAQABAAAA///+//7//v///wEAAgADAAIA///9//v//P///wIABQAEAAEA/f/6//r//P8AAAQABgAFAAEA/P/5//n//P8BAAYABwAEAP//+v/5//r///8DAAUABQACAP7/+//6//z///8DAAUABAABAP3/+//7//7/AQACAAIAAQAAAP///v/+//7///8AAAEAAQABAAAA//////7//v/+////AAACAAMAAgD///z/+//8////AwAEAAQAAQD+//v/+//8////AwAFAAUAAQD8//n/+f/8/wIABgAGAAMA///7//n/+//+/wIABQAFAAMA///7//n/+////wMABQAEAAEA/f/7//z//v8AAAIAAgACAAEA///9//3//v///wEAAQABAAAAAAD//////v/+//7///8BAAIAAgABAP7//P/8//3///8CAAMAAwABAP7//P/7//z///8DAAUABAABAPz/+v/6//3/AQAFAAUAAwAAAPz/+v/6//7/AgAFAAUAAwD///v/+v/8////AwAEAAMAAQD+//z//P/9////AgADAAIAAQD///3//f/+////AQABAAEAAAAAAP/////+//7//v8AAAEAAgACAAAA/v/9//3//f///wIAAwADAAEA/v/8//v//P///wMABQAEAAEA/f/6//v//f8BAAQABQADAAAA/P/6//v//f8BAAQABQADAP///P/6//z///8CAAQAAwABAP///f/8//3///8BAAMAAwABAP///f/9//7///8BAAEAAQABAAAA///+//7//v///wAAAQACAAEAAAD+//3//f/+////AQACAAIAAQD///z/+//9/wAAAwAEAAMAAAD9//z/+//9/wAAAwAEAAMAAQD9//v/+//9/wEABAAEAAIA///8//v//P/+/wEAAwADAAIA///9//z//P///wEAAwADAAEA///9//3//v///wAAAQABAAEAAAD///7//f/+////AQABAAEAAAD//////v/+//7///8BAAIAAgABAP///f/8//3/AAACAAMAAgAAAP7//P/8//3///8CAAQAAwABAP7/+//7//3/AAADAAQAAgAAAP3//P/8//7/AAADAAMAAgAAAP3//P/8//7/AQADAAMAAQD///3//f/+////AAABAAIAAQAAAP///v/9//7/AAABAAEAAQAAAP/////+//7//v///wEAAgACAAEA///9//3//v8AAAEAAgACAAEA///9//3//f///wEAAwADAAEA/v/8//v//f8AAAIAAwACAAAA/v/8//z//f8AAAIAAwADAAAA/f/8//z//v8BAAMAAwABAP///v/9//3//v8AAAEAAgACAAAA/v/9//3///8AAAEAAQAAAAAA//////7//v/+////AQACAAEAAAD///7//v/+////AQABAAIAAQAAAP7//f/9////AQADAAMAAQD+//z//P/9/wAAAgADAAIAAQD///3//P/9////AgAEAAMAAAD+//z//P/+/wEAAgADAAEAAAD+//3//f/+/wAAAgACAAIAAAD+//3//v///wAAAQABAAAAAAD//////v/+////AAABAAEAAQAAAP///v/+//7///8AAAEAAQABAAAA/v/9//3//v8BAAIAAwABAP///f/8//3///8BAAIAAwABAP///f/8//3///8CAAQAAwABAP7//P/8//7/AAACAAMAAgAAAP7//f/9//7/AAACAAMAAgD///7//f/+////AQABAAEAAAAAAP/////+//7///8AAAEAAQAAAAAA/////////////wAAAAABAAEAAAD+//3//f/+/wEAAgADAAEA///9//3//f///wEAAgADAAIA///9//v//P///wIABAADAAAA/v/8//z//v8AAAIAAwACAAAA/v/8//z//v8AAAIAAwABAP///f/9//7/AAABAAEAAQAAAAAA//////7//////wAAAQAAAAAA//////////////7///8AAAIAAgAAAP7//f/9//7/AAACAAIAAQAAAP7//f/9//7/AAADAAMAAgD///z/+//8////AgAEAAMAAAD+//z//P/+/wAAAgADAAIAAAD+//z//P/+/wEAAwADAAEA///9//3//v8AAAEAAQABAAAA//////7//////wAAAAAAAAAA//8AAAAAAAD///7//v///wAAAQACAAAA///9//3//v8AAAIAAgACAAAA/v/9//z//v8AAAMABAACAP///P/7//z///8CAAQAAwAAAP7//P/8//7/AAACAAMAAgAAAP3//P/8//7/AQADAAMAAQD+//3//f///wAAAQABAAEAAAD//////v///wAAAAAAAAAA////////AAAAAAAA/v/+//7/AAACAAIAAQD///3//f/+/wAAAQACAAIAAQD+//3//P/9/wAAAwAEAAMA///8//v//P///wIABAADAAEA/v/8//z//f8AAAMABAADAAAA/f/7//z///8CAAMAAgAAAP7//f/9//7/AAABAAEAAQAAAP///v/+////AAABAAAA////////AAABAAAA///+//7///8AAAEAAQABAP///v/9//3///8BAAMAAwABAP7//P/7//3/AQADAAQAAgD///z/+//8////AgAEAAQAAQD+//z/+//9/wAAAwAEAAMA///9//v//f///wIAAwACAAEA///9//3//v8AAAEAAgABAP///v/+////AAABAAAAAAD///////8AAAEAAAD///7//v///wAAAQABAAEAAAD+//3//f/+/wEAAwADAAEA/v/8//v//f8BAAMABAACAAAA/f/7//z//v8BAAQABAACAP7/+//7//3/AAADAAQAAgD///3//P/9////AQACAAIAAQD///3//f/+/wAAAgACAAEA///+//7///8AAAEAAAD///////8AAAAAAAAAAP/////+//7///8AAAIAAgAAAP7//P/8//7/AQADAAMAAQD+//z//P/+/wAAAwADAAIAAAD9//v/+//+/wEABAAFAAIA/v/7//r//f8AAAMABAACAP///f/8//3//v8BAAIAAwABAP///f/8//3/AAACAAIAAQD///7//v///wAAAAAAAP///////wAAAAAAAAAA//////7//v///wAAAgACAAEA/v/8//z//v8BAAQAAwABAP7//P/8//7/AAACAAMAAwAAAP7/+//7//3/AQAEAAUAAgD+//v/+//9/wAAAwADAAIAAAD+//z//P/+/wAAAgADAAIA///9//z//v8AAAIAAgAAAP///v//////AAAAAAAA////////AAAAAAAAAAAAAP///v/+////AQACAAIAAAD+//z//f///wEAAwADAAEA/v/8//z//f8AAAIABAADAAAA/f/7//v//v8BAAQABAACAP7//P/7//3/AAACAAQAAwAAAP7//P/8//7/AQACAAMAAQD///3//f/+/wAAAQACAAEA///+//7///8AAAAAAAD///////8AAAAAAAAAAP/////+//7///8BAAIAAgAAAP7//P/8//7/AgAEAAMAAQD+//z//P/9/wAAAgADAAMAAAD9//v/+//+/wEABAAEAAIA/v/7//v//f8AAAMAAwACAAAA/v/8//z//v8AAAIAAwABAP///f/9//7/AAABAAEAAAD///////8AAAAAAAD///////8AAAAAAAAAAAAA///+//7//v8AAAEAAwACAAAA/f/8//3///8CAAMAAwABAP7//P/8//3/AAADAAQAAwAAAP3/+//7//7/AgAEAAQAAQD+//z/+//9/wAAAgADAAIAAAD+//z//P/+/wEAAgACAAEA///9//3//v8AAAEAAQAAAAAA//////////8AAP//////////AAAAAAEAAAD///7//v/+/wAAAgACAAEA///9//z//f///wIAAwADAAEA/v/8//v//f8AAAMABAADAAAA/P/7//z//v8CAAQABAABAP7//P/7//3/AAACAAQAAwAAAP7//P/8//7/AQACAAIAAQD///7//f/+////AAABAAEAAAD//////v///wAAAAAAAP////8AAAAAAQAAAP///v/+////AAACAAIAAQD///3//f/9////AQADAAMAAQD+//z/+//9/wAAAwAEAAMAAAD8//v//P///wIAAwAEAAIA///8//v//P///wIABAADAAEA/f/7//z//v8BAAMAAwABAP///v/9//7///8AAAEAAQABAP///v/+////AAAAAAAA////////AAABAAAA///+//7///8AAAIAAgABAP///v/9//3///8BAAIAAwABAP///P/7//3/AAADAAQAAwD///z/+//8//7/AQADAAQAAgD///z/+//8////AwAEAAMAAAD9//v//P/+/wEAAwACAAEA///+//3//f///wAAAgACAAEA///+//7///8AAAAAAAD/////AAAAAAAAAAD///7//v///wEAAQABAAAA///+//3//f///wEAAwADAAEA/v/8//v//f8AAAMABAACAP///f/7//z//v8BAAMAAwACAP///P/7//z///8CAAQAAwAAAP3//P/8//7/AQACAAIAAQAAAP7//f/9////AAABAAEAAQD///7//v//////AAAAAAAAAAAAAAAAAAD///7//v///wAAAQABAAEAAAD///7//f/+////AQADAAIAAAD+//z//P/+/wAAAgADAAIAAAD9//z//P/+/wEAAwADAAIA///8//z//f///wIAAwACAAAA/v/9//3//v///wEAAgACAAAA/v/9//3//v8AAAEAAQABAAAA////////////////AAABAAEAAAD///7//v/+////AAABAAEAAQAAAP///v/9//7/AAACAAIAAgAAAP7//P/9////AQACAAIAAQAAAP7//f/9//7/AAACAAMAAgD///3//P/9////AQADAAIAAQD///7//f/+////AAACAAIAAQD///3//f/+////AQACAAEAAAD//////v/+//////8AAAEAAQAAAP///v/+//7/AAAAAAEAAQAAAAAA///+//3//v8AAAEAAgACAAAA/v/9//3///8AAAIAAgABAAAA/v/9//3//v8AAAIAAwACAAAA/f/8//3///8BAAIAAgABAP///v/9//3///8AAAIAAgABAP///v/9//7///8AAAEAAQABAAAA///+//7//v///wEAAQABAAAA///+//7//v///wAAAQABAAEAAAD///7//f/+/wAAAQACAAIAAAD+//3//f/+/wAAAQACAAIAAAD+//3//f/+/wAAAgADAAIAAAD9//3//f///wEAAgACAAEAAAD+//3//f/+/wAAAgACAAEA///+//3//v///wAAAQABAAEAAAD///7//f/+////AQACAAEAAAD///7//v/+////AAABAAIAAQAAAP7//f/9//7/AAACAAIAAQD///7//f/9//7/AAABAAIAAgAAAP7//f/9//7/AAACAAIAAQD///7//f/+//7/AAABAAIAAgAAAP///f/9//7/AAACAAIAAQAAAP///v/+//7///8AAAEAAgABAP///v/9//7///8BAAIAAQAAAP///v/+//7///8AAAEAAgABAAAA/v/9//3///8BAAIAAgABAP///v/+//7//v///wEAAgACAAAA/v/9//3//v8AAAEAAgABAAAA///+//3//v///wEAAgACAAEA///9//3//v8AAAEAAgACAAAA///9//3//v///wEAAgACAAEA///9//3//v8AAAEAAgABAAAA///+//7//v///wAAAQACAAEA///+//3//v///wAAAQABAAEAAAD///7//f/+////AQACAAIAAAD///3//f/+////AQACAAIAAQD///3//P/9////AQADAAMAAQD+//z//P/+/wAAAgACAAIAAQD///3//P/9////AgADAAIAAAD+//3//f///wAAAQABAAEAAAD///7//v/+////AAABAAEAAAD///7//v/+//////8AAAEAAQABAP///v/9//3///8BAAIAAgABAP///f/9//3///8BAAIAAwACAP///f/8//3///8CAAMAAwAAAP7//P/8//7/AAACAAMAAgABAP7//P/8//7/AAACAAMAAgAAAP7//f/+////AAABAAEAAQAAAP///v/9//7///8BAAEAAQAAAP/////+//7//v///wAAAQACAAEA///+//3//f///wEAAgACAAEA///9//3//f///wEAAgADAAIA///9//z//f///wIAAwADAAEA/v/9//z//v///wEAAwACAAEA///9//z//f8AAAIAAwACAAAA/v/9//3//v8AAAEAAQABAAEA///+//3//v///wEAAgABAAAA//////7//v//////AAABAAEAAQD///7//f/+////AQACAAIAAQD///7//f/9//7/AAACAAMAAgD///3//P/9////AQADAAMAAQD///3//P/9////AQADAAMAAQD+//z//P/9/wAAAgADAAIAAAD+//3//f/+/wAAAQACAAEAAAD+//3//v///wAAAQABAAEAAAD//////v////////8AAAEAAQAAAP/////+//7///8AAAEAAgABAAAA/v/9//3//v8AAAIAAwACAP///f/8//3///8BAAMAAwABAP///f/8//3///8CAAMAAwABAP7//P/8//7/AAACAAMAAgAAAP7//f/9//7/AAACAAIAAQAAAP7//f/+////AAABAAEAAAAAAP///////////////wAAAQABAAAA///+//7//v///wAAAQACAAIAAAD+//3//f/+/wEAAwADAAEA///9//z//f///wEAAwADAAEA///8//v//f///wIABAADAAAA/v/8//z//v8AAAIAAwACAAAA/v/9//3//v8AAAIAAgABAAAA/v/+//7///8AAAAAAQABAAAAAAD///7//v//////AAABAAEAAQD///7//v/+////AAABAAIAAQAAAP7//P/9//7/AQADAAMAAgD///3//P/9////AQADAAMAAQD///3//P/9////AgADAAMAAQD+//3//P/9/wAAAgADAAIAAAD+//3//f/+/wAAAQACAAEAAAD///7//v/+////AAABAAEAAAAAAP///v/+//////8AAAAAAQABAAAA///+//3//v8AAAIAAgABAAAA/v/9//3//v8AAAIAAwACAAAA/v/8//z//v8BAAMAAwACAP///f/8//3///8BAAMAAwABAP///f/8//3///8BAAMAAgAAAP7//f/9//7/AAABAAIAAQAAAP///v/+////AAAAAAAAAAAAAAAA/////////////wAAAAAAAAAAAAD//////v/+////AAACAAIAAQD///3//P/+/wAAAgADAAIAAAD+//3//f/+/wAAAgADAAIAAAD9//v//P///wIABAADAAAA/v/8//3//v8AAAEAAgACAAAA/v/9//3//v8AAAIAAgABAP///v/+////AAAAAAAAAAAAAAAAAAD/////////////AAAAAAAAAAAAAAAA///+//7///8AAAIAAgABAP///f/8//7/AAACAAMAAgAAAP7//P/8//7/AQADAAQAAgD///z/+//8////AgAEAAMAAQD+//z//P/+/wAAAgADAAIAAAD+//3//f/+/wAAAgACAAEA///+//7//////wAAAAAAAAAAAAAAAP////////////8AAAAAAQABAAEA///+//3//f///wEAAwACAAEA/v/8//z//v8AAAIAAwACAAAA/v/8//z//v8AAAMABAACAP///P/7//z///8CAAMAAwABAP///f/8//3///8BAAMAAgABAP7//f/9//7/AAABAAEAAQAAAP/////+//////8AAAAAAAAAAAAA////////////////AAABAAEAAQD///7//f/+////AQACAAIAAQD///3//P/9////AQADAAMAAQD+//z//P/+/wAAAgADAAIAAAD+//z//P/+/wEAAwADAAIA///9//z//f///wEAAgACAAAA///9//3//v8AAAEAAQABAAAA///+//7//////wAAAAAAAAAAAAAAAAAA//////////8AAAEAAQABAAAA/v/+//7///8AAAEAAgABAAAA/v/9//3///8BAAMAAwABAP7//P/8//3/AAACAAMAAgAAAP7//P/8//7/AAACAAMAAgD///3//P/9////AgACAAIAAAD+//3//f/+/wAAAQABAAEAAAD///7//v///wAAAAAAAAAA/////wAAAAD//////////wAAAAABAAEAAAD///7//v/+/wAAAQACAAEA///9//z//f///wEAAwADAAEA/v/8//z//v8AAAIAAwACAAAA/f/8//z//v8BAAMAAwABAP///f/8//3/AAACAAIAAgAAAP7//f/9//7/AAABAAEAAQAAAP///v/+////AAAAAAAAAAAAAAAAAAAAAP///v/+////AAABAAEAAQD///7//f/+////AAACAAIAAQD///3//P/8////AgAEAAMAAAD+//z//P/+/wAAAgADAAIAAAD+//z//P/+/wEAAwADAAIA///9//z//f8AAAEAAgABAAAA///+//7//v///wAAAQABAAEA///+//7//////wAAAAAAAAAAAQABAAAA///+//7///8AAAIAAgABAP///v/9//7///8AAAIAAgACAAAA/f/8//z///8CAAMAAwABAP7//P/8//7/AAACAAIAAgAAAP7//f/8//7/AAACAAMAAgAAAP7//f/9////AQABAAEAAAD//////v/+////AAAAAAEAAQAAAP////////////8AAAAAAAAAAAAAAAD///7//v///wAAAQABAAEAAAD+//7//v///wAAAQACAAEAAAD+//3//f///wEAAgACAAEA///9//3//f///wEAAgACAAEA/v/9//3//v8AAAIAAgABAAAA/v/9//7///8AAAEAAQABAP///v/+//7///8AAAEAAQAAAP///////////////wAAAAAAAAAAAAD///////////////8AAAEAAQAAAP///v/9//7/AAABAAIAAQD///7//f/9////AQACAAIAAQD///3//P/9////AQADAAIAAAD+//3//f/+/wAAAgACAAEAAAD+//3//f///wEAAgACAAEA///+//7//v///wAAAQABAAAA/////////////wAAAAAAAAAAAAAAAAAA///+//7///8AAAEAAQABAAAA/v/+//7///8AAAEAAgABAAAA/v/8//3//v8BAAMAAwABAP///f/8//3/AAABAAIAAgABAP7//f/8//7/AAACAAMAAgAAAP7//f/9////AAABAAEAAQAAAP7//v/+////AAABAAEAAAAAAP///////////////wAAAAABAAAAAAD///7//v///wAAAQABAAEAAAD///3//f/+/wAAAgACAAIA///9//z//f///wEAAgACAAEA///9//3//f///wEAAwADAAEA/v/9//z//v8AAAIAAgABAAAA///+//7//v///wEAAgABAAAA///+//7///8AAAEAAQAAAAAA////////////////AAABAAEAAAD///7//v//////AAAAAAEAAQAAAP///v/9//7/AAACAAIAAQD///7//f/+////AAABAAIAAQAAAP7//f/9////AQACAAIAAQD///3//f/+/wAAAQABAAEAAAD///7//f/+////AQACAAEAAAD+//7//v///wAAAAAAAAAAAAAAAP///v/+////AAABAAEAAAAAAP////////////8AAAAAAQABAAAA/v/+//7///8AAAEAAQABAAAA/v/+//7///8AAAEAAgABAP///v/9//3///8BAAIAAgABAP///v/9//7///8BAAIAAgABAP///f/9//7/AAABAAEAAQAAAP///v/+//7///8AAAEAAQAAAP///v/+////AAAAAAAAAAAAAAAAAAD///7//v///wAAAQABAAAA///+//7//v///wAAAQABAAEAAAD///7//f/+/wAAAgACAAEA///+//3//v///wEAAQABAAEA///+//3//v///wAAAgACAAEA///+//3//v8AAAEAAQABAAAA///+//7//////wAAAQABAAAA//////7//////wAAAAAAAAAAAAD/////////////AAABAAEAAAD//////v/+////AAABAAEAAQAAAP///v/+////AAABAAEAAQD///7//v/+////AAABAAEAAAAAAP///v/+////AAABAAEAAAD///7//v//////AAAAAAAAAAAAAP///v//////AAAAAAAAAAD/////////////AAAAAAAAAAAAAP////////////8AAAAAAAAAAP////////////8AAAAAAAAAAAAA///+//////8AAAAAAAAAAP////////////8AAAAAAAAAAAAA///+//////8AAAAAAAAAAP////////////8AAAAAAAAAAP////////////8AAAAAAAAAAP////////////8AAAAAAAAAAAAA//////////8AAAAAAAAAAAAA/////////////wAAAAAAAAAA/////////////wAAAAAAAAAA/////////////wAAAAAAAAAA/////////////wAAAAAAAAAA/////////////wAAAAAAAAAA//////////8AAAAAAAAAAA=="
   };
 
-  const params = {...defaults};
+  const presets = [
+    {id:"light_spinning",name:"1. Light Spinning Reel",description:"Clean, light and quick for small fish.",sample:"friction",baseRate:1.08,pitchRise:2.0,clickDensity:13,texture:.12,pullDifference:.28,masterVolume:.68,tail:.105},
+    {id:"crisp_spinning",name:"2. Crisp Spinning Reel",description:"Sharper clicks with a brighter fish-pull sound.",sample:"friction",baseRate:1.18,pitchRise:2.8,clickDensity:18,texture:.16,pullDifference:.40,masterVolume:.66,tail:.095},
+    {id:"smooth_reel",name:"3. Smooth Reel",description:"Softer and less aggressive, with a smooth mechanical bed.",sample:"salt",baseRate:.96,pitchRise:1.7,clickDensity:10,texture:.14,pullDifference:.25,masterVolume:.67,tail:.180},
+    {id:"metallic_reel",name:"4. Metallic Reel",description:"Bright, metallic and detailed without a continuous tone.",sample:"mix",baseRate:1.20,pitchRise:3.2,clickDensity:21,texture:.25,pullDifference:.48,masterVolume:.62,tail:.120},
+    {id:"baitcaster",name:"5. Compact Baitcaster",description:"Fast, tight clicks and a compact mechanical character.",sample:"friction",baseRate:1.28,pitchRise:3.5,clickDensity:27,texture:.18,pullDifference:.34,masterVolume:.60,tail:.080},
+    {id:"heavy_conventional",name:"6. Heavy Conventional Reel",description:"Lower, slower and heavier for offshore tackle.",sample:"salt",baseRate:.78,pitchRise:1.4,clickDensity:9,texture:.48,pullDifference:.50,masterVolume:.74,tail:.220},
+    {id:"offshore_drag",name:"7. Offshore Drag Reel",description:"Strong, gritty drag sound when a fish takes line.",sample:"mix",baseRate:1.02,pitchRise:3.8,clickDensity:22,texture:.38,pullDifference:.78,masterVolume:.70,tail:.155},
+    {id:"kingfish_run",name:"8. High-Speed Kingfish Run",description:"Rapid clicking and a clear natural pitch rise at high speed.",sample:"mix",baseRate:1.16,pitchRise:5.4,clickDensity:34,texture:.30,pullDifference:.88,masterVolume:.68,tail:.095},
+    {id:"grouper_heavy",name:"9. Heavy Grouper Reel",description:"Deep, loaded and slower, with less high-speed scream.",sample:"salt",baseRate:.70,pitchRise:.9,clickDensity:7,texture:.65,pullDifference:.42,masterVolume:.76,tail:.260},
+    {id:"big_game",name:"10. Large Game Reel",description:"Heavy body with strong, aggressive line-out character.",sample:"mix",baseRate:.88,pitchRise:4.0,clickDensity:19,texture:.58,pullDifference:.92,masterVolume:.74,tail:.180}
+  ];
 
-  let ctx = null;
-  let master = null;
-
-  let toneOsc = null;
-  let toneGain = null;
-
-  let whineOsc = null;
-  let whineGain = null;
-
-  let noiseSource = null;
-  let noiseFilter = null;
-  let noiseGain = null;
-
-  let dragSource = null;
-  let dragFilter = null;
-  let dragGain = null;
-
-  let activeMode = null;
-  let animationId = null;
-  let lastTime = 0;
+  let presetIndex = 0;
+  let settings = {...presets[0]};
+  let movement = 0;
+  let ctx = null, master = null, compressor = null;
+  let noiseSource = null, noiseFilter = null, noiseGain = null;
+  let buffers = {friction:null,salt:null};
+  let previousTime = performance.now();
   let clickAccumulator = 0;
+  let currentRate = 1;
 
-  function makeNoiseBuffer(seconds = 3){
-    const length = ctx.sampleRate * seconds;
+  async function dataUriToBuffer(uri){
+    const response = await fetch(uri);
+    const arrayBuffer = await response.arrayBuffer();
+    return await ctx.decodeAudioData(arrayBuffer.slice(0));
+  }
+
+  function makeNoiseBuffer(){
+    const length = ctx.sampleRate * 2;
     const buffer = ctx.createBuffer(1,length,ctx.sampleRate);
     const data = buffer.getChannelData(0);
-
     let brown = 0;
     for(let i=0;i<length;i++){
       const white = Math.random()*2-1;
-      brown = (brown + .02*white)/1.02;
-      data[i] = clamp(white*.8 + brown*2,-1,1);
+      brown = (brown + .018*white)/1.018;
+      data[i] = clamp(white*.52 + brown*2.2,-1,1);
     }
-
     return buffer;
   }
 
   async function enableAudio(){
-    if(ctx){
-      await ctx.resume();
-      return;
-    }
-
+    if(ctx){await ctx.resume();return true;}
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-
-    if(!AudioContextClass){
-      $("status").textContent = "Web Audio API is not supported in this browser.";
-      return;
-    }
+    if(!AudioContextClass){$("status").textContent="Web Audio API is not supported in this browser.";return false;}
 
     ctx = new AudioContextClass({latencyHint:"interactive"});
-
     master = ctx.createGain();
-    master.gain.value = params.masterVolume;
-    master.connect(ctx.destination);
-
-    toneOsc = ctx.createOscillator();
-    toneOsc.type = params.waveform;
-    toneOsc.frequency.value = params.basePitch;
-
-    toneGain = ctx.createGain();
-    toneGain.gain.value = .0001;
-
-    toneOsc.connect(toneGain).connect(master);
-    toneOsc.start();
-
-    whineOsc = ctx.createOscillator();
-    whineOsc.type = "sine";
-    whineOsc.frequency.value = params.basePitch*3;
-
-    whineGain = ctx.createGain();
-    whineGain.gain.value = .0001;
-
-    whineOsc.connect(whineGain).connect(master);
-    whineOsc.start();
-
-    const noiseBuffer = makeNoiseBuffer();
+    compressor = ctx.createDynamicsCompressor();
+    compressor.threshold.value=-15;compressor.knee.value=14;compressor.ratio.value=5;compressor.attack.value=.003;compressor.release.value=.14;
+    master.connect(compressor).connect(ctx.destination);
 
     noiseSource = ctx.createBufferSource();
-    noiseSource.buffer = noiseBuffer;
+    noiseSource.buffer = makeNoiseBuffer();
     noiseSource.loop = true;
-
     noiseFilter = ctx.createBiquadFilter();
     noiseFilter.type = "bandpass";
-    noiseFilter.frequency.value = params.noiseFrequency;
-    noiseFilter.Q.value = params.resonance;
-
     noiseGain = ctx.createGain();
     noiseGain.gain.value = .0001;
-
     noiseSource.connect(noiseFilter).connect(noiseGain).connect(master);
     noiseSource.start();
 
-    dragSource = ctx.createBufferSource();
-    dragSource.buffer = noiseBuffer;
-    dragSource.loop = true;
+    [buffers.friction,buffers.salt] = await Promise.all([
+      dataUriToBuffer(EMBEDDED_AUDIO.friction),
+      dataUriToBuffer(EMBEDDED_AUDIO.salt)
+    ]);
 
-    dragFilter = ctx.createBiquadFilter();
-    dragFilter.type = "bandpass";
-    dragFilter.frequency.value = params.dragFrequency;
-    dragFilter.Q.value = params.dragRoughness;
-
-    dragGain = ctx.createGain();
-    dragGain.gain.value = .0001;
-
-    dragSource.connect(dragFilter).connect(dragGain).connect(master);
-    dragSource.start();
-
-    $("enableAudio").textContent = "Audio Enabled";
-    $("enableAudio").disabled = true;
-    $("status").textContent = "Audio ready.";
+    master.gain.value = settings.masterVolume;
+    $("enableAudio").textContent="Audio Enabled";
+    $("enableAudio").disabled=true;
+    $("status").textContent="Audio ready. Move the slider or press Test Click.";
+    return true;
   }
 
-  function setGain(audioParam,value,time=.025){
-    if(!ctx || !audioParam) return;
-    audioParam.setTargetAtTime(Math.max(.0001,value),ctx.currentTime,time);
-  }
-
-  function playClick(){
-    if(!ctx) return;
-
+  function playOne(buffer,gainAmount,rate,duration,brightness){
+    if(!ctx || !buffer) return;
     const now = ctx.currentTime;
-
-    const pitchVariation =
-      1 + (Math.random()*2-1)*params.clickPitchRandom;
-
-    const volumeVariation =
-      1 + (Math.random()*2-1)*params.clickVolumeRandom;
-
-    const startPitch = Math.max(50,params.clickPitch*pitchVariation);
-    const endPitch = Math.max(
-      40,
-      startPitch*(1-params.clickPitchDrop)
-    );
-
-    const attack = Math.max(.0005,params.clickAttack);
-    const decay = Math.max(attack+.001,params.clickDecay);
-
-    const osc = ctx.createOscillator();
+    const source = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
     const gain = ctx.createGain();
-    const highPass = ctx.createBiquadFilter();
-
-    osc.type = params.clickWaveform;
-    osc.frequency.setValueAtTime(startPitch,now);
-    osc.frequency.exponentialRampToValueAtTime(endPitch,now+decay);
-
-    highPass.type = "highpass";
-    highPass.frequency.value = params.clickHighPass;
-
+    source.buffer = buffer;
+    source.playbackRate.value = rate;
+    filter.type = "lowpass";
+    filter.frequency.value = brightness;
+    filter.Q.value = .55;
     gain.gain.setValueAtTime(.0001,now);
-    gain.gain.exponentialRampToValueAtTime(
-      Math.max(.0002,.08*params.clickVolume*volumeVariation),
-      now+attack
-    );
-    gain.gain.exponentialRampToValueAtTime(.0001,now+decay);
+    gain.gain.exponentialRampToValueAtTime(Math.max(.0002,gainAmount),now+.0015);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+Math.max(.018,duration));
+    source.connect(filter).connect(gain).connect(master);
+    source.start(now,0,Math.min(buffer.duration,duration+.015));
+    source.stop(now+Math.min(buffer.duration,duration+.02)+.01);
+  }
 
-    osc.connect(highPass).connect(gain).connect(master);
-    osc.start(now);
-    osc.stop(now+decay+.02);
+  function playClick(speed,direction,isTest=false){
+    if(!ctx) return;
+    const pull = direction > 0;
+    const directionRate = pull ? 1 + settings.pullDifference*.07 : 1 - settings.pullDifference*.025;
+    const randomRate = .985 + Math.random()*.03;
+    const rate = currentRate * directionRate * randomRate;
+    const level = isTest ? .12 : (pull ? .095 : .075) * (.55+speed*.75);
+    const brightness = pull ? 6100 : 4200;
+    const duration = isTest ? Math.max(settings.tail,.16) : settings.tail*(pull?1.12:.82);
+    const sample = $("sampleSelect").value;
 
-    if(params.clickBody>0){
-      const bodyOsc = ctx.createOscillator();
-      const bodyGain = ctx.createGain();
-      const bodyFilter = ctx.createBiquadFilter();
-
-      bodyOsc.type = "sine";
-      bodyOsc.frequency.setValueAtTime(
-        Math.max(40,params.clickBodyFrequency*pitchVariation),
-        now
-      );
-      bodyOsc.frequency.exponentialRampToValueAtTime(
-        Math.max(35,params.clickBodyFrequency*.55),
-        now+decay*1.5
-      );
-
-      bodyFilter.type = "lowpass";
-      bodyFilter.frequency.value = Math.max(100,params.clickBodyFrequency*2.3);
-
-      bodyGain.gain.setValueAtTime(.0001,now);
-      bodyGain.gain.exponentialRampToValueAtTime(
-        .05*params.clickBody*params.clickVolume*volumeVariation,
-        now+attack
-      );
-      bodyGain.gain.exponentialRampToValueAtTime(
-        .0001,
-        now+decay*1.5
-      );
-
-      bodyOsc.connect(bodyFilter).connect(bodyGain).connect(master);
-      bodyOsc.start(now);
-      bodyOsc.stop(now+decay*1.6+.02);
+    if(sample === "friction") playOne(buffers.friction,level,rate,Math.min(duration,.12),brightness);
+    else if(sample === "salt") playOne(buffers.salt,level*.92,rate,Math.min(duration,.30),brightness*.86);
+    else {
+      playOne(buffers.friction,level*.72,rate*1.018,Math.min(duration,.12),brightness);
+      playOne(buffers.salt,level*.44,rate*.97,Math.min(duration,.24),brightness*.78);
     }
   }
 
-  function movementValue(timeSeconds){
-    const phase = ((timeSeconds*params.speed)%1+1)%1;
-
-    switch(params.movementShape){
-      case "triangle":
-        return 1 - 4*Math.abs(phase-.5);
-      case "saw":
-        return phase*2-1;
-      case "reverseSaw":
-        return 1-phase*2;
-      default:
-        return Math.sin(timeSeconds*params.speed*Math.PI*2);
-    }
-  }
-
-  function startMode(mode){
-    if(!ctx){
-      enableAudio().then(() => startMode(mode));
-      return;
-    }
-
-    activeMode = mode;
-    params.mode = mode;
-    $("mode").value = mode;
-
-    $("reelIn").classList.toggle("active",mode==="reel");
-    $("lineOut").classList.toggle("active",mode==="drag");
-
-    clickAccumulator = 0;
-    lastTime = performance.now();
-
-    if(!animationId){
-      animationId = requestAnimationFrame(updateSound);
-    }
-
-    $("status").textContent =
-      mode==="reel"
-      ? "Playing reel-in sound."
-      : "Playing fish-taking-line drag sound.";
-
-    refreshJson();
-  }
-
-  function stopSound(){
-    activeMode = null;
+  function updateAudio(now){
+    const dt = Math.min(.05,(now-previousTime)/1000 || 0);
+    previousTime = now;
+    const speed = Math.abs(movement);
+    const direction = Math.sign(movement);
 
     if(ctx){
-      setGain(toneGain.gain,.0001);
-      setGain(whineGain.gain,.0001);
-      setGain(noiseGain.gain,.0001);
-      setGain(dragGain.gain,.0001);
-    }
+      const semitones = settings.pitchRise * Math.pow(speed,.9);
+      currentRate = settings.baseRate * Math.pow(2,semitones/12);
+      if(direction > 0) currentRate *= 1 + settings.pullDifference*.035;
+      else if(direction < 0) currentRate *= 1 - settings.pullDifference*.012;
 
-    $("reelIn").classList.remove("active");
-    $("lineOut").classList.remove("active");
-    $("status").textContent = "Stopped.";
+      const textureFrequency = direction > 0 ? 1200+speed*3600 : 650+speed*1800;
+      noiseFilter.frequency.setTargetAtTime(textureFrequency,ctx.currentTime,.025);
+      noiseFilter.Q.setTargetAtTime(direction > 0 ? 1.1+settings.pullDifference*2.8 : .8+settings.pullDifference*.8,ctx.currentTime,.03);
+      const textureVolume = speed<.01 ? .0001 : settings.texture*(direction>0?.040:.025)*(.22+speed);
+      noiseGain.gain.setTargetAtTime(Math.max(.0001,textureVolume),ctx.currentTime,.025);
+      master.gain.setTargetAtTime(settings.masterVolume,ctx.currentTime,.04);
+
+      const rate = settings.clickDensity * speed * (direction>0 ? 1.08+settings.pullDifference*.22 : .86);
+      clickAccumulator += dt*rate;
+      while(clickAccumulator>=1){clickAccumulator-=1;playClick(speed,direction,false);}
+      if(speed<.01) clickAccumulator=0;
+      $("pitchValue").textContent = speed<.01 ? settings.baseRate.toFixed(2)+"×" : currentRate.toFixed(2)+"×";
+    }
+    requestAnimationFrame(updateAudio);
   }
 
-  function updateSound(now){
-    const dt = Math.min(.05,(now-lastTime)/1000 || 0);
-    lastTime = now;
+  function buildPresetMenu(){
+    presets.forEach((p,i)=>{const option=document.createElement("option");option.value=i;option.textContent=p.name;$("presetSelect").appendChild(option);});
+  }
 
-    if(ctx){
-      master.gain.setTargetAtTime(params.masterVolume,ctx.currentTime,.04);
+  function applyPreset(index){
+    presetIndex=Number(index);settings={...presets[presetIndex]};
+    $("presetSelect").value=presetIndex;$("presetDescription").textContent=settings.description;$("sampleSelect").value=settings.sample;
+    $("baseRate").value=settings.baseRate;$("pitchRise").value=settings.pitchRise;$("clickDensity").value=settings.clickDensity;$("texture").value=settings.texture;$("pullDifference").value=settings.pullDifference;$("masterVolume").value=settings.masterVolume;
+    updateLabels();refreshJson();$("status").textContent="Loaded "+settings.name+".";
+  }
 
-      toneOsc.type = params.waveform;
-
-      const movement = movementValue(now/1000);
-      const pulse = movement*params.pitchMovement;
-
-      const toneFrequency = Math.max(20,params.basePitch + pulse);
-
-      toneOsc.frequency.setTargetAtTime(
-        toneFrequency,
-        ctx.currentTime,
-        .02
-      );
-
-      whineOsc.frequency.setTargetAtTime(
-        Math.max(30,toneFrequency*3.1),
-        ctx.currentTime,
-        .02
-      );
-
-      noiseFilter.frequency.setTargetAtTime(
-        params.noiseFrequency,
-        ctx.currentTime,
-        .03
-      );
-
-      noiseFilter.Q.setTargetAtTime(
-        params.resonance,
-        ctx.currentTime,
-        .03
-      );
-
-      dragFilter.frequency.setTargetAtTime(
-        params.dragFrequency + pulse*.8,
-        ctx.currentTime,
-        .02
-      );
-
-      dragFilter.Q.setTargetAtTime(
-        params.dragRoughness,
-        ctx.currentTime,
-        .03
-      );
-
-      if(activeMode==="reel"){
-        setGain(toneGain.gain,params.toneVolume*.05);
-        setGain(whineGain.gain,params.gearWhine*.022);
-        setGain(noiseGain.gain,params.mechanicalNoise*.045);
-        setGain(dragGain.gain,.0001);
-
-        clickAccumulator += dt*params.clickRate*params.speed;
-
-        while(clickAccumulator>=1){
-          clickAccumulator -= 1;
-          playClick();
-        }
-      }
-      else if(activeMode==="drag"){
-        const dragPulse =
-          1 +
-          movement *
-          params.dragPulse;
-
-        setGain(toneGain.gain,params.toneVolume*.018);
-        setGain(whineGain.gain,params.gearWhine*.012);
-        setGain(noiseGain.gain,params.mechanicalNoise*.018);
-        setGain(dragGain.gain,params.dragVolume*.09*dragPulse);
-
-        clickAccumulator += dt*params.clickRate*params.speed*1.7;
-
-        while(clickAccumulator>=1){
-          clickAccumulator -= 1;
-          playClick();
-        }
-      }
-      else{
-        setGain(toneGain.gain,.0001);
-        setGain(whineGain.gain,.0001);
-        setGain(noiseGain.gain,.0001);
-        setGain(dragGain.gain,.0001);
-      }
-    }
-
-    animationId = requestAnimationFrame(updateSound);
+  function readControls(){
+    settings.baseRate=Number($("baseRate").value);settings.pitchRise=Number($("pitchRise").value);settings.clickDensity=Number($("clickDensity").value);settings.texture=Number($("texture").value);settings.pullDifference=Number($("pullDifference").value);settings.masterVolume=Number($("masterVolume").value);settings.sample=$("sampleSelect").value;
+    updateLabels();refreshJson();
   }
 
   function updateLabels(){
-    document.querySelectorAll("[data-value]").forEach(el => {
-      const key = el.dataset.value;
-      const value = params[key];
-
-      if([
-        "basePitch",
-        "clickPitch",
-        "clickBodyFrequency",
-        "clickHighPass",
-        "noiseFrequency",
-        "dragFrequency"
-      ].includes(key)){
-        el.textContent = Math.round(value)+" Hz";
-      }
-      else if(key==="clickRate"){
-        el.textContent = Math.round(value)+"/s";
-      }
-      else if(["clickAttack","clickDecay"].includes(key)){
-        el.textContent = Number(value).toFixed(4)+" s";
-      }
-      else if(key==="speed"){
-        el.textContent = Number(value).toFixed(2)+"×";
-      }
-      else{
-        el.textContent = Number(value).toFixed(2);
-      }
-    });
+    $("baseRateValue").textContent=settings.baseRate.toFixed(2)+"×";
+    $("pitchRiseValue").textContent="+"+settings.pitchRise.toFixed(1)+" semitones";
+    $("clickDensityValue").textContent=Math.round(settings.clickDensity)+"/s max";
+    $("textureValue").textContent=settings.texture.toFixed(2);
+    $("pullDifferenceValue").textContent=settings.pullDifference.toFixed(2);
+    $("masterVolumeValue").textContent=settings.masterVolume.toFixed(2);
   }
 
-  function syncControls(){
-    document.querySelectorAll("[data-param]").forEach(el => {
-      const key = el.dataset.param;
-      el.value = params[key];
-    });
-
-    updateLabels();
+  function updateMovement(){
+    movement=Number($("movementSlider").value)/100;
+    if(Math.abs(movement)<.015){movement=0;$("movementSlider").value=0;$("directionValue").textContent="Stopped";}
+    else if(movement<0) $("directionValue").textContent="Reeling in";
+    else $("directionValue").textContent="Fish pulling";
+    $("speedValue").textContent=Math.round(Math.abs(movement)*100)+"%";
     refreshJson();
   }
 
-  function resetDefaults(){
-    stopSound();
-
-    Object.keys(defaults).forEach(key => {
-      params[key] = defaults[key];
-    });
-
-    syncControls();
-    $("status").textContent = "All parameters reset to default.";
-  }
+  function stopAndCenter(){movement=0;$("movementSlider").value=0;updateMovement();if(ctx)noiseGain.gain.setTargetAtTime(.0001,ctx.currentTime,.02);$("status").textContent="Stopped and returned to center.";}
 
   function refreshJson(){
-    $("jsonOutput").value = JSON.stringify({
-      schema:"ReelSoundParameters",
-      version:2,
-      parameters:{...params}
-    },null,2);
+    $("jsonOutput").value=JSON.stringify({schema:"FishingReelSamplePreset",version:2,selectedPreset:settings.id,selectedPresetName:settings.name,clickSample:$("sampleSelect").value,movement:{value:movement,meaning:movement<0?"reeling_in":movement>0?"fish_taking_line":"stopped"},parameters:{baseSampleRate:settings.baseRate,pitchRiseWithSpeedSemitones:settings.pitchRise,maximumClicksPerSecond:settings.clickDensity,mechanicalTexture:settings.texture,fishPullDifference:settings.pullDifference,masterVolume:settings.masterVolume}},null,2);
   }
 
-  document.querySelectorAll("[data-param]").forEach(el => {
-    el.addEventListener("input",() => {
-      const key = el.dataset.param;
-      params[key] =
-        el.tagName==="SELECT"
-        ? el.value
-        : Number(el.value);
+  async function copySettings(){refreshJson();try{await navigator.clipboard.writeText($("jsonOutput").value);$("status").textContent="Settings copied.";}catch(_){$("jsonOutput").select();document.execCommand("copy");$("status").textContent="Settings copied.";}}
 
-      if(key==="mode" && activeMode){
-        startMode(params.mode);
-      }
-
-      updateLabels();
-      refreshJson();
-    });
-  });
-
+  buildPresetMenu();applyPreset(0);updateMovement();
   $("enableAudio").addEventListener("click",enableAudio);
-  $("reelIn").addEventListener("click",() => {
-    activeMode==="reel" ? stopSound() : startMode("reel");
-  });
-  $("lineOut").addEventListener("click",() => {
-    activeMode==="drag" ? stopSound() : startMode("drag");
-  });
-  $("stopAll").addEventListener("click",stopSound);
-  $("resetDefaults").addEventListener("click",resetDefaults);
-
-  $("testClick").addEventListener("click",async() => {
-    await enableAudio();
-    playClick();
-    $("status").textContent = "Single click played.";
-  });
-
-  const holdButton = $("holdButton");
-
-  holdButton.addEventListener("pointerdown",async e => {
-    e.preventDefault();
-
-    if(!ctx){
-      await enableAudio();
-    }
-
-    try{
-      holdButton.setPointerCapture(e.pointerId);
-    }catch(_){}
-
-    holdButton.classList.add("active");
-    startMode(params.mode);
-  });
-
-  ["pointerup","pointercancel","lostpointercapture","pointerleave"].forEach(name => {
-    holdButton.addEventListener(name,e => {
-      e.preventDefault();
-      holdButton.classList.remove("active");
-      stopSound();
-    });
-  });
-
-  $("refreshJson").addEventListener("click",refreshJson);
-
-  $("copyJson").addEventListener("click",async() => {
-    refreshJson();
-
-    try{
-      await navigator.clipboard.writeText($("jsonOutput").value);
-      $("status").textContent = "Parameters copied.";
-    }
-    catch(_){
-      $("jsonOutput").select();
-      document.execCommand("copy");
-      $("status").textContent = "Parameters copied.";
-    }
-  });
-
-  syncControls();
+  $("presetSelect").addEventListener("change",e=>applyPreset(e.target.value));
+  $("sampleSelect").addEventListener("change",readControls);
+  $("movementSlider").addEventListener("input",async()=>{await enableAudio();updateMovement();});
+  ["baseRate","pitchRise","clickDensity","texture","pullDifference","masterVolume"].forEach(id=>$(id).addEventListener("input",readControls));
+  $("resetButton").addEventListener("click",()=>applyPreset(presetIndex));
+  $("stopButton").addEventListener("click",stopAndCenter);
+  $("testClickButton").addEventListener("click",async()=>{if(await enableAudio()){currentRate=settings.baseRate;playClick(.5,1,true);$("status").textContent="Click sample played.";}});
+  $("copyButton").addEventListener("click",copySettings);
+  requestAnimationFrame(updateAudio);
 })();
 </script>
 </body>
