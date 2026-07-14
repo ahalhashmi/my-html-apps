@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-14T19:59:21.473Z",
+  "fetchedAt": "2026-07-14T20:58:42.993Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -2415,9 +2415,9 @@
       "home_team_id": "33",
       "away_team_id": "29",
       "home_score": "0",
-      "away_score": "1",
+      "away_score": "2",
       "home_scorers": "null",
-      "away_scorers": "null",
+      "away_scorers": "{\"Pedro Porro 58'\"}",
       "group": "SF",
       "matchday": "7",
       "local_date": "07/14/2026 14:00",
