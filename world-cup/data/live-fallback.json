@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-15T12:59:08.764Z",
+  "fetchedAt": "2026-07-15T14:47:34.184Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e001",
@@ -2445,8 +2445,8 @@
       "id": "102",
       "home_team_id": "45",
       "away_team_id": "37",
-      "home_score": "0",
-      "away_score": "0",
+      "home_score": "null",
+      "away_score": "null",
       "home_scorers": "null",
       "away_scorers": "null",
       "group": "SF",
@@ -2459,6 +2459,13 @@
       "type": "sf",
       "home_team_label": "Winner Match 99",
       "away_team_label": "Winner Match 100",
+      "away_penalty_misses": "null",
+      "away_penalty_score": "null",
+      "away_penalty_scorers": "null",
+      "home_penalty_misses": "null",
+      "home_penalty_score": "null",
+      "home_penalty_scorers": "null",
+      "match_minute": "null",
       "home_team_name_en": "England",
       "home_team_name_fa": "انگلستان",
       "away_team_name_en": "Argentina",
