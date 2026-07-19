@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-19T21:05:08.962Z",
+  "fetchedAt": "2026-07-19T22:01:27.054Z",
   "games": [
     {
       "_id": "679c9c8a5749c4077500e006",
@@ -1875,9 +1875,9 @@
       "id": "104",
       "home_team_id": "29",
       "away_team_id": "37",
-      "home_score": "0",
+      "home_score": "1",
       "away_score": "0",
-      "home_scorers": "null",
+      "home_scorers": "{\"Ferran Torres 106'\"}",
       "away_scorers": "null",
       "group": "FINAL",
       "matchday": "9",
