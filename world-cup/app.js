@@ -342,7 +342,6 @@ const state = {
   liveGroupStats: new Map(),
   loadedAt: null,
   fallback: false,
-  didInitialScroll: false,
   expandedMatchId: null,
   knockoutZoom: initialKnockoutZoom(),
   knockoutBoard: KNOCKOUT_BOARD
@@ -914,26 +913,13 @@ function renderMatches() {
     el.content.innerHTML = `<div class="empty">${escapeHtml(t().missingData)}</div>`;
     return;
   }
-  const lastFinished = state.isHistorical ? null : [...state.games].reverse().find(isFinished);
-  const targetDay = lastFinished ? gameDayLabel(lastFinished) : "";
   const days = groupBy(state.games, gameDayLabel);
   el.content.innerHTML = Object.entries(days).map(([day, games]) => `
-    <section class="day ${day === targetDay ? "is-scroll-target-day" : ""}">
+    <section class="day">
       <h2 class="day-title">${escapeHtml(day)}</h2>
-      ${games.map((game) => matchCard(game, lastFinished?.id === game.id)).join("")}
+      ${games.map(matchCard).join("")}
     </section>
   `).join("");
-
-  if (!state.didInitialScroll && lastFinished) {
-    state.didInitialScroll = true;
-    requestAnimationFrame(() => {
-      const target = document.querySelector(".day.is-scroll-target-day");
-      if (!target) return;
-      const offset = document.querySelector(".tabs")?.offsetHeight || 0;
-      const top = target.getBoundingClientRect().top + window.scrollY - offset - 8;
-      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-    });
-  }
 }
 
 function gameDayLabel(game) {
@@ -1342,7 +1328,7 @@ function sideResult(game, side) {
     : (side === "away" ? "winner" : "loser");
 }
 
-function matchCard(game, isScrollTarget = false) {
+function matchCard(game) {
   const status = statusLabel(game);
   const side = isFinished(game) || isLive(game)
     ? scoreLine(game)
@@ -1363,12 +1349,12 @@ function matchCard(game, isScrollTarget = false) {
   return `
     <article class="match-wrap ${isExpanded ? "is-expanded" : ""}">
       ${isDone ? `
-        <button class="match ${stateClass} ${isScrollTarget ? "is-scroll-target" : ""}" type="button" data-match-toggle="${escapeHtml(matchKey(game))}" aria-expanded="${isExpanded}" aria-controls="${escapeHtml(matchDetailsId(game))}" aria-label="${escapeHtml(isExpanded ? t().collapseMatch : t().expandMatch)}">
+        <button class="match ${stateClass}" type="button" data-match-toggle="${escapeHtml(matchKey(game))}" aria-expanded="${isExpanded}" aria-controls="${escapeHtml(matchDetailsId(game))}" aria-label="${escapeHtml(isExpanded ? t().collapseMatch : t().expandMatch)}">
           ${card}
         </button>
         ${isExpanded ? matchDetails(game) : ""}
       ` : `
-        <div class="match ${stateClass} ${isScrollTarget ? "is-scroll-target" : ""}">
+        <div class="match ${stateClass}">
           ${card}
         </div>
       `}
@@ -1832,7 +1818,6 @@ function selectEdition(year) {
   state.editionInfo = null;
   state.historySource = null;
   state.expandedMatchId = null;
-  state.didInitialScroll = false;
   state.knockoutBoard = { ...KNOCKOUT_BOARD, edition: null };
   state.knockoutZoom = initialKnockoutZoom();
 
@@ -1844,7 +1829,6 @@ function selectEdition(year) {
   updateStaticText();
   updateSourceCredit();
   el.content.innerHTML = `<div class="empty">${escapeHtml(t().loading)}</div>`;
-  window.scrollTo({ top: 0, behavior: "smooth" });
   refreshData(true);
 }
 
