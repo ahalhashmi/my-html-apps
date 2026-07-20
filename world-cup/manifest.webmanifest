@@ -1,9 +1,9 @@
 {
-  "name": "World Cup 2026",
+  "name": "World Cup Archive",
   "short_name": "World Cup",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#071312",
   "theme_color": "#071312",
-  "description": "Minimal live World Cup scores, standings, and knockout view in UAE time."
+  "description": "World Cup matches, standings, knockout brackets, and scorers from 1930 through 2026."
 }

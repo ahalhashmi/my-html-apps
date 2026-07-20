@@ -5,6 +5,7 @@ const API = {
 };
 
 const FALLBACK_URL = "data/live-fallback.json";
+const HISTORY_URL = "data/history.json";
 const ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
 const API_TIMEOUT_MS = 6000;
 const REFRESH_INTERVAL_MS = 60000;
@@ -14,6 +15,10 @@ const DEFAULT_TIME_ZONE = "UTC";
 const ESPN_TOURNAMENT_START = "20260611";
 const ESPN_TOURNAMENT_END = "20260719";
 const ESPN_TOURNAMENT_LIMIT = 300;
+const EDITION_YEARS = [
+  2026, 2022, 2018, 2014, 2010, 2006, 2002, 1998, 1994, 1990, 1986,
+  1982, 1978, 1974, 1970, 1966, 1962, 1958, 1954, 1950, 1938, 1934, 1930
+];
 const FALLBACK_TIME_ZONES = [
   "UTC",
   "Asia/Dubai",
@@ -56,9 +61,17 @@ const labels = {
     timezoneTitle: "Select timezone",
     timezoneApply: "Done",
     timezoneClose: "Close",
+    editionLabel: "Select World Cup edition",
     tabsLabel: "World Cup views",
-    loadError: "Could not load live data. Refresh the page.",
-    unavailable: "The live API is unavailable right now.",
+    loadError: "Could not load data. Refresh the page.",
+    unavailable: "The data is unavailable right now.",
+    loading: "Loading...",
+    archive: "Archive",
+    missingData: "(missing data)",
+    noGroupStage: "This edition had no group stage.",
+    noKnockoutStage: "This edition had no knockout stage.",
+    historicalSource: "Historical data",
+    replay: "Replay",
     done: "FT",
     live: "Live",
     highlights: "Match highlights",
@@ -94,9 +107,17 @@ const labels = {
     timezoneTitle: "اختر التوقيت",
     timezoneApply: "تم",
     timezoneClose: "إغلاق",
+    editionLabel: "اختر نسخة كأس العالم",
     tabsLabel: "أقسام كأس العالم",
     loadError: "تعذر تحميل البيانات. حدّث الصفحة.",
-    unavailable: "البيانات المباشرة غير متاحة الآن.",
+    unavailable: "البيانات غير متاحة الآن.",
+    loading: "جار التحميل...",
+    archive: "أرشيف",
+    missingData: "(بيانات مفقودة)",
+    noGroupStage: "لم تتضمن هذه النسخة مرحلة مجموعات.",
+    noKnockoutStage: "لم تتضمن هذه النسخة مرحلة خروج المغلوب.",
+    historicalSource: "البيانات التاريخية",
+    replay: "إعادة",
     done: "نهاية",
     live: "مباشر",
     highlights: "ملخص المباراة",
@@ -187,6 +208,31 @@ const arabicTeamNames = {
   UZB: "أوزبكستان"
 };
 
+const arabicHistoricalTeamNames = {
+  "Czechoslovakia": "تشيكوسلوفاكيا",
+  "Dutch East Indies": "جزر الهند الشرقية الهولندية",
+  "East Germany": "ألمانيا الشرقية",
+  "North Korea": "كوريا الشمالية",
+  "Northern Ireland": "أيرلندا الشمالية",
+  "Republic of Ireland": "جمهورية أيرلندا",
+  "Serbia and Montenegro": "صربيا والجبل الأسود",
+  "South Korea": "كوريا الجنوبية",
+  "Soviet Union": "الاتحاد السوفيتي",
+  "West Germany": "ألمانيا الغربية",
+  "Yugoslavia": "يوغوسلافيا",
+  "Zaire": "زائير"
+};
+
+Object.assign(arabicTeamNames, {
+  CSK: "تشيكوسلوفاكيا",
+  DDR: "ألمانيا الشرقية",
+  NIR: "أيرلندا الشمالية",
+  SCG: "صربيا والجبل الأسود",
+  SUN: "الاتحاد السوفيتي",
+  WAL: "ويلز",
+  YUG: "يوغوسلافيا"
+});
+
 const regionNamesAr = typeof Intl.DisplayNames === "function"
   ? new Intl.DisplayNames(["ar-AE"], { type: "region" })
   : null;
@@ -218,6 +264,16 @@ const roundNames = {
   sf: "Semi-finals",
   third: "Third Place",
   final: "Final"
+};
+
+const roundNamesAr = {
+  group: "دور المجموعات",
+  r32: "دور الـ32",
+  r16: "دور الـ16",
+  qf: "ربع النهائي",
+  sf: "نصف النهائي",
+  third: "المركز الثالث",
+  final: "النهائي"
 };
 
 const KNOCKOUT_BOARD = {
@@ -273,17 +329,23 @@ const knockoutParents = {
 const state = {
   tab: "matches",
   lang: localStorage.getItem(LANG_KEY) === "en" ? "en" : "ar",
+  edition: initialEdition(),
   timeZone: initialTimeZone(),
   games: [],
   groups: [],
   teams: [],
   espnEvents: [],
+  scorers: [],
+  editionInfo: null,
+  historySource: null,
+  isHistorical: false,
   liveGroupStats: new Map(),
   loadedAt: null,
   fallback: false,
   didInitialScroll: false,
   expandedMatchId: null,
-  knockoutZoom: initialKnockoutZoom()
+  knockoutZoom: initialKnockoutZoom(),
+  knockoutBoard: KNOCKOUT_BOARD
 };
 
 const el = {
@@ -293,6 +355,7 @@ const el = {
   authorCredit: document.getElementById("author-credit"),
   visitorLabel: document.getElementById("visitor-label"),
   langToggle: document.getElementById("lang-toggle"),
+  editionSelect: document.getElementById("edition-select"),
   timezoneToggle: document.getElementById("timezone-toggle"),
   timezonePanel: document.getElementById("timezone-panel"),
   timezoneSelect: document.getElementById("timezone-select"),
@@ -301,6 +364,7 @@ const el = {
   timezoneClose: document.getElementById("timezone-close"),
   themeToggle: document.getElementById("theme-toggle"),
   visitorBadge: document.querySelector(".visitor-badge"),
+  sourceCredit: document.getElementById("source-credit"),
   tabsNav: document.querySelector(".tabs"),
   tabs: [...document.querySelectorAll(".tab")]
 };
@@ -347,6 +411,11 @@ function initialTimeZone() {
   return validTimeZone(localStorage.getItem(TIME_ZONE_KEY))
     || browserTimeZone()
     || DEFAULT_TIME_ZONE;
+}
+
+function initialEdition() {
+  const value = Number(new URLSearchParams(window.location.search).get("year"));
+  return EDITION_YEARS.includes(value) ? value : 2026;
 }
 
 function localeCode() {
@@ -435,6 +504,11 @@ function isLive(game) {
 }
 
 function parseVenueDate(game) {
+  if (game.date_iso) {
+    const time = /^\d{2}:\d{2}$/.test(game.match_time || "") ? game.match_time : "12:00";
+    const archiveDate = new Date(`${game.date_iso}T${time}:00Z`);
+    if (!Number.isNaN(archiveDate.getTime())) return archiveDate;
+  }
   const match = String(game.local_date || "").match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})$/);
   if (!match) return new Date(0);
   const [, mm, dd, yyyy, hour, minute] = match;
@@ -449,8 +523,8 @@ function hydrateGame(game) {
     date,
     homeName: teamName(game, "home"),
     awayName: teamName(game, "away"),
-    homeScore: numberValue(game.home_score),
-    awayScore: numberValue(game.away_score),
+    homeScore: game.score_missing ? null : numberValue(game.home_score),
+    awayScore: game.score_missing ? null : numberValue(game.away_score),
     type: game.type || "group"
   };
 }
@@ -481,6 +555,10 @@ function standingTeamName(team, fallbackName) {
 }
 
 function arabicTeamName(team, fallbackName) {
+  const englishName = fallbackName || team?.name_en || "";
+  if (state.isHistorical && arabicHistoricalTeamNames[englishName]) {
+    return arabicHistoricalTeamNames[englishName];
+  }
   const code = team?.fifa_code?.toUpperCase();
   if (code && arabicTeamNames[code]) return arabicTeamNames[code];
   const iso = team?.iso2?.toUpperCase();
@@ -660,7 +738,7 @@ async function addFastScoreData(data) {
   }
 }
 
-async function loadData() {
+async function loadCurrentData() {
   let data;
   let fallback = false;
 
@@ -682,14 +760,44 @@ async function loadData() {
     fallback = true;
   }
 
-  applyData(await addFastScoreData(data), fallback);
+  return { data: await addFastScoreData(data), fallback, historical: false };
 }
 
-function applyData(data, fallback) {
+let historyArchivePromise = null;
+
+async function loadHistoricalData(year) {
+  historyArchivePromise ||= fetch(`${HISTORY_URL}?v=archive-1`, { cache: "force-cache" })
+    .then((response) => {
+      if (!response.ok) throw new Error(`${HISTORY_URL} returned ${response.status}`);
+      return response.json();
+    })
+    .catch((error) => {
+      historyArchivePromise = null;
+      throw error;
+    });
+  const archive = await historyArchivePromise;
+  const edition = archive.editions?.[String(year)];
+  if (!edition) throw new Error(`World Cup ${year} is missing from the archive`);
+  return {
+    data: {
+      ...edition,
+      generatedAt: archive.generated_at,
+      source: archive.source
+    },
+    fallback: false,
+    historical: true
+  };
+}
+
+function applyData(data, fallback, historical = false) {
+  state.isHistorical = historical;
   state.games = (data.games || []).map(hydrateGame).sort((a, b) => a.date - b.date);
   state.groups = data.groups || [];
   state.teams = data.teams || [];
   state.espnEvents = data.espnEvents || [];
+  state.scorers = data.scorers || [];
+  state.editionInfo = historical ? data : null;
+  state.historySource = historical ? data.source : null;
   state.liveGroupStats = computeLiveGroupStats();
   const liveTime = data.liveFetchedAt ? new Date(data.liveFetchedAt) : null;
   const fallbackTime = fallback && data.fetchedAt ? new Date(data.fetchedAt) : null;
@@ -699,11 +807,31 @@ function applyData(data, fallback) {
       ? fallbackTime
       : new Date();
   state.fallback = fallback;
+  updateStaticText();
   render();
 }
 
 function computeLiveGroupStats() {
   const stats = new Map();
+
+  if (state.isHistorical) {
+    state.groups.forEach((group) => {
+      group.teams.forEach((team) => {
+        stats.set(groupStatKey(group.key, team.team_id), {
+          played: team.mp,
+          total: team.mp,
+          w: team.w,
+          d: team.d,
+          l: team.l,
+          gf: team.gf,
+          ga: team.ga,
+          gd: team.gd,
+          pts: team.pts
+        });
+      });
+    });
+    return stats;
+  }
 
   state.groups.forEach((group) => {
     group.teams.forEach((team) => {
@@ -763,12 +891,17 @@ function computeLiveGroupStats() {
   return stats;
 }
 
+function groupStatKey(groupKeyValue, teamIdValue) {
+  return `${groupKeyValue || ""}|${teamIdValue}`;
+}
+
 function setUpdatedAt(text) {
   el.updatedAt.textContent = text;
 }
 
 function render() {
-  setUpdatedAt(formatDate("stamp", state.loadedAt));
+  setUpdatedAt(state.isHistorical ? t().archive : formatDate("stamp", state.loadedAt));
+  updateSourceCredit();
 
   if (state.tab === "matches") renderMatches();
   if (state.tab === "groups") renderGroups();
@@ -777,9 +910,13 @@ function render() {
 }
 
 function renderMatches() {
-  const lastFinished = [...state.games].reverse().find(isFinished);
-  const targetDay = lastFinished ? formatDate("day", lastFinished.date) : "";
-  const days = groupBy(state.games, (game) => formatDate("day", game.date));
+  if (!state.games.length) {
+    el.content.innerHTML = `<div class="empty">${escapeHtml(t().missingData)}</div>`;
+    return;
+  }
+  const lastFinished = state.isHistorical ? null : [...state.games].reverse().find(isFinished);
+  const targetDay = lastFinished ? gameDayLabel(lastFinished) : "";
+  const days = groupBy(state.games, gameDayLabel);
   el.content.innerHTML = Object.entries(days).map(([day, games]) => `
     <section class="day ${day === targetDay ? "is-scroll-target-day" : ""}">
       <h2 class="day-title">${escapeHtml(day)}</h2>
@@ -799,12 +936,30 @@ function renderMatches() {
   }
 }
 
+function gameDayLabel(game) {
+  if (!game || game.date_missing || Number.isNaN(game.date?.getTime())) return t().missingData;
+  if (!game.archive) return formatDate("day", game.date);
+  return new Intl.DateTimeFormat(localeCode(), {
+    ...dateFormatOptions.day,
+    timeZone: "UTC"
+  }).format(game.date);
+}
+
 function renderGroups() {
-  const groups = [...state.groups].sort((a, b) => a.name.localeCompare(b.name));
+  const groups = state.isHistorical
+    ? [...state.groups]
+    : [...state.groups].sort((a, b) => a.name.localeCompare(b.name));
   const standing = t().standing;
+  if (!groups.length) {
+    const message = state.isHistorical && state.editionInfo && !state.editionInfo.has_group_stage
+      ? t().noGroupStage
+      : t().missingData;
+    el.content.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
+    return;
+  }
   el.content.innerHTML = groups.map((group) => `
     <section class="group-card">
-      <h2 class="group-title">${escapeHtml(t().groupTitle(group.name))}</h2>
+      <h2 class="group-title">${escapeHtml(groupDisplayTitle(group))}</h2>
       <table class="standing">
         <thead>
           <tr>
@@ -825,7 +980,22 @@ function renderGroups() {
   `).join("");
 }
 
+function groupDisplayTitle(group) {
+  const base = t().groupTitle(group.name);
+  if (!state.isHistorical || !group.stage_name || group.stage_name === "group stage") return base;
+  const stage = state.lang === "ar"
+    ? group.stage_name === "second group stage" ? "المرحلة الثانية" : "المرحلة النهائية"
+    : group.stage_name === "second group stage" ? "Second stage" : "Final round";
+  return `${stage} · ${base}`;
+}
+
 function renderKnockout() {
+  if (state.isHistorical) {
+    renderHistoricalKnockout();
+    return;
+  }
+
+  state.knockoutBoard = KNOCKOUT_BOARD;
   const layout = knockoutLayout();
   const scaleWidth = Math.ceil(KNOCKOUT_BOARD.width * state.knockoutZoom);
   const scaleHeight = Math.ceil(KNOCKOUT_BOARD.height * state.knockoutZoom);
@@ -857,18 +1027,115 @@ function renderKnockout() {
   });
 }
 
+function renderHistoricalKnockout() {
+  const games = state.games.filter((game) => game.knockout_stage && game.type !== "third");
+  if (!games.length) {
+    const message = state.editionInfo && !state.editionInfo.has_knockout_stage
+      ? t().noKnockoutStage
+      : t().missingData;
+    el.content.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
+    return;
+  }
+
+  const model = historicalKnockoutModel(games);
+  const previousEdition = state.knockoutBoard?.edition;
+  state.knockoutBoard = model.board;
+  if (previousEdition !== state.edition) {
+    const viewportWidth = Math.max(280, (window.innerWidth || 390) - 48);
+    state.knockoutZoom = clampZoom(Math.min(0.8, viewportWidth / model.board.width));
+  }
+  const scaleWidth = Math.ceil(model.board.width * state.knockoutZoom);
+  const scaleHeight = Math.ceil(model.board.height * state.knockoutZoom);
+
+  el.content.innerHTML = `
+    <section class="knockout-panel">
+      <div class="knockout-controls">
+        <button class="knockout-zoom" type="button" data-knockout-zoom="out" aria-label="Zoom out">-</button>
+        <button class="knockout-zoom" type="button" data-knockout-zoom="reset" aria-label="Reset zoom">1x</button>
+        <button class="knockout-zoom" type="button" data-knockout-zoom="in" aria-label="Zoom in">+</button>
+      </div>
+      <div class="knockout-viewport">
+        <div class="knockout-scale" style="--knockout-zoom: ${state.knockoutZoom}; width: ${scaleWidth}px; height: ${scaleHeight}px;">
+          <div class="knockout-board knockout-board--archive" style="width: ${model.board.width}px; height: ${model.board.height}px;">
+            <svg class="knockout-lines" viewBox="0 0 ${model.board.width} ${model.board.height}" style="width: ${model.board.width}px; height: ${model.board.height}px;" aria-hidden="true">
+              ${historicalKnockoutLines(model)}
+            </svg>
+            ${model.positions.map(knockoutMatchNode).join("")}
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function historicalKnockoutModel(games) {
+  const stageOrder = ["r16", "qf", "sf", "final"];
+  const rounds = stageOrder
+    .map((type) => ({ type, games: games.filter((game) => game.type === type) }))
+    .filter((round) => round.games.length);
+  const maxMatches = Math.max(...rounds.map((round) => round.games.length));
+  const width = Math.max(460, 120 + Math.max(1, rounds.length - 1) * 170);
+  const height = Math.max(560, 70 + maxMatches * 128);
+  const positions = [];
+
+  rounds.forEach((round, roundIndex) => {
+    const x = rounds.length === 1
+      ? Math.round((width - KNOCKOUT_BOARD.matchWidth) / 2)
+      : Math.round(24 + ((width - 48 - KNOCKOUT_BOARD.matchWidth) * roundIndex) / (rounds.length - 1));
+    round.games.forEach((game, gameIndex) => {
+      const y = spacedY(gameIndex, round.games.length, 34, height - KNOCKOUT_BOARD.matchHeight - 34);
+      positions.push({
+        id: String(game.id),
+        x,
+        y,
+        side: roundIndex < rounds.length / 2 ? "left" : "right",
+        roundIndex,
+        game
+      });
+    });
+  });
+
+  return {
+    rounds,
+    positions,
+    board: {
+      width,
+      height,
+      matchWidth: KNOCKOUT_BOARD.matchWidth,
+      matchHeight: KNOCKOUT_BOARD.matchHeight,
+      edition: state.edition
+    }
+  };
+}
+
+function historicalKnockoutLines(model) {
+  const lines = [];
+  for (let roundIndex = 1; roundIndex < model.rounds.length; roundIndex += 1) {
+    const previous = model.positions.filter((item) => item.roundIndex === roundIndex - 1);
+    const current = model.positions.filter((item) => item.roundIndex === roundIndex);
+    current.forEach((target) => {
+      [teamId(target.game, "home"), teamId(target.game, "away")].forEach((teamIdValue) => {
+        const source = previous.find((item) => String(item.game.winner_team_id) === String(teamIdValue));
+        if (source) lines.push(knockoutLine(source, target, model.board));
+      });
+    });
+  }
+  return lines.join("");
+}
+
 function renderScorers() {
   const scorers = topScorers();
   el.content.innerHTML = `
     <section class="scorers-list">
-      ${hasEspnScorerData()
+      ${hasScorerData()
         ? (scorers.length ? scorers.map(scorerRow).join("") : `<div class="empty">${escapeHtml(t().noGoals)}</div>`)
-        : `<div class="empty">${escapeHtml(t().scorersUnavailable)}</div>`}
+        : `<div class="empty">${escapeHtml(state.isHistorical ? t().missingData : t().scorersUnavailable)}</div>`}
     </section>
   `;
 }
 
 function topScorers() {
+  if (state.isHistorical) return state.scorers || [];
   const scorers = new Map();
 
   espnScorerGoals().forEach(({ playerId, name, team }) => {
@@ -890,6 +1157,10 @@ function topScorers() {
   return [...scorers.values()]
     .sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name))
     .map((scorer, index) => ({ ...scorer, rank: index + 1 }));
+}
+
+function hasScorerData() {
+  return state.isHistorical ? Array.isArray(state.scorers) && state.scorers.length > 0 : hasEspnScorerData();
 }
 
 function hasEspnScorerData() {
@@ -1018,13 +1289,13 @@ function knockoutLines(layout) {
   }).join("");
 }
 
-function knockoutLine(from, to) {
+function knockoutLine(from, to, board = KNOCKOUT_BOARD) {
   if (!from || !to) return "";
   const fromRight = from.x < to.x;
-  const startX = from.x + (fromRight ? KNOCKOUT_BOARD.matchWidth : 0);
-  const startY = from.y + KNOCKOUT_BOARD.matchHeight / 2;
-  const endX = to.x + (fromRight ? 0 : KNOCKOUT_BOARD.matchWidth);
-  const endY = to.y + KNOCKOUT_BOARD.matchHeight / 2;
+  const startX = from.x + (fromRight ? board.matchWidth : 0);
+  const startY = from.y + board.matchHeight / 2;
+  const endX = to.x + (fromRight ? 0 : board.matchWidth);
+  const endY = to.y + board.matchHeight / 2;
   const midX = Math.round((startX + endX) / 2);
   return `<path d="M ${startX} ${startY} H ${midX} V ${endY} H ${endX}" />`;
 }
@@ -1114,11 +1385,16 @@ function matchDetailsId(game) {
 }
 
 function matchStageLabel(game) {
-  if (game.type === "group" && game.group) return `Group ${String(game.group).toUpperCase()}`;
-  return roundNames[game.type] || game.type || "";
+  const stage = game.type === "group" && game.group
+    ? `Group ${String(game.group).toUpperCase()}`
+    : (state.lang === "ar" ? roundNamesAr[game.type] : roundNames[game.type]) || game.type || t().missingData;
+  return game.replay ? `${stage} · ${t().replay}` : stage;
 }
 
 function scoreLine(game) {
+  if (game.score_missing || game.homeScore === null || game.awayScore === null) {
+    return `<span class="scoreline scoreline--missing">${escapeHtml(t().missingData)}</span>`;
+  }
   const penalty = penaltyResult(game);
   if (!penalty) return `<span class="scoreline">${escapeHtml(scoreText(game))}</span>`;
 
@@ -1178,8 +1454,8 @@ function youtubeSearchLabel(game) {
   const home = searchTeamName(game, "home");
   const away = searchTeamName(game, "away");
   return state.lang === "ar"
-    ? `ملخص كأس العالم ٢٠٢٦ ${home} و ${away}`
-    : `world cup 2026 highlights ${home} x ${away}`;
+    ? `ملخص كأس العالم ${state.edition} ${home} و ${away}`
+    : `world cup ${state.edition} highlights ${home} x ${away}`;
 }
 
 function youtubeSearchUrl(game) {
@@ -1188,10 +1464,11 @@ function youtubeSearchUrl(game) {
 
 function matchDetails(game) {
   const scorers = goalScorers(game);
+  const missingScorers = !scorers.length && !game.score_missing && (game.homeScore + game.awayScore > 0);
   return `
     <div class="match-details" id="${escapeHtml(matchDetailsId(game))}">
       <div class="goal-list">
-        ${scorers.length ? scorers.map(goalRow).join("") : `<div class="no-goals">${escapeHtml(t().noGoals)}</div>`}
+        ${scorers.length ? scorers.map(goalRow).join("") : `<div class="no-goals">${escapeHtml(missingScorers ? t().missingData : t().noGoals)}</div>`}
       </div>
       <a class="highlight-button" href="${escapeHtml(youtubeSearchUrl(game))}" target="_blank" rel="noopener">
         ${escapeHtml(t().highlights)}
@@ -1247,10 +1524,11 @@ function parseScorerText(value) {
   const text = String(value || "").replace(/\s+/g, " ").trim();
   const match = text.match(/^(.*?)\s+(\d{1,3})(?:'?\+(\d{1,2}))?'?\s*(.*)$/);
   if (!match) {
+    const missingMinute = text.match(/^(.*?)\s+\(missing data\)$/i);
     return {
-      player: cleanScorerName(text),
+      player: cleanScorerName(missingMinute ? missingMinute[1] : text),
       minute: "",
-      note: normalizeScorerNote(text)
+      note: missingMinute ? "" : normalizeScorerNote(text)
     };
   }
 
@@ -1294,7 +1572,7 @@ function goalRow(goal) {
   return `
     <div class="goal-row goal-row--${side}">
       <span class="goal-side goal-side--left">${left}</span>
-      <span class="goal-minute">${escapeHtml(goal.minute)}</span>
+      <span class="goal-minute">${escapeHtml(goal.minute || t().missingData)}</span>
       <span class="goal-side goal-side--right">${right}</span>
     </div>
   `;
@@ -1312,7 +1590,7 @@ function teamLine(game, side) {
   const code = teamCode(team, name);
   const label = matchTeamLabel(team, name);
   const detail = game.type === "group" && team
-    ? groupProgressLines(team.id)
+    ? groupProgressLines(game, team.id)
     : { top: knockoutLabelText(name), bottom: "" };
 
   return `
@@ -1327,9 +1605,15 @@ function teamLine(game, side) {
   `;
 }
 
-function groupProgressLines(teamIdValue) {
-  const stats = state.liveGroupStats.get(String(teamIdValue));
-  if (!stats) return { top: "0/3", bottom: `0 ${t().pointAbbr}` };
+function groupProgressLines(game, teamIdValue) {
+  const stats = state.isHistorical
+    ? state.liveGroupStats.get(groupStatKey(game.group_key, teamIdValue))
+    : state.liveGroupStats.get(String(teamIdValue));
+  if (!stats) {
+    return state.isHistorical
+      ? { top: t().missingData, bottom: "" }
+      : { top: "0/3", bottom: `0 ${t().pointAbbr}` };
+  }
   const total = stats.total || 3;
   return {
     top: `${stats.played}/${total}`,
@@ -1368,6 +1652,9 @@ function statusLabel(game) {
 }
 
 function sortedGroupTeams(teams) {
+  if (state.isHistorical && teams.every((team) => team.position !== null && team.position !== undefined)) {
+    return [...teams].sort((a, b) => numberValue(a.position) - numberValue(b.position));
+  }
   return teams.map(liveStandingRow).sort((a, b) => {
     return numberValue(b.pts) - numberValue(a.pts)
       || numberValue(b.gd) - numberValue(a.gd)
@@ -1377,6 +1664,7 @@ function sortedGroupTeams(teams) {
 }
 
 function liveStandingRow(row) {
+  if (state.isHistorical) return row;
   const live = state.liveGroupStats.get(String(row.team_id));
   if (!live) return row;
   return {
@@ -1404,14 +1692,18 @@ function standingRow(row) {
           <span>${escapeHtml(name)}</span>
         </div>
       </td>
-      <td>${row.mp}</td>
-      <td>${row.w}</td>
-      <td>${row.d}</td>
-      <td>${row.l}</td>
-      <td>${row.gd}</td>
-      <td><strong>${row.pts}</strong></td>
+      <td>${escapeHtml(fieldValue(row.mp))}</td>
+      <td>${escapeHtml(fieldValue(row.w))}</td>
+      <td>${escapeHtml(fieldValue(row.d))}</td>
+      <td>${escapeHtml(fieldValue(row.l))}</td>
+      <td>${escapeHtml(fieldValue(row.gd))}</td>
+      <td><strong>${escapeHtml(fieldValue(row.pts))}</strong></td>
     </tr>
   `;
+}
+
+function fieldValue(value) {
+  return value === null || value === undefined || value === "" ? t().missingData : String(value);
 }
 
 function groupBy(items, keyFn) {
@@ -1438,9 +1730,13 @@ function visitorBadgeUrl() {
 }
 
 function updateStaticText() {
-  document.title = state.lang === "ar" ? "كأس العالم 2026" : "World Cup 2026";
+  document.title = state.lang === "ar" ? `كأس العالم ${state.edition}` : `World Cup ${state.edition}`;
   el.title.textContent = document.title;
   el.langToggle.textContent = t().langToggle;
+  el.editionSelect.setAttribute("aria-label", t().editionLabel);
+  el.editionSelect.innerHTML = EDITION_YEARS.map((year) => `
+    <option value="${year}" ${year === state.edition ? "selected" : ""}>${year}</option>
+  `).join("");
   el.timezoneToggle.textContent = t().timezoneButton;
   el.timezoneTitle.textContent = t().timezoneTitle;
   el.timezoneApply.textContent = t().timezoneApply;
@@ -1460,6 +1756,22 @@ function updateStaticText() {
   el.visitorBadge.src = visitorBadgeUrl();
   el.visitorBadge.alt = t().visitors;
   if (!state.loadedAt) setUpdatedAt("");
+}
+
+function updateSourceCredit() {
+  if (!state.isHistorical || !state.historySource) {
+    el.sourceCredit.hidden = true;
+    el.sourceCredit.innerHTML = "";
+    return;
+  }
+  const source = state.historySource;
+  el.sourceCredit.hidden = false;
+  el.sourceCredit.innerHTML = `
+    ${escapeHtml(t().historicalSource)}:
+    ${escapeHtml(source.author)} ·
+    <a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">${escapeHtml(source.name)}</a>
+    · <a href="${escapeHtml(source.license_url)}" target="_blank" rel="noopener">${escapeHtml(source.license)}</a>
+  `;
 }
 
 function populateTimeZoneSelect() {
@@ -1510,11 +1822,39 @@ function applyTheme(theme) {
   }
 }
 
+function selectEdition(year) {
+  const nextEdition = Number(year);
+  if (!EDITION_YEARS.includes(nextEdition) || nextEdition === state.edition) return;
+
+  state.edition = nextEdition;
+  state.loadedAt = null;
+  state.isHistorical = nextEdition !== 2026;
+  state.editionInfo = null;
+  state.historySource = null;
+  state.expandedMatchId = null;
+  state.didInitialScroll = false;
+  state.knockoutBoard = { ...KNOCKOUT_BOARD, edition: null };
+  state.knockoutZoom = initialKnockoutZoom();
+
+  const url = new URL(window.location.href);
+  if (nextEdition === 2026) url.searchParams.delete("year");
+  else url.searchParams.set("year", String(nextEdition));
+  window.history.replaceState({}, "", url);
+
+  updateStaticText();
+  updateSourceCredit();
+  el.content.innerHTML = `<div class="empty">${escapeHtml(t().loading)}</div>`;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  refreshData(true);
+}
+
 el.langToggle.addEventListener("click", () => {
   const nextLang = state.lang === "ar" ? "en" : "ar";
   localStorage.setItem(LANG_KEY, nextLang);
   applyLanguage(nextLang);
 });
+
+el.editionSelect.addEventListener("change", () => selectEdition(el.editionSelect.value));
 
 el.timezoneToggle.addEventListener("click", openTimeZonePanel);
 el.timezoneClose.addEventListener("click", closeTimeZonePanel);
@@ -1563,7 +1903,12 @@ el.content.addEventListener("wheel", (event) => {
 
 function setKnockoutZoom(action) {
   if (action === "reset") {
-    state.knockoutZoom = initialKnockoutZoom();
+    if (state.isHistorical && state.knockoutBoard?.width) {
+      const viewportWidth = Math.max(280, (window.innerWidth || 390) - 48);
+      state.knockoutZoom = clampZoom(Math.min(0.8, viewportWidth / state.knockoutBoard.width));
+    } else {
+      state.knockoutZoom = initialKnockoutZoom();
+    }
   } else {
     const direction = action === "in" ? 1 : -1;
     state.knockoutZoom = clampZoom(state.knockoutZoom + direction * KNOCKOUT_ZOOM_STEP);
@@ -1578,37 +1923,53 @@ function clampZoom(value) {
 function syncKnockoutZoom() {
   const scale = el.content.querySelector(".knockout-scale");
   if (!scale) return;
+  const board = state.knockoutBoard || KNOCKOUT_BOARD;
   scale.style.setProperty("--knockout-zoom", state.knockoutZoom);
-  scale.style.width = `${Math.ceil(KNOCKOUT_BOARD.width * state.knockoutZoom)}px`;
-  scale.style.height = `${Math.ceil(KNOCKOUT_BOARD.height * state.knockoutZoom)}px`;
+  scale.style.width = `${Math.ceil(board.width * state.knockoutZoom)}px`;
+  scale.style.height = `${Math.ceil(board.height * state.knockoutZoom)}px`;
 }
 
 applyLanguage(state.lang, false);
 applyTheme(localStorage.getItem("worldCupTheme") === "light" ? "light" : "dark");
 
-let refreshPromise = null;
+const activeLoads = new Map();
 
 function refreshData(showError = false) {
-  if (refreshPromise) return refreshPromise;
+  const edition = state.edition;
+  if (edition !== 2026 && state.isHistorical && state.editionInfo?.year === edition) {
+    return Promise.resolve();
+  }
+  if (activeLoads.has(edition)) return activeLoads.get(edition);
 
-  refreshPromise = loadData()
+  const load = (edition === 2026 ? loadCurrentData() : loadHistoricalData(edition))
+    .then(({ data, fallback, historical }) => {
+      if (state.edition !== edition) return;
+      applyData(data, fallback, historical);
+    })
     .catch(() => {
-      if (showError || !state.loadedAt) {
+      if (state.edition === edition && (showError || !state.loadedAt)) {
         setUpdatedAt("");
         el.content.innerHTML = `<div class="empty">${escapeHtml(t().unavailable)}</div>`;
       }
     })
     .finally(() => {
-      refreshPromise = null;
+      activeLoads.delete(edition);
     });
 
-  return refreshPromise;
+  activeLoads.set(edition, load);
+  return load;
 }
 
 refreshData(true);
-setInterval(() => refreshData(), REFRESH_INTERVAL_MS);
+setInterval(() => {
+  if (state.edition === 2026) refreshData();
+}, REFRESH_INTERVAL_MS);
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) refreshData();
+  if (!document.hidden && state.edition === 2026) refreshData();
 });
-window.addEventListener("focus", () => refreshData());
-window.addEventListener("pageshow", () => refreshData());
+window.addEventListener("focus", () => {
+  if (state.edition === 2026) refreshData();
+});
+window.addEventListener("pageshow", () => {
+  if (state.edition === 2026) refreshData();
+});

@@ -23,7 +23,7 @@
       delete document.documentElement.dataset.lang;
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=scorers-verified-1">
+  <link rel="stylesheet" href="styles.css?v=archive-1">
 </head>
 <body>
   <main class="shell">
@@ -39,6 +39,9 @@
       </div>
       <div class="top-actions">
         <button class="small-button" id="lang-toggle" type="button">English</button>
+        <select class="small-button edition-select" id="edition-select" aria-label="اختر نسخة كأس العالم">
+          <option value="2026">2026</option>
+        </select>
         <button class="small-button" id="timezone-toggle" type="button">التوقيت</button>
         <button class="small-button" id="theme-toggle" type="button">نهاري</button>
       </div>
@@ -52,6 +55,7 @@
     </nav>
 
     <section class="content" id="content" aria-live="polite"></section>
+    <footer class="source-credit" id="source-credit" hidden></footer>
   </main>
 
   <div class="timezone-panel" id="timezone-panel" hidden>
@@ -65,6 +69,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=scorers-verified-1"></script>
+  <script src="app.js?v=archive-1"></script>
 </body>
 </html>
