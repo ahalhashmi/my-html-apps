@@ -182,14 +182,17 @@ a {
 }
 
 .competition-select,
+.cup-select,
 .league-select {
   min-width: 118px;
 }
 
+.cup-select,
 .league-select {
-  max-width: 190px;
+  max-width: 220px;
 }
 
+.cup-select[hidden],
 .league-select[hidden] {
   display: none;
 }
@@ -1039,6 +1042,7 @@ a.match.is-done {
   }
 
   .competition-select,
+  .cup-select,
   .league-select {
     width: 100%;
     max-width: none;

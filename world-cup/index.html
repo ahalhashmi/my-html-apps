@@ -23,7 +23,7 @@
       delete document.documentElement.dataset.lang;
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=league-1">
+  <link rel="stylesheet" href="styles.css?v=league-2">
 </head>
 <body>
   <main class="shell">
@@ -40,12 +40,18 @@
       <div class="header-controls">
         <div class="competition-controls">
           <select class="small-button competition-select" id="competition-select" aria-label="اختر نوع البطولة">
-            <option value="worldcup">كأس العالم</option>
+            <option value="cup">الكأس</option>
             <option value="league">الدوري</option>
+          </select>
+          <select class="small-button cup-select" id="cup-select" aria-label="اختر الكأس">
+            <option value="worldcup">كأس العالم</option>
           </select>
           <select class="small-button league-select" id="league-select" aria-label="اختر الدوري" hidden>
             <option value="eng.1">الدوري الإنجليزي</option>
             <option value="esp.1">الدوري الإسباني</option>
+            <option value="uae.pro">دوري الإمارات</option>
+            <option value="ksa.1">الدوري السعودي</option>
+            <option value="uefa.champions">دوري أبطال أوروبا</option>
           </select>
         </div>
         <div class="top-actions">
@@ -81,6 +87,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=league-1"></script>
+  <script src="app.js?v=league-2"></script>
 </body>
 </html>

@@ -1,13 +1,13 @@
 # World Cup and Leagues
 
-Minimal mobile-first football dashboard covering the World Cup, Premier League, and La Liga:
+Minimal mobile-first football dashboard with separate Cup and League selectors. Cup currently contains the World Cup; League contains the Premier League, La Liga, UAE Pro League, Saudi Pro League, and UEFA Champions League.
 
 - Matches: dates, results, penalty winners, scorers, and highlight searches
 - Groups: recorded standings using each edition's original points system
 - Knockout: zoomable route to the final
 - Scorers: edition-specific goal totals excluding own goals
 
-League mode includes the latest five seasons, one complete table per league, live match status and scores, and scorer totals derived from recorded scoring events. League schedules and standings come from ESPN's public soccer feeds.
+League mode includes the latest five seasons, live match status and scores, and scorer totals derived from recorded scoring events. League schedules and standings come from ESPN's public soccer feeds. Competitions or seasons without a supported live feed display Coming soon.
 
 Live API:
 

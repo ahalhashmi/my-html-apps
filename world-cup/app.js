@@ -8,7 +8,7 @@ const FALLBACK_URL = "data/live-fallback.json";
 const HISTORY_URL = "data/history.json";
 const ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
 const API_TIMEOUT_MS = 6000;
-const LEAGUE_API_TIMEOUT_MS = 15000;
+const LEAGUE_API_TIMEOUT_MS = 25000;
 const REFRESH_INTERVAL_MS = 60000;
 const LANG_KEY = "worldCupLangV2";
 const TIME_ZONE_KEY = "worldCupTimeZone";
@@ -23,16 +23,43 @@ const EDITION_YEARS = [
   1982, 1978, 1974, 1970, 1966, 1962, 1958, 1954, 1950, 1938, 1934, 1930
 ];
 const LEAGUE_SEASONS = [2026, 2025, 2024, 2023, 2022];
+const CUPS = {
+  worldcup: {
+    name: "World Cup",
+    nameAr: "كأس العالم"
+  }
+};
 const LEAGUES = {
   "eng.1": {
     name: "Premier League",
     nameAr: "الدوري الإنجليزي",
-    gamesPerTeam: 38
+    gamesPerTeam: 38,
+    domestic: true
   },
   "esp.1": {
     name: "La Liga",
     nameAr: "الدوري الإسباني",
-    gamesPerTeam: 38
+    gamesPerTeam: 38,
+    domestic: true
+  },
+  "uae.pro": {
+    name: "UAE Pro League",
+    nameAr: "دوري الإمارات",
+    gamesPerTeam: 26,
+    domestic: true,
+    supported: false
+  },
+  "ksa.1": {
+    name: "Saudi Pro League",
+    nameAr: "الدوري السعودي",
+    gamesPerTeam: 34,
+    domestic: true
+  },
+  "uefa.champions": {
+    name: "UEFA Champions League",
+    nameAr: "دوري أبطال أوروبا",
+    gamesPerTeam: 8,
+    tournament: true
   }
 };
 const FALLBACK_TIME_ZONES = [
@@ -74,12 +101,18 @@ const labels = {
     knockout: "Knockout",
     scorers: "Scorers",
     worldCup: "World Cup",
+    cup: "Cup",
     league: "League",
     premierLeague: "Premier League",
     laLiga: "La Liga",
+    uaeLeague: "UAE Pro League",
+    saudiLeague: "Saudi Pro League",
+    championsLeague: "Champions League",
+    leaguePhase: "League Phase",
     table: "Table",
     club: "Club",
     competitionLabel: "Select competition type",
+    cupLabel: "Select cup",
     leagueLabel: "Select league",
     seasonLabel: "Select season",
     comingSoon: "Coming soon",
@@ -130,12 +163,18 @@ const labels = {
     knockout: "خروج المغلوب",
     scorers: "الهدافين",
     worldCup: "كأس العالم",
+    cup: "الكأس",
     league: "الدوري",
     premierLeague: "الدوري الإنجليزي",
     laLiga: "الدوري الإسباني",
+    uaeLeague: "دوري الإمارات",
+    saudiLeague: "الدوري السعودي",
+    championsLeague: "دوري أبطال أوروبا",
+    leaguePhase: "مرحلة الدوري",
     table: "الترتيب",
     club: "النادي",
     competitionLabel: "اختر نوع البطولة",
+    cupLabel: "اختر الكأس",
     leagueLabel: "اختر الدوري",
     seasonLabel: "اختر الموسم",
     comingSoon: "قريباً",
@@ -319,7 +358,89 @@ const arabicClubNames = {
     VAL: "فالنسيا",
     VIL: "فياريال",
     VLL: "ريال بلد الوليد"
+  },
+  "ksa.1": {
+    ABH: "أبها",
+    ADA: "العدالة",
+    AHL: "الأهلي",
+    ALW: "الوحدات",
+    BAT: "الباطن",
+    DAM: "ضمك",
+    ETT: "الاتفاق",
+    FAT: "الفتح",
+    FAY: "الفيحاء",
+    HAZ: "الحزم",
+    HIL: "الهلال",
+    ITT: "الاتحاد",
+    KHA: "الخليج",
+    KHO: "الخلود",
+    NAJ: "النجمة",
+    NEOM: "نيوم",
+    NSR: "النصر",
+    OKH: "الأخدود",
+    ORO: "العروبة",
+    QAD: "القادسية",
+    RAE: "الرائد",
+    RIY: "الرياض",
+    SHA: "الشباب",
+    TAA: "التعاون",
+    TAI: "الطائي",
+    WEH: "الوحدة"
   }
+};
+
+const arabicClubNamesByName = {
+  "1. FC Union Berlin": "يونيون برلين",
+  "AC Milan": "ميلان",
+  "Ajax Amsterdam": "أياكس أمستردام",
+  "AS Monaco": "موناكو",
+  "Antwerp": "رويال أنتويرب",
+  "Atalanta": "أتالانتا",
+  "Bayer Leverkusen": "باير ليفركوزن",
+  "Bayern Munich": "بايرن ميونخ",
+  "Benfica": "بنفيكا",
+  "Bodo/Glimt": "بودو/غليمت",
+  "Bologna": "بولونيا",
+  "Borussia Dortmund": "بوروسيا دورتموند",
+  "Braga": "سبورتينغ براغا",
+  "Brest": "بريست",
+  "Celtic": "سيلتيك",
+  "Club Brugge": "كلوب بروج",
+  "Dinamo Zagreb": "دينامو زغرب",
+  "Eintracht Frankfurt": "آينتراخت فرانكفورت",
+  "F.C. København": "كوبنهاغن",
+  "FC Porto": "بورتو",
+  "Feyenoord Rotterdam": "فينورد",
+  "FK Qarabag": "قره باغ",
+  "Galatasaray": "غلطة سراي",
+  "Internazionale": "إنتر ميلان",
+  "Juventus": "يوفنتوس",
+  "Kairat Almaty": "كايرات ألماتي",
+  "Lazio": "لاتسيو",
+  "Lens": "لانس",
+  "Lille": "ليل",
+  "Maccabi Haifa": "مكابي حيفا",
+  "Marseille": "مارسيليا",
+  "Napoli": "نابولي",
+  "Olympiacos": "أولمبياكوس",
+  "Pafos": "بافوس",
+  "Paris Saint-Germain": "باريس سان جيرمان",
+  "PSV Eindhoven": "آيندهوفن",
+  "Rangers": "رينجرز",
+  "RB Leipzig": "لايبزيغ",
+  "RB Salzburg": "سالزبورغ",
+  "Red Star Belgrade": "النجم الأحمر",
+  "Royal Antwerp": "رويال أنتويرب",
+  "Shakhtar Donetsk": "شاختار دونيتسك",
+  "SK Sturm Graz": "شتورم غراتس",
+  "Slavia Prague": "سلافيا براغ",
+  "Slovan Bratislava": "سلوفان براتيسلافا",
+  "Sparta Prague": "سبارتا براغ",
+  "Sporting CP": "سبورتينغ لشبونة",
+  "Union St.-Gilloise": "يونيون سان جيلواز",
+  "VfB Stuttgart": "شتوتغارت",
+  "Viktoria Plzen": "فيكتوريا بلزن",
+  "Young Boys": "يونغ بويز"
 };
 
 Object.assign(arabicTeamNames, {
@@ -357,6 +478,7 @@ const stadiumUtcOffsets = {
 
 const roundNames = {
   group: "Group Stage",
+  playoff: "Knockout Play-offs",
   r32: "Round of 32",
   r16: "Round of 16",
   qf: "Quarter-finals",
@@ -367,6 +489,7 @@ const roundNames = {
 
 const roundNamesAr = {
   group: "دور المجموعات",
+  playoff: "ملحق خروج المغلوب",
   r32: "دور الـ32",
   r16: "دور الـ16",
   qf: "ربع النهائي",
@@ -429,6 +552,7 @@ const state = {
   tab: "matches",
   lang: localStorage.getItem(LANG_KEY) === "en" ? "en" : "ar",
   mode: initialCompetition(),
+  cup: initialCup(),
   league: initialLeague(),
   edition: initialEdition(),
   worldCupEdition: initialWorldCupEdition(),
@@ -459,6 +583,7 @@ const el = {
   visitorLabel: document.getElementById("visitor-label"),
   langToggle: document.getElementById("lang-toggle"),
   competitionSelect: document.getElementById("competition-select"),
+  cupSelect: document.getElementById("cup-select"),
   leagueSelect: document.getElementById("league-select"),
   editionSelect: document.getElementById("edition-select"),
   timezoneToggle: document.getElementById("timezone-toggle"),
@@ -521,10 +646,16 @@ function initialTimeZone() {
 function initialCompetition() {
   const params = new URLSearchParams(window.location.search);
   const queryValue = params.get("type");
-  if (queryValue === "league" || queryValue === "worldcup") return queryValue;
-  if (params.has("year")) return "worldcup";
+  if (queryValue === "league" || queryValue === "cup") return queryValue;
+  if (queryValue === "worldcup") return "cup";
+  if (params.has("year")) return "cup";
   if (params.has("league") || params.has("season")) return "league";
-  return localStorage.getItem(COMPETITION_KEY) === "league" ? "league" : "worldcup";
+  return localStorage.getItem(COMPETITION_KEY) === "league" ? "league" : "cup";
+}
+
+function initialCup() {
+  const value = new URLSearchParams(window.location.search).get("cup");
+  return CUPS[value] ? value : "worldcup";
 }
 
 function initialLeague() {
@@ -689,8 +820,15 @@ function standingTeamName(team, fallbackName) {
 function arabicTeamName(team, fallbackName) {
   const englishName = fallbackName || team?.name_en || "";
   const clubCode = team?.fifa_code?.toUpperCase();
-  if (state.isLeague && clubCode && arabicClubNames[state.league]?.[clubCode]) {
-    return arabicClubNames[state.league][clubCode];
+  if (state.isLeague) {
+    if (arabicClubNamesByName[englishName]) return arabicClubNamesByName[englishName];
+    if (clubCode && arabicClubNames[state.league]?.[clubCode]) {
+      return arabicClubNames[state.league][clubCode];
+    }
+    if (clubCode) {
+      const sharedName = Object.values(arabicClubNames).find((names) => names[clubCode])?.[clubCode];
+      if (sharedName) return sharedName;
+    }
   }
   if (state.isHistorical && arabicHistoricalTeamNames[englishName]) {
     return arabicHistoricalTeamNames[englishName];
@@ -930,7 +1068,7 @@ function leagueSeasonLabel(year) {
 }
 
 function leagueScoreboardUrl(league, season) {
-  return `https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/scoreboard?dates=${season}0801-${season + 1}0630&limit=1000`;
+  return `https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/scoreboard?dates=${season}0701-${season + 1}0630&limit=1000`;
 }
 
 function leagueStandingsUrl(league, season) {
@@ -952,7 +1090,23 @@ function leagueTeam(team) {
   };
 }
 
-function normalizeLeagueGame(event, league) {
+function leagueEventType(event, config) {
+  if (!config.tournament) return "group";
+  const slug = String(event?.season?.slug || "").toLowerCase();
+  const stages = {
+    "league-phase": "group",
+    "group-stage": "group",
+    "knockout-round-playoffs": "playoff",
+    "round-of-16": "r16",
+    quarterfinals: "qf",
+    semifinals: "sf",
+    final: "final"
+  };
+  return stages[slug] || "group";
+}
+
+function normalizeLeagueGame(event, league, groupsByTeam, groups) {
+  const config = LEAGUES[league];
   const competition = event?.competitions?.[0] || {};
   const competitors = competition.competitors || [];
   const home = competitors.find((item) => item.homeAway === "home");
@@ -961,6 +1115,11 @@ function normalizeLeagueGame(event, league) {
 
   const normalized = normalizeEspnEvent(event);
   const scoringPlays = espnScoringPlays(competition, home.team.id, away.team.id);
+  const type = leagueEventType(event, config);
+  const groupKey = type === "group"
+    ? groupsByTeam.get(String(home.team.id)) || groups[0]?.key || `league:${league}`
+    : "";
+  const group = groups.find((item) => item.key === groupKey);
   return {
     id: String(event.id || competition.id || ""),
     date_utc: competition.date || event.date,
@@ -972,11 +1131,13 @@ function normalizeLeagueGame(event, league) {
     away_score: String(away.score ?? 0),
     home_scorers: scoringPlays.home,
     away_scorers: scoringPlays.away,
+    home_penalty_score: home.shootoutScore ?? null,
+    away_penalty_score: away.shootoutScore ?? null,
     finished: normalized?.finished ? "TRUE" : "FALSE",
     time_elapsed: normalized?.elapsed || "notstarted",
-    type: "group",
-    group: "",
-    group_key: `league:${league}`,
+    type,
+    group: group?.name || "",
+    group_key: groupKey,
     score_missing: false
   };
 }
@@ -984,12 +1145,14 @@ function normalizeLeagueGame(event, league) {
 function normalizeLeagueData(scoreboard, standingsData, league, season) {
   const config = LEAGUES[league];
   const events = scoreboard?.events || [];
-  const entries = standingsData?.children?.[0]?.standings?.entries || [];
+  const children = standingsData?.children || [];
   const teamsById = new Map();
 
-  entries.forEach((entry) => {
-    const team = leagueTeam(entry.team);
-    if (team.id) teamsById.set(team.id, team);
+  children.forEach((child) => {
+    (child?.standings?.entries || []).forEach((entry) => {
+      const team = leagueTeam(entry.team);
+      if (team.id) teamsById.set(team.id, team);
+    });
   });
   events.forEach((event) => {
     (event?.competitions?.[0]?.competitors || []).forEach((competitor) => {
@@ -998,24 +1161,38 @@ function normalizeLeagueData(scoreboard, standingsData, league, season) {
     });
   });
 
-  const standings = entries.map((entry) => ({
-    team_id: String(entry.team?.id || ""),
-    position: standingsStat(entry, "rank"),
-    mp: standingsStat(entry, "gamesPlayed"),
-    w: standingsStat(entry, "wins"),
-    d: standingsStat(entry, "ties"),
-    l: standingsStat(entry, "losses"),
-    gf: standingsStat(entry, "pointsFor"),
-    ga: standingsStat(entry, "pointsAgainst"),
-    gd: standingsStat(entry, "pointDifferential"),
-    pts: standingsStat(entry, "points"),
-    total: config.gamesPerTeam
-  }));
+  let groups = children.map((child, index) => {
+    const multipleGroups = children.length > 1;
+    const groupName = multipleGroups
+      ? String(child.name || child.abbreviation || `Group ${index + 1}`).replace(/^Group\s+/i, "")
+      : "";
+    return {
+      key: `league:${league}:${child.id || index + 1}`,
+      name: groupName,
+      display_name_en: multipleGroups ? `Group ${groupName}` : config.name,
+      display_name_ar: multipleGroups ? `Group ${groupName}` : config.nameAr,
+      teams: (child?.standings?.entries || []).map((entry) => ({
+        team_id: String(entry.team?.id || ""),
+        position: standingsStat(entry, "rank"),
+        mp: standingsStat(entry, "gamesPlayed"),
+        w: standingsStat(entry, "wins"),
+        d: standingsStat(entry, "ties"),
+        l: standingsStat(entry, "losses"),
+        gf: standingsStat(entry, "pointsFor"),
+        ga: standingsStat(entry, "pointsAgainst"),
+        gd: standingsStat(entry, "pointDifferential"),
+        pts: standingsStat(entry, "points")
+      }))
+    };
+  });
 
-  const standingsIds = new Set(standings.map((row) => row.team_id));
-  teamsById.forEach((team) => {
-    if (!standingsIds.has(team.id)) {
-      standings.push({
+  if (!groups.length && teamsById.size) {
+    groups = [{
+      key: `league:${league}:1`,
+      name: "",
+      display_name_en: config.name,
+      display_name_ar: config.nameAr,
+      teams: [...teamsById.values()].map((team) => ({
         team_id: team.id,
         position: null,
         mp: 0,
@@ -1025,31 +1202,57 @@ function normalizeLeagueData(scoreboard, standingsData, league, season) {
         gf: 0,
         ga: 0,
         gd: 0,
-        pts: 0,
-        total: config.gamesPerTeam
-      });
-    }
+        pts: 0
+      }))
+    }];
+  }
+
+  const gamesPerTeam = config.tournament && groups.length > 1
+    ? Math.max(0, ...groups.map((group) => (group.teams.length - 1) * 2))
+    : config.domestic && groups.length === 1 && groups[0].teams.length > 1
+      ? (groups[0].teams.length - 1) * 2
+      : config.gamesPerTeam;
+  groups.forEach((group) => group.teams.forEach((team) => {
+    team.total = gamesPerTeam;
+  }));
+  const groupsByTeam = new Map();
+  groups.forEach((group) => group.teams.forEach((team) => groupsByTeam.set(String(team.team_id), group.key)));
+  const validEvents = groupsByTeam.size
+    ? events.filter((event) => (event?.competitions?.[0]?.competitors || [])
+      .every((competitor) => groupsByTeam.has(String(competitor.team?.id || ""))))
+    : events;
+  const validTeamIds = groupsByTeam.size ? new Set(groupsByTeam.keys()) : new Set(teamsById.keys());
+  const scorersComplete = validEvents.every((event) => {
+    const competition = event?.competitions?.[0] || {};
+    const status = competition.status?.type || event.status?.type || {};
+    if (!status.completed && String(status.state || "").toLowerCase() !== "post") return true;
+    const scoreGoals = (competition.competitors || []).reduce((total, competitor) => total + numberValue(competitor.score), 0);
+    const scoringPlays = (competition.details || []).filter((detail) => detail?.scoringPlay && !detail.shootout).length;
+    return scoreGoals === scoringPlays;
   });
 
   return {
     year: season,
     season_label: leagueSeasonLabel(season),
-    games_per_team: config.gamesPerTeam,
-    games: events.map((event) => normalizeLeagueGame(event, league)).filter(Boolean),
-    groups: teamsById.size ? [{
-      key: `league:${league}`,
-      name: "",
-      display_name_en: config.name,
-      display_name_ar: config.nameAr,
-      teams: standings
-    }] : [],
-    teams: [...teamsById.values()],
-    espnEvents: events,
+    games_per_team: gamesPerTeam,
+    scorers_complete: scorersComplete,
+    games: validEvents.map((event) => normalizeLeagueGame(event, league, groupsByTeam, groups)).filter(Boolean),
+    groups,
+    teams: [...teamsById.values()].filter((team) => validTeamIds.has(team.id)),
+    espnEvents: validEvents,
     liveFetchedAt: new Date().toISOString()
   };
 }
 
 async function loadLeagueData(league, season) {
+  if (LEAGUES[league]?.supported === false) {
+    return {
+      data: normalizeLeagueData({ events: [] }, { children: [] }, league, season),
+      fallback: false,
+      historical: false,
+      league: true
+    };
+  }
   const [scoreboard, standings] = await Promise.all([
     getJson(leagueScoreboardUrl(league, season), LEAGUE_API_TIMEOUT_MS),
     getJson(leagueStandingsUrl(league, season), LEAGUE_API_TIMEOUT_MS)
@@ -1399,7 +1602,9 @@ function renderScorers() {
     <section class="scorers-list">
       ${hasScorerData()
         ? (scorers.length ? scorers.map(scorerRow).join("") : `<div class="empty">${escapeHtml(t().noGoals)}</div>`)
-        : `<div class="empty">${escapeHtml(state.isLeague ? t().comingSoon : state.isHistorical ? t().missingData : t().scorersUnavailable)}</div>`}
+        : `<div class="empty">${escapeHtml(state.isLeague
+          ? state.editionInfo?.scorers_complete === false ? t().missingData : t().comingSoon
+          : state.isHistorical ? t().missingData : t().scorersUnavailable)}</div>`}
     </section>
   `;
 }
@@ -1430,6 +1635,7 @@ function topScorers() {
 }
 
 function hasScorerData() {
+  if (state.isLeague && state.editionInfo?.scorers_complete === false) return false;
   return state.isHistorical ? Array.isArray(state.scorers) && state.scorers.length > 0 : hasEspnScorerData();
 }
 
@@ -1438,11 +1644,19 @@ function hasEspnScorerData() {
 }
 
 function espnScorerGoals() {
+  const seen = new Set();
   return (state.espnEvents || []).flatMap((event) => {
     const competition = event?.competitions?.[0] || {};
     const competitors = competition.competitors || [];
     return (competition.details || [])
-      .filter((detail) => detail?.scoringPlay && !detail.shootout && !detail.ownGoal)
+      .filter((detail) => {
+        if (!detail?.scoringPlay || detail.shootout || detail.ownGoal) return false;
+        if (!detail.id) return true;
+        const key = `${event.id || competition.id || ""}:${detail.id}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
       .map((detail) => {
         const athlete = detail.athletesInvolved?.[0] || {};
         const name = String(athlete.displayName || athlete.fullName || athlete.shortName || "").trim();
@@ -1460,7 +1674,7 @@ function espnScorerTeam(detail, competitors) {
   const teamIdValue = String(detail.team?.id || detail.athletesInvolved?.[0]?.team?.id || "");
   const competitor = competitors.find((item) => String(item.team?.id || "") === teamIdValue);
   const espnCode = normalizeCode(competitor?.team?.abbreviation);
-  const team = teamByCode(espnCode);
+  const team = teamById(teamIdValue) || teamByCode(espnCode);
   const name = competitor?.team?.displayName || competitor?.team?.name || "";
   return {
     flag: team?.flag || competitor?.team?.logo || "",
@@ -1655,7 +1869,11 @@ function matchDetailsId(game) {
 }
 
 function matchStageLabel(game) {
-  if (state.isLeague) return t().league;
+  if (state.isLeague) {
+    if (game.type !== "group") return (state.lang === "ar" ? roundNamesAr[game.type] : roundNames[game.type]) || game.type;
+    if (game.group) return `Group ${String(game.group).toUpperCase()}`;
+    return LEAGUES[state.league]?.tournament ? t().leaguePhase : t().league;
+  }
   const stage = game.type === "group" && game.group
     ? `Group ${String(game.group).toUpperCase()}`
     : (state.lang === "ar" ? roundNamesAr[game.type] : roundNames[game.type]) || game.type || t().missingData;
@@ -1868,7 +2086,7 @@ function teamLine(game, side) {
   const label = matchTeamLabel(team, name);
   const detail = game.type === "group" && team
     ? groupProgressLines(game, team.id)
-    : { top: knockoutLabelText(name), bottom: "" };
+    : state.isLeague ? { top: "", bottom: "" } : { top: knockoutLabelText(name), bottom: "" };
 
   return `
     <span class="team-flag team-flag--${side}">
@@ -2010,21 +2228,30 @@ function visitorBadgeUrl() {
 function updateStaticText() {
   const leagueMode = state.mode === "league";
   const league = LEAGUES[state.league];
+  const cup = CUPS[state.cup];
   document.title = leagueMode
     ? `${state.lang === "ar" ? league.nameAr : league.name} ${leagueSeasonLabel(state.edition)}`
-    : state.lang === "ar" ? `كأس العالم ${state.edition}` : `World Cup ${state.edition}`;
+    : `${state.lang === "ar" ? cup.nameAr : cup.name} ${state.edition}`;
   el.title.textContent = document.title;
   el.langToggle.textContent = t().langToggle;
   el.competitionSelect.setAttribute("aria-label", t().competitionLabel);
   el.competitionSelect.innerHTML = `
-    <option value="worldcup" ${!leagueMode ? "selected" : ""}>${escapeHtml(t().worldCup)}</option>
+    <option value="cup" ${!leagueMode ? "selected" : ""}>${escapeHtml(t().cup)}</option>
     <option value="league" ${leagueMode ? "selected" : ""}>${escapeHtml(t().league)}</option>
   `;
+  el.cupSelect.hidden = leagueMode;
+  el.cupSelect.setAttribute("aria-label", t().cupLabel);
+  el.cupSelect.innerHTML = Object.entries(CUPS).map(([key, item]) => `
+    <option value="${escapeHtml(key)}" ${state.cup === key ? "selected" : ""}>${escapeHtml(state.lang === "ar" ? item.nameAr : item.name)}</option>
+  `).join("");
   el.leagueSelect.hidden = !leagueMode;
   el.leagueSelect.setAttribute("aria-label", t().leagueLabel);
   el.leagueSelect.innerHTML = `
     <option value="eng.1" ${state.league === "eng.1" ? "selected" : ""}>${escapeHtml(t().premierLeague)}</option>
     <option value="esp.1" ${state.league === "esp.1" ? "selected" : ""}>${escapeHtml(t().laLiga)}</option>
+    <option value="uae.pro" ${state.league === "uae.pro" ? "selected" : ""}>${escapeHtml(t().uaeLeague)}</option>
+    <option value="ksa.1" ${state.league === "ksa.1" ? "selected" : ""}>${escapeHtml(t().saudiLeague)}</option>
+    <option value="uefa.champions" ${state.league === "uefa.champions" ? "selected" : ""}>${escapeHtml(t().championsLeague)}</option>
   `;
   el.editionSelect.setAttribute("aria-label", leagueMode ? t().seasonLabel : t().editionLabel);
   el.editionSelect.innerHTML = (leagueMode ? LEAGUE_SEASONS : EDITION_YEARS).map((year) => `
@@ -2129,7 +2356,7 @@ function selectEdition(year) {
 }
 
 function selectCompetition(mode) {
-  const nextMode = mode === "league" ? "league" : "worldcup";
+  const nextMode = mode === "league" ? "league" : "cup";
   if (nextMode === state.mode) return;
 
   if (state.mode === "league") state.leagueSeason = state.edition;
@@ -2152,9 +2379,17 @@ function selectLeague(league) {
   beginSelectionLoad();
 }
 
+function selectCup(cup) {
+  if (!CUPS[cup] || cup === state.cup) return;
+  state.cup = cup;
+  resetSelectionState();
+  updateSelectionUrl();
+  beginSelectionLoad();
+}
+
 function resetSelectionState() {
   state.loadedAt = null;
-  state.isHistorical = state.mode === "worldcup" && state.edition !== 2026;
+  state.isHistorical = state.mode === "cup" && state.edition !== 2026;
   state.isLeague = state.mode === "league";
   state.editionInfo = null;
   state.historySource = null;
@@ -2177,7 +2412,13 @@ function updateSelectionUrl() {
     url.searchParams.set("season", String(state.edition));
     url.searchParams.delete("year");
   } else {
-    url.searchParams.delete("type");
+    if (state.cup === "worldcup") {
+      url.searchParams.delete("type");
+      url.searchParams.delete("cup");
+    } else {
+      url.searchParams.set("type", "cup");
+      url.searchParams.set("cup", state.cup);
+    }
     url.searchParams.delete("league");
     url.searchParams.delete("season");
     if (state.edition === 2026) url.searchParams.delete("year");
@@ -2200,6 +2441,7 @@ el.langToggle.addEventListener("click", () => {
 });
 
 el.competitionSelect.addEventListener("change", () => selectCompetition(el.competitionSelect.value));
+el.cupSelect.addEventListener("change", () => selectCup(el.cupSelect.value));
 el.leagueSelect.addEventListener("change", () => selectLeague(el.leagueSelect.value));
 el.editionSelect.addEventListener("change", () => selectEdition(el.editionSelect.value));
 
@@ -2284,7 +2526,7 @@ const activeLoads = new Map();
 function selectionKey() {
   return state.mode === "league"
     ? `league:${state.league}:${state.edition}`
-    : `worldcup:${state.edition}`;
+    : `cup:${state.cup}:${state.edition}`;
 }
 
 function shouldRefresh() {
