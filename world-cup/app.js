@@ -8,9 +8,12 @@ const FALLBACK_URL = "data/live-fallback.json";
 const HISTORY_URL = "data/history.json";
 const ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
 const API_TIMEOUT_MS = 6000;
+const LEAGUE_API_TIMEOUT_MS = 15000;
 const REFRESH_INTERVAL_MS = 60000;
 const LANG_KEY = "worldCupLangV2";
 const TIME_ZONE_KEY = "worldCupTimeZone";
+const COMPETITION_KEY = "footballCompetitionType";
+const LEAGUE_KEY = "footballLeague";
 const DEFAULT_TIME_ZONE = "UTC";
 const ESPN_TOURNAMENT_START = "20260611";
 const ESPN_TOURNAMENT_END = "20260719";
@@ -19,6 +22,19 @@ const EDITION_YEARS = [
   2026, 2022, 2018, 2014, 2010, 2006, 2002, 1998, 1994, 1990, 1986,
   1982, 1978, 1974, 1970, 1966, 1962, 1958, 1954, 1950, 1938, 1934, 1930
 ];
+const LEAGUE_SEASONS = [2026, 2025, 2024, 2023, 2022];
+const LEAGUES = {
+  "eng.1": {
+    name: "Premier League",
+    nameAr: "الدوري الإنجليزي",
+    gamesPerTeam: 38
+  },
+  "esp.1": {
+    name: "La Liga",
+    nameAr: "الدوري الإسباني",
+    gamesPerTeam: 38
+  }
+};
 const FALLBACK_TIME_ZONES = [
   "UTC",
   "Asia/Dubai",
@@ -57,6 +73,16 @@ const labels = {
     groups: "Groups",
     knockout: "Knockout",
     scorers: "Scorers",
+    worldCup: "World Cup",
+    league: "League",
+    premierLeague: "Premier League",
+    laLiga: "La Liga",
+    table: "Table",
+    club: "Club",
+    competitionLabel: "Select competition type",
+    leagueLabel: "Select league",
+    seasonLabel: "Select season",
+    comingSoon: "Coming soon",
     timezoneButton: "Timezone",
     timezoneTitle: "Select timezone",
     timezoneApply: "Done",
@@ -103,6 +129,16 @@ const labels = {
     groups: "المجموعات",
     knockout: "خروج المغلوب",
     scorers: "الهدافين",
+    worldCup: "كأس العالم",
+    league: "الدوري",
+    premierLeague: "الدوري الإنجليزي",
+    laLiga: "الدوري الإسباني",
+    table: "الترتيب",
+    club: "النادي",
+    competitionLabel: "اختر نوع البطولة",
+    leagueLabel: "اختر الدوري",
+    seasonLabel: "اختر الموسم",
+    comingSoon: "قريباً",
     timezoneButton: "التوقيت",
     timezoneTitle: "اختر التوقيت",
     timezoneApply: "تم",
@@ -223,6 +259,69 @@ const arabicHistoricalTeamNames = {
   "Zaire": "زائير"
 };
 
+const arabicClubNames = {
+  "eng.1": {
+    ARS: "أرسنال",
+    AVL: "أستون فيلا",
+    BHA: "برايتون",
+    BOU: "بورنموث",
+    BRE: "برينتفورد",
+    BUR: "بيرنلي",
+    CHE: "تشيلسي",
+    COV: "كوفنتري سيتي",
+    CRY: "كريستال بالاس",
+    EVE: "إيفرتون",
+    FUL: "فولهام",
+    HUL: "هال سيتي",
+    IPS: "إيبسويتش تاون",
+    LEE: "ليدز يونايتد",
+    LEI: "ليستر سيتي",
+    LIV: "ليفربول",
+    LTN: "لوتون تاون",
+    MAN: "مانشستر يونايتد",
+    MNC: "مانشستر سيتي",
+    NEW: "نيوكاسل يونايتد",
+    NFO: "نوتنغهام فورست",
+    SHU: "شيفيلد يونايتد",
+    SOU: "ساوثهامبتون",
+    SUN: "سندرلاند",
+    TOT: "توتنهام هوتسبير",
+    WHU: "وست هام يونايتد",
+    WOL: "وولفرهامبتون"
+  },
+  "esp.1": {
+    ALA: "ألافيس",
+    ALM: "ألميريا",
+    ATH: "أتلتيك بلباو",
+    ATM: "أتلتيكو مدريد",
+    BAR: "برشلونة",
+    BET: "ريال بيتيس",
+    CAD: "قادش",
+    CEL: "سيلتا فيغو",
+    DEP: "ديبورتيفو لا كورونيا",
+    ELC: "إلتشي",
+    ESP: "إسبانيول",
+    GET: "خيتافي",
+    GIR: "جيرونا",
+    GRA: "غرناطة",
+    LEG: "ليغانيس",
+    LEV: "ليفانتي",
+    LPA: "لاس بالماس",
+    MCF: "ملقا",
+    MLL: "ريال مايوركا",
+    OSA: "أوساسونا",
+    OVI: "ريال أوفييدو",
+    RAC: "راسينغ سانتاندير",
+    RAY: "رايو فايكانو",
+    RMA: "ريال مدريد",
+    RSO: "ريال سوسيداد",
+    SEV: "إشبيلية",
+    VAL: "فالنسيا",
+    VIL: "فياريال",
+    VLL: "ريال بلد الوليد"
+  }
+};
+
 Object.assign(arabicTeamNames, {
   CSK: "تشيكوسلوفاكيا",
   DDR: "ألمانيا الشرقية",
@@ -329,7 +428,11 @@ const knockoutParents = {
 const state = {
   tab: "matches",
   lang: localStorage.getItem(LANG_KEY) === "en" ? "en" : "ar",
+  mode: initialCompetition(),
+  league: initialLeague(),
   edition: initialEdition(),
+  worldCupEdition: initialWorldCupEdition(),
+  leagueSeason: initialLeagueSeason(),
   timeZone: initialTimeZone(),
   games: [],
   groups: [],
@@ -339,6 +442,7 @@ const state = {
   editionInfo: null,
   historySource: null,
   isHistorical: false,
+  isLeague: initialCompetition() === "league",
   liveGroupStats: new Map(),
   loadedAt: null,
   fallback: false,
@@ -354,6 +458,8 @@ const el = {
   authorCredit: document.getElementById("author-credit"),
   visitorLabel: document.getElementById("visitor-label"),
   langToggle: document.getElementById("lang-toggle"),
+  competitionSelect: document.getElementById("competition-select"),
+  leagueSelect: document.getElementById("league-select"),
   editionSelect: document.getElementById("edition-select"),
   timezoneToggle: document.getElementById("timezone-toggle"),
   timezonePanel: document.getElementById("timezone-panel"),
@@ -412,9 +518,32 @@ function initialTimeZone() {
     || DEFAULT_TIME_ZONE;
 }
 
-function initialEdition() {
+function initialCompetition() {
+  const params = new URLSearchParams(window.location.search);
+  const queryValue = params.get("type");
+  if (queryValue === "league" || queryValue === "worldcup") return queryValue;
+  if (params.has("year")) return "worldcup";
+  if (params.has("league") || params.has("season")) return "league";
+  return localStorage.getItem(COMPETITION_KEY) === "league" ? "league" : "worldcup";
+}
+
+function initialLeague() {
+  const value = new URLSearchParams(window.location.search).get("league") || localStorage.getItem(LEAGUE_KEY);
+  return LEAGUES[value] ? value : "eng.1";
+}
+
+function initialWorldCupEdition() {
   const value = Number(new URLSearchParams(window.location.search).get("year"));
   return EDITION_YEARS.includes(value) ? value : 2026;
+}
+
+function initialLeagueSeason() {
+  const value = Number(new URLSearchParams(window.location.search).get("season"));
+  return LEAGUE_SEASONS.includes(value) ? value : LEAGUE_SEASONS[0];
+}
+
+function initialEdition() {
+  return initialCompetition() === "league" ? initialLeagueSeason() : initialWorldCupEdition();
 }
 
 function localeCode() {
@@ -503,6 +632,10 @@ function isLive(game) {
 }
 
 function parseVenueDate(game) {
+  if (game.date_utc) {
+    const utcDate = new Date(game.date_utc);
+    if (!Number.isNaN(utcDate.getTime())) return utcDate;
+  }
   if (game.date_iso) {
     const time = /^\d{2}:\d{2}$/.test(game.match_time || "") ? game.match_time : "12:00";
     const archiveDate = new Date(`${game.date_iso}T${time}:00Z`);
@@ -555,6 +688,10 @@ function standingTeamName(team, fallbackName) {
 
 function arabicTeamName(team, fallbackName) {
   const englishName = fallbackName || team?.name_en || "";
+  const clubCode = team?.fifa_code?.toUpperCase();
+  if (state.isLeague && clubCode && arabicClubNames[state.league]?.[clubCode]) {
+    return arabicClubNames[state.league][clubCode];
+  }
   if (state.isHistorical && arabicHistoricalTeamNames[englishName]) {
     return arabicHistoricalTeamNames[englishName];
   }
@@ -706,9 +843,9 @@ function mergeEspnScores(games, teams, events) {
   });
 }
 
-async function getJson(url) {
+async function getJson(url, timeoutMs = API_TIMEOUT_MS) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const response = await fetch(cacheBustedUrl(url), {
@@ -788,14 +925,152 @@ async function loadHistoricalData(year) {
   };
 }
 
-function applyData(data, fallback, historical = false) {
+function leagueSeasonLabel(year) {
+  return `${year}/${String(year + 1).slice(-2)}`;
+}
+
+function leagueScoreboardUrl(league, season) {
+  return `https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/scoreboard?dates=${season}0801-${season + 1}0630&limit=1000`;
+}
+
+function leagueStandingsUrl(league, season) {
+  return `https://site.api.espn.com/apis/v2/sports/soccer/${league}/standings?season=${season}`;
+}
+
+function standingsStat(entry, name) {
+  const stat = (entry?.stats || []).find((item) => item.name === name);
+  return stat?.value === undefined || stat?.value === null ? 0 : numberValue(stat.value);
+}
+
+function leagueTeam(team) {
+  return {
+    id: String(team?.id || ""),
+    name_en: team?.displayName || team?.name || "TBA",
+    fifa_code: normalizeCode(team?.abbreviation) || compactLabel(team?.displayName || team?.name),
+    flag: team?.logo || team?.logos?.[0]?.href || "",
+    is_club: true
+  };
+}
+
+function normalizeLeagueGame(event, league) {
+  const competition = event?.competitions?.[0] || {};
+  const competitors = competition.competitors || [];
+  const home = competitors.find((item) => item.homeAway === "home");
+  const away = competitors.find((item) => item.homeAway === "away");
+  if (!home?.team || !away?.team) return null;
+
+  const normalized = normalizeEspnEvent(event);
+  const scoringPlays = espnScoringPlays(competition, home.team.id, away.team.id);
+  return {
+    id: String(event.id || competition.id || ""),
+    date_utc: competition.date || event.date,
+    home_team_id: String(home.team.id),
+    away_team_id: String(away.team.id),
+    home_team_name_en: home.team.displayName || home.team.name,
+    away_team_name_en: away.team.displayName || away.team.name,
+    home_score: String(home.score ?? 0),
+    away_score: String(away.score ?? 0),
+    home_scorers: scoringPlays.home,
+    away_scorers: scoringPlays.away,
+    finished: normalized?.finished ? "TRUE" : "FALSE",
+    time_elapsed: normalized?.elapsed || "notstarted",
+    type: "group",
+    group: "",
+    group_key: `league:${league}`,
+    score_missing: false
+  };
+}
+
+function normalizeLeagueData(scoreboard, standingsData, league, season) {
+  const config = LEAGUES[league];
+  const events = scoreboard?.events || [];
+  const entries = standingsData?.children?.[0]?.standings?.entries || [];
+  const teamsById = new Map();
+
+  entries.forEach((entry) => {
+    const team = leagueTeam(entry.team);
+    if (team.id) teamsById.set(team.id, team);
+  });
+  events.forEach((event) => {
+    (event?.competitions?.[0]?.competitors || []).forEach((competitor) => {
+      const team = leagueTeam(competitor.team);
+      if (team.id) teamsById.set(team.id, team);
+    });
+  });
+
+  const standings = entries.map((entry) => ({
+    team_id: String(entry.team?.id || ""),
+    position: standingsStat(entry, "rank"),
+    mp: standingsStat(entry, "gamesPlayed"),
+    w: standingsStat(entry, "wins"),
+    d: standingsStat(entry, "ties"),
+    l: standingsStat(entry, "losses"),
+    gf: standingsStat(entry, "pointsFor"),
+    ga: standingsStat(entry, "pointsAgainst"),
+    gd: standingsStat(entry, "pointDifferential"),
+    pts: standingsStat(entry, "points"),
+    total: config.gamesPerTeam
+  }));
+
+  const standingsIds = new Set(standings.map((row) => row.team_id));
+  teamsById.forEach((team) => {
+    if (!standingsIds.has(team.id)) {
+      standings.push({
+        team_id: team.id,
+        position: null,
+        mp: 0,
+        w: 0,
+        d: 0,
+        l: 0,
+        gf: 0,
+        ga: 0,
+        gd: 0,
+        pts: 0,
+        total: config.gamesPerTeam
+      });
+    }
+  });
+
+  return {
+    year: season,
+    season_label: leagueSeasonLabel(season),
+    games_per_team: config.gamesPerTeam,
+    games: events.map((event) => normalizeLeagueGame(event, league)).filter(Boolean),
+    groups: teamsById.size ? [{
+      key: `league:${league}`,
+      name: "",
+      display_name_en: config.name,
+      display_name_ar: config.nameAr,
+      teams: standings
+    }] : [],
+    teams: [...teamsById.values()],
+    espnEvents: events,
+    liveFetchedAt: new Date().toISOString()
+  };
+}
+
+async function loadLeagueData(league, season) {
+  const [scoreboard, standings] = await Promise.all([
+    getJson(leagueScoreboardUrl(league, season), LEAGUE_API_TIMEOUT_MS),
+    getJson(leagueStandingsUrl(league, season), LEAGUE_API_TIMEOUT_MS)
+  ]);
+  return {
+    data: normalizeLeagueData(scoreboard, standings, league, season),
+    fallback: false,
+    historical: false,
+    league: true
+  };
+}
+
+function applyData(data, fallback, historical = false, league = false) {
   state.isHistorical = historical;
+  state.isLeague = league;
   state.games = (data.games || []).map(hydrateGame).sort((a, b) => a.date - b.date);
   state.groups = data.groups || [];
   state.teams = data.teams || [];
   state.espnEvents = data.espnEvents || [];
   state.scorers = data.scorers || [];
-  state.editionInfo = historical ? data : null;
+  state.editionInfo = historical || league ? data : null;
   state.historySource = historical ? data.source : null;
   state.liveGroupStats = computeLiveGroupStats();
   const liveTime = data.liveFetchedAt ? new Date(data.liveFetchedAt) : null;
@@ -836,7 +1111,7 @@ function computeLiveGroupStats() {
     group.teams.forEach((team) => {
       stats.set(String(team.team_id), {
         played: 0,
-        total: 0,
+        total: state.isLeague ? (state.editionInfo?.games_per_team || team.total || 38) : 0,
         w: 0,
         d: 0,
         l: 0,
@@ -857,8 +1132,10 @@ function computeLiveGroupStats() {
       const away = stats.get(awayId);
       if (!home || !away) return;
 
-      home.total += 1;
-      away.total += 1;
+      if (!state.isLeague) {
+        home.total += 1;
+        away.total += 1;
+      }
 
       if (!isFinished(game) && !isLive(game)) return;
 
@@ -910,7 +1187,7 @@ function render() {
 
 function renderMatches() {
   if (!state.games.length) {
-    el.content.innerHTML = `<div class="empty">${escapeHtml(t().missingData)}</div>`;
+    el.content.innerHTML = `<div class="empty">${escapeHtml(state.isLeague ? t().comingSoon : t().missingData)}</div>`;
     return;
   }
   const days = groupBy(state.games, gameDayLabel);
@@ -935,11 +1212,11 @@ function renderGroups() {
   const groups = state.isHistorical
     ? [...state.groups]
     : [...state.groups].sort((a, b) => a.name.localeCompare(b.name));
-  const standing = t().standing;
+  const standing = { ...t().standing, team: state.isLeague ? t().club : t().standing.team };
   if (!groups.length) {
     const message = state.isHistorical && state.editionInfo && !state.editionInfo.has_group_stage
       ? t().noGroupStage
-      : t().missingData;
+      : state.isLeague ? t().comingSoon : t().missingData;
     el.content.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
     return;
   }
@@ -967,6 +1244,9 @@ function renderGroups() {
 }
 
 function groupDisplayTitle(group) {
+  if (state.isLeague) {
+    return state.lang === "ar" ? group.display_name_ar : group.display_name_en;
+  }
   const base = t().groupTitle(group.name);
   if (!state.isHistorical || !group.stage_name || group.stage_name === "group stage") return base;
   const stage = state.lang === "ar"
@@ -976,6 +1256,10 @@ function groupDisplayTitle(group) {
 }
 
 function renderKnockout() {
+  if (state.isLeague) {
+    el.content.innerHTML = "";
+    return;
+  }
   if (state.isHistorical) {
     renderHistoricalKnockout();
     return;
@@ -1115,7 +1399,7 @@ function renderScorers() {
     <section class="scorers-list">
       ${hasScorerData()
         ? (scorers.length ? scorers.map(scorerRow).join("") : `<div class="empty">${escapeHtml(t().noGoals)}</div>`)
-        : `<div class="empty">${escapeHtml(state.isHistorical ? t().missingData : t().scorersUnavailable)}</div>`}
+        : `<div class="empty">${escapeHtml(state.isLeague ? t().comingSoon : state.isHistorical ? t().missingData : t().scorersUnavailable)}</div>`}
     </section>
   `;
 }
@@ -1226,7 +1510,7 @@ function scorerRow(scorer) {
     <article class="scorer-row">
       <span class="scorer-rank">${escapeHtml(scorer.rank)}</span>
       <span class="scorer-identity">
-        ${scorer.flag ? `<img class="scorer-flag" src="${escapeHtml(scorer.flag)}" alt="">` : `<span class="scorer-flag scorer-flag--empty"></span>`}
+        ${scorer.flag ? `<img class="scorer-flag${state.isLeague ? " club-logo" : ""}" src="${escapeHtml(scorer.flag)}" alt="">` : `<span class="scorer-flag scorer-flag--empty"></span>`}
         <span class="scorer-name">${escapeHtml(scorer.name)}</span>
       </span>
       <span class="scorer-goals">${escapeHtml(scorer.goals)}</span>
@@ -1371,6 +1655,7 @@ function matchDetailsId(game) {
 }
 
 function matchStageLabel(game) {
+  if (state.isLeague) return t().league;
   const stage = game.type === "group" && game.group
     ? `Group ${String(game.group).toUpperCase()}`
     : (state.lang === "ar" ? roundNamesAr[game.type] : roundNames[game.type]) || game.type || t().missingData;
@@ -1439,6 +1724,12 @@ function penaltyScore(value) {
 function youtubeSearchLabel(game) {
   const home = searchTeamName(game, "home");
   const away = searchTeamName(game, "away");
+  if (state.isLeague) {
+    const leagueName = state.lang === "ar" ? LEAGUES[state.league].nameAr : LEAGUES[state.league].name;
+    return state.lang === "ar"
+      ? `ملخص ${leagueName} ${leagueSeasonLabel(state.edition)} ${home} و ${away}`
+      : `${leagueName} ${leagueSeasonLabel(state.edition)} highlights ${home} x ${away}`;
+  }
   return state.lang === "ar"
     ? `ملخص كأس العالم ${state.edition} ${home} و ${away}`
     : `world cup ${state.edition} highlights ${home} x ${away}`;
@@ -1581,7 +1872,7 @@ function teamLine(game, side) {
 
   return `
     <span class="team-flag team-flag--${side}">
-      ${team?.flag ? `<img class="flag" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(code)}</span>`}
+      ${team?.flag ? `<img class="flag${team.is_club ? " club-logo" : ""}" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(code)}</span>`}
     </span>
     <span class="team-detail team-detail--${side}">
       <span>${escapeHtml(detail.top)}</span>
@@ -1598,7 +1889,7 @@ function groupProgressLines(game, teamIdValue) {
   if (!stats) {
     return state.isHistorical
       ? { top: t().missingData, bottom: "" }
-      : { top: "0/3", bottom: `0 ${t().pointAbbr}` };
+      : { top: `0/${state.isLeague ? (state.editionInfo?.games_per_team || 38) : 3}`, bottom: `0 ${t().pointAbbr}` };
   }
   const total = stats.total || 3;
   return {
@@ -1638,7 +1929,8 @@ function statusLabel(game) {
 }
 
 function sortedGroupTeams(teams) {
-  if (state.isHistorical && teams.every((team) => team.position !== null && team.position !== undefined)) {
+  const officialLeagueOrder = state.isLeague && !state.games.some(isLive);
+  if ((state.isHistorical || officialLeagueOrder) && teams.every((team) => team.position !== null && team.position !== undefined)) {
     return [...teams].sort((a, b) => numberValue(a.position) - numberValue(b.position));
   }
   return teams.map(liveStandingRow).sort((a, b) => {
@@ -1674,7 +1966,7 @@ function standingRow(row) {
     <tr>
       <td>
         <div class="team-cell">
-          ${team?.flag ? `<img class="flag" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(placeholder)}</span>`}
+          ${team?.flag ? `<img class="flag${team.is_club ? " club-logo" : ""}" src="${escapeHtml(team.flag)}" alt="">` : `<span class="flag placeholder">${escapeHtml(placeholder)}</span>`}
           <span>${escapeHtml(name)}</span>
         </div>
       </td>
@@ -1716,12 +2008,27 @@ function visitorBadgeUrl() {
 }
 
 function updateStaticText() {
-  document.title = state.lang === "ar" ? `كأس العالم ${state.edition}` : `World Cup ${state.edition}`;
+  const leagueMode = state.mode === "league";
+  const league = LEAGUES[state.league];
+  document.title = leagueMode
+    ? `${state.lang === "ar" ? league.nameAr : league.name} ${leagueSeasonLabel(state.edition)}`
+    : state.lang === "ar" ? `كأس العالم ${state.edition}` : `World Cup ${state.edition}`;
   el.title.textContent = document.title;
   el.langToggle.textContent = t().langToggle;
-  el.editionSelect.setAttribute("aria-label", t().editionLabel);
-  el.editionSelect.innerHTML = EDITION_YEARS.map((year) => `
-    <option value="${year}" ${year === state.edition ? "selected" : ""}>${year}</option>
+  el.competitionSelect.setAttribute("aria-label", t().competitionLabel);
+  el.competitionSelect.innerHTML = `
+    <option value="worldcup" ${!leagueMode ? "selected" : ""}>${escapeHtml(t().worldCup)}</option>
+    <option value="league" ${leagueMode ? "selected" : ""}>${escapeHtml(t().league)}</option>
+  `;
+  el.leagueSelect.hidden = !leagueMode;
+  el.leagueSelect.setAttribute("aria-label", t().leagueLabel);
+  el.leagueSelect.innerHTML = `
+    <option value="eng.1" ${state.league === "eng.1" ? "selected" : ""}>${escapeHtml(t().premierLeague)}</option>
+    <option value="esp.1" ${state.league === "esp.1" ? "selected" : ""}>${escapeHtml(t().laLiga)}</option>
+  `;
+  el.editionSelect.setAttribute("aria-label", leagueMode ? t().seasonLabel : t().editionLabel);
+  el.editionSelect.innerHTML = (leagueMode ? LEAGUE_SEASONS : EDITION_YEARS).map((year) => `
+    <option value="${year}" ${year === state.edition ? "selected" : ""}>${leagueMode ? leagueSeasonLabel(year) : year}</option>
   `).join("");
   el.timezoneToggle.textContent = t().timezoneButton;
   el.timezoneTitle.textContent = t().timezoneTitle;
@@ -1733,7 +2040,7 @@ function updateStaticText() {
   el.tabs.forEach((tab) => {
     const tabLabels = {
       matches: t().matches,
-      groups: t().groups,
+      groups: leagueMode ? t().table : t().groups,
       knockout: t().knockout,
       scorers: t().scorers
     };
@@ -1745,7 +2052,7 @@ function updateStaticText() {
 }
 
 function updateSourceCredit() {
-  if (!state.isHistorical || !state.historySource) {
+  if (state.isLeague || !state.isHistorical || !state.historySource) {
     el.sourceCredit.hidden = true;
     el.sourceCredit.innerHTML = "";
     return;
@@ -1810,22 +2117,76 @@ function applyTheme(theme) {
 
 function selectEdition(year) {
   const nextEdition = Number(year);
-  if (!EDITION_YEARS.includes(nextEdition) || nextEdition === state.edition) return;
+  const years = state.mode === "league" ? LEAGUE_SEASONS : EDITION_YEARS;
+  if (!years.includes(nextEdition) || nextEdition === state.edition) return;
 
   state.edition = nextEdition;
+  if (state.mode === "league") state.leagueSeason = nextEdition;
+  else state.worldCupEdition = nextEdition;
+  resetSelectionState();
+  updateSelectionUrl();
+  beginSelectionLoad();
+}
+
+function selectCompetition(mode) {
+  const nextMode = mode === "league" ? "league" : "worldcup";
+  if (nextMode === state.mode) return;
+
+  if (state.mode === "league") state.leagueSeason = state.edition;
+  else state.worldCupEdition = state.edition;
+  state.mode = nextMode;
+  state.isLeague = nextMode === "league";
+  state.edition = state.isLeague ? state.leagueSeason : state.worldCupEdition;
+  localStorage.setItem(COMPETITION_KEY, nextMode);
+  resetSelectionState();
+  updateSelectionUrl();
+  beginSelectionLoad();
+}
+
+function selectLeague(league) {
+  if (!LEAGUES[league] || league === state.league) return;
+  state.league = league;
+  localStorage.setItem(LEAGUE_KEY, league);
+  resetSelectionState();
+  updateSelectionUrl();
+  beginSelectionLoad();
+}
+
+function resetSelectionState() {
   state.loadedAt = null;
-  state.isHistorical = nextEdition !== 2026;
+  state.isHistorical = state.mode === "worldcup" && state.edition !== 2026;
+  state.isLeague = state.mode === "league";
   state.editionInfo = null;
   state.historySource = null;
+  state.games = [];
+  state.groups = [];
+  state.teams = [];
+  state.espnEvents = [];
+  state.scorers = [];
+  state.liveGroupStats = new Map();
   state.expandedMatchId = null;
   state.knockoutBoard = { ...KNOCKOUT_BOARD, edition: null };
   state.knockoutZoom = initialKnockoutZoom();
+}
 
+function updateSelectionUrl() {
   const url = new URL(window.location.href);
-  if (nextEdition === 2026) url.searchParams.delete("year");
-  else url.searchParams.set("year", String(nextEdition));
+  if (state.mode === "league") {
+    url.searchParams.set("type", "league");
+    url.searchParams.set("league", state.league);
+    url.searchParams.set("season", String(state.edition));
+    url.searchParams.delete("year");
+  } else {
+    url.searchParams.delete("type");
+    url.searchParams.delete("league");
+    url.searchParams.delete("season");
+    if (state.edition === 2026) url.searchParams.delete("year");
+    else url.searchParams.set("year", String(state.edition));
+  }
   window.history.replaceState({}, "", url);
+}
 
+function beginSelectionLoad() {
   updateStaticText();
   updateSourceCredit();
   el.content.innerHTML = `<div class="empty">${escapeHtml(t().loading)}</div>`;
@@ -1838,6 +2199,8 @@ el.langToggle.addEventListener("click", () => {
   applyLanguage(nextLang);
 });
 
+el.competitionSelect.addEventListener("change", () => selectCompetition(el.competitionSelect.value));
+el.leagueSelect.addEventListener("change", () => selectLeague(el.leagueSelect.value));
 el.editionSelect.addEventListener("change", () => selectEdition(el.editionSelect.value));
 
 el.timezoneToggle.addEventListener("click", openTimeZonePanel);
@@ -1918,42 +2281,60 @@ applyTheme(localStorage.getItem("worldCupTheme") === "light" ? "light" : "dark")
 
 const activeLoads = new Map();
 
+function selectionKey() {
+  return state.mode === "league"
+    ? `league:${state.league}:${state.edition}`
+    : `worldcup:${state.edition}`;
+}
+
+function shouldRefresh() {
+  return state.mode === "league"
+    ? state.edition === LEAGUE_SEASONS[0]
+    : state.edition === 2026;
+}
+
 function refreshData(showError = false) {
+  const key = selectionKey();
+  const mode = state.mode;
+  const leagueCode = state.league;
   const edition = state.edition;
-  if (edition !== 2026 && state.isHistorical && state.editionInfo?.year === edition) {
+  if (!shouldRefresh() && state.editionInfo?.year === edition) {
     return Promise.resolve();
   }
-  if (activeLoads.has(edition)) return activeLoads.get(edition);
+  if (activeLoads.has(key)) return activeLoads.get(key);
 
-  const load = (edition === 2026 ? loadCurrentData() : loadHistoricalData(edition))
-    .then(({ data, fallback, historical }) => {
-      if (state.edition !== edition) return;
-      applyData(data, fallback, historical);
+  const request = mode === "league"
+    ? loadLeagueData(leagueCode, edition)
+    : edition === 2026 ? loadCurrentData() : loadHistoricalData(edition);
+  const load = request
+    .then(({ data, fallback, historical, league }) => {
+      if (selectionKey() !== key) return;
+      applyData(data, fallback, historical, league);
     })
     .catch(() => {
-      if (state.edition === edition && (showError || !state.loadedAt)) {
+      if (selectionKey() === key && (showError || !state.loadedAt)) {
         setUpdatedAt("");
-        el.content.innerHTML = `<div class="empty">${escapeHtml(t().unavailable)}</div>`;
+        el.content.innerHTML = `<div class="empty">${escapeHtml(mode === "league" ? t().comingSoon : t().unavailable)}</div>`;
       }
     })
     .finally(() => {
-      activeLoads.delete(edition);
+      activeLoads.delete(key);
     });
 
-  activeLoads.set(edition, load);
+  activeLoads.set(key, load);
   return load;
 }
 
 refreshData(true);
 setInterval(() => {
-  if (state.edition === 2026) refreshData();
+  if (!document.hidden && shouldRefresh()) refreshData();
 }, REFRESH_INTERVAL_MS);
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && state.edition === 2026) refreshData();
+  if (!document.hidden && shouldRefresh()) refreshData();
 });
 window.addEventListener("focus", () => {
-  if (state.edition === 2026) refreshData();
+  if (shouldRefresh()) refreshData();
 });
 window.addEventListener("pageshow", () => {
-  if (state.edition === 2026) refreshData();
+  if (shouldRefresh()) refreshData();
 });

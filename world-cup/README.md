@@ -1,11 +1,13 @@
-# World Cup Archive
+# World Cup and Leagues
 
-Minimal mobile-first World Cup dashboard covering 2026 and every completed men's edition from 1930 through 2022:
+Minimal mobile-first football dashboard covering the World Cup, Premier League, and La Liga:
 
 - Matches: dates, results, penalty winners, scorers, and highlight searches
 - Groups: recorded standings using each edition's original points system
 - Knockout: zoomable route to the final
 - Scorers: edition-specific goal totals excluding own goals
+
+League mode includes the latest five seasons, one complete table per league, live match status and scores, and scorer totals derived from recorded scoring events. League schedules and standings come from ESPN's public soccer feeds.
 
 Live API:
 

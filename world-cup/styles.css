@@ -108,6 +108,18 @@ a {
   gap: 7px;
 }
 
+.header-controls {
+  display: grid;
+  gap: 7px;
+  justify-items: start;
+}
+
+.competition-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
 .visitor-badge {
   display: block;
   height: 20px;
@@ -167,6 +179,19 @@ a {
   min-width: 78px;
   text-align: center;
   text-align-last: center;
+}
+
+.competition-select,
+.league-select {
+  min-width: 118px;
+}
+
+.league-select {
+  max-width: 190px;
+}
+
+.league-select[hidden] {
+  display: none;
 }
 
 .edition-select option {
@@ -573,6 +598,16 @@ a.match.is-done {
   object-fit: cover;
   background: var(--accent-soft);
   border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.club-logo {
+  object-fit: contain;
+  background: #ffffff;
+}
+
+.team-cell .flag.club-logo {
+  width: 28px;
+  height: 28px;
 }
 
 .flag.placeholder {
@@ -994,6 +1029,21 @@ a.match.is-done {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  .header-controls {
+    justify-items: stretch;
+  }
+
+  .competition-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .competition-select,
+  .league-select {
+    width: 100%;
+    max-width: none;
+  }
+
   .small-button {
     min-width: 0;
     padding-inline: 7px;
@@ -1006,7 +1056,7 @@ a.match.is-done {
 
 @media (max-width: 370px) {
   .topbar {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr;
   }
 
   .top-actions {

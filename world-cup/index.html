@@ -23,7 +23,7 @@
       delete document.documentElement.dataset.lang;
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=archive-2">
+  <link rel="stylesheet" href="styles.css?v=league-1">
 </head>
 <body>
   <main class="shell">
@@ -37,13 +37,25 @@
         </div>
         <div class="author-credit" id="author-credit">عبدالله الهاشمي</div>
       </div>
-      <div class="top-actions">
-        <button class="small-button" id="lang-toggle" type="button">English</button>
-        <select class="small-button edition-select" id="edition-select" aria-label="اختر نسخة كأس العالم">
-          <option value="2026">2026</option>
-        </select>
-        <button class="small-button" id="timezone-toggle" type="button">التوقيت</button>
-        <button class="small-button" id="theme-toggle" type="button">نهاري</button>
+      <div class="header-controls">
+        <div class="competition-controls">
+          <select class="small-button competition-select" id="competition-select" aria-label="اختر نوع البطولة">
+            <option value="worldcup">كأس العالم</option>
+            <option value="league">الدوري</option>
+          </select>
+          <select class="small-button league-select" id="league-select" aria-label="اختر الدوري" hidden>
+            <option value="eng.1">الدوري الإنجليزي</option>
+            <option value="esp.1">الدوري الإسباني</option>
+          </select>
+        </div>
+        <div class="top-actions">
+          <button class="small-button" id="lang-toggle" type="button">English</button>
+          <select class="small-button edition-select" id="edition-select" aria-label="اختر نسخة كأس العالم">
+            <option value="2026">2026</option>
+          </select>
+          <button class="small-button" id="timezone-toggle" type="button">التوقيت</button>
+          <button class="small-button" id="theme-toggle" type="button">نهاري</button>
+        </div>
       </div>
     </header>
 
@@ -69,6 +81,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=archive-2"></script>
+  <script src="app.js?v=league-1"></script>
 </body>
 </html>

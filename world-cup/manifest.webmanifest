@@ -1,9 +1,9 @@
 {
-  "name": "World Cup Archive",
+  "name": "World Cup and Leagues",
   "short_name": "World Cup",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#071312",
   "theme_color": "#071312",
-  "description": "World Cup matches, standings, knockout brackets, and scorers from 1930 through 2026."
+  "description": "World Cup, Premier League, and La Liga matches, standings, brackets, and scorers."
 }
