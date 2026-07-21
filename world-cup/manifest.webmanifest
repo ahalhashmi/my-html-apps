@@ -1,9 +1,9 @@
 {
-  "name": "World Cup and Leagues",
-  "short_name": "World Cup",
+  "name": "Cups, Leagues and UFC",
+  "short_name": "Sports Live",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#071312",
   "theme_color": "#071312",
-  "description": "Cup and league matches, standings, brackets, and scorers."
+  "description": "Football cups and leagues plus UFC events, rankings, and champions."
 }

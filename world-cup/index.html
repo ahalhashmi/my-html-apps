@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#071312">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="World Cup">
+  <meta name="apple-mobile-web-app-title" content="Sports Live">
   <title>كأس العالم 2026</title>
   <link rel="manifest" href="manifest.webmanifest">
   <script>
@@ -23,7 +23,7 @@
       delete document.documentElement.dataset.lang;
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=league-5">
+  <link rel="stylesheet" href="styles.css?v=ufc-1">
 </head>
 <body>
   <main class="shell">
@@ -42,6 +42,7 @@
           <select class="small-button competition-select" id="competition-select" aria-label="اختر نوع البطولة">
             <option value="cup">الكأس</option>
             <option value="league">الدوري</option>
+            <option value="ufc">UFC</option>
           </select>
           <select class="small-button cup-select" id="cup-select" aria-label="اختر الكأس">
             <option value="worldcup">كأس العالم</option>
@@ -52,6 +53,11 @@
             <option value="uae.pro">دوري الإمارات</option>
             <option value="ksa.1">الدوري السعودي</option>
             <option value="uefa.champions">دوري أبطال أوروبا</option>
+          </select>
+          <select class="small-button ufc-select" id="ufc-select" aria-label="اختر نوع فعاليات UFC" hidden>
+            <option value="all">كل فعاليات UFC</option>
+            <option value="numbered">فعاليات UFC المرقمة</option>
+            <option value="fight-night">UFC فايت نايت</option>
           </select>
         </div>
         <div class="top-actions">
@@ -87,6 +93,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=league-8"></script>
+  <script src="app.js?v=ufc-1"></script>
 </body>
 </html>

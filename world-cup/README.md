@@ -1,6 +1,6 @@
-# World Cup and Leagues
+# Cups, Leagues, and UFC
 
-Minimal mobile-first football dashboard with separate Cup and League selectors. Cup currently contains the World Cup; League contains the Premier League, La Liga, UAE Pro League, Saudi Pro League, and UEFA Champions League.
+Minimal mobile-first sports dashboard with separate Cup, League, and UFC selectors. Cup currently contains the World Cup; League contains the Premier League, La Liga, UAE Pro League, Saudi Pro League, and UEFA Champions League. UFC includes all major UFC cards, numbered events, and Fight Nights.
 
 - Matches: dates, results, penalty winners, scorers, and highlight searches
 - Groups: recorded standings using each edition's original points system
@@ -8,6 +8,8 @@ Minimal mobile-first football dashboard with separate Cup and League selectors. 
 - Scorers: edition-specific goal totals excluding own goals
 
 League mode includes the latest five seasons, live match status and scores, and scorer totals derived from recorded scoring events. The Premier League, La Liga, Saudi Pro League, and UEFA Champions League use ESPN's public soccer feeds. UAE Pro League fixtures, standings, scorers, and match events come from the official UAE Pro League website through the scheduled fallback workflow. Competitions or seasons without published data display Coming soon.
+
+UFC mode includes the latest five calendar years with local event times, expandable fight cards, live/final bout status, records, flags, and W/L results. Event schedules and results use ESPN's public UFC feed. Current division rankings and champions are loaded from the official UFC rankings page. Current-year event results refresh every 60 seconds while the app is visible.
 
 Live API:
 

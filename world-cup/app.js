@@ -9,13 +9,18 @@ const HISTORY_URL = "data/history.json";
 const UAE_LEAGUE_URL = "data/uae-pro-league.json";
 const UAE_LEAGUE_LIVE_URL = "https://uae-pro-league.firebaseio.com/matches.json";
 const ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
+const ESPN_UFC_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard";
+const UFC_RANKINGS_URL = "https://www.ufc.com/rankings";
 const API_TIMEOUT_MS = 6000;
 const LEAGUE_API_TIMEOUT_MS = 25000;
+const UFC_API_TIMEOUT_MS = 30000;
+const UFC_RANKINGS_CACHE_MS = 6 * 60 * 60 * 1000;
 const REFRESH_INTERVAL_MS = 60000;
 const LANG_KEY = "worldCupLangV2";
 const TIME_ZONE_KEY = "worldCupTimeZone";
 const COMPETITION_KEY = "footballCompetitionType";
 const LEAGUE_KEY = "footballLeague";
+const UFC_SERIES_KEY = "ufcEventSeries";
 const DEFAULT_TIME_ZONE = "UTC";
 const ESPN_TOURNAMENT_START = "20260611";
 const ESPN_TOURNAMENT_END = "20260719";
@@ -25,6 +30,8 @@ const EDITION_YEARS = [
   1982, 1978, 1974, 1970, 1966, 1962, 1958, 1954, 1950, 1938, 1934, 1930
 ];
 const LEAGUE_SEASONS = [2026, 2025, 2024, 2023, 2022];
+const UFC_CURRENT_YEAR = new Date().getFullYear();
+const UFC_YEARS = Array.from({ length: 5 }, (_, index) => UFC_CURRENT_YEAR - index);
 const CUPS = {
   worldcup: {
     name: "World Cup",
@@ -65,6 +72,36 @@ const LEAGUES = {
     gamesPerTeam: 8,
     tournament: true
   }
+};
+const UFC_SERIES = {
+  all: {
+    name: "All UFC Events",
+    nameAr: "كل فعاليات UFC"
+  },
+  numbered: {
+    name: "Numbered Events",
+    nameAr: "فعاليات UFC المرقمة"
+  },
+  "fight-night": {
+    name: "UFC Fight Night",
+    nameAr: "UFC فايت نايت"
+  }
+};
+const UFC_DIVISIONS_AR = {
+  "Men's Pound-for-Pound": "ترتيب الرجال لجميع الأوزان",
+  "Women's Pound-for-Pound": "ترتيب السيدات لجميع الأوزان",
+  Flyweight: "وزن الذبابة",
+  Bantamweight: "وزن الديك",
+  Featherweight: "وزن الريشة",
+  Lightweight: "الوزن الخفيف",
+  Welterweight: "وزن الوسط",
+  Middleweight: "الوزن المتوسط",
+  "Light Heavyweight": "الوزن خفيف الثقيل",
+  Heavyweight: "الوزن الثقيل",
+  "Women's Strawweight": "وزن القشة للسيدات",
+  "Women's Flyweight": "وزن الذبابة للسيدات",
+  "Women's Bantamweight": "وزن الديك للسيدات",
+  "Women's Featherweight": "وزن الريشة للسيدات"
 };
 const FALLBACK_TIME_ZONES = [
   "UTC",
@@ -107,6 +144,7 @@ const labels = {
     worldCup: "World Cup",
     cup: "Cup",
     league: "League",
+    ufc: "UFC",
     premierLeague: "Premier League",
     laLiga: "La Liga",
     uaeLeague: "UAE Pro League",
@@ -118,6 +156,8 @@ const labels = {
     competitionLabel: "Select competition type",
     cupLabel: "Select cup",
     leagueLabel: "Select league",
+    ufcLabel: "Select UFC event series",
+    ufcYearLabel: "Select UFC year",
     seasonLabel: "Select season",
     comingSoon: "Coming soon",
     timezoneButton: "Timezone",
@@ -126,6 +166,22 @@ const labels = {
     timezoneClose: "Close",
     editionLabel: "Select World Cup edition",
     tabsLabel: "World Cup views",
+    ufcTabsLabel: "UFC views",
+    events: "Events",
+    rankings: "Rankings",
+    champions: "Champions",
+    upcoming: "Upcoming",
+    results: "Results",
+    fightCard: "Fight card",
+    mainEvent: "Main event",
+    showCard: "Show full card",
+    hideCard: "Hide fight card",
+    round: "Round",
+    champion: "Champion",
+    currentRankings: "Current official rankings",
+    ufcHighlights: "Event highlights",
+    noUfcEvents: "No UFC events found for this selection.",
+    rankingsUnavailable: "Official rankings are unavailable right now.",
     loadError: "Could not load data. Refresh the page.",
     unavailable: "The data is unavailable right now.",
     loading: "Loading...",
@@ -170,6 +226,7 @@ const labels = {
     worldCup: "كأس العالم",
     cup: "الكأس",
     league: "الدوري",
+    ufc: "UFC",
     premierLeague: "الدوري الإنجليزي",
     laLiga: "الدوري الإسباني",
     uaeLeague: "دوري أدنوك",
@@ -181,6 +238,8 @@ const labels = {
     competitionLabel: "اختر نوع البطولة",
     cupLabel: "اختر الكأس",
     leagueLabel: "اختر الدوري",
+    ufcLabel: "اختر نوع فعاليات UFC",
+    ufcYearLabel: "اختر سنة UFC",
     seasonLabel: "اختر الموسم",
     comingSoon: "قريباً",
     timezoneButton: "التوقيت",
@@ -189,6 +248,22 @@ const labels = {
     timezoneClose: "إغلاق",
     editionLabel: "اختر نسخة كأس العالم",
     tabsLabel: "أقسام كأس العالم",
+    ufcTabsLabel: "أقسام UFC",
+    events: "الفعاليات",
+    rankings: "التصنيفات",
+    champions: "الأبطال",
+    upcoming: "القادمة",
+    results: "النتائج",
+    fightCard: "بطاقة النزالات",
+    mainEvent: "النزال الرئيسي",
+    showCard: "عرض البطاقة كاملة",
+    hideCard: "إخفاء بطاقة النزالات",
+    round: "الجولة",
+    champion: "البطل",
+    currentRankings: "التصنيفات الرسمية الحالية",
+    ufcHighlights: "ملخص الفعالية",
+    noUfcEvents: "لا توجد فعاليات UFC لهذا الاختيار.",
+    rankingsUnavailable: "التصنيفات الرسمية غير متاحة الآن.",
     loadError: "تعذر تحميل البيانات. حدّث الصفحة.",
     unavailable: "البيانات غير متاحة الآن.",
     loading: "جار التحميل...",
@@ -579,23 +654,29 @@ const state = {
   mode: initialCompetition(),
   cup: initialCup(),
   league: initialLeague(),
+  ufcSeries: initialUfcSeries(),
   edition: initialEdition(),
   worldCupEdition: initialWorldCupEdition(),
   leagueSeason: initialLeagueSeason(),
+  ufcYear: initialUfcYear(),
   timeZone: initialTimeZone(),
   games: [],
   groups: [],
   teams: [],
   espnEvents: [],
   scorers: [],
+  ufcEvents: [],
+  ufcRankings: [],
   editionInfo: null,
   historySource: null,
   isHistorical: false,
   isLeague: initialCompetition() === "league",
+  isUfc: initialCompetition() === "ufc",
   liveGroupStats: new Map(),
   loadedAt: null,
   fallback: false,
   expandedMatchId: null,
+  expandedUfcEventId: null,
   knockoutZoom: initialKnockoutZoom(),
   knockoutBoard: KNOCKOUT_BOARD
 };
@@ -610,6 +691,7 @@ const el = {
   competitionSelect: document.getElementById("competition-select"),
   cupSelect: document.getElementById("cup-select"),
   leagueSelect: document.getElementById("league-select"),
+  ufcSelect: document.getElementById("ufc-select"),
   editionSelect: document.getElementById("edition-select"),
   timezoneToggle: document.getElementById("timezone-toggle"),
   timezonePanel: document.getElementById("timezone-panel"),
@@ -671,11 +753,13 @@ function initialTimeZone() {
 function initialCompetition() {
   const params = new URLSearchParams(window.location.search);
   const queryValue = params.get("type");
-  if (queryValue === "league" || queryValue === "cup") return queryValue;
+  if (queryValue === "league" || queryValue === "cup" || queryValue === "ufc") return queryValue;
   if (queryValue === "worldcup") return "cup";
   if (params.has("year")) return "cup";
   if (params.has("league") || params.has("season")) return "league";
-  return localStorage.getItem(COMPETITION_KEY) === "league" ? "league" : "cup";
+  if (params.has("ufc") || params.has("ufcYear")) return "ufc";
+  const stored = localStorage.getItem(COMPETITION_KEY);
+  return ["cup", "league", "ufc"].includes(stored) ? stored : "cup";
 }
 
 function initialCup() {
@@ -686,6 +770,11 @@ function initialCup() {
 function initialLeague() {
   const value = new URLSearchParams(window.location.search).get("league") || localStorage.getItem(LEAGUE_KEY);
   return LEAGUES[value] ? value : "eng.1";
+}
+
+function initialUfcSeries() {
+  const value = new URLSearchParams(window.location.search).get("ufc") || localStorage.getItem(UFC_SERIES_KEY);
+  return UFC_SERIES[value] ? value : "all";
 }
 
 function initialWorldCupEdition() {
@@ -699,8 +788,16 @@ function initialLeagueSeason() {
   return LEAGUES[initialLeague()]?.defaultSeason || LEAGUE_SEASONS[0];
 }
 
+function initialUfcYear() {
+  const value = Number(new URLSearchParams(window.location.search).get("ufcYear"));
+  return UFC_YEARS.includes(value) ? value : UFC_CURRENT_YEAR;
+}
+
 function initialEdition() {
-  return initialCompetition() === "league" ? initialLeagueSeason() : initialWorldCupEdition();
+  const mode = initialCompetition();
+  if (mode === "league") return initialLeagueSeason();
+  if (mode === "ufc") return initialUfcYear();
+  return initialWorldCupEdition();
 }
 
 function localeCode() {
@@ -1021,6 +1118,142 @@ async function getJson(url, timeoutMs = API_TIMEOUT_MS) {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function getText(url, timeoutMs = API_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(cacheBustedUrl(url), {
+      cache: "no-store",
+      signal: controller.signal
+    });
+    if (!response.ok) throw new Error(`${url} returned ${response.status}`);
+    return response.text();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+const ufcEventCache = new Map();
+let ufcRankingsCache = null;
+
+function ufcScoreboardUrl(year, start = "", end = "") {
+  const dates = start && end ? `${start}-${end}` : String(year);
+  return `${ESPN_UFC_SCOREBOARD_URL}?dates=${dates}&limit=200`;
+}
+
+function compactUtcDate(date) {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return `${year}${month}${day}`;
+}
+
+function currentUfcWindow() {
+  const start = new Date();
+  const end = new Date();
+  start.setUTCDate(start.getUTCDate() - 3);
+  end.setUTCDate(end.getUTCDate() + 14);
+  return [compactUtcDate(start), compactUtcDate(end)];
+}
+
+function mergeUfcEvents(current, updates) {
+  const events = new Map((current || []).map((event) => [String(event.id), event]));
+  (updates || []).forEach((event) => events.set(String(event.id), event));
+  return [...events.values()].sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
+async function getUfcEvents(year) {
+  const cached = ufcEventCache.get(year);
+  if (cached && year !== UFC_CURRENT_YEAR) return cached.events;
+
+  if (cached) {
+    const [start, end] = currentUfcWindow();
+    const scoreboard = await getJson(ufcScoreboardUrl(year, start, end), UFC_API_TIMEOUT_MS);
+    cached.events = mergeUfcEvents(cached.events, scoreboard.events || []);
+    cached.updatedAt = Date.now();
+    return cached.events;
+  }
+
+  const scoreboard = await getJson(ufcScoreboardUrl(year), UFC_API_TIMEOUT_MS);
+  const events = (scoreboard.events || []).sort((a, b) => new Date(a.date) - new Date(b.date));
+  ufcEventCache.set(year, { events, updatedAt: Date.now() });
+  return events;
+}
+
+function rankingDivisionName(node) {
+  const heading = node?.cloneNode(true);
+  heading?.querySelectorAll("span").forEach((span) => span.remove());
+  return String(heading?.textContent || "").replace(/\s+/g, " ").trim();
+}
+
+function absoluteUfcUrl(url) {
+  if (!url) return "";
+  try {
+    return new URL(url, UFC_RANKINGS_URL).href;
+  } catch (error) {
+    return "";
+  }
+}
+
+function normalizeOfficialUfcRankings(html) {
+  const documentNode = new DOMParser().parseFromString(html, "text/html");
+  const root = documentNode.querySelector(".view-display-id-meta_rankings")
+    || documentNode.querySelector(".view-display-id-block_1")
+    || documentNode;
+
+  return [...root.querySelectorAll(".view-grouping")].map((group) => {
+    const division = rankingDivisionName(group.querySelector(":scope > .view-grouping-header"));
+    const championBlock = group.querySelector(".rankings--athlete--champion");
+    const championLink = championBlock?.querySelector("h5 a");
+    const championLabel = championBlock?.querySelector("h6 .text")?.textContent || "";
+    const champion = /champion/i.test(championLabel) && championLink ? {
+      name: championLink.textContent.replace(/\s+/g, " ").trim(),
+      image: absoluteUfcUrl(championBlock.querySelector("img")?.getAttribute("src")),
+      url: absoluteUfcUrl(championLink.getAttribute("href"))
+    } : null;
+    const ranks = [...group.querySelectorAll("tbody tr")].map((row) => {
+      const rankCell = row.querySelector(".views-field-meta-weight-class-rank, .views-field-weight-class-rank");
+      const athleteLink = row.querySelector(".views-field-title a");
+      if (!rankCell || !athleteLink) return null;
+      return {
+        rank: rankCell.textContent.replace(/\s+/g, " ").trim(),
+        name: athleteLink.textContent.replace(/\s+/g, " ").trim(),
+        url: absoluteUfcUrl(athleteLink.getAttribute("href"))
+      };
+    }).filter(Boolean);
+
+    return division && ranks.length ? { division, champion, ranks } : null;
+  }).filter(Boolean);
+}
+
+async function getOfficialUfcRankings() {
+  if (ufcRankingsCache && Date.now() - ufcRankingsCache.updatedAt < UFC_RANKINGS_CACHE_MS) {
+    return ufcRankingsCache.rankings;
+  }
+  const html = await getText(UFC_RANKINGS_URL, UFC_API_TIMEOUT_MS);
+  const rankings = normalizeOfficialUfcRankings(html);
+  ufcRankingsCache = { rankings, updatedAt: Date.now() };
+  return rankings;
+}
+
+async function loadUfcData(year) {
+  const [eventsResult, rankingsResult] = await Promise.allSettled([
+    getUfcEvents(year),
+    getOfficialUfcRankings()
+  ]);
+  if (eventsResult.status === "rejected") throw eventsResult.reason;
+  return {
+    data: {
+      year,
+      events: eventsResult.value,
+      rankings: rankingsResult.status === "fulfilled" ? rankingsResult.value : [],
+      fetchedAt: new Date().toISOString()
+    },
+    ufc: true
+  };
 }
 
 async function addFastScoreData(data) {
@@ -1402,6 +1635,7 @@ async function loadLeagueData(league, season) {
 function applyData(data, fallback, historical = false, league = false) {
   state.isHistorical = historical;
   state.isLeague = league;
+  state.isUfc = false;
   state.games = (data.games || []).map(hydrateGame).sort((a, b) => a.date - b.date);
   state.groups = data.groups || [];
   state.teams = data.teams || [];
@@ -1418,6 +1652,18 @@ function applyData(data, fallback, historical = false, league = false) {
       ? fallbackTime
       : new Date();
   state.fallback = fallback;
+  updateStaticText();
+  render();
+}
+
+function applyUfcData(data) {
+  state.isHistorical = false;
+  state.isLeague = false;
+  state.isUfc = true;
+  state.ufcEvents = data.events || [];
+  state.ufcRankings = data.rankings || [];
+  state.loadedAt = data.fetchedAt ? new Date(data.fetchedAt) : new Date();
+  state.fallback = false;
   updateStaticText();
   render();
 }
@@ -1516,10 +1762,237 @@ function render() {
   setUpdatedAt(state.isHistorical ? t().archive : formatDate("stamp", state.loadedAt));
   updateSourceCredit();
 
+  if (state.isUfc) {
+    if (state.tab === "matches") renderUfcEvents();
+    if (state.tab === "groups") renderUfcRankings();
+    if (state.tab === "knockout") renderUfcChampions();
+    return;
+  }
+
   if (state.tab === "matches") renderMatches();
   if (state.tab === "groups") renderGroups();
   if (state.tab === "knockout") renderKnockout();
   if (state.tab === "scorers") renderScorers();
+}
+
+function ufcEventMatchesSeries(event) {
+  const name = String(event?.name || "");
+  if (state.ufcSeries === "numbered") return /^UFC\s+(?:[A-Za-z]+\s+)?\d+\b/i.test(name);
+  if (state.ufcSeries === "fight-night") return /^UFC Fight Night\b/i.test(name);
+  return /^UFC(?:\s|$)/i.test(name);
+}
+
+function ufcStatusState(value) {
+  const type = value?.status?.type || value?.type || {};
+  const stateName = String(type.state || "").toLowerCase();
+  const statusName = String(type.name || "").toUpperCase();
+  if (type.completed === true || stateName === "post" || statusName.includes("FINAL")) return "done";
+  if (stateName === "in" || statusName.includes("IN_PROGRESS")) return "live";
+  return "pending";
+}
+
+function ufcEventState(event) {
+  const boutStates = (event.competitions || []).map(ufcStatusState);
+  if (boutStates.includes("live")) return "live";
+  if (boutStates.length && boutStates.every((status) => status === "done")) return "done";
+  return ufcStatusState(event);
+}
+
+function ufcMainBout(event) {
+  const bouts = event?.competitions || [];
+  return bouts[bouts.length - 1] || null;
+}
+
+function ufcEventDate(event) {
+  const bout = ufcMainBout(event);
+  const date = new Date(bout?.date || event?.date);
+  return Number.isNaN(date.getTime()) ? new Date(0) : date;
+}
+
+function ufcEventVenue(event) {
+  const venue = ufcMainBout(event)?.venue || event?.competitions?.[0]?.venue || event?.venues?.[0] || {};
+  const address = venue.address || {};
+  return [...new Set([venue.fullName, address.city, address.state, address.country].filter(Boolean))].join(" · ");
+}
+
+function ufcEventsForSelection() {
+  return state.ufcEvents.filter(ufcEventMatchesSeries);
+}
+
+function renderUfcEvents() {
+  const events = ufcEventsForSelection();
+  if (!events.length) {
+    el.content.innerHTML = `<div class="empty">${escapeHtml(t().noUfcEvents)}</div>`;
+    return;
+  }
+
+  const upcoming = events
+    .filter((event) => ufcEventState(event) !== "done")
+    .sort((a, b) => ufcEventDate(a) - ufcEventDate(b));
+  const results = events
+    .filter((event) => ufcEventState(event) === "done")
+    .sort((a, b) => ufcEventDate(b) - ufcEventDate(a));
+
+  el.content.innerHTML = `
+    ${ufcEventSection(t().upcoming, upcoming)}
+    ${ufcEventSection(t().results, results)}
+  `;
+}
+
+function ufcEventSection(title, events) {
+  if (!events.length) return "";
+  return `
+    <section class="ufc-event-section">
+      <h2 class="ufc-section-title">${escapeHtml(title)}</h2>
+      ${events.map(ufcEventCard).join("")}
+    </section>
+  `;
+}
+
+function ufcEventCard(event) {
+  const eventId = String(event.id || "");
+  const eventState = ufcEventState(event);
+  const expanded = state.expandedUfcEventId === eventId;
+  const bouts = [...(event.competitions || [])].reverse();
+  const mainBout = ufcMainBout(event);
+  const otherBouts = bouts.filter((bout) => bout !== mainBout);
+  const eventDate = ufcEventDate(event);
+  const venue = ufcEventVenue(event);
+  const statusText = eventState === "live" ? t().live : eventState === "done" ? t().done : timeZoneShortName(eventDate);
+
+  return `
+    <article class="ufc-event is-${eventState}${expanded ? " is-expanded" : ""}">
+      <button class="ufc-event-trigger" type="button" data-ufc-event-toggle="${escapeHtml(eventId)}" aria-expanded="${expanded}">
+        <span class="ufc-event-head">
+          <span class="ufc-event-date">${escapeHtml(formatDate("day", eventDate))} · ${escapeHtml(formatDate("time", eventDate))}</span>
+          <span class="pill ${eventState === "live" ? "live" : eventState === "done" ? "done" : ""}">${escapeHtml(statusText)}</span>
+        </span>
+        <strong class="ufc-event-name" dir="ltr">${escapeHtml(event.name || "UFC")}</strong>
+        ${venue ? `<span class="ufc-event-venue" dir="ltr">${escapeHtml(venue)}</span>` : ""}
+        ${mainBout ? `<span class="ufc-main-label">${escapeHtml(t().mainEvent)}</span>${ufcBoutRow(mainBout, true)}` : ""}
+        ${otherBouts.length ? `<span class="ufc-card-toggle">${escapeHtml(expanded ? t().hideCard : t().showCard)}</span>` : ""}
+      </button>
+      ${expanded ? `
+        <div class="ufc-event-details">
+          ${otherBouts.length ? `<h3>${escapeHtml(t().fightCard)}</h3>${otherBouts.map((bout) => ufcBoutRow(bout)).join("")}` : ""}
+          ${eventState === "done" ? `<a class="ufc-highlight-button" href="${escapeHtml(ufcHighlightsUrl(event))}" target="_blank" rel="noopener">${escapeHtml(t().ufcHighlights)}</a>` : ""}
+        </div>
+      ` : ""}
+    </article>
+  `;
+}
+
+function ufcBoutCompetitors(bout) {
+  return [...(bout?.competitors || [])]
+    .sort((a, b) => numberValue(a.order) - numberValue(b.order))
+    .slice(0, 2);
+}
+
+function ufcBoutRow(bout, featured = false) {
+  const [left = {}, right = {}] = ufcBoutCompetitors(bout);
+  const boutState = ufcStatusState(bout);
+  const status = bout?.status || {};
+  const clock = String(status.displayClock || "").trim();
+  const period = numberValue(status.period);
+  const boutDate = new Date(bout?.date);
+  const centerText = boutState === "pending"
+    ? (Number.isNaN(boutDate.getTime()) ? t().missingData : formatDate("time", boutDate))
+    : period ? `${t().round} ${period}${clock && clock !== "-" ? ` · ${clock}` : ""}` : (boutState === "live" ? t().live : t().done);
+  const division = bout?.type?.abbreviation || "";
+
+  return `
+    <span class="ufc-bout${featured ? " is-featured" : ""}" dir="ltr">
+      ${ufcFighter(left, "left", boutState)}
+      <span class="ufc-bout-center">
+        ${division ? `<span class="ufc-division">${escapeHtml(division)}</span>` : ""}
+        <strong>${escapeHtml(centerText)}</strong>
+        <span class="ufc-bout-status is-${boutState}">${escapeHtml(boutState === "live" ? t().live : boutState === "done" ? t().done : timeZoneShortName(boutDate))}</span>
+      </span>
+      ${ufcFighter(right, "right", boutState)}
+    </span>
+  `;
+}
+
+function ufcFighter(competitor, side, boutState) {
+  const athlete = competitor?.athlete || {};
+  const name = athlete.displayName || athlete.fullName || "TBA";
+  const flag = athlete.flag?.href || "";
+  const record = competitor?.records?.[0]?.summary || "";
+  const result = boutState === "done" && typeof competitor?.winner === "boolean"
+    ? competitor.winner ? (state.lang === "ar" ? "ف" : "W") : (state.lang === "ar" ? "خ" : "L")
+    : "";
+  return `
+    <span class="ufc-fighter is-${side}">
+      <span class="ufc-fighter-line">
+        ${flag ? `<img class="ufc-fighter-flag" src="${escapeHtml(flag)}" alt="">` : `<span class="ufc-fighter-flag is-empty"></span>`}
+        <strong>${escapeHtml(name)}</strong>
+      </span>
+      ${record || result ? `<span class="ufc-fighter-meta">${record ? `<span class="ufc-record">${escapeHtml(record)}</span>` : ""}${result ? `<span class="ufc-result ${competitor.winner ? "is-winner" : "is-loser"}">${escapeHtml(result)}</span>` : ""}</span>` : ""}
+    </span>
+  `;
+}
+
+function ufcHighlightsUrl(event) {
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(`${event.name || "UFC"} highlights`)}`;
+}
+
+function ufcDivisionLabel(division) {
+  return state.lang === "ar" ? (UFC_DIVISIONS_AR[division] || division) : division;
+}
+
+function renderUfcRankings() {
+  if (!state.ufcRankings.length) {
+    el.content.innerHTML = `<div class="empty">${escapeHtml(t().rankingsUnavailable)}</div>`;
+    return;
+  }
+  el.content.innerHTML = `
+    <p class="ufc-current-label">${escapeHtml(t().currentRankings)}</p>
+    <section class="ufc-rankings">
+      ${state.ufcRankings.map(ufcRankingDivision).join("")}
+    </section>
+  `;
+}
+
+function ufcRankingDivision(item) {
+  return `
+    <details class="ufc-ranking-group">
+      <summary>
+        <span>${escapeHtml(ufcDivisionLabel(item.division))}</span>
+        ${item.champion ? `<span class="ufc-summary-champion" dir="ltr">${escapeHtml(item.champion.name)}</span>` : ""}
+      </summary>
+      ${item.champion ? `<div class="ufc-ranking-champion"><span>${escapeHtml(t().champion)}</span><strong dir="ltr">${escapeHtml(item.champion.name)}</strong></div>` : ""}
+      <div class="ufc-ranking-list">
+        ${item.ranks.map((fighter) => `
+          <a class="ufc-ranking-row" href="${escapeHtml(fighter.url)}" target="_blank" rel="noopener">
+            <span class="ufc-rank">${escapeHtml(fighter.rank)}</span>
+            <strong dir="ltr">${escapeHtml(fighter.name)}</strong>
+          </a>
+        `).join("")}
+      </div>
+    </details>
+  `;
+}
+
+function renderUfcChampions() {
+  const champions = state.ufcRankings.filter((item) => item.champion);
+  if (!champions.length) {
+    el.content.innerHTML = `<div class="empty">${escapeHtml(t().rankingsUnavailable)}</div>`;
+    return;
+  }
+  el.content.innerHTML = `
+    <p class="ufc-current-label">${escapeHtml(t().currentRankings)}</p>
+    <section class="ufc-champions">
+      ${champions.map((item) => `
+        <a class="ufc-champion-card" href="${escapeHtml(item.champion.url)}" target="_blank" rel="noopener">
+          ${item.champion.image ? `<img src="${escapeHtml(item.champion.image)}" alt="">` : `<span class="ufc-champion-placeholder">${escapeHtml(initials(item.champion.name))}</span>`}
+          <span class="ufc-champion-copy">
+            <span>${escapeHtml(ufcDivisionLabel(item.division))}</span>
+            <strong dir="ltr">${escapeHtml(item.champion.name)}</strong>
+          </span>
+        </a>
+      `).join("")}
+    </section>
+  `;
 }
 
 function renderMatches() {
@@ -2364,19 +2837,24 @@ function visitorBadgeUrl() {
 
 function updateStaticText() {
   const leagueMode = state.mode === "league";
+  const ufcMode = state.mode === "ufc";
   const league = LEAGUES[state.league];
   const cup = CUPS[state.cup];
-  document.title = leagueMode
-    ? `${state.lang === "ar" ? league.nameAr : league.name} ${leagueSeasonLabel(state.edition)}`
-    : `${state.lang === "ar" ? cup.nameAr : cup.name} ${state.edition}`;
+  const ufcTitle = state.ufcSeries === "fight-night" ? "UFC Fight Night" : "UFC";
+  document.title = ufcMode
+    ? `${ufcTitle} ${state.edition}`
+    : leagueMode
+      ? `${state.lang === "ar" ? league.nameAr : league.name} ${leagueSeasonLabel(state.edition)}`
+      : `${state.lang === "ar" ? cup.nameAr : cup.name} ${state.edition}`;
   el.title.textContent = document.title;
   el.langToggle.textContent = t().langToggle;
   el.competitionSelect.setAttribute("aria-label", t().competitionLabel);
   el.competitionSelect.innerHTML = `
-    <option value="cup" ${!leagueMode ? "selected" : ""}>${escapeHtml(t().cup)}</option>
+    <option value="cup" ${!leagueMode && !ufcMode ? "selected" : ""}>${escapeHtml(t().cup)}</option>
     <option value="league" ${leagueMode ? "selected" : ""}>${escapeHtml(t().league)}</option>
+    <option value="ufc" ${ufcMode ? "selected" : ""}>${escapeHtml(t().ufc)}</option>
   `;
-  el.cupSelect.hidden = leagueMode;
+  el.cupSelect.hidden = leagueMode || ufcMode;
   el.cupSelect.setAttribute("aria-label", t().cupLabel);
   el.cupSelect.innerHTML = Object.entries(CUPS).map(([key, item]) => `
     <option value="${escapeHtml(key)}" ${state.cup === key ? "selected" : ""}>${escapeHtml(state.lang === "ar" ? item.nameAr : item.name)}</option>
@@ -2390,8 +2868,14 @@ function updateStaticText() {
     <option value="ksa.1" ${state.league === "ksa.1" ? "selected" : ""}>${escapeHtml(t().saudiLeague)}</option>
     <option value="uefa.champions" ${state.league === "uefa.champions" ? "selected" : ""}>${escapeHtml(t().championsLeague)}</option>
   `;
-  el.editionSelect.setAttribute("aria-label", leagueMode ? t().seasonLabel : t().editionLabel);
-  el.editionSelect.innerHTML = (leagueMode ? LEAGUE_SEASONS : EDITION_YEARS).map((year) => `
+  el.ufcSelect.hidden = !ufcMode;
+  el.ufcSelect.setAttribute("aria-label", t().ufcLabel);
+  el.ufcSelect.innerHTML = Object.entries(UFC_SERIES).map(([key, item]) => `
+    <option value="${escapeHtml(key)}" ${state.ufcSeries === key ? "selected" : ""}>${escapeHtml(state.lang === "ar" ? item.nameAr : item.name)}</option>
+  `).join("");
+  el.editionSelect.setAttribute("aria-label", ufcMode ? t().ufcYearLabel : leagueMode ? t().seasonLabel : t().editionLabel);
+  const years = ufcMode ? UFC_YEARS : leagueMode ? LEAGUE_SEASONS : EDITION_YEARS;
+  el.editionSelect.innerHTML = years.map((year) => `
     <option value="${year}" ${year === state.edition ? "selected" : ""}>${leagueMode ? leagueSeasonLabel(year) : year}</option>
   `).join("");
   el.timezoneToggle.textContent = t().timezoneButton;
@@ -2400,15 +2884,18 @@ function updateStaticText() {
   el.timezoneClose.setAttribute("aria-label", t().timezoneClose);
   el.authorCredit.textContent = t().author;
   el.visitorLabel.textContent = `${t().visitors}:`;
-  el.tabsNav.setAttribute("aria-label", t().tabsLabel);
+  el.tabsNav.setAttribute("aria-label", ufcMode ? t().ufcTabsLabel : t().tabsLabel);
+  el.tabsNav.classList.toggle("is-ufc", ufcMode);
   el.tabs.forEach((tab) => {
     const tabLabels = {
-      matches: t().matches,
-      groups: leagueMode ? t().table : t().groups,
-      knockout: t().knockout,
+      matches: ufcMode ? t().events : t().matches,
+      groups: ufcMode ? t().rankings : leagueMode ? t().table : t().groups,
+      knockout: ufcMode ? t().champions : t().knockout,
       scorers: t().scorers
     };
+    tab.hidden = ufcMode && tab.dataset.tab === "scorers";
     tab.textContent = tabLabels[tab.dataset.tab] || "";
+    tab.classList.toggle("is-active", tab.dataset.tab === state.tab);
   });
   el.visitorBadge.src = visitorBadgeUrl();
   el.visitorBadge.alt = t().visitors;
@@ -2416,6 +2903,15 @@ function updateStaticText() {
 }
 
 function updateSourceCredit() {
+  if (state.isUfc) {
+    const rankingsView = state.tab === "groups" || state.tab === "knockout";
+    el.sourceCredit.hidden = false;
+    el.sourceCredit.innerHTML = `
+      ${escapeHtml(t().sourceLabel)}:
+      <a href="${rankingsView ? "https://www.ufc.com/rankings" : "https://www.espn.com/mma/schedule/_/league/ufc"}" target="_blank" rel="noopener">${rankingsView ? "UFC" : "ESPN"}</a>
+    `;
+    return;
+  }
   const leagueSource = state.isLeague ? state.editionInfo?.source : null;
   if (leagueSource) {
     el.sourceCredit.hidden = false;
@@ -2490,11 +2986,12 @@ function applyTheme(theme) {
 
 function selectEdition(year) {
   const nextEdition = Number(year);
-  const years = state.mode === "league" ? LEAGUE_SEASONS : EDITION_YEARS;
+  const years = state.mode === "ufc" ? UFC_YEARS : state.mode === "league" ? LEAGUE_SEASONS : EDITION_YEARS;
   if (!years.includes(nextEdition) || nextEdition === state.edition) return;
 
   state.edition = nextEdition;
   if (state.mode === "league") state.leagueSeason = nextEdition;
+  else if (state.mode === "ufc") state.ufcYear = nextEdition;
   else state.worldCupEdition = nextEdition;
   resetSelectionState();
   updateSelectionUrl();
@@ -2502,14 +2999,17 @@ function selectEdition(year) {
 }
 
 function selectCompetition(mode) {
-  const nextMode = mode === "league" ? "league" : "cup";
+  const nextMode = ["cup", "league", "ufc"].includes(mode) ? mode : "cup";
   if (nextMode === state.mode) return;
 
   if (state.mode === "league") state.leagueSeason = state.edition;
+  else if (state.mode === "ufc") state.ufcYear = state.edition;
   else state.worldCupEdition = state.edition;
   state.mode = nextMode;
   state.isLeague = nextMode === "league";
-  state.edition = state.isLeague ? state.leagueSeason : state.worldCupEdition;
+  state.isUfc = nextMode === "ufc";
+  state.edition = state.isLeague ? state.leagueSeason : state.isUfc ? state.ufcYear : state.worldCupEdition;
+  if (state.isUfc && state.tab === "scorers") state.tab = "matches";
   localStorage.setItem(COMPETITION_KEY, nextMode);
   resetSelectionState();
   updateSelectionUrl();
@@ -2527,6 +3027,15 @@ function selectLeague(league) {
   beginSelectionLoad();
 }
 
+function selectUfcSeries(series) {
+  if (!UFC_SERIES[series] || series === state.ufcSeries) return;
+  state.ufcSeries = series;
+  localStorage.setItem(UFC_SERIES_KEY, series);
+  resetSelectionState();
+  updateSelectionUrl();
+  beginSelectionLoad();
+}
+
 function selectCup(cup) {
   if (!CUPS[cup] || cup === state.cup) return;
   state.cup = cup;
@@ -2539,6 +3048,7 @@ function resetSelectionState() {
   state.loadedAt = null;
   state.isHistorical = state.mode === "cup" && state.edition !== 2026;
   state.isLeague = state.mode === "league";
+  state.isUfc = state.mode === "ufc";
   state.editionInfo = null;
   state.historySource = null;
   state.games = [];
@@ -2546,8 +3056,11 @@ function resetSelectionState() {
   state.teams = [];
   state.espnEvents = [];
   state.scorers = [];
+  state.ufcEvents = [];
+  state.ufcRankings = [];
   state.liveGroupStats = new Map();
   state.expandedMatchId = null;
+  state.expandedUfcEventId = null;
   state.knockoutBoard = { ...KNOCKOUT_BOARD, edition: null };
   state.knockoutZoom = initialKnockoutZoom();
 }
@@ -2559,6 +3072,16 @@ function updateSelectionUrl() {
     url.searchParams.set("league", state.league);
     url.searchParams.set("season", String(state.edition));
     url.searchParams.delete("year");
+    url.searchParams.delete("ufc");
+    url.searchParams.delete("ufcYear");
+  } else if (state.mode === "ufc") {
+    url.searchParams.set("type", "ufc");
+    url.searchParams.set("ufc", state.ufcSeries);
+    url.searchParams.set("ufcYear", String(state.edition));
+    url.searchParams.delete("cup");
+    url.searchParams.delete("league");
+    url.searchParams.delete("season");
+    url.searchParams.delete("year");
   } else {
     if (state.cup === "worldcup") {
       url.searchParams.delete("type");
@@ -2569,6 +3092,8 @@ function updateSelectionUrl() {
     }
     url.searchParams.delete("league");
     url.searchParams.delete("season");
+    url.searchParams.delete("ufc");
+    url.searchParams.delete("ufcYear");
     if (state.edition === 2026) url.searchParams.delete("year");
     else url.searchParams.set("year", String(state.edition));
   }
@@ -2591,6 +3116,7 @@ el.langToggle.addEventListener("click", () => {
 el.competitionSelect.addEventListener("change", () => selectCompetition(el.competitionSelect.value));
 el.cupSelect.addEventListener("change", () => selectCup(el.cupSelect.value));
 el.leagueSelect.addEventListener("change", () => selectLeague(el.leagueSelect.value));
+el.ufcSelect.addEventListener("change", () => selectUfcSeries(el.ufcSelect.value));
 el.editionSelect.addEventListener("change", () => selectEdition(el.editionSelect.value));
 
 el.timezoneToggle.addEventListener("click", openTimeZonePanel);
@@ -2621,6 +3147,14 @@ el.content.addEventListener("click", (event) => {
   const zoomButton = event.target.closest("[data-knockout-zoom]");
   if (zoomButton) {
     setKnockoutZoom(zoomButton.dataset.knockoutZoom);
+    return;
+  }
+
+  const ufcTrigger = event.target.closest("[data-ufc-event-toggle]");
+  if (ufcTrigger) {
+    const eventId = ufcTrigger.dataset.ufcEventToggle;
+    state.expandedUfcEventId = state.expandedUfcEventId === eventId ? null : eventId;
+    renderUfcEvents();
     return;
   }
 
@@ -2672,12 +3206,14 @@ applyTheme(localStorage.getItem("worldCupTheme") === "light" ? "light" : "dark")
 const activeLoads = new Map();
 
 function selectionKey() {
+  if (state.mode === "ufc") return `ufc:${state.ufcSeries}:${state.edition}`;
   return state.mode === "league"
     ? `league:${state.league}:${state.edition}`
     : `cup:${state.cup}:${state.edition}`;
 }
 
 function shouldRefresh() {
+  if (state.mode === "ufc") return state.edition === UFC_CURRENT_YEAR;
   return state.mode === "league"
     ? state.edition === LEAGUE_SEASONS[0]
     : state.edition === 2026;
@@ -2688,18 +3224,21 @@ function refreshData(showError = false) {
   const mode = state.mode;
   const leagueCode = state.league;
   const edition = state.edition;
-  if (!shouldRefresh() && state.editionInfo?.year === edition) {
+  if (!shouldRefresh() && (state.editionInfo?.year === edition || state.isUfc && state.loadedAt)) {
     return Promise.resolve();
   }
   if (activeLoads.has(key)) return activeLoads.get(key);
 
-  const request = mode === "league"
-    ? loadLeagueData(leagueCode, edition)
-    : edition === 2026 ? loadCurrentData() : loadHistoricalData(edition);
+  const request = mode === "ufc"
+    ? loadUfcData(edition)
+    : mode === "league"
+      ? loadLeagueData(leagueCode, edition)
+      : edition === 2026 ? loadCurrentData() : loadHistoricalData(edition);
   const load = request
-    .then(({ data, fallback, historical, league }) => {
+    .then(({ data, fallback, historical, league, ufc }) => {
       if (selectionKey() !== key) return;
-      applyData(data, fallback, historical, league);
+      if (ufc) applyUfcData(data);
+      else applyData(data, fallback, historical, league);
     })
     .catch(() => {
       if (selectionKey() === key && (showError || !state.loadedAt)) {
