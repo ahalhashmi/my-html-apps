@@ -18,6 +18,6 @@ Live API:
 
 The app checks for updates every 60 seconds while visible. A bundled API snapshot in `data/live-fallback.json` is used only if the live API request fails.
 
-UAE Pro League data is refreshed every five minutes from `https://www.uaepl.ae/en/fixtures` by `.github/workflows/update-world-cup-fallback.yml`. The official site does not permit browser-side cross-origin requests, so the workflow stores a public static snapshot without requiring or exposing an API key.
+UAE Pro League data is refreshed every five minutes from `https://www.uaepl.ae/en/fixtures` by `.github/workflows/update-world-cup-fallback.yml`. The official site does not permit browser-side cross-origin requests, so the workflow stores a public static snapshot without requiring or exposing an API key. While matches are in progress, the app also checks the league's public realtime match feed every 60 seconds for scores and match minutes.
 
 Historical editions are static and are generated from the Fjelstul World Cup Database. See `data/HISTORY-SOURCE.md` for attribution, licensing, and modification details.

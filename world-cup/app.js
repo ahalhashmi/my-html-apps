@@ -7,6 +7,7 @@ const API = {
 const FALLBACK_URL = "data/live-fallback.json";
 const HISTORY_URL = "data/history.json";
 const UAE_LEAGUE_URL = "data/uae-pro-league.json";
+const UAE_LEAGUE_LIVE_URL = "https://uae-pro-league.firebaseio.com/matches.json";
 const ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
 const API_TIMEOUT_MS = 6000;
 const LEAGUE_API_TIMEOUT_MS = 25000;
@@ -1269,14 +1270,118 @@ function normalizeLeagueData(scoreboard, standingsData, league, season) {
   };
 }
 
+function parseUaeLiveRecord(value) {
+  if (!value) return null;
+  if (typeof value === "object") return value;
+  const text = String(value).trim();
+  for (const candidate of [text, text.length > 2 ? text.slice(1, -1) : ""]) {
+    if (!candidate) continue;
+    try {
+      const parsed = JSON.parse(candidate);
+      return typeof parsed === "string" ? parseUaeLiveRecord(parsed) : parsed;
+    } catch (error) {
+      // The official feed sometimes wraps its JSON payload in one extra pair of quotes.
+    }
+  }
+  return null;
+}
+
+function uaeLiveMinute(matchDetails) {
+  if (matchDetails.matchTime !== undefined) return numberValue(matchDetails.matchTime);
+  if (matchDetails.matchLengthMin !== undefined) return numberValue(matchDetails.matchLengthMin);
+  if (numberValue(matchDetails.periodId) === 10) return 45;
+  return 90;
+}
+
+function uaeGoalMinute(goal) {
+  const minute = numberValue(goal.timeMin);
+  const period = numberValue(goal.periodId);
+  if (period === 1 && minute > 45) return `45+${minute - 45}'`;
+  if (period === 2 && minute > 90) return `90+${minute - 90}'`;
+  if (period === 3 && minute > 105) return `105+${minute - 105}'`;
+  if (period === 4 && minute > 120) return `120+${minute - 120}'`;
+  return `${minute}'`;
+}
+
+function uaeLiveScorers(record, homeScore, awayScore) {
+  const contestants = record.matchInfo?.contestant || [];
+  const contestantSide = new Map(contestants.map((team) => [String(team.id), team.position]));
+  const output = { home: [], away: [] };
+  let previousHome = 0;
+  let previousAway = 0;
+  [...(record.liveData?.goal || [])]
+    .sort((a, b) => numberValue(a.timeMin) - numberValue(b.timeMin) || String(a.timestamp).localeCompare(String(b.timestamp)))
+    .forEach((goal) => {
+      const nextHome = numberValue(goal.homeScore);
+      const nextAway = numberValue(goal.awayScore);
+      let creditedSide = nextHome > previousHome ? "home" : nextAway > previousAway ? "away" : "";
+      const playerSide = contestantSide.get(String(goal.contestantId || "")) || "";
+      if (!creditedSide) creditedSide = playerSide;
+      if (!creditedSide) return;
+      const ownGoal = playerSide && playerSide !== creditedSide
+        || /og|own/i.test(String(goal.type || ""))
+        || goal.ownGoal === true;
+      const penalty = /pen|pg/i.test(String(goal.type || "")) || goal.penalty === true;
+      const note = ownGoal ? " (OG)" : penalty ? " (p)" : "";
+      output[creditedSide].push(`${String(goal.scorerName || t().missingData).trim()} ${uaeGoalMinute(goal)}${note}`);
+      previousHome = nextHome;
+      previousAway = nextAway;
+    });
+  return output.home.length + output.away.length === homeScore + awayScore ? output : null;
+}
+
+function mergeUaeLiveData(data, payload) {
+  const records = new Map();
+  Object.values(payload || {}).forEach((value) => {
+    const record = parseUaeLiveRecord(value);
+    if (record?.matchInfo?.id) records.set(String(record.matchInfo.id), record);
+  });
+  if (!records.size) return { ...data, liveFetchedAt: new Date().toISOString() };
+
+  return {
+    ...data,
+    games: (data.games || []).map((game) => {
+      const record = records.get(String(game.opta_id || ""));
+      const matchDetails = record?.liveData?.matchDetails;
+      const scores = matchDetails?.scores?.total || matchDetails?.scores?.ft;
+      if (!record || !matchDetails || !scores) return game;
+      const homeScore = numberValue(scores.home);
+      const awayScore = numberValue(scores.away);
+      const played = String(matchDetails.matchStatus || "").trim().toLowerCase() === "played";
+      const playing = String(matchDetails.matchStatus || "").trim().toLowerCase() === "playing";
+      if (!played && !playing) return game;
+      const scorers = uaeLiveScorers(record, homeScore, awayScore);
+      return {
+        ...game,
+        home_score: String(homeScore),
+        away_score: String(awayScore),
+        ...(scorers ? { home_scorers: scorers.home, away_scorers: scorers.away } : {}),
+        score_missing: false,
+        finished: played ? "TRUE" : "FALSE",
+        time_elapsed: played ? "finished" : `${uaeLiveMinute(matchDetails)}'`
+      };
+    }),
+    liveFetchedAt: new Date().toISOString()
+  };
+}
+
 async function loadLeagueData(league, season) {
   if (league === "uae.pro") {
     const archive = await getJson(cacheBustedUrl(UAE_LEAGUE_URL), LEAGUE_API_TIMEOUT_MS);
     const seasonData = archive.seasons?.[String(season)];
+    let data = seasonData
+      ? { ...seasonData, source: archive.source }
+      : normalizeLeagueData({ events: [] }, { children: [] }, league, season);
+    if (season === LEAGUE_SEASONS[0]) {
+      try {
+        const liveData = await getJson(cacheBustedUrl(UAE_LEAGUE_LIVE_URL), API_TIMEOUT_MS);
+        data = mergeUaeLiveData(data, liveData);
+      } catch (error) {
+        // The official static snapshot remains usable if the realtime feed is unavailable.
+      }
+    }
     return {
-      data: seasonData
-        ? { ...seasonData, source: archive.source }
-        : normalizeLeagueData({ events: [] }, { children: [] }, league, season),
+      data,
       fallback: false,
       historical: false,
       league: true
