@@ -6,6 +6,7 @@ const API = {
 
 const FALLBACK_URL = "data/live-fallback.json";
 const HISTORY_URL = "data/history.json";
+const UAE_LEAGUE_URL = "data/uae-pro-league.json";
 const ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
 const API_TIMEOUT_MS = 6000;
 const LEAGUE_API_TIMEOUT_MS = 25000;
@@ -44,16 +45,18 @@ const LEAGUES = {
   },
   "uae.pro": {
     name: "UAE Pro League",
-    nameAr: "دوري الإمارات",
+    nameAr: "دوري أدنوك للمحترفين",
     gamesPerTeam: 26,
     domestic: true,
-    supported: false
+    defaultSeason: 2025,
+    official: true
   },
   "ksa.1": {
     name: "Saudi Pro League",
-    nameAr: "الدوري السعودي",
+    nameAr: "دوري روشن السعودي",
     gamesPerTeam: 34,
-    domestic: true
+    domestic: true,
+    defaultSeason: 2025
   },
   "uefa.champions": {
     name: "UEFA Champions League",
@@ -130,6 +133,7 @@ const labels = {
     noGroupStage: "This edition had no group stage.",
     noKnockoutStage: "This edition had no knockout stage.",
     historicalSource: "Historical data",
+    sourceLabel: "Source",
     replay: "Replay",
     done: "FT",
     live: "Live",
@@ -167,8 +171,8 @@ const labels = {
     league: "الدوري",
     premierLeague: "الدوري الإنجليزي",
     laLiga: "الدوري الإسباني",
-    uaeLeague: "دوري الإمارات",
-    saudiLeague: "الدوري السعودي",
+    uaeLeague: "دوري أدنوك",
+    saudiLeague: "دوري روشن",
     championsLeague: "دوري أبطال أوروبا",
     leaguePhase: "مرحلة الدوري",
     table: "الترتيب",
@@ -192,6 +196,7 @@ const labels = {
     noGroupStage: "لم تتضمن هذه النسخة مرحلة مجموعات.",
     noKnockoutStage: "لم تتضمن هذه النسخة مرحلة خروج المغلوب.",
     historicalSource: "البيانات التاريخية",
+    sourceLabel: "المصدر",
     replay: "إعادة",
     done: "نهاية",
     live: "مباشر",
@@ -358,6 +363,25 @@ const arabicClubNames = {
     VAL: "فالنسيا",
     VIL: "فياريال",
     VLL: "ريال بلد الوليد"
+  },
+  "uae.pro": {
+    AJM: "عجمان",
+    AIN: "العين",
+    BAT: "البطائح",
+    DHA: "الظفرة",
+    JAZ: "الجزيرة",
+    NAS: "النصر",
+    WAH: "الوحدة",
+    WAS: "الوصل",
+    BAN: "بني ياس",
+    DIB: "دبا",
+    EMI: "الإمارات",
+    HAT: "حتا",
+    KAL: "كلباء",
+    KHO: "خورفكان",
+    SAH: "شباب الأهلي",
+    SHJ: "الشارقة",
+    UFC: "يونايتد"
   },
   "ksa.1": {
     ABH: "أبها",
@@ -670,7 +694,8 @@ function initialWorldCupEdition() {
 
 function initialLeagueSeason() {
   const value = Number(new URLSearchParams(window.location.search).get("season"));
-  return LEAGUE_SEASONS.includes(value) ? value : LEAGUE_SEASONS[0];
+  if (LEAGUE_SEASONS.includes(value)) return value;
+  return LEAGUES[initialLeague()]?.defaultSeason || LEAGUE_SEASONS[0];
 }
 
 function initialEdition() {
@@ -1245,9 +1270,13 @@ function normalizeLeagueData(scoreboard, standingsData, league, season) {
 }
 
 async function loadLeagueData(league, season) {
-  if (LEAGUES[league]?.supported === false) {
+  if (league === "uae.pro") {
+    const archive = await getJson(cacheBustedUrl(UAE_LEAGUE_URL), LEAGUE_API_TIMEOUT_MS);
+    const seasonData = archive.seasons?.[String(season)];
     return {
-      data: normalizeLeagueData({ events: [] }, { children: [] }, league, season),
+      data: seasonData
+        ? { ...seasonData, source: archive.source }
+        : normalizeLeagueData({ events: [] }, { children: [] }, league, season),
       fallback: false,
       historical: false,
       league: true
@@ -1603,14 +1632,16 @@ function renderScorers() {
       ${hasScorerData()
         ? (scorers.length ? scorers.map(scorerRow).join("") : `<div class="empty">${escapeHtml(t().noGoals)}</div>`)
         : `<div class="empty">${escapeHtml(state.isLeague
-          ? state.editionInfo?.scorers_complete === false ? t().missingData : t().comingSoon
+          ? !state.games.length && !state.groups.length
+            ? t().comingSoon
+            : state.editionInfo?.scorers_complete === false ? t().missingData : t().comingSoon
           : state.isHistorical ? t().missingData : t().scorersUnavailable)}</div>`}
     </section>
   `;
 }
 
 function topScorers() {
-  if (state.isHistorical) return state.scorers || [];
+  if (state.isHistorical || state.scorers.length) return state.scorers || [];
   const scorers = new Map();
 
   espnScorerGoals().forEach(({ playerId, name, team }) => {
@@ -1636,7 +1667,8 @@ function topScorers() {
 
 function hasScorerData() {
   if (state.isLeague && state.editionInfo?.scorers_complete === false) return false;
-  return state.isHistorical ? Array.isArray(state.scorers) && state.scorers.length > 0 : hasEspnScorerData();
+  if (Array.isArray(state.scorers) && state.scorers.length > 0) return true;
+  return state.isHistorical ? false : hasEspnScorerData();
 }
 
 function hasEspnScorerData() {
@@ -1965,7 +1997,7 @@ function matchDetails(game) {
       <div class="goal-list">
         ${scorers.length ? scorers.map(goalRow).join("") : `<div class="no-goals">${escapeHtml(missingScorers ? t().missingData : t().noGoals)}</div>`}
       </div>
-      <a class="highlight-button" href="${escapeHtml(youtubeSearchUrl(game))}" target="_blank" rel="noopener">
+      <a class="highlight-button" href="${escapeHtml(game.highlights_url || youtubeSearchUrl(game))}" target="_blank" rel="noopener">
         ${escapeHtml(t().highlights)}
       </a>
     </div>
@@ -2279,7 +2311,16 @@ function updateStaticText() {
 }
 
 function updateSourceCredit() {
-  if (state.isLeague || !state.isHistorical || !state.historySource) {
+  const leagueSource = state.isLeague ? state.editionInfo?.source : null;
+  if (leagueSource) {
+    el.sourceCredit.hidden = false;
+    el.sourceCredit.innerHTML = `
+      ${escapeHtml(t().sourceLabel)}:
+      <a href="${escapeHtml(leagueSource.url)}" target="_blank" rel="noopener">${escapeHtml(leagueSource.name)}</a>
+    `;
+    return;
+  }
+  if (!state.isHistorical || !state.historySource) {
     el.sourceCredit.hidden = true;
     el.sourceCredit.innerHTML = "";
     return;
@@ -2373,6 +2414,8 @@ function selectCompetition(mode) {
 function selectLeague(league) {
   if (!LEAGUES[league] || league === state.league) return;
   state.league = league;
+  state.edition = LEAGUES[league].defaultSeason || LEAGUE_SEASONS[0];
+  state.leagueSeason = state.edition;
   localStorage.setItem(LEAGUE_KEY, league);
   resetSelectionState();
   updateSelectionUrl();

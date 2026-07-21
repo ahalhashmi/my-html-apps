@@ -1,4 +1,4 @@
-name: Update World Cup fallback
+name: Update football fallback
 
 on:
   schedule:
@@ -15,6 +15,14 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install UAE league parser
+        run: npm install --prefix world-cup/scripts --no-audit --no-fund
 
       - name: Fetch latest World Cup data
         shell: bash
@@ -53,17 +61,21 @@ jobs:
           fs.writeFileSync("world-cup/data/live-fallback.json", `${JSON.stringify(fallback, null, 2)}\n`);
           NODE
 
+      - name: Fetch official UAE Pro League data
+        continue-on-error: true
+        run: node world-cup/scripts/update_uae_pro_league.mjs --season 2026
+
       - name: Commit changed fallback
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- world-cup/data/live-fallback.json; then
+          if git diff --quiet -- world-cup/data/live-fallback.json world-cup/data/uae-pro-league.json; then
             echo "No fallback data changes."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add world-cup/data/live-fallback.json
-          git commit -m "Update world cup fallback data"
+          git add world-cup/data/live-fallback.json world-cup/data/uae-pro-league.json
+          git commit -m "Update football fallback data"
           git push

@@ -517,7 +517,7 @@ a {
 
 .match {
   --match-flag-size: 54px;
-  --match-stat-width: 50px;
+  --match-stat-width: 59px;
   appearance: none;
   display: grid;
   grid-template-columns:
@@ -529,7 +529,7 @@ a {
   grid-template-areas:
     "homeFlag homeDetail center awayDetail awayFlag"
     "homeName homeName center awayName awayName";
-  column-gap: 7px;
+  column-gap: 6px;
   row-gap: 8px;
   align-items: center;
   min-height: 116px;
@@ -1071,8 +1071,8 @@ a.match.is-done {
 
   .match {
     --match-flag-size: 48px;
-    --match-stat-width: 46px;
-    column-gap: 5px;
+    --match-stat-width: 56px;
+    column-gap: 4px;
     padding: 9px;
   }
 
