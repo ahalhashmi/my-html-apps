@@ -1,6 +1,6 @@
 {
   "trigger": "github-action",
-  "scanned_at": "2026-08-09T05:14:01+00:00",
+  "scanned_at": "2026-08-10T05:40:27+00:00",
   "data_dir": "github-action",
   "market": "all",
   "profiles": [
@@ -29646,7 +29646,7 @@
   "last_data_update": {
     "source": "stockanalysis",
     "data_dir": "/tmp/uae-trading-ohlcv",
-    "updated_at": "2026-08-09T05:13:55+00:00",
+    "updated_at": "2026-08-10T05:40:21+00:00",
     "symbols_total": 163,
     "files_written": 163,
     "failures": []
