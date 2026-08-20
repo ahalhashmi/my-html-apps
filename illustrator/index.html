@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#111315" />
+<title>Logo Studio — Mobile Vector Editor</title>
+<style>
+  :root{
+    --bg:#0f1114;--panel:#171a1f;--panel2:#20242a;--line:#303640;--text:#f6f7f9;--muted:#9aa3af;
+    --accent:#6ea8ff;--danger:#ff6674;--guide:#ff4fd8;--ok:#5de2a5;--radius:14px;
+    --safeTop:env(safe-area-inset-top,0px);--safeBottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+  button,input,select{font:inherit}
+  button{touch-action:manipulation}
+  #app{height:100%;display:grid;grid-template-rows:auto 1fr auto;padding-top:var(--safeTop);padding-bottom:var(--safeBottom)}
+
+  .topbar{display:flex;gap:8px;align-items:center;padding:8px 10px;background:rgba(15,17,20,.96);border-bottom:1px solid var(--line);z-index:20;overflow-x:auto;scrollbar-width:none}
+  .topbar::-webkit-scrollbar,.toolstrip::-webkit-scrollbar{display:none}
+  .brand{font-weight:800;font-size:14px;white-space:nowrap;margin-right:2px}
+  .iconbtn,.toolbtn,.pill{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:11px;min-width:42px;height:40px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+  .iconbtn:active,.toolbtn:active,.pill:active{transform:scale(.98)}
+  .iconbtn.active,.toolbtn.active,.pill.active{background:#263a58;border-color:#4e79b7;color:#fff}
+  .iconbtn.danger{color:#ff9ba4}
+  .label{font-size:12px;color:var(--muted)}
+  .divider{width:1px;height:24px;background:var(--line);flex:0 0 auto}
+
+  #stageWrap{position:relative;overflow:hidden;background:#0a0c0f;touch-action:none}
+  #stage{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;user-select:none}
+  #artboardShadow{filter:drop-shadow(0 16px 28px rgba(0,0,0,.45))}
+
+  .bottom{z-index:25;background:rgba(15,17,20,.98);border-top:1px solid var(--line)}
+  .toolstrip{display:flex;gap:8px;align-items:center;padding:8px 10px;overflow-x:auto;scrollbar-width:none}
+  .toolbtn{flex-direction:column;height:54px;min-width:58px;padding:5px 9px;font-size:10px;color:var(--muted)}
+  .toolbtn b{font-size:20px;line-height:18px;color:var(--text);font-weight:600}
+  .toolbtn.active{color:#fff}
+
+  .sheet{position:absolute;left:8px;right:8px;bottom:calc(70px + var(--safeBottom));z-index:30;background:rgba(23,26,31,.98);border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.45);transform:translateY(calc(100% + 100px));transition:transform .2s ease;max-height:min(62vh,560px);overflow:auto}
+  .sheet.open{transform:translateY(0)}
+  .sheetHeader{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(23,26,31,.98);border-bottom:1px solid var(--line)}
+  .sheetHeader strong{font-size:14px}.sheetBody{padding:12px 14px 18px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .field{display:flex;flex-direction:column;gap:5px}.field label{font-size:11px;color:var(--muted)}
+  .field input,.field select{width:100%;height:38px;border-radius:10px;border:1px solid var(--line);background:#111419;color:var(--text);padding:0 10px;outline:none}
+  .field input[type=color]{padding:3px}
+  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.row + .row{margin-top:10px}
+  .sectionTitle{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#818b98;margin:14px 0 8px}
+  .widebtn{height:40px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:0 12px;flex:1;min-width:80px}
+  .widebtn.active{background:#263a58;border-color:#4e79b7}.widebtn.danger{color:#ff9ba4}
+  .switch{display:flex;align-items:center;justify-content:space-between;padding:8px 0;gap:12px}
+  .switch span{font-size:13px}.switch input{width:22px;height:22px;accent-color:var(--accent)}
+
+  #toast{position:absolute;left:50%;bottom:84px;transform:translate(-50%,20px);z-index:60;background:#20252c;border:1px solid #3a424d;color:#fff;border-radius:12px;padding:9px 12px;font-size:12px;opacity:0;pointer-events:none;transition:.18s;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+  #hud{position:absolute;top:10px;left:10px;z-index:12;background:rgba(10,12,15,.8);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:6px 8px;font-size:11px;color:#c7ced7;pointer-events:none;backdrop-filter:blur(8px)}
+  #snapBadge{position:absolute;top:10px;right:10px;z-index:12;background:rgba(10,12,15,.8);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:6px 8px;font-size:11px;color:#c7ced7;pointer-events:none;backdrop-filter:blur(8px)}
+
+  .selection-box{fill:none;stroke:#6ea8ff;stroke-width:2;vector-effect:non-scaling-stroke;pointer-events:none}
+  .handle{fill:white;stroke:#2e76d0;stroke-width:2;vector-effect:non-scaling-stroke;cursor:pointer}
+  .rotate-handle{fill:#6ea8ff;stroke:white;stroke-width:1.5;vector-effect:non-scaling-stroke;cursor:grab}
+  .smart-guide{stroke:var(--guide);stroke-width:1.2;stroke-dasharray:5 4;vector-effect:non-scaling-stroke;pointer-events:none}
+  .measure-label{fill:#fff;font-size:11px;paint-order:stroke;stroke:#0f1114;stroke-width:4px;stroke-linejoin:round;pointer-events:none}
+  .ruler-bg{fill:rgba(17,20,25,.86);stroke:#303640;stroke-width:1;vector-effect:non-scaling-stroke}
+  .ruler-tick{stroke:#697381;stroke-width:1;vector-effect:non-scaling-stroke}.ruler-major{stroke:#aeb6c2}
+  .ruler-text{fill:#c6ccd5;font-size:10px;pointer-events:none}
+  .anchor-dot{fill:var(--guide);stroke:white;stroke-width:1;vector-effect:non-scaling-stroke;pointer-events:none}
+
+  .modal{position:absolute;inset:0;z-index:90;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;padding:20px}
+  .modal.open{display:flex}.modalCard{width:min(440px,100%);background:#181b20;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 22px 80px rgba(0,0,0,.5)}
+  .modalCard h2{font-size:17px;margin:0 0 6px}.modalCard p{font-size:13px;line-height:1.45;color:#aeb6c2;margin:0 0 14px}
+  .modalActions{display:flex;gap:8px;flex-wrap:wrap}.modalActions button{flex:1;height:42px;border-radius:11px;border:1px solid var(--line);background:#20242a;color:#fff}
+
+  @media(min-width:900px){
+    .sheet{left:auto;right:12px;width:360px;bottom:82px}.toolstrip{justify-content:center}.brand{font-size:15px}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div class="brand">Logo Studio</div>
+    <button class="iconbtn" id="undoBtn" title="Undo">↶</button>
+    <button class="iconbtn" id="redoBtn" title="Redo">↷</button>
+    <div class="divider"></div>
+    <button class="pill active" id="snapBtn">⌁ Snap</button>
+    <button class="pill active" id="gridBtn">▦ Grid</button>
+    <button class="pill active" id="rulerBtn">⌗ Ruler</button>
+    <button class="pill" id="multiBtn">＋ Select</button>
+    <div class="divider"></div>
+    <button class="iconbtn" id="zoomOutBtn">−</button>
+    <button class="pill" id="zoomLabel">100%</button>
+    <button class="iconbtn" id="zoomInBtn">＋</button>
+    <button class="pill" id="fitBtn">Fit</button>
+    <div class="divider"></div>
+    <button class="pill" id="settingsBtn">⚙ Settings</button>
+    <button class="pill" id="exportBtn">⇩ Export</button>
+  </div>
+
+  <div id="stageWrap">
+    <svg id="stage" xmlns="http://www.w3.org/2000/svg" aria-label="Vector drawing canvas">
+      <defs>
+        <pattern id="smallGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M20 0 L0 0 0 20" fill="none" stroke="#d8dde5" stroke-opacity=".16" stroke-width="1" />
+        </pattern>
+        <pattern id="bigGrid" width="100" height="100" patternUnits="userSpaceOnUse">
+          <rect width="100" height="100" fill="url(#smallGrid)" />
+          <path d="M100 0 L0 0 0 100" fill="none" stroke="#9ea8b6" stroke-opacity=".22" stroke-width="1.25" />
+        </pattern>
+      </defs>
+      <g id="viewport">
+        <g id="artboardShadow">
+          <rect id="artboard" x="0" y="0" width="1000" height="1000" fill="#fff" />
+          <rect id="gridOverlay" x="0" y="0" width="1000" height="1000" fill="url(#bigGrid)" pointer-events="none" />
+        </g>
+        <g id="objects"></g>
+        <g id="guides"></g>
+        <g id="selectionUI"></g>
+        <g id="rulers"></g>
+      </g>
+    </svg>
+    <div id="hud">x 0 · y 0</div>
+    <div id="snapBadge">Snap: grid + objects</div>
+    <div id="toast"></div>
+  </div>
+
+  <div class="bottom">
+    <div class="toolstrip">
+      <button class="toolbtn active" data-tool="select"><b>↖</b>Select</button>
+      <button class="toolbtn" data-tool="hand"><b>✋</b>Pan</button>
+      <button class="toolbtn" data-tool="rect"><b>▭</b>Rect</button>
+      <button class="toolbtn" data-tool="ellipse"><b>○</b>Ellipse</button>
+      <button class="toolbtn" data-tool="line"><b>／</b>Line</button>
+      <button class="toolbtn" data-tool="triangle"><b>△</b>Triangle</button>
+      <button class="toolbtn" data-tool="star"><b>☆</b>Star</button>
+      <button class="toolbtn" id="duplicateBtn"><b>⧉</b>Duplicate</button>
+      <button class="toolbtn" id="deleteBtn"><b>⌫</b>Delete</button>
+      <button class="toolbtn" id="propertiesBtn"><b>◫</b>Style</button>
+      <button class="toolbtn" id="arrangeBtn"><b>☷</b>Arrange</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="propertiesSheet">
+  <div class="sheetHeader"><strong>Object properties</strong><button class="iconbtn" data-close-sheet>×</button></div>
+  <div class="sheetBody">
+    <div id="noSelection" class="label">Select an object to edit its exact values.</div>
+    <div id="propertyFields" style="display:none">
+      <div class="grid2">
+        <div class="field"><label>X</label><input id="propX" type="number" step="1"></div>
+        <div class="field"><label>Y</label><input id="propY" type="number" step="1"></div>
+        <div class="field"><label>Width</label><input id="propW" type="number" step="1" min="1"></div>
+        <div class="field"><label>Height</label><input id="propH" type="number" step="1" min="1"></div>
+        <div class="field"><label>Rotation °</label><input id="propRot" type="number" step="1"></div>
+        <div class="field"><label>Opacity %</label><input id="propOpacity" type="number" min="0" max="100" step="1"></div>
+      </div>
+      <div class="sectionTitle">Appearance</div>
+      <div class="grid2">
+        <div class="field"><label>Fill</label><input id="propFill" type="color"></div>
+        <div class="field"><label>Stroke</label><input id="propStroke" type="color"></div>
+        <div class="field"><label>Stroke width</label><input id="propStrokeW" type="number" step="1" min="0" max="100"></div>
+        <div class="field"><label>Corner radius</label><input id="propRadius" type="number" step="1" min="0"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="widebtn" id="noFillBtn">No fill</button>
+        <button class="widebtn" id="swapColorsBtn">⇄ Fill / stroke</button>
+      </div>
+      <div class="sectionTitle">Transform</div>
+      <div class="grid3">
+        <button class="widebtn" id="flipHBtn">↔ Flip H</button>
+        <button class="widebtn" id="flipVBtn">↕ Flip V</button>
+        <button class="widebtn" id="resetRotBtn">0° Reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="arrangeSheet">
+  <div class="sheetHeader"><strong>Align & arrange</strong><button class="iconbtn" data-close-sheet>×</button></div>
+  <div class="sheetBody">
+    <div class="sectionTitle">Align selected objects</div>
+    <div class="grid3">
+      <button class="widebtn" data-align="left">Left</button>
+      <button class="widebtn" data-align="centerX">Center X</button>
+      <button class="widebtn" data-align="right">Right</button>
+      <button class="widebtn" data-align="top">Top</button>
+      <button class="widebtn" data-align="centerY">Center Y</button>
+      <button class="widebtn" data-align="bottom">Bottom</button>
+    </div>
+    <div class="sectionTitle">Distribute</div>
+    <div class="grid2">
+      <button class="widebtn" data-distribute="x">Equal horizontal gaps</button>
+      <button class="widebtn" data-distribute="y">Equal vertical gaps</button>
+    </div>
+    <div class="sectionTitle">Layers</div>
+    <div class="grid2">
+      <button class="widebtn" id="bringFrontBtn">Bring to front</button>
+      <button class="widebtn" id="sendBackBtn">Send to back</button>
+      <button class="widebtn" id="bringForwardBtn">Forward one</button>
+      <button class="widebtn" id="sendBackwardBtn">Back one</button>
+    </div>
+    <div class="sectionTitle">Precision helpers</div>
+    <div class="grid2">
+      <button class="widebtn" id="centerArtXBtn">Center on artboard X</button>
+      <button class="widebtn" id="centerArtYBtn">Center on artboard Y</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="settingsSheet">
+  <div class="sheetHeader"><strong>Canvas & snapping</strong><button class="iconbtn" data-close-sheet>×</button></div>
+  <div class="sheetBody">
+    <div class="grid2">
+      <div class="field"><label>Artboard width</label><input id="artW" type="number" min="100" max="5000" step="10" value="1000"></div>
+      <div class="field"><label>Artboard height</label><input id="artH" type="number" min="100" max="5000" step="10" value="1000"></div>
+      <div class="field"><label>Grid size</label><input id="gridSize" type="number" min="1" max="500" step="1" value="20"></div>
+      <div class="field"><label>Major grid every</label><input id="majorGrid" type="number" min="1" max="20" step="1" value="5"></div>
+      <div class="field"><label>Snap tolerance</label><input id="snapTolerance" type="number" min="1" max="40" step="1" value="8"></div>
+      <div class="field"><label>Rotate snap °</label><input id="angleSnap" type="number" min="1" max="90" step="1" value="15"></div>
+    </div>
+    <div class="sectionTitle">Snap targets</div>
+    <label class="switch"><span>Snap to grid</span><input id="snapGrid" type="checkbox" checked></label>
+    <label class="switch"><span>Snap edges / centers / midpoints</span><input id="snapObjects" type="checkbox" checked></label>
+    <label class="switch"><span>Smart guide lines</span><input id="smartGuides" type="checkbox" checked></label>
+    <label class="switch"><span>Snap rotation</span><input id="snapAngles" type="checkbox" checked></label>
+    <div class="sectionTitle">Canvas</div>
+    <label class="switch"><span>Show grid</span><input id="showGrid" type="checkbox" checked></label>
+    <label class="switch"><span>Show rulers / scale</span><input id="showRulers" type="checkbox" checked></label>
+    <div class="row">
+      <button class="widebtn" id="clearBtn">Clear canvas</button>
+      <button class="widebtn" id="saveBtn">Save locally</button>
+      <button class="widebtn" id="loadBtn">Load saved</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="exportModal">
+  <div class="modalCard">
+    <h2>Export logo</h2>
+    <p>SVG keeps every shape vector-sharp. PNG exports the current artboard at high resolution.</p>
+    <div class="modalActions">
+      <button id="exportSvgBtn">Export SVG</button>
+      <button id="exportPngBtn">Export PNG 2×</button>
+      <button id="exportCloseBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const stage = document.getElementById('stage');
+  const stageWrap = document.getElementById('stageWrap');
+  const viewport = document.getElementById('viewport');
+  const artboard = document.getElementById('artboard');
+  const gridOverlay = document.getElementById('gridOverlay');
+  const objectsG = document.getElementById('objects');
+  const guidesG = document.getElementById('guides');
+  const selectionG = document.getElementById('selectionUI');
+  const rulersG = document.getElementById('rulers');
+  const toastEl = document.getElementById('toast');
+  const hud = document.getElementById('hud');
+  const snapBadge = document.getElementById('snapBadge');
+
+  const state = {
+    tool:'select', selected:new Set(), multi:false,
+    artW:1000, artH:1000, grid:20, major:5, snapTolerance:8, angleSnap:15,
+    showGrid:true, showRulers:true, snapping:true, snapGrid:true, snapObjects:true, smartGuides:true, snapAngles:true,
+    zoom:1, panX:0, panY:0, pointers:new Map(), gesture:null,
+    action:null, counter:0, history:[], future:[], lastPointer:{x:0,y:0}
+  };
+
+  const $ = id => document.getElementById(id);
+  const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+  const round = (v,n=2) => Math.round(v*10**n)/10**n;
+  const el = (tag, attrs={}) => {
+    const n = document.createElementNS(svgNS, tag);
+    for (const [k,v] of Object.entries(attrs)) n.setAttribute(k,v);
+    return n;
+  };
+
+  function toast(msg){
+    toastEl.textContent = msg; toastEl.classList.add('show');
+    clearTimeout(toast._t); toast._t = setTimeout(()=>toastEl.classList.remove('show'),1200);
+  }
+
+  function setTool(tool){
+    state.tool = tool;
+    document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool));
+    stage.style.cursor = tool==='hand' ? 'grab' : tool==='select' ? 'default' : 'crosshair';
+    if(tool!=='select') clearSelection();
+  }
+
+  function updateViewport(){
+    viewport.setAttribute('transform',`translate(${state.panX} ${state.panY}) scale(${state.zoom})`);
+    $('zoomLabel').textContent = `${Math.round(state.zoom*100)}%`;
+    renderSelection(); renderRulers();
+  }
+
+  function fitArtboard(){
+    const r = stageWrap.getBoundingClientRect();
+    const margin = 56;
+    state.zoom = clamp(Math.min((r.width-margin)/state.artW,(r.height-margin)/state.artH),0.05,8);
+    state.panX = (r.width-state.artW*state.zoom)/2;
+    state.panY = (r.height-state.artH*state.zoom)/2;
+    updateViewport();
+  }
+
+  function clientToWorld(clientX, clientY){
+    const r = stage.getBoundingClientRect();
+    return {x:(clientX-r.left-state.panX)/state.zoom, y:(clientY-r.top-state.panY)/state.zoom};
+  }
+
+  function updateGridPattern(){
+    const small = document.getElementById('smallGrid');
+    const big = document.getElementById('bigGrid');
+    small.setAttribute('width',state.grid); small.setAttribute('height',state.grid);
+    small.querySelector('path').setAttribute('d',`M${state.grid} 0 L0 0 0 ${state.grid}`);
+    const major = state.grid*state.major;
+    big.setAttribute('width',major); big.setAttribute('height',major);
+    big.querySelector('rect').setAttribute('width',major); big.querySelector('rect').setAttribute('height',major);
+    big.querySelector('path').setAttribute('d',`M${major} 0 L0 0 0 ${major}`);
+    gridOverlay.style.display = state.showGrid ? '' : 'none';
+  }
+
+  function renderRulers(){
+    rulersG.innerHTML='';
+    if(!state.showRulers) return;
+    const invZ = 1/state.zoom;
+    const thickness = 24*invZ;
+    rulersG.appendChild(el('rect',{x:0,y:0,width:state.artW,height:thickness,class:'ruler-bg'}));
+    rulersG.appendChild(el('rect',{x:0,y:0,width:thickness,height:state.artH,class:'ruler-bg'}));
+    const minor = chooseRulerStep();
+    const majorEvery = 5;
+    for(let x=0,i=0;x<=state.artW;x+=minor,i++){
+      const major = i%majorEvery===0;
+      rulersG.appendChild(el('line',{x1:x,y1:0,x2:x,y2:major?thickness:thickness*.58,class:`ruler-tick ${major?'ruler-major':''}`}));
+      if(major && x>0){ const t=el('text',{x:x+2*invZ,y:11*invZ,class:'ruler-text'});t.setAttribute('font-size',10*invZ);t.textContent=Math.round(x);rulersG.appendChild(t); }
+    }
+    for(let y=0,i=0;y<=state.artH;y+=minor,i++){
+      const major = i%majorEvery===0;
+      rulersG.appendChild(el('line',{x1:0,y1:y,x2:major?thickness:thickness*.58,y2:y,class:`ruler-tick ${major?'ruler-major':''}`}));
+      if(major && y>0){ const t=el('text',{x:3*invZ,y:y-2*invZ,class:'ruler-text'});t.setAttribute('font-size',10*invZ);t.textContent=Math.round(y);rulersG.appendChild(t); }
+    }
+  }
+
+  function chooseRulerStep(){
+    const desired = 20/state.zoom;
+    const candidates=[1,2,5,10,20,50,100,200,500];
+    return candidates.find(v=>v>=desired)||500;
+  }
+
+  function getObj(id){ return objectsG.querySelector(`[data-id="${CSS.escape(id)}"]`); }
+  function objList(){ return [...objectsG.children].filter(n=>n.dataset.id); }
+
+  function makeGroup(type){
+    const g=el('g',{'data-id':`o${++state.counter}`,'data-type':type,'data-x':'0','data-y':'0','data-rot':'0','data-flipx':'1','data-flipy':'1'});
+    g.style.touchAction='none'; return g;
+  }
+
+  function setTransform(g){
+    const b=localBox(g), cx=b.x+b.width/2, cy=b.y+b.height/2;
+    const x=+g.dataset.x||0,y=+g.dataset.y||0,rot=+g.dataset.rot||0,fx=+g.dataset.flipx||1,fy=+g.dataset.flipy||1;
+    g.setAttribute('transform',`translate(${x} ${y}) rotate(${rot} ${cx} ${cy}) translate(${cx} ${cy}) scale(${fx} ${fy}) translate(${-cx} ${-cy})`);
+  }
+
+  function localBox(g){
+    const type=g.dataset.type, s=g.firstElementChild;
+    if(type==='rect') return {x:+s.getAttribute('x'),y:+s.getAttribute('y'),width:+s.getAttribute('width'),height:+s.getAttribute('height')};
+    if(type==='ellipse') {const cx=+s.getAttribute('cx'),cy=+s.getAttribute('cy'),rx=+s.getAttribute('rx'),ry=+s.getAttribute('ry');return{x:cx-rx,y:cy-ry,width:rx*2,height:ry*2};}
+    if(type==='line'){const x1=+s.getAttribute('x1'),y1=+s.getAttribute('y1'),x2=+s.getAttribute('x2'),y2=+s.getAttribute('y2');return{x:Math.min(x1,x2),y:Math.min(y1,y2),width:Math.max(1,Math.abs(x2-x1)),height:Math.max(1,Math.abs(y2-y1))};}
+    if(type==='triangle'||type==='star'){ const pts=s.points; let xs=[],ys=[]; for(let i=0;i<pts.numberOfItems;i++){xs.push(pts.getItem(i).x);ys.push(pts.getItem(i).y)} return{x:Math.min(...xs),y:Math.min(...ys),width:Math.max(...xs)-Math.min(...xs),height:Math.max(...ys)-Math.min(...ys)}; }
+    return {x:0,y:0,width:0,height:0};
+  }
+
+  function worldBox(g){
+    const b=localBox(g), x=(+g.dataset.x||0)+b.x, y=(+g.dataset.y||0)+b.y;
+    // Alignment/snapping uses the unrotated logical bounding box; this keeps mobile snapping predictable.
+    return {x,y,width:b.width,height:b.height,left:x,right:x+b.width,top:y,bottom:y+b.height,cx:x+b.width/2,cy:y+b.height/2};
+  }
+
+  function shapeAttrs(){ return {fill:'#111111',stroke:'#111111','stroke-width':'0','vector-effect':'non-scaling-stroke'}; }
+
+  function createShape(type, p1, p2, commit=true){
+    const g=makeGroup(type); let s;
+    const x=Math.min(p1.x,p2.x), y=Math.min(p1.y,p2.y), w=Math.max(1,Math.abs(p2.x-p1.x)), h=Math.max(1,Math.abs(p2.y-p1.y));
+    if(type==='rect') s=el('rect',{x,y,width:w,height:h,rx:0,...shapeAttrs()});
+    if(type==='ellipse') s=el('ellipse',{cx:x+w/2,cy:y+h/2,rx:w/2,ry:h/2,...shapeAttrs()});
+    if(type==='line') s=el('line',{x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,fill:'none',stroke:'#111111','stroke-width':'4','stroke-linecap':'round','vector-effect':'non-scaling-stroke'});
+    if(type==='triangle') s=el('polygon',{points:`${x+w/2},${y} ${x+w},${y+h} ${x},${y+h}`,...shapeAttrs()});
+    if(type==='star') s=el('polygon',{points:starPoints(x+w/2,y+h/2,w/2,h/2,5),...shapeAttrs()});
+    if(!s) return null;
+    g.appendChild(s); setTransform(g); objectsG.appendChild(g);
+    if(commit){ selectOnly(g.dataset.id); pushHistory(); }
+    return g;
+  }
+
+  function starPoints(cx,cy,rx,ry,n){
+    let pts=[]; for(let i=0;i<n*2;i++){const a=-Math.PI/2+i*Math.PI/n;const r=i%2===0?1:.43;pts.push(`${cx+Math.cos(a)*rx*r},${cy+Math.sin(a)*ry*r}`)} return pts.join(' ');
+  }
+
+  function setSelection(ids){ state.selected=new Set(ids); renderSelection(); updateProperties(); }
+  function selectOnly(id){ setSelection(id?[id]:[]); }
+  function clearSelection(){ setSelection([]); }
+  function toggleSelection(id){ const s=new Set(state.selected); s.has(id)?s.delete(id):s.add(id); setSelection([...s]); }
+
+  function selectedObjects(){ return [...state.selected].map(getObj).filter(Boolean); }
+
+  function selectionBounds(){
+    const list=selectedObjects(); if(!list.length)return null;
+    const bs=list.map(worldBox); const left=Math.min(...bs.map(b=>b.left)),right=Math.max(...bs.map(b=>b.right)),top=Math.min(...bs.map(b=>b.top)),bottom=Math.max(...bs.map(b=>b.bottom));
+    return{x:left,y:top,width:right-left,height:bottom-top,left,right,top,bottom,cx:(left+right)/2,cy:(top+bottom)/2};
+  }
+
+  function renderSelection(){
+    selectionG.innerHTML=''; if(!state.selected.size) return;
+    const b=selectionBounds(); if(!b) return;
+    const inv=1/state.zoom, hs=7*inv, rr=9*inv;
+    selectionG.appendChild(el('rect',{x:b.x,y:b.y,width:b.width,height:b.height,class:'selection-box'}));
+    const pts=[['nw',b.left,b.top],['n',b.cx,b.top],['ne',b.right,b.top],['e',b.right,b.cy],['se',b.right,b.bottom],['s',b.cx,b.bottom],['sw',b.left,b.bottom],['w',b.left,b.cy]];
+    pts.forEach(([name,x,y])=>selectionG.appendChild(el('rect',{x:x-hs,y:y-hs,width:hs*2,height:hs*2,rx:2*inv,class:'handle','data-handle':name})));
+    const ry=b.top-32*inv;
+    selectionG.appendChild(el('line',{x1:b.cx,y1:b.top,x2:b.cx,y2:ry,class:'selection-box'}));
+    selectionG.appendChild(el('circle',{cx:b.cx,cy:ry,r:rr,class:'rotate-handle','data-handle':'rotate'}));
+    if(state.selected.size===1){
+      const t=el('text',{x:b.cx,y:b.bottom+20*inv,'text-anchor':'middle',class:'measure-label'});t.setAttribute('font-size',11*inv);t.textContent=`${round(b.width,1)} × ${round(b.height,1)}`;selectionG.appendChild(t);
+    }
+  }
+
+  function clearGuides(){guidesG.innerHTML=''}
+  function guideV(x){if(!state.smartGuides)return;guidesG.appendChild(el('line',{x1:x,y1:-10000,x2:x,y2:10000,class:'smart-guide'}));}
+  function guideH(y){if(!state.smartGuides)return;guidesG.appendChild(el('line',{x1:-10000,y1:y,x2:10000,y2:y,class:'smart-guide'}));}
+  function anchorDot(x,y){if(!state.smartGuides)return;guidesG.appendChild(el('circle',{cx:x,cy:y,r:4/state.zoom,class:'anchor-dot'}));}
+
+  function snapPoint(p, excludeIds=new Set()){
+    if(!state.snapping) return {...p};
+    let sx=p.x, sy=p.y, bestX=Infinity,bestY=Infinity, gx=null,gy=null;
+    const tol=state.snapTolerance/state.zoom;
+    if(state.snapGrid){
+      const xx=Math.round(p.x/state.grid)*state.grid, yy=Math.round(p.y/state.grid)*state.grid;
+      if(Math.abs(xx-p.x)<bestX && Math.abs(xx-p.x)<=tol){sx=xx;bestX=Math.abs(xx-p.x);gx=xx}
+      if(Math.abs(yy-p.y)<bestY && Math.abs(yy-p.y)<=tol){sy=yy;bestY=Math.abs(yy-p.y);gy=yy}
+    }
+    if(state.snapObjects){
+      for(const g of objList()){
+        if(excludeIds.has(g.dataset.id))continue;
+        const b=worldBox(g); const xs=[b.left,b.cx,b.right],ys=[b.top,b.cy,b.bottom];
+        for(const x of xs){const d=Math.abs(x-p.x);if(d<bestX&&d<=tol){sx=x;bestX=d;gx=x}}
+        for(const y of ys){const d=Math.abs(y-p.y);if(d<bestY&&d<=tol){sy=y;bestY=d;gy=y}}
+      }
+      const xs=[0,state.artW/2,state.artW],ys=[0,state.artH/2,state.artH];
+      for(const x of xs){const d=Math.abs(x-p.x);if(d<bestX&&d<=tol){sx=x;bestX=d;gx=x}}
+      for(const y of ys){const d=Math.abs(y-p.y);if(d<bestY&&d<=tol){sy=y;bestY=d;gy=y}}
+    }
+    if(gx!==null)guideV(gx); if(gy!==null)guideH(gy); if(gx!==null&&gy!==null)anchorDot(gx,gy);
+    return{x:sx,y:sy};
+  }
+
+  function snapMoveBounds(rawDx,rawDy,startBounds,excludeIds){
+    if(!state.snapping)return{dx:rawDx,dy:rawDy};
+    const tol=state.snapTolerance/state.zoom;
+    const movingXs=[startBounds.left+rawDx,startBounds.cx+rawDx,startBounds.right+rawDx];
+    const movingYs=[startBounds.top+rawDy,startBounds.cy+rawDy,startBounds.bottom+rawDy];
+    const targetsX=[],targetsY=[];
+    if(state.snapGrid){
+      for(const x of movingXs)targetsX.push({value:Math.round(x/state.grid)*state.grid,kind:'grid',source:x});
+      for(const y of movingYs)targetsY.push({value:Math.round(y/state.grid)*state.grid,kind:'grid',source:y});
+    }
+    if(state.snapObjects){
+      for(const g of objList()){
+        if(excludeIds.has(g.dataset.id))continue; const b=worldBox(g);
+        [b.left,b.cx,b.right].forEach(value=>targetsX.push({value,kind:'object'}));
+        [b.top,b.cy,b.bottom].forEach(value=>targetsY.push({value,kind:'object'}));
+      }
+      [0,state.artW/2,state.artW].forEach(value=>targetsX.push({value,kind:'board'}));
+      [0,state.artH/2,state.artH].forEach(value=>targetsY.push({value,kind:'board'}));
+    }
+    let bestX={d:Infinity,delta:0,value:null},bestY={d:Infinity,delta:0,value:null};
+    for(const mx of movingXs)for(const t of targetsX){const d=Math.abs(t.value-mx);if(d<bestX.d&&d<=tol)bestX={d,delta:t.value-mx,value:t.value}}
+    for(const my of movingYs)for(const t of targetsY){const d=Math.abs(t.value-my);if(d<bestY.d&&d<=tol)bestY={d,delta:t.value-my,value:t.value}}
+    if(bestX.value!==null)guideV(bestX.value); if(bestY.value!==null)guideH(bestY.value);
+    return{dx:rawDx+(bestX.value!==null?bestX.delta:0),dy:rawDy+(bestY.value!==null?bestY.delta:0)};
+  }
+
+  function beginMove(p){
+    const list=selectedObjects(); if(!list.length)return;
+    state.action={kind:'move',start:p,bounds:selectionBounds(),items:list.map(g=>({g,x:+g.dataset.x||0,y:+g.dataset.y||0})),moved:false};
+  }
+
+  function moveSelection(p){
+    const a=state.action;if(!a||a.kind!=='move')return;clearGuides();
+    let dx=p.x-a.start.x,dy=p.y-a.start.y; const snap=snapMoveBounds(dx,dy,a.bounds,new Set(a.items.map(i=>i.g.dataset.id)));dx=snap.dx;dy=snap.dy;
+    for(const it of a.items){it.g.dataset.x=it.x+dx;it.g.dataset.y=it.y+dy;setTransform(it.g)}
+    a.moved=a.moved||Math.abs(dx)>0.1||Math.abs(dy)>0.1;renderSelection();updateProperties(false);
+    hud.textContent=`Δx ${round(dx,1)} · Δy ${round(dy,1)}`;
+  }
+
+  function beginResize(handle,p){
+    const list=selectedObjects(); if(list.length!==1){toast('Resize one object at a time');return}
+    const g=list[0]; const b=worldBox(g);
+    state.action={kind:'resize',handle,start:p,g,box:b,orig:serializeObject(g),moved:false};
+  }
+
+  function resizeSelection(p){
+    const a=state.action;if(!a||a.kind!=='resize')return;clearGuides();
+    const sp=snapPoint(p,new Set([a.g.dataset.id])); let l=a.box.left,r=a.box.right,t=a.box.top,b=a.box.bottom;
+    if(a.handle.includes('w'))l=sp.x;if(a.handle.includes('e'))r=sp.x;if(a.handle.includes('n'))t=sp.y;if(a.handle.includes('s'))b=sp.y;
+    if(a.handle==='n'||a.handle==='s'){l=a.box.left;r=a.box.right} if(a.handle==='e'||a.handle==='w'){t=a.box.top;b=a.box.bottom}
+    if(r<l)[l,r]=[r,l];if(b<t)[t,b]=[b,t];
+    const nw=Math.max(1,r-l),nh=Math.max(1,b-t); applyWorldBox(a.g,{x:l,y:t,width:nw,height:nh});
+    a.moved=true;renderSelection();updateProperties(false);hud.textContent=`${round(nw,1)} × ${round(nh,1)}`;
+  }
+
+  function applyWorldBox(g,wb){
+    const type=g.dataset.type,s=g.firstElementChild;
+    g.dataset.x=0;g.dataset.y=0;
+    if(type==='rect'){s.setAttribute('x',wb.x);s.setAttribute('y',wb.y);s.setAttribute('width',wb.width);s.setAttribute('height',wb.height);const maxR=Math.min(wb.width,wb.height)/2;s.setAttribute('rx',Math.min(+s.getAttribute('rx')||0,maxR));}
+    else if(type==='ellipse'){s.setAttribute('cx',wb.x+wb.width/2);s.setAttribute('cy',wb.y+wb.height/2);s.setAttribute('rx',wb.width/2);s.setAttribute('ry',wb.height/2)}
+    else if(type==='line'){s.setAttribute('x1',wb.x);s.setAttribute('y1',wb.y+wb.height);s.setAttribute('x2',wb.x+wb.width);s.setAttribute('y2',wb.y)}
+    else if(type==='triangle'){s.setAttribute('points',`${wb.x+wb.width/2},${wb.y} ${wb.x+wb.width},${wb.y+wb.height} ${wb.x},${wb.y+wb.height}`)}
+    else if(type==='star'){s.setAttribute('points',starPoints(wb.x+wb.width/2,wb.y+wb.height/2,wb.width/2,wb.height/2,5))}
+    setTransform(g);
+  }
+
+  function beginRotate(p){
+    const b=selectionBounds(), list=selectedObjects();if(!b||list.length!==1){toast('Rotate one object at a time');return}
+    const g=list[0];state.action={kind:'rotate',g,cx:b.cx,cy:b.cy,startAngle:Math.atan2(p.y-b.cy,p.x-b.cx)*180/Math.PI,startRot:+g.dataset.rot||0,moved:false};
+  }
+  function rotateSelection(p){
+    const a=state.action;if(!a||a.kind!=='rotate')return;let ang=Math.atan2(p.y-a.cy,p.x-a.cx)*180/Math.PI-a.startAngle+a.startRot;
+    if(state.snapping&&state.snapAngles)ang=Math.round(ang/state.angleSnap)*state.angleSnap;
+    a.g.dataset.rot=round(ang,2);setTransform(a.g);a.moved=true;renderSelection();updateProperties(false);hud.textContent=`Rotation ${round(ang,1)}°`;
+  }
+
+  function serializeObject(g){return g.outerHTML}
+  function snapshot(){return objectsG.innerHTML}
+  function pushHistory(){
+    const s=snapshot(); if(state.history[state.history.length-1]===s)return;
+    state.history.push(s);if(state.history.length>80)state.history.shift();state.future=[];updateUndoRedo();
+  }
+  function restore(html){objectsG.innerHTML=html;clearSelection();updateUndoRedo();}
+  function undo(){if(state.history.length<2)return;state.future.push(state.history.pop());restore(state.history[state.history.length-1]||'')}
+  function redo(){if(!state.future.length)return;const s=state.future.pop();state.history.push(s);restore(s)}
+  function updateUndoRedo(){$('undoBtn').disabled=state.history.length<2;$('redoBtn').disabled=!state.future.length}
+
+  function duplicateSelected(){
+    const list=selectedObjects();if(!list.length)return;const ids=[];
+    for(const g of list){const c=g.cloneNode(true);c.dataset.id=`o${++state.counter}`;c.dataset.x=(+g.dataset.x||0)+state.grid;c.dataset.y=(+g.dataset.y||0)+state.grid;setTransform(c);objectsG.appendChild(c);ids.push(c.dataset.id)}
+    setSelection(ids);pushHistory();toast('Duplicated');
+  }
+  function deleteSelected(){if(!state.selected.size)return;selectedObjects().forEach(g=>g.remove());clearSelection();pushHistory();toast('Deleted')}
+
+  function updateProperties(show=true){
+    const list=selectedObjects(), fields=$('propertyFields'), none=$('noSelection');
+    if(list.length!==1){fields.style.display='none';none.style.display='';none.textContent=list.length>1?`${list.length} objects selected. Use Arrange for alignment/distribution.`:'Select an object to edit its exact values.';return}
+    fields.style.display='';none.style.display='none';const g=list[0],b=worldBox(g),s=g.firstElementChild;
+    $('propX').value=round(b.x,2);$('propY').value=round(b.y,2);$('propW').value=round(b.width,2);$('propH').value=round(b.height,2);$('propRot').value=round(+g.dataset.rot||0,2);$('propOpacity').value=round((+(g.getAttribute('opacity')||1))*100,1);
+    const fill=s.getAttribute('fill');$('propFill').value=(fill&&fill!=='none'&&/^#[0-9a-f]{6}$/i.test(fill))?fill:'#111111';
+    const stroke=s.getAttribute('stroke');$('propStroke').value=(stroke&&/^#[0-9a-f]{6}$/i.test(stroke))?stroke:'#111111';$('propStrokeW').value=+s.getAttribute('stroke-width')||0;
+    $('propRadius').value=g.dataset.type==='rect'?(+s.getAttribute('rx')||0):0;$('propRadius').disabled=g.dataset.type!=='rect';
+  }
+
+  function applyProperties(){
+    const list=selectedObjects();if(list.length!==1)return;const g=list[0],s=g.firstElementChild;
+    const wb={x:+$('propX').value||0,y:+$('propY').value||0,width:Math.max(1,+$('propW').value||1),height:Math.max(1,+$('propH').value||1)};applyWorldBox(g,wb);g.dataset.rot=+$('propRot').value||0;g.setAttribute('opacity',clamp((+$('propOpacity').value||0)/100,0,1));
+    if(s.getAttribute('fill')!=='none')s.setAttribute('fill',$('propFill').value);s.setAttribute('stroke',$('propStroke').value);s.setAttribute('stroke-width',Math.max(0,+$('propStrokeW').value||0));
+    if(g.dataset.type==='rect')s.setAttribute('rx',clamp(+$('propRadius').value||0,0,Math.min(wb.width,wb.height)/2));setTransform(g);renderSelection();pushHistory();
+  }
+
+  function openSheet(id){document.querySelectorAll('.sheet').forEach(s=>s.classList.toggle('open',s.id===id));if(id==='propertiesSheet')updateProperties()}
+  function closeSheets(){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('open'))}
+
+  function alignSelection(mode){
+    const list=selectedObjects();if(!list.length)return;const bs=list.map(g=>({g,b:worldBox(g)}));let target;
+    if(list.length===1){const b=bs[0].b;if(mode==='left')target=0;if(mode==='centerX')target=state.artW/2;if(mode==='right')target=state.artW;if(mode==='top')target=0;if(mode==='centerY')target=state.artH/2;if(mode==='bottom')target=state.artH;moveToAlign(bs[0],mode,target)}
+    else {const union=selectionBounds();if(mode==='left')target=union.left;if(mode==='centerX')target=union.cx;if(mode==='right')target=union.right;if(mode==='top')target=union.top;if(mode==='centerY')target=union.cy;if(mode==='bottom')target=union.bottom;bs.forEach(o=>moveToAlign(o,mode,target))}
+    renderSelection();updateProperties();pushHistory();
+  }
+  function moveToAlign(o,mode,target){let dx=0,dy=0;if(mode==='left')dx=target-o.b.left;if(mode==='centerX')dx=target-o.b.cx;if(mode==='right')dx=target-o.b.right;if(mode==='top')dy=target-o.b.top;if(mode==='centerY')dy=target-o.b.cy;if(mode==='bottom')dy=target-o.b.bottom;o.g.dataset.x=(+o.g.dataset.x||0)+dx;o.g.dataset.y=(+o.g.dataset.y||0)+dy;setTransform(o.g)}
+  function distribute(axis){
+    const list=selectedObjects();if(list.length<3){toast('Select at least 3 objects');return}const items=list.map(g=>({g,b:worldBox(g)}));
+    items.sort((a,b)=>axis==='x'?a.b.left-b.b.left:a.b.top-b.b.top);
+    if(axis==='x'){const start=items[0].b.left,end=items.at(-1).b.right,total=items.reduce((s,i)=>s+i.b.width,0),gap=(end-start-total)/(items.length-1);let pos=start;for(const it of items){const dx=pos-it.b.left;it.g.dataset.x=(+it.g.dataset.x||0)+dx;setTransform(it.g);pos+=it.b.width+gap}}
+    else {const start=items[0].b.top,end=items.at(-1).b.bottom,total=items.reduce((s,i)=>s+i.b.height,0),gap=(end-start-total)/(items.length-1);let pos=start;for(const it of items){const dy=pos-it.b.top;it.g.dataset.y=(+it.g.dataset.y||0)+dy;setTransform(it.g);pos+=it.b.height+gap}}
+    renderSelection();pushHistory();
+  }
+
+  function moveLayer(mode){
+    const list=selectedObjects();if(!list.length)return;
+    if(mode==='front')list.forEach(g=>objectsG.appendChild(g));
+    if(mode==='back')[...list].reverse().forEach(g=>objectsG.insertBefore(g,objectsG.firstChild));
+    if(mode==='forward')list.forEach(g=>{if(g.nextElementSibling)objectsG.insertBefore(g.nextElementSibling,g)});
+    if(mode==='backward')[...list].reverse().forEach(g=>{if(g.previousElementSibling)objectsG.insertBefore(g,g.previousElementSibling)});
+    pushHistory();
+  }
+
+  function centerArt(axis){const list=selectedObjects();if(!list.length)return;for(const g of list){const b=worldBox(g);if(axis==='x')g.dataset.x=(+g.dataset.x||0)+(state.artW/2-b.cx);else g.dataset.y=(+g.dataset.y||0)+(state.artH/2-b.cy);setTransform(g)}renderSelection();pushHistory()}
+
+  function pointerTargetObject(e){let n=e.target;while(n&&n!==objectsG){if(n.dataset&&n.dataset.id)return n;n=n.parentNode}return null}
+
+  stage.addEventListener('pointerdown',e=>{
+    stage.setPointerCapture(e.pointerId);state.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(state.pointers.size===2){const pts=[...state.pointers.values()];state.gesture={dist:Math.hypot(pts[1].x-pts[0].x,pts[1].y-pts[0].y),zoom:state.zoom,panX:state.panX,panY:state.panY,mid:{x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2}};state.action=null;return}
+    const p=clientToWorld(e.clientX,e.clientY);state.lastPointer=p;clearGuides();
+    const handle=e.target.dataset?.handle;
+    if(handle){handle==='rotate'?beginRotate(p):beginResize(handle,p);return}
+    if(state.tool==='hand'){state.action={kind:'pan',startClient:{x:e.clientX,y:e.clientY},panX:state.panX,panY:state.panY};return}
+    const g=pointerTargetObject(e);
+    if(state.tool==='select'){
+      if(g){if(state.multi||e.shiftKey)toggleSelection(g.dataset.id);else if(!state.selected.has(g.dataset.id))selectOnly(g.dataset.id);if(state.selected.has(g.dataset.id))beginMove(p)}
+      else {if(!state.multi)clearSelection();state.action={kind:'marquee',start:p,current:p}}
+      return;
+    }
+    if(['rect','ellipse','line','triangle','star'].includes(state.tool)){
+      let sp=snapPoint(p);state.action={kind:'draw',type:state.tool,start:sp,temp:null};
+    }
+  });
+
+  stage.addEventListener('pointermove',e=>{
+    if(state.pointers.has(e.pointerId))state.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(state.pointers.size===2&&state.gesture){
+      const pts=[...state.pointers.values()],dist=Math.hypot(pts[1].x-pts[0].x,pts[1].y-pts[0].y),mid={x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2};
+      const newZoom=clamp(state.gesture.zoom*(dist/state.gesture.dist),.05,12),factor=newZoom/state.gesture.zoom;
+      state.zoom=newZoom;state.panX=mid.x-(state.gesture.mid.x-state.gesture.panX)*factor;state.panY=mid.y-(state.gesture.mid.y-state.gesture.panY)*factor;updateViewport();return;
+    }
+    const p=clientToWorld(e.clientX,e.clientY);state.lastPointer=p;hud.textContent=`x ${round(p.x,1)} · y ${round(p.y,1)}`;
+    const a=state.action;if(!a)return;
+    if(a.kind==='pan'){state.panX=a.panX+(e.clientX-a.startClient.x);state.panY=a.panY+(e.clientY-a.startClient.y);updateViewport();return}
+    if(a.kind==='move')return moveSelection(p);
+    if(a.kind==='resize')return resizeSelection(p);
+    if(a.kind==='rotate')return rotateSelection(p);
+    if(a.kind==='draw'){
+      clearGuides();let ep=snapPoint(p);if(a.type==='line'&&state.snapping&&state.snapAngles){const dx=ep.x-a.start.x,dy=ep.y-a.start.y,len=Math.hypot(dx,dy),ang=Math.atan2(dy,dx),step=state.angleSnap*Math.PI/180,sang=Math.round(ang/step)*step;ep={x:a.start.x+Math.cos(sang)*len,y:a.start.y+Math.sin(sang)*len};}
+      if(a.temp)a.temp.remove();a.temp=createShape(a.type,a.start,ep,false);a.temp.style.opacity='.9';renderSelection();return;
+    }
+    if(a.kind==='marquee'){
+      a.current=p;selectionG.innerHTML='';const x=Math.min(a.start.x,p.x),y=Math.min(a.start.y,p.y),w=Math.abs(p.x-a.start.x),h=Math.abs(p.y-a.start.y);selectionG.appendChild(el('rect',{x,y,width:w,height:h,fill:'rgba(110,168,255,.08)',stroke:'#6ea8ff','stroke-dasharray':'5 4','stroke-width':1/state.zoom}));
+    }
+  });
+
+  function endPointer(e){
+    state.pointers.delete(e.pointerId);if(state.pointers.size<2)state.gesture=null;
+    const a=state.action;if(!a){return}
+    if(a.kind==='draw'){if(a.temp){a.temp.style.opacity='';selectOnly(a.temp.dataset.id);pushHistory()}setTool('select')}
+    else if(a.kind==='move'||a.kind==='resize'||a.kind==='rotate'){clearGuides();if(a.moved)pushHistory();renderSelection();updateProperties()}
+    else if(a.kind==='marquee'){
+      const x=Math.min(a.start.x,a.current.x),y=Math.min(a.start.y,a.current.y),r=Math.max(a.start.x,a.current.x),b=Math.max(a.start.y,a.current.y);const ids=objList().filter(g=>{const q=worldBox(g);return q.left>=x&&q.right<=r&&q.top>=y&&q.bottom<=b}).map(g=>g.dataset.id);setSelection(ids)
+    }
+    state.action=null;
+  }
+  stage.addEventListener('pointerup',endPointer);stage.addEventListener('pointercancel',endPointer);
+
+  stage.addEventListener('wheel',e=>{
+    e.preventDefault();const r=stage.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,old=state.zoom,newZ=clamp(old*Math.exp(-e.deltaY*.0015),.05,12),wx=(mx-state.panX)/old,wy=(my-state.panY)/old;state.zoom=newZ;state.panX=mx-wx*newZ;state.panY=my-wy*newZ;updateViewport();
+  },{passive:false});
+
+  document.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>setTool(b.dataset.tool)));
+  $('duplicateBtn').onclick=duplicateSelected;$('deleteBtn').onclick=deleteSelected;$('propertiesBtn').onclick=()=>openSheet('propertiesSheet');$('arrangeBtn').onclick=()=>openSheet('arrangeSheet');
+  document.querySelectorAll('[data-close-sheet]').forEach(b=>b.onclick=closeSheets);
+  $('settingsBtn').onclick=()=>openSheet('settingsSheet');
+  $('undoBtn').onclick=undo;$('redoBtn').onclick=redo;
+  $('zoomInBtn').onclick=()=>{state.zoom=clamp(state.zoom*1.2,.05,12);updateViewport()};$('zoomOutBtn').onclick=()=>{state.zoom=clamp(state.zoom/1.2,.05,12);updateViewport()};$('zoomLabel').onclick=()=>{state.zoom=1;state.panX=20;state.panY=20;updateViewport()};$('fitBtn').onclick=fitArtboard;
+
+  $('snapBtn').onclick=()=>{state.snapping=!state.snapping;$('snapBtn').classList.toggle('active',state.snapping);snapBadge.textContent=state.snapping?'Snap: grid + objects':'Snap: off'};
+  $('gridBtn').onclick=()=>{state.showGrid=!state.showGrid;$('gridBtn').classList.toggle('active',state.showGrid);$('showGrid').checked=state.showGrid;updateGridPattern()};
+  $('rulerBtn').onclick=()=>{state.showRulers=!state.showRulers;$('rulerBtn').classList.toggle('active',state.showRulers);$('showRulers').checked=state.showRulers;renderRulers()};
+  $('multiBtn').onclick=()=>{state.multi=!state.multi;$('multiBtn').classList.toggle('active',state.multi);$('multiBtn').textContent=state.multi?'✓ Multi':'＋ Select';toast(state.multi?'Multi-select on':'Multi-select off')};
+
+  ['propX','propY','propW','propH','propRot','propOpacity','propFill','propStroke','propStrokeW','propRadius'].forEach(id=>$(id).addEventListener('change',applyProperties));
+  $('noFillBtn').onclick=()=>{const g=selectedObjects()[0];if(!g)return;g.firstElementChild.setAttribute('fill','none');pushHistory();updateProperties()};
+  $('swapColorsBtn').onclick=()=>{const g=selectedObjects()[0];if(!g)return;const s=g.firstElementChild,a=s.getAttribute('fill')||'none',b=s.getAttribute('stroke')||'#111111';s.setAttribute('fill',b);s.setAttribute('stroke',a==='none'?'#111111':a);pushHistory();updateProperties()};
+  $('flipHBtn').onclick=()=>flip('x');$('flipVBtn').onclick=()=>flip('y');$('resetRotBtn').onclick=()=>{selectedObjects().forEach(g=>{g.dataset.rot=0;setTransform(g)});renderSelection();pushHistory();updateProperties()};
+  function flip(axis){selectedObjects().forEach(g=>{if(axis==='x')g.dataset.flipx=-(+g.dataset.flipx||1);else g.dataset.flipy=-(+g.dataset.flipy||1);setTransform(g)});renderSelection();pushHistory()}
+
+  document.querySelectorAll('[data-align]').forEach(b=>b.onclick=()=>alignSelection(b.dataset.align));document.querySelectorAll('[data-distribute]').forEach(b=>b.onclick=()=>distribute(b.dataset.distribute));
+  $('bringFrontBtn').onclick=()=>moveLayer('front');$('sendBackBtn').onclick=()=>moveLayer('back');$('bringForwardBtn').onclick=()=>moveLayer('forward');$('sendBackwardBtn').onclick=()=>moveLayer('backward');$('centerArtXBtn').onclick=()=>centerArt('x');$('centerArtYBtn').onclick=()=>centerArt('y');
+
+  function applySettings(){
+    state.artW=clamp(+$('artW').value||1000,100,5000);state.artH=clamp(+$('artH').value||1000,100,5000);state.grid=clamp(+$('gridSize').value||20,1,500);state.major=clamp(+$('majorGrid').value||5,1,20);state.snapTolerance=clamp(+$('snapTolerance').value||8,1,40);state.angleSnap=clamp(+$('angleSnap').value||15,1,90);
+    state.snapGrid=$('snapGrid').checked;state.snapObjects=$('snapObjects').checked;state.smartGuides=$('smartGuides').checked;state.snapAngles=$('snapAngles').checked;state.showGrid=$('showGrid').checked;state.showRulers=$('showRulers').checked;
+    artboard.setAttribute('width',state.artW);artboard.setAttribute('height',state.artH);gridOverlay.setAttribute('width',state.artW);gridOverlay.setAttribute('height',state.artH);updateGridPattern();renderRulers();$('gridBtn').classList.toggle('active',state.showGrid);$('rulerBtn').classList.toggle('active',state.showRulers);renderSelection();
+  }
+  ['artW','artH','gridSize','majorGrid','snapTolerance','angleSnap','snapGrid','snapObjects','smartGuides','snapAngles','showGrid','showRulers'].forEach(id=>$(id).addEventListener('change',applySettings));
+
+  $('clearBtn').onclick=()=>{if(confirm('Clear all objects?')){objectsG.innerHTML='';clearSelection();pushHistory()}};
+  $('saveBtn').onclick=()=>{localStorage.setItem('logoStudioDoc',JSON.stringify({objects:objectsG.innerHTML,artW:state.artW,artH:state.artH,grid:state.grid,major:state.major,counter:state.counter}));toast('Saved on this device')};
+  $('loadBtn').onclick=()=>{try{const d=JSON.parse(localStorage.getItem('logoStudioDoc'));if(!d)throw 0;objectsG.innerHTML=d.objects||'';state.artW=d.artW||1000;state.artH=d.artH||1000;state.grid=d.grid||20;state.major=d.major||5;state.counter=d.counter||0;$('artW').value=state.artW;$('artH').value=state.artH;$('gridSize').value=state.grid;$('majorGrid').value=state.major;applySettings();clearSelection();pushHistory();fitArtboard();toast('Loaded')}catch{toast('No saved drawing found')}};
+
+  $('exportBtn').onclick=()=>{$('exportModal').classList.add('open')};$('exportCloseBtn').onclick=()=>$('exportModal').classList.remove('open');
+  $('exportSvgBtn').onclick=exportSVG;$('exportPngBtn').onclick=exportPNG;
+
+  function exportSVG(){
+    const out=document.createElementNS(svgNS,'svg');out.setAttribute('xmlns',svgNS);out.setAttribute('width',state.artW);out.setAttribute('height',state.artH);out.setAttribute('viewBox',`0 0 ${state.artW} ${state.artH}`);
+    const bg=artboard.cloneNode(true);bg.removeAttribute('id');out.appendChild(bg);[...objectsG.children].forEach(g=>out.appendChild(g.cloneNode(true)));
+    const data='<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(out);downloadBlob(new Blob([data],{type:'image/svg+xml'}),'logo.svg');$('exportModal').classList.remove('open');toast('SVG exported');
+  }
+  function exportPNG(){
+    const out=document.createElementNS(svgNS,'svg');out.setAttribute('xmlns',svgNS);out.setAttribute('width',state.artW);out.setAttribute('height',state.artH);out.setAttribute('viewBox',`0 0 ${state.artW} ${state.artH}`);const bg=artboard.cloneNode(true);bg.removeAttribute('id');out.appendChild(bg);[...objectsG.children].forEach(g=>out.appendChild(g.cloneNode(true)));
+    const src=new XMLSerializer().serializeToString(out),url=URL.createObjectURL(new Blob([src],{type:'image/svg+xml'})),img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=state.artW*2;c.height=state.artH*2;const ctx=c.getContext('2d');ctx.scale(2,2);ctx.drawImage(img,0,0);URL.revokeObjectURL(url);c.toBlob(b=>{downloadBlob(b,'logo@2x.png');$('exportModal').classList.remove('open');toast('PNG exported')},'image/png')};img.src=url;
+  }
+  function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+
+  document.addEventListener('keydown',e=>{
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo()}
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='d'){e.preventDefault();duplicateSelected()}
+    if(e.key==='Delete'||e.key==='Backspace'){if(!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){e.preventDefault();deleteSelected()}}
+    if(e.key==='Escape'){closeSheets();clearSelection()}
+    if(e.key.toLowerCase()==='v')setTool('select');if(e.key.toLowerCase()==='r')setTool('rect');if(e.key.toLowerCase()==='e')setTool('ellipse');if(e.key.toLowerCase()==='l')setTool('line');
+  });
+
+  window.addEventListener('resize',()=>{if(innerWidth<700)renderRulers();});
+
+  // Starter marks make the editor immediately testable.
+  createShape('rect',{x:300,y:370},{x:700,y:630},false).firstElementChild.setAttribute('rx','70');
+  const starter=objectsG.lastElementChild;starter.firstElementChild.setAttribute('fill','#111111');starter.firstElementChild.setAttribute('stroke','none');
+  pushHistory();clearSelection();updateGridPattern();fitArtboard();updateUndoRedo();
+})();
+</script>
+</body>
+</html>
