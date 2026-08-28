@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-01T19:23:48.063Z",
+  "generated_at": "2026-08-28T12:08:24.765Z",
   "source": {
     "name": "UAE Pro League",
     "url": "https://www.uaepl.ae/en/fixtures"
@@ -24323,320 +24323,397 @@
       "year": 2026,
       "season_label": "2026/27",
       "games_per_team": 26,
-      "scorers_complete": false,
+      "scorers_complete": true,
       "games": [
         {
           "id": "22e17efb-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17efb-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84480",
+          "opta_id": "6o21btf8jpgz4k1b1sbe6od1w",
           "date_utc": "2026-08-14T14:10:00.000Z",
           "home_team_id": "al-nasr",
           "away_team_id": "kalba",
           "home_team_name_en": "Al Nasr",
           "away_team_name_en": "Kalba",
-          "home_score": "0",
-          "away_score": "0",
-          "home_scorers": [],
-          "away_scorers": [],
+          "home_score": "2",
+          "away_score": "2",
+          "home_scorers": [
+            "A. Toure 64'",
+            "C. Bedia 77' (p)"
+          ],
+          "away_scorers": [
+            "N. Jović 7'",
+            "S. Ghoddos 20' (p)"
+          ],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "1",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f19-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f19-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84484",
+          "opta_id": "6p3swdfzho5i4ht33umjd6e50",
           "date_utc": "2026-08-14T16:45:00.000Z",
           "home_team_id": "al-wahda",
           "away_team_id": "ajman",
           "home_team_name_en": "Al Wahda",
           "away_team_name_en": "Ajman",
-          "home_score": "0",
-          "away_score": "0",
-          "home_scorers": [],
-          "away_scorers": [],
+          "home_score": "2",
+          "away_score": "3",
+          "home_scorers": [
+            "M. Ghorbani 77'",
+            "B. Diarra 90+3'"
+          ],
+          "away_scorers": [
+            "Lourency 5'",
+            "Victor Henrique 51'",
+            "Victor Henrique 83'"
+          ],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "1",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f10-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f10-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84481",
+          "opta_id": "6odg6w1hz7zgj54jd45r571uc",
           "date_utc": "2026-08-15T14:10:00.000Z",
           "home_team_id": "al-dhafra",
           "away_team_id": "sharjah",
           "home_team_name_en": "Al Dhafra",
           "away_team_name_en": "Sharjah",
-          "home_score": "0",
-          "away_score": "0",
-          "home_scorers": [],
-          "away_scorers": [],
+          "home_score": "1",
+          "away_score": "3",
+          "home_scorers": [
+            "D. Mendy 59'"
+          ],
+          "away_scorers": [
+            "Luanzinho 39'",
+            "Julimar 66'",
+            "Agner 90+8'"
+          ],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "1",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f1b-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f1b-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84485",
+          "opta_id": "6pcly9zet9qnyeqxyq4mml79w",
           "date_utc": "2026-08-15T16:45:00.000Z",
           "home_team_id": "al-wasl",
           "away_team_id": "united",
           "home_team_name_en": "Al Wasl",
           "away_team_name_en": "United",
-          "home_score": "0",
-          "away_score": "0",
-          "home_scorers": [],
-          "away_scorers": [],
+          "home_score": "5",
+          "away_score": "1",
+          "home_scorers": [
+            "Renato Júnior 3'",
+            "N. Dao 63' (OG)",
+            "Serginho 87'",
+            "Ali Saleh 89'",
+            "Serginho 90+6'"
+          ],
+          "away_scorers": [
+            "Adeel Al Chadli 17'"
+          ],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "1",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f1e-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f1e-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84486",
+          "opta_id": "6plh2jo2mzgci86qj3ke6miok",
           "date_utc": "2026-08-15T16:45:00.000Z",
           "home_team_id": "khorfakkan",
           "away_team_id": "shabab-alahli",
           "home_team_name_en": "Khorfakkan",
           "away_team_name_en": "Shabab AlAhli",
-          "home_score": "0",
-          "away_score": "0",
-          "home_scorers": [],
-          "away_scorers": [],
+          "home_score": "1",
+          "away_score": "5",
+          "home_scorers": [
+            "Aylton Boa Morte 25'"
+          ],
+          "away_scorers": [
+            "S. Ezatolahi 57'",
+            "S. Ezatolahi 79' (p)",
+            "Yuri César 84'",
+            "S. Azmoun 87'",
+            "Rikelme 90+2'"
+          ],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "1",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f17-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f17-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84483",
+          "opta_id": "6ov0c7b01yt4bxah7pozr0vf8",
           "date_utc": "2026-08-16T14:10:00.000Z",
           "home_team_id": "hatta",
           "away_team_id": "al-jazira",
           "home_team_name_en": "Hatta",
           "away_team_name_en": "Al Jazira",
           "home_score": "0",
-          "away_score": "0",
+          "away_score": "2",
           "home_scorers": [],
-          "away_scorers": [],
+          "away_scorers": [
+            "S. Banza 45+3'",
+            "Ali Al Memari 90+3'"
+          ],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "1",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f14-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f14-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84482",
+          "opta_id": "6oma8xph46szf4i2mo7tjcdg4",
           "date_utc": "2026-08-16T16:45:00.000Z",
           "home_team_id": "bani-yas",
           "away_team_id": "al-ain",
           "home_team_name_en": "Bani Yas",
           "away_team_name_en": "Al Ain",
-          "home_score": "0",
-          "away_score": "0",
-          "home_scorers": [],
-          "away_scorers": [],
+          "home_score": "2",
+          "away_score": "4",
+          "home_scorers": [
+            "Y. Niakaté 15'",
+            "Y. Niakaté 42'"
+          ],
+          "away_scorers": [
+            "S. Rahimi 45+2' (p)",
+            "H. Rahimi 81'",
+            "H. Rahimi 90+7'",
+            "A. Romero 90+10'"
+          ],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "1",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f2f-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f2f-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84493",
+          "opta_id": "d6942vqskl6fe5hyjx1a1iuxg",
           "date_utc": "2026-08-21T14:00:00.000Z",
           "home_team_id": "kalba",
           "away_team_id": "al-wasl",
           "home_team_name_en": "Kalba",
           "away_team_name_en": "Al Wasl",
           "home_score": "0",
-          "away_score": "0",
+          "away_score": "3",
           "home_scorers": [],
-          "away_scorers": [],
+          "away_scorers": [
+            "Ali Saleh 18' (p)",
+            "Nicolás Giménez 22'",
+            "Renato Júnior 79'"
+          ],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "2",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f23-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f23-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84488",
+          "opta_id": "d6lxg04w0xa3qoky5cjelhfkk",
           "date_utc": "2026-08-21T16:35:00.000Z",
           "home_team_id": "al-nasr",
           "away_team_id": "al-wahda",
           "home_team_name_en": "Al Nasr",
           "away_team_name_en": "Al Wahda",
-          "home_score": "0",
+          "home_score": "1",
           "away_score": "0",
-          "home_scorers": [],
+          "home_scorers": [
+            "C. Bedia 54' (p)"
+          ],
           "away_scorers": [],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "2",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f25-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f25-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84489",
+          "opta_id": "d6vqeta66ku70lvivftj7q6fo",
           "date_utc": "2026-08-22T14:00:00.000Z",
           "home_team_id": "ajman",
           "away_team_id": "hatta",
           "home_team_name_en": "Ajman",
           "away_team_name_en": "Hatta",
-          "home_score": "0",
-          "away_score": "0",
-          "home_scorers": [],
-          "away_scorers": [],
+          "home_score": "4",
+          "away_score": "3",
+          "home_scorers": [
+            "Lourency 7'",
+            "I. Moumen 8'",
+            "S. El Hadani 45+1'",
+            "W. Azaro 90+7'"
+          ],
+          "away_scorers": [
+            "Bruno Leonardo 5'",
+            "F. Ben Arbi 34' (p)",
+            "F. Ben Arbi 44'"
+          ],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "2",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f2b-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f2b-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84491",
+          "opta_id": "d75j2jffesqsrowkhthtjxmac",
           "date_utc": "2026-08-22T14:00:00.000Z",
           "home_team_id": "shabab-alahli",
           "away_team_id": "al-dhafra",
           "home_team_name_en": "Shabab AlAhli",
           "away_team_name_en": "Al Dhafra",
-          "home_score": "0",
+          "home_score": "2",
           "away_score": "0",
-          "home_scorers": [],
+          "home_scorers": [
+            "Yuri César 71'",
+            "Igor Gomes 88'"
+          ],
           "away_scorers": [],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "2",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f20-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f20-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84487",
+          "opta_id": "d7f5uw6kxx1vrj1tllzrg6zo4",
           "date_utc": "2026-08-22T16:35:00.000Z",
           "home_team_id": "al-ain",
           "away_team_id": "khorfakkan",
           "home_team_name_en": "Al Ain",
           "away_team_name_en": "Khorfakkan",
-          "home_score": "0",
+          "home_score": "2",
           "away_score": "0",
-          "home_scorers": [],
+          "home_scorers": [
+            "S. Rahimi 36'",
+            "A. Camara 40' (OG)"
+          ],
           "away_scorers": [],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "2",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f28-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f28-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84490",
+          "opta_id": "d7oxvw229yd6bg85m89yp57h0",
           "date_utc": "2026-08-23T14:00:00.000Z",
           "home_team_id": "bani-yas",
           "away_team_id": "united",
           "home_team_name_en": "Bani Yas",
           "away_team_name_en": "United",
-          "home_score": "0",
-          "away_score": "0",
-          "home_scorers": [],
-          "away_scorers": [],
+          "home_score": "2",
+          "away_score": "3",
+          "home_scorers": [
+            "Mohamed Awad Alla 76'",
+            "R. Marciano 77'"
+          ],
+          "away_scorers": [
+            "Willy Semedo 3' (p)",
+            "M. Name 57'",
+            "Willy Semedo 68'"
+          ],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "2",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f2c-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f2c-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84492",
+          "opta_id": "d7yks6pa29omdnmyie0qbov10",
           "date_utc": "2026-08-23T16:35:00.000Z",
           "home_team_id": "sharjah",
           "away_team_id": "al-jazira",
           "home_team_name_en": "Sharjah",
           "away_team_name_en": "Al Jazira",
           "home_score": "0",
-          "away_score": "0",
+          "away_score": "2",
           "home_scorers": [],
-          "away_scorers": [],
+          "away_scorers": [
+            "Vinicius Mello 45+2'",
+            "Vinicius Mello 63'"
+          ],
           "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "2",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f37-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f37-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84496",
+          "opta_id": "d88b6y0c1lp31cbxuxbd8hixg",
           "date_utc": "2026-08-28T13:55:00.000Z",
           "home_team_id": "united",
           "away_team_id": "kalba",
@@ -24646,7 +24723,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://dubai.platinumlist.net/ar/event-tickets/107893/united-fc-vs-kalba-fc",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -24658,7 +24735,7 @@
         {
           "id": "22e17f3d-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f3d-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84499",
+          "opta_id": "d8i32wqe7l1lbou49idzd40t0",
           "date_utc": "2026-08-28T16:30:00.000Z",
           "home_team_id": "al-wasl",
           "away_team_id": "shabab-alahli",
@@ -24668,7 +24745,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://queue.platinumlist.net/?c=platinumlist&e=event107908&ver=v3-javascript-3.7.4&cver=1682&man=event107908&t=https%3A%2F%2Fdubai.platinumlist.net%2Far%2Fevent-tickets%2F107908%2Fal-wasl-fc-vs-shabab-al-ahli-fc%3F_gl%3D1%2aeticbb%2a_gcl_au%2aMTI5MTA3NDY0Mi4xNzg3NTc2OTg0%2a_ga%2aMjA2MDg3MTE4MC4xNzg3NTc2OTg1%2a_ga_MJ1Y407XEH%2aczE3ODc1NzY5ODUkbzEkZzEkdDE3ODc1NzczMTQkajU1JGwwJGgxMjM3NDg3ODM0JGRVLVNFb1dHZGFSd0JVYnNKWS1QeFhWMHh0TjJrWjlaWGZB%2a_ga_ELQY469HQT%2aczE3ODc1NzY5ODUkbzEkZzEkdDE3ODc1NzcyODgkajMyJGwwJGgwJGQ3S092ZWZWRlA3QVFqMUladFFudG9ub3RpMXAyTTVUaW93&kupver=cloudflare-1.2.3",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -24680,7 +24757,7 @@
         {
           "id": "22e17f3b-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f3b-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84498",
+          "opta_id": "d8rsrelmdv2af1otejj8q4pw4",
           "date_utc": "2026-08-29T13:55:00.000Z",
           "home_team_id": "al-jazira",
           "away_team_id": "ajman",
@@ -24690,7 +24767,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://abu-dhabi.platinumlist.net/ar/event-tickets/107910/al-jazira-fc-vs-ajman-fc",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -24702,7 +24779,7 @@
         {
           "id": "22e17f3f-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f3f-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84500",
+          "opta_id": "d91i681agichlybdushi01no4",
           "date_utc": "2026-08-29T13:55:00.000Z",
           "home_team_id": "khorfakkan",
           "away_team_id": "al-dhafra",
@@ -24712,7 +24789,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://sharjah.platinumlist.net/ar/event-tickets/107911/khorfakkan-fc-vs-al-dhafra-fc?_gl=1*1igbzb3*_gcl_au*MTI5MTA3NDY0Mi4xNzg3NTc2OTg0*_ga*MjA2MDg3MTE4MC4xNzg3NTc2OTg1*_ga_MJ1Y407XEH*czE3ODc1NzY5ODUkbzEkZzEkdDE3ODc1NzczNjkkajYwJGwwJGgxMjM3NDg3ODM0JGQ5YWd3LXl1T18ydThSYVBpX2txaUNOa1pJR0xKVEx0U1d3*_ga_ELQY469HQT*czE3ODc1NzY5ODUkbzEkZzEkdDE3ODc1NzczNTMkajYwJGwwJGgwJGQ3S092ZWZWRlA3QVFqMUladFFudG9ub3RpMXAyTTVUaW93",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -24724,7 +24801,7 @@
         {
           "id": "22e17f32-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f32-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84494",
+          "opta_id": "d9b7cmwvo6jl50vcgt838l638",
           "date_utc": "2026-08-29T16:30:00.000Z",
           "home_team_id": "al-ain",
           "away_team_id": "al-nasr",
@@ -24734,7 +24811,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://al-ain.platinumlist.net/ar/event-tickets/107912/al-ain-fc-vs-al-nasr-fc?_gl=1*y3vmzg*_gcl_au*MTI5MTA3NDY0Mi4xNzg3NTc2OTg0*_ga*MjA2MDg3MTE4MC4xNzg3NTc2OTg1*_ga_MJ1Y407XEH*czE3ODc1NzY5ODUkbzEkZzAkdDE3ODc1NzcwNTMkajU1JGwwJGgxMjM3NDg3ODM0JGRVLVNFb1dHZGFSd0JVYnNKWS1QeFhWMHh0TjJrWjlaWGZB*_ga_ELQY469HQT*czE3ODc1NzY5ODUkbzEkZzAkdDE3ODc1NzY5ODUkajYwJGwwJGgwJGQ3S092ZWZWRlA3QVFqMUladFFudG9ub3RpMXAyTTVUaW93",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -24746,7 +24823,7 @@
         {
           "id": "22e17f34-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f34-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84495",
+          "opta_id": "d9kvyxttsioo5od147bctzoyc",
           "date_utc": "2026-08-30T13:55:00.000Z",
           "home_team_id": "hatta",
           "away_team_id": "sharjah",
@@ -24756,7 +24833,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://dubai.platinumlist.net/ar/event-tickets/107914/hatta-fc-vs-sharjah-fc?_gl=1*1hyqdi2*_gcl_au*MTI5MTA3NDY0Mi4xNzg3NTc2OTg0*_ga*MjA2MDg3MTE4MC4xNzg3NTc2OTg1*_ga_MJ1Y407XEH*czE3ODc1NzY5ODUkbzEkZzEkdDE3ODc1NzcwOTMkajE1JGwwJGgxMjM3NDg3ODM0JGRVLVNFb1dHZGFSd0JVYnNKWS1QeFhWMHh0TjJrWjlaWGZB*_ga_ELQY469HQT*czE3ODc1NzY5ODUkbzEkZzEkdDE3ODc1NzcwNTgkajYwJGwwJGgwJGQ3S092ZWZWRlA3QVFqMUladFFudG9ub3RpMXAyTTVUaW93",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -24768,7 +24845,7 @@
         {
           "id": "22e17f39-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f39-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84497",
+          "opta_id": "d9unlgv9ga0qr8shh8uybqyvo",
           "date_utc": "2026-08-30T16:30:00.000Z",
           "home_team_id": "al-wahda",
           "away_team_id": "bani-yas",
@@ -24778,7 +24855,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://abu-dhabi.platinumlist.net/ar/event-tickets/107915/al-wahda-fc-vs-baniyas-fc?_gl=1*141wfss*_gcl_au*MTI5MTA3NDY0Mi4xNzg3NTc2OTg0*_ga*MjA2MDg3MTE4MC4xNzg3NTc2OTg1*_ga_MJ1Y407XEH*czE3ODc1NzY5ODUkbzEkZzEkdDE3ODc1NzcyNTIkajU1JGwwJGgxMjM3NDg3ODM0JGRVLVNFb1dHZGFSd0JVYnNKWS1QeFhWMHh0TjJrWjlaWGZB*_ga_ELQY469HQT*czE3ODc1NzY5ODUkbzEkZzEkdDE3ODc1NzcxNDAkajU5JGwwJGgwJGQ3S092ZWZWRlA3QVFqMUladFFudG9ub3RpMXAyTTVUaW93",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -24790,7 +24867,7 @@
         {
           "id": "22e17f4c-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f4c-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84507",
+          "opta_id": "da4dyegh7kaw2336wk4j7qm8k",
           "date_utc": "2026-09-04T13:45:00.000Z",
           "home_team_id": "kalba",
           "away_team_id": "al-ain",
@@ -24812,7 +24889,7 @@
         {
           "id": "22e17f48-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f48-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84505",
+          "opta_id": "dae4tsoxmz001a9d8bym3p638",
           "date_utc": "2026-09-04T16:15:00.000Z",
           "home_team_id": "al-wasl",
           "away_team_id": "khorfakkan",
@@ -24834,7 +24911,7 @@
         {
           "id": "22e17f44-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f44-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84503",
+          "opta_id": "danudo4qzintk9pvxydtm5ono",
           "date_utc": "2026-09-05T13:45:00.000Z",
           "home_team_id": "bani-yas",
           "away_team_id": "hatta",
@@ -24856,7 +24933,7 @@
         {
           "id": "22e17f4a-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f4a-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84506",
+          "opta_id": "daxjkc6muisec9i5ivx2v1nv8",
           "date_utc": "2026-09-05T13:45:00.000Z",
           "home_team_id": "sharjah",
           "away_team_id": "united",
@@ -24878,7 +24955,7 @@
         {
           "id": "22e17f46-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f46-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84504",
+          "opta_id": "db75z73h300i8fi5k2cct28t0",
           "date_utc": "2026-09-05T16:15:00.000Z",
           "home_team_id": "shabab-alahli",
           "away_team_id": "al-jazira",
@@ -24900,7 +24977,7 @@
         {
           "id": "22e17f40-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f40-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84501",
+          "opta_id": "dbgtzezwpxajg6129q4pr5no4",
           "date_utc": "2026-09-06T13:45:00.000Z",
           "home_team_id": "al-nasr",
           "away_team_id": "ajman",
@@ -24922,7 +24999,7 @@
         {
           "id": "22e17f42-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f42-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84502",
+          "opta_id": "559pr7i5mm8rt9qt3p7btkwk",
           "date_utc": "2026-09-06T16:15:00.000Z",
           "home_team_id": "al-dhafra",
           "away_team_id": "al-wahda",
@@ -24940,9 +25017,354 @@
           "group_key": "uae-pro-league",
           "gameweek": "4",
           "score_missing": true
+        },
+        {
+          "id": "22e17f54-7604-11f1-b32b-0289588efdb9",
+          "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f54-7604-11f1-b32b-0289588efdb9",
+          "opta_id": "84511",
+          "date_utc": "2026-09-10T13:40:00.000Z",
+          "home_team_id": "united",
+          "away_team_id": "shabab-alahli",
+          "home_team_name_en": "United",
+          "away_team_name_en": "Shabab AlAhli",
+          "home_score": "0",
+          "away_score": "0",
+          "home_scorers": [],
+          "away_scorers": [],
+          "highlights_url": "",
+          "finished": "FALSE",
+          "time_elapsed": "notstarted",
+          "type": "group",
+          "group": "",
+          "group_key": "uae-pro-league",
+          "gameweek": "5",
+          "score_missing": true
+        },
+        {
+          "id": "22e17f57-7604-11f1-b32b-0289588efdb9",
+          "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f57-7604-11f1-b32b-0289588efdb9",
+          "opta_id": "84513",
+          "date_utc": "2026-09-10T13:40:00.000Z",
+          "home_team_id": "al-jazira",
+          "away_team_id": "al-nasr",
+          "home_team_name_en": "Al Jazira",
+          "away_team_name_en": "Al Nasr",
+          "home_score": "0",
+          "away_score": "0",
+          "home_scorers": [],
+          "away_scorers": [],
+          "highlights_url": "",
+          "finished": "FALSE",
+          "time_elapsed": "notstarted",
+          "type": "group",
+          "group": "",
+          "group_key": "uae-pro-league",
+          "gameweek": "5",
+          "score_missing": true
+        },
+        {
+          "id": "22e17f4e-7604-11f1-b32b-0289588efdb9",
+          "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f4e-7604-11f1-b32b-0289588efdb9",
+          "opta_id": "84508",
+          "date_utc": "2026-09-10T16:15:00.000Z",
+          "home_team_id": "al-ain",
+          "away_team_id": "al-wasl",
+          "home_team_name_en": "Al Ain",
+          "away_team_name_en": "Al Wasl",
+          "home_score": "0",
+          "away_score": "0",
+          "home_scorers": [],
+          "away_scorers": [],
+          "highlights_url": "",
+          "finished": "FALSE",
+          "time_elapsed": "notstarted",
+          "type": "group",
+          "group": "",
+          "group_key": "uae-pro-league",
+          "gameweek": "5",
+          "score_missing": true
+        },
+        {
+          "id": "22e17f52-7604-11f1-b32b-0289588efdb9",
+          "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f52-7604-11f1-b32b-0289588efdb9",
+          "opta_id": "84510",
+          "date_utc": "2026-09-11T13:40:00.000Z",
+          "home_team_id": "hatta",
+          "away_team_id": "al-dhafra",
+          "home_team_name_en": "Hatta",
+          "away_team_name_en": "Al Dhafra",
+          "home_score": "0",
+          "away_score": "0",
+          "home_scorers": [],
+          "away_scorers": [],
+          "highlights_url": "",
+          "finished": "FALSE",
+          "time_elapsed": "notstarted",
+          "type": "group",
+          "group": "",
+          "group_key": "uae-pro-league",
+          "gameweek": "5",
+          "score_missing": true
+        },
+        {
+          "id": "22e17f59-7604-11f1-b32b-0289588efdb9",
+          "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f59-7604-11f1-b32b-0289588efdb9",
+          "opta_id": "84514",
+          "date_utc": "2026-09-11T13:40:00.000Z",
+          "home_team_id": "khorfakkan",
+          "away_team_id": "bani-yas",
+          "home_team_name_en": "Khorfakkan",
+          "away_team_name_en": "Bani Yas",
+          "home_score": "0",
+          "away_score": "0",
+          "home_scorers": [],
+          "away_scorers": [],
+          "highlights_url": "",
+          "finished": "FALSE",
+          "time_elapsed": "notstarted",
+          "type": "group",
+          "group": "",
+          "group_key": "uae-pro-league",
+          "gameweek": "5",
+          "score_missing": true
+        },
+        {
+          "id": "22e17f50-7604-11f1-b32b-0289588efdb9",
+          "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f50-7604-11f1-b32b-0289588efdb9",
+          "opta_id": "84509",
+          "date_utc": "2026-09-11T16:15:00.000Z",
+          "home_team_id": "ajman",
+          "away_team_id": "kalba",
+          "home_team_name_en": "Ajman",
+          "away_team_name_en": "Kalba",
+          "home_score": "0",
+          "away_score": "0",
+          "home_scorers": [],
+          "away_scorers": [],
+          "highlights_url": "",
+          "finished": "FALSE",
+          "time_elapsed": "notstarted",
+          "type": "group",
+          "group": "",
+          "group_key": "uae-pro-league",
+          "gameweek": "5",
+          "score_missing": true
+        },
+        {
+          "id": "22e17f55-7604-11f1-b32b-0289588efdb9",
+          "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f55-7604-11f1-b32b-0289588efdb9",
+          "opta_id": "84512",
+          "date_utc": "2026-09-11T16:15:00.000Z",
+          "home_team_id": "al-wahda",
+          "away_team_id": "sharjah",
+          "home_team_name_en": "Al Wahda",
+          "away_team_name_en": "Sharjah",
+          "home_score": "0",
+          "away_score": "0",
+          "home_scorers": [],
+          "away_scorers": [],
+          "highlights_url": "",
+          "finished": "FALSE",
+          "time_elapsed": "notstarted",
+          "type": "group",
+          "group": "",
+          "group_key": "uae-pro-league",
+          "gameweek": "5",
+          "score_missing": true
         }
       ],
-      "groups": [],
+      "groups": [
+        {
+          "key": "uae-pro-league",
+          "name": "",
+          "display_name_en": "UAE Pro League",
+          "display_name_ar": "دوري أدنوك للمحترفين",
+          "teams": [
+            {
+              "team_id": "al-wasl",
+              "position": 1,
+              "mp": 2,
+              "w": 2,
+              "d": 0,
+              "l": 0,
+              "ga": 1,
+              "gf": 8,
+              "gd": 7,
+              "pts": 6,
+              "total": 26
+            },
+            {
+              "team_id": "shabab-alahli",
+              "position": 2,
+              "mp": 2,
+              "w": 2,
+              "d": 0,
+              "l": 0,
+              "ga": 1,
+              "gf": 7,
+              "gd": 6,
+              "pts": 6,
+              "total": 26
+            },
+            {
+              "team_id": "al-ain",
+              "position": 3,
+              "mp": 2,
+              "w": 2,
+              "d": 0,
+              "l": 0,
+              "ga": 2,
+              "gf": 6,
+              "gd": 4,
+              "pts": 6,
+              "total": 26
+            },
+            {
+              "team_id": "al-jazira",
+              "position": 4,
+              "mp": 2,
+              "w": 2,
+              "d": 0,
+              "l": 0,
+              "ga": 0,
+              "gf": 4,
+              "gd": 4,
+              "pts": 6,
+              "total": 26
+            },
+            {
+              "team_id": "ajman",
+              "position": 5,
+              "mp": 2,
+              "w": 2,
+              "d": 0,
+              "l": 0,
+              "ga": 5,
+              "gf": 7,
+              "gd": 2,
+              "pts": 6,
+              "total": 26
+            },
+            {
+              "team_id": "al-nasr",
+              "position": 6,
+              "mp": 2,
+              "w": 1,
+              "d": 1,
+              "l": 0,
+              "ga": 2,
+              "gf": 3,
+              "gd": 1,
+              "pts": 4,
+              "total": 26
+            },
+            {
+              "team_id": "sharjah",
+              "position": 7,
+              "mp": 2,
+              "w": 1,
+              "d": 0,
+              "l": 1,
+              "ga": 3,
+              "gf": 3,
+              "gd": 0,
+              "pts": 3,
+              "total": 26
+            },
+            {
+              "team_id": "united",
+              "position": 8,
+              "mp": 2,
+              "w": 1,
+              "d": 0,
+              "l": 1,
+              "ga": 7,
+              "gf": 4,
+              "gd": -3,
+              "pts": 3,
+              "total": 26
+            },
+            {
+              "team_id": "kalba",
+              "position": 9,
+              "mp": 2,
+              "w": 0,
+              "d": 1,
+              "l": 1,
+              "ga": 5,
+              "gf": 2,
+              "gd": -3,
+              "pts": 1,
+              "total": 26
+            },
+            {
+              "team_id": "al-wahda",
+              "position": 10,
+              "mp": 2,
+              "w": 0,
+              "d": 0,
+              "l": 2,
+              "ga": 4,
+              "gf": 2,
+              "gd": -2,
+              "pts": 0,
+              "total": 26
+            },
+            {
+              "team_id": "bani-yas",
+              "position": 11,
+              "mp": 2,
+              "w": 0,
+              "d": 0,
+              "l": 2,
+              "ga": 7,
+              "gf": 4,
+              "gd": -3,
+              "pts": 0,
+              "total": 26
+            },
+            {
+              "team_id": "hatta",
+              "position": 12,
+              "mp": 2,
+              "w": 0,
+              "d": 0,
+              "l": 2,
+              "ga": 6,
+              "gf": 3,
+              "gd": -3,
+              "pts": 0,
+              "total": 26
+            },
+            {
+              "team_id": "al-dhafra",
+              "position": 13,
+              "mp": 2,
+              "w": 0,
+              "d": 0,
+              "l": 2,
+              "ga": 5,
+              "gf": 1,
+              "gd": -4,
+              "pts": 0,
+              "total": 26
+            },
+            {
+              "team_id": "khorfakkan",
+              "position": 14,
+              "mp": 2,
+              "w": 0,
+              "d": 0,
+              "l": 2,
+              "ga": 7,
+              "gf": 1,
+              "gd": -6,
+              "pts": 0,
+              "total": 26
+            }
+          ]
+        }
+      ],
       "teams": [
         {
           "id": "al-nasr",
@@ -24976,7 +25398,7 @@
           "id": "al-dhafra",
           "name_en": "Al Dhafra",
           "fifa_code": "DHA",
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_953006148.png",
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_868914474.png",
           "is_club": true
         },
         {
@@ -25039,12 +25461,205 @@
           "id": "al-ain",
           "name_en": "Al Ain",
           "fifa_code": "AIN",
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_445642163.png",
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_188866697.png",
           "is_club": true
         }
       ],
-      "scorers": [],
-      "liveFetchedAt": "2026-08-01T19:23:48.063Z"
+      "scorers": [
+        {
+          "rank": 1,
+          "name": "El Houssien Rahmi",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_188866697.png"
+        },
+        {
+          "rank": 2,
+          "name": "Vinicius Mello",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_456481928.png"
+        },
+        {
+          "rank": 3,
+          "name": "Youssoufou Niakate",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_52994345.png"
+        },
+        {
+          "rank": 4,
+          "name": "Ali Saleh",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1166767662.png"
+        },
+        {
+          "rank": 5,
+          "name": "Sergio Pereira",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1166767662.png"
+        },
+        {
+          "rank": 6,
+          "name": "Renato Junior",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1166767662.png"
+        },
+        {
+          "rank": 7,
+          "name": "Saeid Ezatolahi",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_189865615.png"
+        },
+        {
+          "rank": 8,
+          "name": "M. Ben Alarbi",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_137455115.png"
+        },
+        {
+          "rank": 9,
+          "name": "Yuri Cesar",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_189865615.png"
+        },
+        {
+          "rank": 10,
+          "name": "Lourency Do",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logo_1508503989.png"
+        },
+        {
+          "rank": 11,
+          "name": "Soufian Rahimi",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_188866697.png"
+        },
+        {
+          "rank": 12,
+          "name": "Victor Henrique",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logo_1508503989.png"
+        },
+        {
+          "rank": 13,
+          "name": "Simon Banza",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_456481928.png"
+        },
+        {
+          "rank": 14,
+          "name": "Mohammad Rasoul",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1537285655.png"
+        },
+        {
+          "rank": 15,
+          "name": "Ali Almemari",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_456481928.png"
+        },
+        {
+          "rank": 16,
+          "name": "Brahima Diarra",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1537285655.png"
+        },
+        {
+          "rank": 17,
+          "name": "Saman Ghoddos",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1012842572.png"
+        },
+        {
+          "rank": 18,
+          "name": "Rocky Marciano",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_52994345.png"
+        },
+        {
+          "rank": 19,
+          "name": "Abdoulaye Toure",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_250542630.png"
+        },
+        {
+          "rank": 20,
+          "name": "Mohamed Awad",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_52994345.png"
+        },
+        {
+          "rank": 21,
+          "name": "Nemanja Jovic",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1012842572.png"
+        },
+        {
+          "rank": 22,
+          "name": "Aylton Filipe",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_146800710.png"
+        },
+        {
+          "rank": 23,
+          "name": "Nicolas Gimenez",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1166767662.png"
+        },
+        {
+          "rank": 24,
+          "name": "Igor Gomes Silva",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_189865615.png"
+        },
+        {
+          "rank": 25,
+          "name": "Rikelme Hernandes Rocha",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_189865615.png"
+        },
+        {
+          "rank": 26,
+          "name": "Sardar Khalil Azmoum",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_189865615.png"
+        },
+        {
+          "rank": 27,
+          "name": "Luan Pereira",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1463264784.png"
+        },
+        {
+          "rank": 28,
+          "name": "Adeel Wgdan Alchadli",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_893397894.png"
+        },
+        {
+          "rank": 29,
+          "name": "Ismail Moumene",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logo_1508503989.png"
+        },
+        {
+          "rank": 30,
+          "name": "Waleed Azaro",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logo_1508503989.png"
+        },
+        {
+          "rank": 31,
+          "name": "Alejandro Romero",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_188866697.png"
+        },
+        {
+          "rank": 32,
+          "name": "Saad El Hadani",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logo_1508503989.png"
+        }
+      ],
+      "liveFetchedAt": "2026-08-28T12:08:24.765Z"
     }
   }
 }

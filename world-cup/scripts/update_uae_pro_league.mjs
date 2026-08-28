@@ -363,6 +363,12 @@ async function loadSeason(year, includeDetails, previous) {
   };
 }
 
+function comparableArchive(value) {
+  return JSON.stringify(value, (key, item) => (
+    key === "generated_at" || key === "liveFetchedAt" ? undefined : item
+  ));
+}
+
 async function main() {
   const options = args();
   const existing = fs.existsSync(OUTPUT_PATH)
@@ -382,6 +388,10 @@ async function main() {
     },
     seasons
   };
+  if (comparableArchive(existing) === comparableArchive(output)) {
+    console.log("No UAE Pro League data changes.");
+    return;
+  }
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, `${JSON.stringify(output, null, 2)}\n`);
 }

@@ -56,7 +56,7 @@ const LEAGUES = {
     nameAr: "دوري أدنوك للمحترفين",
     gamesPerTeam: 26,
     domestic: true,
-    defaultSeason: 2025,
+    defaultSeason: 2026,
     official: true
   },
   "ksa.1": {
