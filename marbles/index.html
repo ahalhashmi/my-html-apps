@@ -1,0 +1,1963 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#07101d" />
+  <title>Glass Tube + Marble Physics</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --panel: rgba(10, 20, 35, 0.78);
+      --panel-strong: rgba(8, 16, 29, 0.94);
+      --line: rgba(190, 226, 255, 0.18);
+      --text: #f5fbff;
+      --muted: #9eb0c2;
+      --cyan: #68d8ff;
+      --warning: #ffc46b;
+      --danger: #ff7a75;
+      --safe-top: max(12px, env(safe-area-inset-top));
+      --safe-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #07101d;
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      color: var(--text);
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body { overscroll-behavior: none; }
+
+    #app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      isolation: isolate;
+    }
+
+    #world {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+      cursor: grab;
+    }
+
+    #world:active { cursor: grabbing; }
+
+    .topbar {
+      position: absolute;
+      z-index: 10;
+      top: var(--safe-top);
+      left: 12px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .brand {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(7, 16, 29, 0.58);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      pointer-events: auto;
+    }
+
+    .brand-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 18px rgba(104, 216, 255, 0.95);
+      flex: 0 0 auto;
+    }
+
+    .brand-copy { min-width: 0; }
+
+    .brand-title {
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.16em;
+      white-space: nowrap;
+    }
+
+    .brand-subtitle {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 7px;
+      flex-wrap: wrap;
+      pointer-events: auto;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      min-height: 40px;
+      padding: 0 12px;
+      color: var(--text);
+      background: rgba(10, 20, 35, 0.72);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(16px) saturate(135%);
+      -webkit-backdrop-filter: blur(16px) saturate(135%);
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+
+    button:active { transform: scale(0.96); }
+    button:hover { border-color: rgba(190, 226, 255, 0.34); }
+    button.primary {
+      border-color: rgba(104, 216, 255, 0.5);
+      background: linear-gradient(180deg, rgba(68, 180, 220, 0.34), rgba(27, 93, 126, 0.35));
+    }
+    button.warn {
+      border-color: rgba(255, 196, 107, 0.4);
+      background: rgba(108, 72, 25, 0.42);
+    }
+    button.icon {
+      width: 42px;
+      padding: 0;
+      font-size: 17px;
+    }
+
+    .hud {
+      position: absolute;
+      z-index: 8;
+      left: 50%;
+      bottom: calc(var(--safe-bottom) + 14px);
+      width: min(630px, calc(100% - 24px));
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: end;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .meter-card,
+    .state-card {
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(8, 17, 31, 0.66);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(18px) saturate(135%);
+      -webkit-backdrop-filter: blur(18px) saturate(135%);
+    }
+
+    .meter-card { padding: 10px 11px; }
+
+    .meter-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+    }
+
+    .meter-track {
+      height: 6px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .meter-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--warning), var(--danger));
+      box-shadow: 0 0 12px rgba(255, 122, 117, 0.45);
+      transition: width 120ms linear;
+    }
+
+    .state-card {
+      min-width: 138px;
+      padding: 11px 14px;
+      text-align: center;
+    }
+
+    .state-name {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+    }
+
+    .state-hint {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .sensor-pill {
+      position: absolute;
+      z-index: 8;
+      left: 50%;
+      top: calc(var(--safe-top) + 72px);
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      max-width: calc(100% - 24px);
+      padding: 7px 10px;
+      border: 1px solid rgba(190, 226, 255, 0.12);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(6, 14, 26, 0.48);
+      font-size: 10px;
+      line-height: 1;
+      white-space: nowrap;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      pointer-events: none;
+    }
+
+    .sensor-light {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #728091;
+      box-shadow: 0 0 0 0 rgba(104, 216, 255, 0);
+      transition: background 180ms ease, box-shadow 180ms ease;
+    }
+
+    .sensor-light.live {
+      background: var(--cyan);
+      box-shadow: 0 0 12px rgba(104, 216, 255, 0.85);
+    }
+
+    .settings {
+      position: absolute;
+      z-index: 20;
+      top: calc(var(--safe-top) + 58px);
+      right: 12px;
+      width: min(350px, calc(100% - 24px));
+      max-height: calc(100% - var(--safe-top) - var(--safe-bottom) - 86px);
+      overflow: auto;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel-strong);
+      box-shadow: 0 28px 75px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(24px) saturate(140%);
+      -webkit-backdrop-filter: blur(24px) saturate(140%);
+      transform: translateY(-8px) scale(0.98);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 140ms ease, transform 140ms ease;
+    }
+
+    .settings.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .settings h2 {
+      margin: 0 0 4px;
+      font-size: 15px;
+      letter-spacing: 0.02em;
+    }
+
+    .settings .note {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .control {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px 12px;
+      margin: 12px 0;
+    }
+
+    .control label {
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .control output {
+      min-width: 44px;
+      color: var(--cyan);
+      text-align: right;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .control input[type="range"] {
+      grid-column: 1 / -1;
+      width: 100%;
+      accent-color: var(--cyan);
+    }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .test-grid button {
+      min-height: 44px;
+      padding: 0 8px;
+      font-size: 11px;
+    }
+
+    .wide-action {
+      width: 100%;
+      margin-top: 8px;
+      min-height: 42px;
+    }
+
+    .debug-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .switch {
+      position: relative;
+      width: 42px;
+      height: 24px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      cursor: pointer;
+    }
+
+    .switch input { display: none; }
+
+    .switch span {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      transition: transform 140ms ease, background 140ms ease;
+    }
+
+    .switch input:checked + span {
+      transform: translateX(18px);
+      background: var(--cyan);
+    }
+
+    .intro {
+      position: absolute;
+      z-index: 30;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      background: radial-gradient(circle at 50% 42%, rgba(35, 96, 127, 0.18), rgba(4, 10, 19, 0.56) 48%, rgba(4, 10, 19, 0.82));
+      transition: opacity 220ms ease, visibility 220ms ease;
+    }
+
+    .intro.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .intro-card {
+      width: min(430px, 100%);
+      padding: 22px;
+      border: 1px solid rgba(190, 226, 255, 0.22);
+      border-radius: 24px;
+      background: rgba(7, 16, 29, 0.82);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.48);
+      backdrop-filter: blur(24px) saturate(145%);
+      -webkit-backdrop-filter: blur(24px) saturate(145%);
+      text-align: center;
+    }
+
+    .intro-icon {
+      width: 74px;
+      height: 74px;
+      margin: 0 auto 16px;
+      border: 1px solid rgba(132, 220, 255, 0.38);
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 32% 25%, rgba(255, 255, 255, 0.55), rgba(63, 176, 216, 0.25) 22%, rgba(13, 47, 69, 0.68) 68%);
+      box-shadow: inset 0 0 30px rgba(149, 229, 255, 0.16), 0 15px 45px rgba(0, 0, 0, 0.35);
+      font-size: 34px;
+    }
+
+    .intro h1 {
+      margin: 0;
+      font-size: clamp(24px, 7vw, 38px);
+      line-height: 1.03;
+      letter-spacing: -0.04em;
+    }
+
+    .intro p {
+      margin: 12px auto 18px;
+      max-width: 350px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .intro-actions {
+      display: grid;
+      gap: 9px;
+    }
+
+    .intro-actions button {
+      min-height: 50px;
+      border-radius: 15px;
+      font-size: 13px;
+    }
+
+    .intro-footnote {
+      margin-top: 13px;
+      color: #718397;
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .toast {
+      position: absolute;
+      z-index: 40;
+      left: 50%;
+      top: calc(var(--safe-top) + 118px);
+      max-width: calc(100% - 28px);
+      padding: 10px 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--text);
+      background: rgba(8, 17, 31, 0.92);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
+      transform: translate(-50%, -8px);
+      opacity: 0;
+      pointer-events: none;
+      font-size: 11px;
+      line-height: 1.4;
+      text-align: center;
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    @media (max-width: 660px) {
+      .brand-subtitle { display: none; }
+      .brand { padding: 9px 10px; }
+      .toolbar button:not(.icon) {
+        min-height: 38px;
+        padding: 0 10px;
+        font-size: 11px;
+      }
+      #calibrateButton { display: none; }
+      .hud {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .state-card {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        justify-self: center;
+        min-width: 170px;
+      }
+      .meter-card { grid-row: 2; }
+      .sensor-pill { top: calc(var(--safe-top) + 66px); }
+    }
+
+    @media (max-height: 650px) {
+      .hud { bottom: calc(var(--safe-bottom) + 4px); }
+      .sensor-pill { display: none; }
+      .state-hint { display: none; }
+      .meter-card { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <canvas id="world" aria-label="Glass tube and marble physics simulation"></canvas>
+
+    <div class="topbar">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <div class="brand-copy">
+          <div class="brand-title">GLASS / MARBLE</div>
+          <div class="brand-subtitle">INERTIAL PHYSICS PROTOTYPE</div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button id="motionButton" class="primary">Enable Motion</button>
+        <button id="calibrateButton">Calibrate</button>
+        <button id="resetButton" aria-label="Reset simulation">Reset</button>
+        <button id="settingsButton" class="icon" aria-label="Open tuning panel" aria-expanded="false">⚙</button>
+      </div>
+    </div>
+
+    <div class="sensor-pill">
+      <span id="sensorLight" class="sensor-light"></span>
+      <span id="sensorText">Motion sensor not enabled · drag the screen to test</span>
+    </div>
+
+    <div class="hud">
+      <div class="meter-card">
+        <div class="meter-label"><span>LEFT CAP DAMAGE</span><span id="leftDamageText">0%</span></div>
+        <div class="meter-track"><div id="leftDamageFill" class="meter-fill"></div></div>
+      </div>
+      <div class="state-card">
+        <div id="stateName" class="state-name">SEALED</div>
+        <div id="stateHint" class="state-hint">Shake side-to-side</div>
+      </div>
+      <div class="meter-card">
+        <div class="meter-label"><span>RIGHT CAP DAMAGE</span><span id="rightDamageText">0%</span></div>
+        <div class="meter-track"><div id="rightDamageFill" class="meter-fill"></div></div>
+      </div>
+    </div>
+
+    <aside id="settingsPanel" class="settings" aria-hidden="true">
+      <h2>Physics tuning</h2>
+      <p class="note">These multipliers are intentionally exposed so the same feel can be reproduced later in SwiftUI.</p>
+
+      <div class="control">
+        <label for="shakeRange">Shake sensitivity</label>
+        <output id="shakeValue">1.00×</output>
+        <input id="shakeRange" type="range" min="0.35" max="2.5" step="0.05" value="1" />
+      </div>
+
+      <div class="control">
+        <label for="tiltRange">Tilt gravity</label>
+        <output id="tiltValue">1.00×</output>
+        <input id="tiltRange" type="range" min="0.25" max="2.2" step="0.05" value="1" />
+      </div>
+
+      <div class="control">
+        <label for="durabilityRange">Glass durability</label>
+        <output id="durabilityValue">1.00×</output>
+        <input id="durabilityRange" type="range" min="0.45" max="2.5" step="0.05" value="1" />
+      </div>
+
+      <div class="control">
+        <label for="bounceRange">Marble bounce</label>
+        <output id="bounceValue">0.70</output>
+        <input id="bounceRange" type="range" min="0.35" max="0.92" step="0.01" value="0.70" />
+      </div>
+
+      <div class="test-grid">
+        <button id="kickLeft">Impulse ←</button>
+        <button id="autoShake" class="warn">Demo shake</button>
+        <button id="kickRight">Impulse →</button>
+      </div>
+      <button id="panelCalibrate" class="wide-action">Set Current Tilt as Neutral</button>
+
+      <div class="debug-row">
+        <span>Show physics vectors</span>
+        <label class="switch" aria-label="Show physics vectors">
+          <input id="debugToggle" type="checkbox" />
+          <span></span>
+        </label>
+      </div>
+    </aside>
+
+    <div id="intro" class="intro">
+      <div class="intro-card">
+        <div class="intro-icon">◉</div>
+        <h1>Shake. Crack. Escape.</h1>
+        <p>The marble reacts to phone acceleration while sealed inside the tube. Repeated hard impacts crack the end caps; once one breaks, tilt the phone to roll the marble around the screen.</p>
+        <div class="intro-actions">
+          <button id="introMotion" class="primary">Enable Phone Motion</button>
+          <button id="introDemo">Start with Touch Controls</button>
+        </div>
+        <div class="intro-footnote">On iPhone, motion access normally requires a tap and a secure HTTPS page. Desktop: drag quickly, use arrow keys, or press Space.</div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      // ---------------------------------------------------------------------
+      // Core tunable values. These map cleanly to a future SwiftUI/Game loop.
+      // Units are CSS pixels, seconds, and normalized tilt (-1...1).
+      // ---------------------------------------------------------------------
+      const BASE = Object.freeze({
+        fixedStep: 1 / 120,
+        maxFrameTime: 1 / 20,
+        insideTiltAcceleration: 760,
+        freeTiltAcceleration: 1120,
+        insideShakeGain: 250,
+        freeShakeGain: 125,
+        insideDrag: 0.62,
+        freeDrag: 0.10,
+        tubeVerticalBounce: 0.42,
+        screenEdgeBounce: 0.62,
+        minimumCrackSpeed: 245,
+        instantBreakSpeed: 1900,
+        impactDamageScale: 0.34,
+        marbleMass: 1.0,
+        maxSpeed: 2300
+      });
+
+      const canvas = document.getElementById("world");
+      const ctx = canvas.getContext("2d", { alpha: false, desynchronized: true });
+
+      const ui = {
+        intro: document.getElementById("intro"),
+        introMotion: document.getElementById("introMotion"),
+        introDemo: document.getElementById("introDemo"),
+        motionButton: document.getElementById("motionButton"),
+        calibrateButton: document.getElementById("calibrateButton"),
+        resetButton: document.getElementById("resetButton"),
+        settingsButton: document.getElementById("settingsButton"),
+        settingsPanel: document.getElementById("settingsPanel"),
+        sensorLight: document.getElementById("sensorLight"),
+        sensorText: document.getElementById("sensorText"),
+        stateName: document.getElementById("stateName"),
+        stateHint: document.getElementById("stateHint"),
+        leftDamageFill: document.getElementById("leftDamageFill"),
+        rightDamageFill: document.getElementById("rightDamageFill"),
+        leftDamageText: document.getElementById("leftDamageText"),
+        rightDamageText: document.getElementById("rightDamageText"),
+        shakeRange: document.getElementById("shakeRange"),
+        tiltRange: document.getElementById("tiltRange"),
+        durabilityRange: document.getElementById("durabilityRange"),
+        bounceRange: document.getElementById("bounceRange"),
+        shakeValue: document.getElementById("shakeValue"),
+        tiltValue: document.getElementById("tiltValue"),
+        durabilityValue: document.getElementById("durabilityValue"),
+        bounceValue: document.getElementById("bounceValue"),
+        kickLeft: document.getElementById("kickLeft"),
+        kickRight: document.getElementById("kickRight"),
+        autoShake: document.getElementById("autoShake"),
+        panelCalibrate: document.getElementById("panelCalibrate"),
+        debugToggle: document.getElementById("debugToggle"),
+        toast: document.getElementById("toast")
+      };
+
+      const tuning = {
+        shake: 1,
+        tilt: 1,
+        durability: 1,
+        bounce: 0.70,
+        debug: false
+      };
+
+      const Phase = Object.freeze({
+        SEALED: "sealed",
+        OPEN: "open",
+        FREE: "free"
+      });
+
+      let width = 1;
+      let height = 1;
+      let dpr = 1;
+      let lastTime = performance.now();
+      let accumulator = 0;
+      let backgroundGradient = null;
+      let cameraKick = 0;
+      let toastTimer = 0;
+      let audioContext = null;
+      let autoShakeUntil = 0;
+      let autoShakePhase = 0;
+
+      const world = {
+        phase: Phase.SEALED,
+        time: 0,
+        hits: 0
+      };
+
+      const tube = {
+        cx: 0,
+        cy: 0,
+        length: 0,
+        height: 0,
+        wall: 11,
+        x1: 0,
+        x2: 0,
+        y1: 0,
+        y2: 0,
+        leftDamage: 0,
+        rightDamage: 0,
+        leftCrackLevel: 0,
+        rightCrackLevel: 0,
+        cracks: [],
+        brokenSide: null,
+        breakEdge: [],
+        flash: 0
+      };
+
+      const marble = {
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        radius: 22,
+        rotation: 0,
+        squash: 0,
+        lastImpactTime: -1
+      };
+
+      const input = {
+        attached: false,
+        detected: false,
+        permission: "off",
+        rawTiltX: 0,
+        rawTiltY: 0,
+        tiltX: 0,
+        tiltY: 0,
+        calibrationX: 0,
+        calibrationY: 0,
+        motionX: 0,
+        motionY: 0,
+        motionTargetX: 0,
+        motionTargetY: 0,
+        fallbackGravityX: 0,
+        fallbackGravityY: 0,
+        manualX: 0,
+        manualY: 0,
+        autoX: 0,
+        keyX: 0,
+        keyY: 0,
+        strength: 0,
+        lastSensorAt: 0
+      };
+
+      const pointer = {
+        active: false,
+        id: null,
+        x: 0,
+        y: 0,
+        t: 0
+      };
+
+      const fragments = [];
+      const impactWaves = [];
+      const dust = [];
+      const pressedKeys = new Set();
+
+      const crackThresholds = [0.10, 0.25, 0.43, 0.64, 0.82, 0.95];
+
+      // Deterministic-ish random helper for stable-looking cracks.
+      function mulberry32(seed) {
+        return function random() {
+          let t = seed += 0x6D2B79F5;
+          t = Math.imul(t ^ (t >>> 15), t | 1);
+          t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      function damp(value, lambda, dt) {
+        return value * Math.exp(-lambda * dt);
+      }
+
+      function roundedRectPath(context, x, y, w, h, r) {
+        const radius = Math.min(r, w / 2, h / 2);
+        context.beginPath();
+        context.moveTo(x + radius, y);
+        context.lineTo(x + w - radius, y);
+        context.quadraticCurveTo(x + w, y, x + w, y + radius);
+        context.lineTo(x + w, y + h - radius);
+        context.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+        context.lineTo(x + radius, y + h);
+        context.quadraticCurveTo(x, y + h, x, y + h - radius);
+        context.lineTo(x, y + radius);
+        context.quadraticCurveTo(x, y, x + radius, y);
+        context.closePath();
+      }
+
+      function resize() {
+        const oldWidth = width;
+        const oldHeight = height;
+        const oldX = marble.x;
+        const oldY = marble.y;
+
+        width = Math.max(1, window.innerWidth);
+        height = Math.max(1, window.innerHeight);
+        dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        tube.length = Math.min(width * 0.82, 690);
+        tube.height = clamp(width * 0.235, 88, 132);
+        tube.wall = clamp(tube.height * 0.095, 8, 12);
+        tube.cx = width / 2;
+        tube.cy = height * (height < 650 ? 0.46 : 0.45);
+        tube.x1 = tube.cx - tube.length / 2;
+        tube.x2 = tube.cx + tube.length / 2;
+        tube.y1 = tube.cy - tube.height / 2;
+        tube.y2 = tube.cy + tube.height / 2;
+
+        marble.radius = clamp(width * 0.055, 18, 28);
+
+        if (oldWidth <= 1 || oldHeight <= 1) {
+          marble.x = tube.cx;
+          marble.y = tube.cy;
+        } else if (world.phase === Phase.FREE) {
+          marble.x = clamp(oldX * (width / oldWidth), marble.radius, width - marble.radius);
+          marble.y = clamp(oldY * (height / oldHeight), marble.radius, height - marble.radius);
+        } else {
+          const nx = (oldX - (oldWidth / 2)) / Math.max(1, oldWidth);
+          marble.x = tube.cx + nx * width;
+          marble.y = clamp(tube.cy + (oldY - oldHeight * 0.45), tube.y1 + tube.wall + marble.radius, tube.y2 - tube.wall - marble.radius);
+        }
+
+        backgroundGradient = ctx.createLinearGradient(0, 0, width, height);
+        backgroundGradient.addColorStop(0, "#050b15");
+        backgroundGradient.addColorStop(0.46, "#0a1727");
+        backgroundGradient.addColorStop(1, "#06111d");
+
+        createAmbientDust();
+      }
+
+      function createAmbientDust() {
+        dust.length = 0;
+        const random = mulberry32(Math.floor(width * 17 + height * 31));
+        const count = clamp(Math.floor((width * height) / 17000), 18, 70);
+        for (let i = 0; i < count; i++) {
+          dust.push({
+            x: random() * width,
+            y: random() * height,
+            r: 0.4 + random() * 1.25,
+            a: 0.03 + random() * 0.10,
+            phase: random() * Math.PI * 2
+          });
+        }
+      }
+
+      function resetSimulation() {
+        world.phase = Phase.SEALED;
+        world.time = 0;
+        world.hits = 0;
+        tube.leftDamage = 0;
+        tube.rightDamage = 0;
+        tube.leftCrackLevel = 0;
+        tube.rightCrackLevel = 0;
+        tube.cracks.length = 0;
+        tube.brokenSide = null;
+        tube.breakEdge.length = 0;
+        tube.flash = 0;
+        fragments.length = 0;
+        impactWaves.length = 0;
+        marble.x = tube.cx;
+        marble.y = tube.cy;
+        marble.vx = 0;
+        marble.vy = 0;
+        marble.rotation = 0;
+        marble.squash = 0;
+        input.manualX = 0;
+        input.manualY = 0;
+        input.autoX = 0;
+        autoShakeUntil = 0;
+        updateHud();
+      }
+
+      function screenAngle() {
+        const angle = window.screen?.orientation?.angle;
+        if (Number.isFinite(angle)) return angle;
+        const legacy = Number(window.orientation);
+        return Number.isFinite(legacy) ? legacy : 0;
+      }
+
+      function rotateToScreen(x, y) {
+        const radians = screenAngle() * Math.PI / 180;
+        const c = Math.cos(radians);
+        const s = Math.sin(radians);
+        return {
+          x: x * c - y * s,
+          y: x * s + y * c
+        };
+      }
+
+      function onOrientation(event) {
+        if (!Number.isFinite(event.beta) || !Number.isFinite(event.gamma)) return;
+
+        // Project gravity onto the screen plane, then rotate for the current
+        // portrait/landscape orientation. Canvas +Y points downward.
+        const beta = event.beta * Math.PI / 180;
+        const gamma = event.gamma * Math.PI / 180;
+        const portraitX = Math.sin(gamma);
+        const portraitY = Math.sin(beta) * Math.cos(gamma);
+        const mapped = rotateToScreen(portraitX, portraitY);
+
+        input.rawTiltX = clamp(mapped.x, -1.15, 1.15);
+        input.rawTiltY = clamp(mapped.y, -1.15, 1.15);
+        markSensorDetected();
+      }
+
+      function onMotion(event) {
+        let ax = null;
+        let ay = null;
+
+        if (event.acceleration && Number.isFinite(event.acceleration.x) && Number.isFinite(event.acceleration.y)) {
+          ax = event.acceleration.x;
+          ay = -event.acceleration.y; // Convert device +Y-up to canvas +Y-down.
+        } else if (event.accelerationIncludingGravity &&
+                   Number.isFinite(event.accelerationIncludingGravity.x) &&
+                   Number.isFinite(event.accelerationIncludingGravity.y)) {
+          const includingX = event.accelerationIncludingGravity.x;
+          const includingY = -event.accelerationIncludingGravity.y;
+          input.fallbackGravityX = lerp(input.fallbackGravityX, includingX, 0.075);
+          input.fallbackGravityY = lerp(input.fallbackGravityY, includingY, 0.075);
+          ax = includingX - input.fallbackGravityX;
+          ay = includingY - input.fallbackGravityY;
+        }
+
+        if (ax !== null && ay !== null) {
+          const mapped = rotateToScreen(ax, ay);
+          input.motionTargetX = clamp(mapped.x, -35, 35);
+          input.motionTargetY = clamp(mapped.y, -35, 35);
+          input.strength = Math.hypot(input.motionTargetX, input.motionTargetY);
+          markSensorDetected();
+        }
+      }
+
+      function markSensorDetected() {
+        input.detected = true;
+        input.lastSensorAt = performance.now();
+        ui.sensorLight.classList.add("live");
+        ui.sensorText.textContent = "Motion live · shake side-to-side · tilt after escape";
+      }
+
+      function attachSensorListeners() {
+        if (input.attached) return;
+        window.addEventListener("devicemotion", onMotion, { passive: true });
+        window.addEventListener("deviceorientation", onOrientation, { passive: true });
+        input.attached = true;
+      }
+
+      async function enableMotion() {
+        ensureAudio();
+        ui.intro.classList.add("hidden");
+
+        if (input.attached && input.permission === "granted") {
+          showToast("Motion is already enabled.");
+          return;
+        }
+
+        try {
+          const motionRequest = (typeof DeviceMotionEvent !== "undefined" &&
+            typeof DeviceMotionEvent.requestPermission === "function")
+            ? DeviceMotionEvent.requestPermission()
+            : Promise.resolve("granted");
+
+          const orientationRequest = (typeof DeviceOrientationEvent !== "undefined" &&
+            typeof DeviceOrientationEvent.requestPermission === "function")
+            ? DeviceOrientationEvent.requestPermission()
+            : Promise.resolve("granted");
+
+          const [motionResult, orientationResult] = await Promise.all([motionRequest, orientationRequest]);
+          const granted = motionResult === "granted" || orientationResult === "granted";
+
+          if (!granted) {
+            throw new Error("Motion permission was not granted.");
+          }
+
+          input.permission = "granted";
+          attachSensorListeners();
+          ui.motionButton.textContent = "Motion On";
+          ui.sensorText.textContent = "Waiting for motion data…";
+          showToast(window.isSecureContext
+            ? "Motion enabled. Hold the phone naturally, then shake side-to-side."
+            : "Permission granted, but this browser may require HTTPS before sensors produce data.");
+        } catch (error) {
+          input.permission = "denied";
+          ui.motionButton.textContent = "Motion Blocked";
+          ui.sensorText.textContent = "Motion unavailable · use drag, arrows, or demo shake";
+          showToast(error?.message || "Motion permission could not be enabled.");
+        }
+      }
+
+      function calibrateTilt() {
+        input.calibrationX = input.rawTiltX;
+        input.calibrationY = input.rawTiltY;
+        showToast("Current phone angle set as neutral.");
+      }
+
+      function ensureAudio() {
+        if (audioContext) {
+          if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
+          return;
+        }
+        const AudioCtor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtor) return;
+        try {
+          audioContext = new AudioCtor();
+        } catch (_) {
+          audioContext = null;
+        }
+      }
+
+      function playImpactSound(speed, breaking = false) {
+        if (!audioContext) return;
+        const now = audioContext.currentTime;
+        const severity = clamp(speed / 1300, 0.08, 1.25);
+
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = breaking ? "sawtooth" : "triangle";
+        oscillator.frequency.setValueAtTime(breaking ? 980 : 420 + severity * 620, now);
+        oscillator.frequency.exponentialRampToValueAtTime(breaking ? 130 : 210, now + (breaking ? 0.22 : 0.075));
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.035 + severity * 0.055, now + 0.006);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + (breaking ? 0.25 : 0.10));
+        oscillator.connect(gain).connect(audioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(now + (breaking ? 0.27 : 0.12));
+
+        if (breaking) {
+          const bufferLength = Math.floor(audioContext.sampleRate * 0.24);
+          const buffer = audioContext.createBuffer(1, bufferLength, audioContext.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferLength; i++) {
+            const envelope = 1 - i / bufferLength;
+            data[i] = (Math.random() * 2 - 1) * envelope * envelope;
+          }
+          const source = audioContext.createBufferSource();
+          const noiseGain = audioContext.createGain();
+          const filter = audioContext.createBiquadFilter();
+          filter.type = "highpass";
+          filter.frequency.value = 1200;
+          noiseGain.gain.setValueAtTime(0.11, now);
+          noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
+          source.buffer = buffer;
+          source.connect(filter).connect(noiseGain).connect(audioContext.destination);
+          source.start(now);
+        }
+      }
+
+      function showToast(message) {
+        ui.toast.textContent = message;
+        ui.toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => ui.toast.classList.remove("show"), 2500);
+      }
+
+      function effectiveTilt() {
+        return {
+          x: clamp(input.tiltX - input.calibrationX + input.keyX, -1.25, 1.25),
+          y: clamp(input.tiltY - input.calibrationY + input.keyY, -1.25, 1.25)
+        };
+      }
+
+      function addCrack(side, level, impactY = tube.cy) {
+        const seed = (world.hits + 1) * 7919 + level * 104729 + (side === "left" ? 17 : 53);
+        const random = mulberry32(seed);
+        const inward = side === "left" ? 1 : -1;
+        const originU = side === "left" ? 0.025 + random() * 0.035 : 0.975 - random() * 0.035;
+        const impactV = clamp((impactY - tube.y1) / tube.height, 0.16, 0.84);
+        const originV = clamp(lerp(impactV, 0.24 + random() * 0.52, 0.35), 0.1, 0.9);
+        const branches = 2 + Math.floor(level / 2);
+        const paths = [];
+
+        for (let branch = 0; branch < branches; branch++) {
+          const points = [{ u: originU, v: originV }];
+          const steps = 3 + Math.floor(random() * 4);
+          const totalU = 0.038 + random() * 0.052 + level * 0.009;
+          let u = originU;
+          let v = originV;
+          let vertical = (random() - 0.5) * (0.14 + level * 0.022);
+          if (branch % 2 === 0) vertical += (branch % 4 === 0 ? -1 : 1) * 0.06;
+
+          for (let step = 1; step <= steps; step++) {
+            u += inward * (totalU / steps) * (0.70 + random() * 0.65);
+            v += vertical / steps + (random() - 0.5) * 0.045;
+            points.push({ u: clamp(u, 0.008, 0.992), v: clamp(v, 0.04, 0.96) });
+          }
+          paths.push(points);
+
+          if (branch < 1 + Math.floor(level / 3) && points.length > 3) {
+            const splitIndex = 1 + Math.floor(random() * (points.length - 2));
+            const split = points[splitIndex];
+            const branchPath = [{ u: split.u, v: split.v }];
+            let su = split.u;
+            let sv = split.v;
+            const direction = random() > 0.5 ? 1 : -1;
+            for (let s = 0; s < 2 + Math.floor(random() * 3); s++) {
+              su += inward * (0.010 + random() * 0.013);
+              sv += direction * (0.028 + random() * 0.027);
+              branchPath.push({ u: clamp(su, 0.008, 0.992), v: clamp(sv, 0.04, 0.96) });
+            }
+            paths.push(branchPath);
+          }
+        }
+
+        tube.cracks.push({ side, paths, intensity: 0.54 + level * 0.065 });
+      }
+
+      function makeBreakEdge(side) {
+        const random = mulberry32(Math.floor(world.time * 100000) + (side === "left" ? 3301 : 7717));
+        const points = [];
+        const baseU = side === "left" ? 0.115 : 0.885;
+        for (let i = 0; i <= 9; i++) {
+          const v = i / 9;
+          const jag = (random() - 0.5) * 0.075 + Math.sin(i * 2.3) * 0.012;
+          points.push({ u: clamp(baseU + jag, 0.045, 0.955), v });
+        }
+        tube.breakEdge = points;
+      }
+
+      function spawnFragments(side, speed) {
+        const random = mulberry32(Math.floor(world.time * 10000) + (side === "left" ? 2039 : 4051));
+        const outward = side === "left" ? -1 : 1;
+        const originX = side === "left" ? tube.x1 + tube.height * 0.28 : tube.x2 - tube.height * 0.28;
+        const count = 30 + Math.floor(clamp(speed / 120, 0, 14));
+
+        for (let i = 0; i < count; i++) {
+          const angle = (random() - 0.5) * 1.7;
+          const impulse = 110 + random() * 460 + speed * (0.10 + random() * 0.10);
+          fragments.push({
+            x: originX + (random() - 0.5) * tube.wall * 3,
+            y: tube.cy + (random() - 0.5) * tube.height * 0.88,
+            vx: outward * Math.cos(angle) * impulse + (random() - 0.5) * 90,
+            vy: Math.sin(angle) * impulse + (random() - 0.5) * 170,
+            angle: random() * Math.PI * 2,
+            spin: (random() - 0.5) * 14,
+            size: 3 + random() * 10,
+            life: 0.75 + random() * 1.15,
+            maxLife: 0.75 + random() * 1.15,
+            shape: random()
+          });
+          fragments[fragments.length - 1].maxLife = fragments[fragments.length - 1].life;
+        }
+      }
+
+      function breakGlass(side, speed) {
+        if (tube.brokenSide) return;
+        tube.brokenSide = side;
+        world.phase = Phase.OPEN;
+        if (side === "left") tube.leftDamage = 1;
+        else tube.rightDamage = 1;
+        makeBreakEdge(side);
+        spawnFragments(side, speed);
+        tube.flash = 1;
+        cameraKick = Math.max(cameraKick, 8);
+        playImpactSound(speed, true);
+        if (navigator.vibrate) navigator.vibrate([18, 24, 34]);
+      }
+
+      function registerEndImpact(side, speed, impactY) {
+        const now = world.time;
+        if (now - marble.lastImpactTime < 0.028) return false;
+        marble.lastImpactTime = now;
+        world.hits += 1;
+
+        const impactX = side === "left"
+          ? tube.x1 + tube.wall + marble.radius
+          : tube.x2 - tube.wall - marble.radius;
+
+        impactWaves.push({
+          x: impactX,
+          y: impactY,
+          age: 0,
+          life: 0.34,
+          radius: 8,
+          maxRadius: 24 + clamp(speed * 0.022, 8, 34)
+        });
+
+        marble.squash = clamp(speed / 1200, 0.08, 0.24);
+        cameraKick = Math.max(cameraKick, clamp(speed / 190, 1.2, 6));
+        playImpactSound(speed, false);
+        if (navigator.vibrate && speed > 520) navigator.vibrate(speed > 900 ? 18 : 8);
+
+        if (speed < BASE.minimumCrackSpeed) return false;
+
+        const normalized = clamp((speed - BASE.minimumCrackSpeed) / 850, 0, 1.55);
+        const gain = (Math.pow(normalized, 1.32) * BASE.impactDamageScale) / tuning.durability;
+        const damageKey = side === "left" ? "leftDamage" : "rightDamage";
+        const levelKey = side === "left" ? "leftCrackLevel" : "rightCrackLevel";
+        tube[damageKey] = clamp(tube[damageKey] + gain, 0, 1.2);
+        tube.flash = Math.max(tube.flash, clamp(normalized * 0.72, 0.12, 0.85));
+
+        while (tube[levelKey] < crackThresholds.length &&
+               tube[damageKey] >= crackThresholds[tube[levelKey]]) {
+          addCrack(side, tube[levelKey] + 1, impactY);
+          tube[levelKey] += 1;
+        }
+
+        const shouldBreak = tube[damageKey] >= 1 || speed >= BASE.instantBreakSpeed;
+        if (shouldBreak) {
+          breakGlass(side, speed);
+          return true;
+        }
+
+        return false;
+      }
+
+      function updateInput(dt) {
+        input.tiltX = lerp(input.tiltX, input.rawTiltX, 1 - Math.exp(-10 * dt));
+        input.tiltY = lerp(input.tiltY, input.rawTiltY, 1 - Math.exp(-10 * dt));
+        input.motionX = lerp(input.motionX, input.motionTargetX, 1 - Math.exp(-18 * dt));
+        input.motionY = lerp(input.motionY, input.motionTargetY, 1 - Math.exp(-18 * dt));
+        input.motionTargetX = damp(input.motionTargetX, 7.5, dt);
+        input.motionTargetY = damp(input.motionTargetY, 7.5, dt);
+        input.manualX = damp(input.manualX, 8.2, dt);
+        input.manualY = damp(input.manualY, 8.2, dt);
+
+        input.keyX = 0;
+        input.keyY = 0;
+        if (pressedKeys.has("ArrowLeft") || pressedKeys.has("KeyA")) input.keyX -= 0.72;
+        if (pressedKeys.has("ArrowRight") || pressedKeys.has("KeyD")) input.keyX += 0.72;
+        if (pressedKeys.has("ArrowUp") || pressedKeys.has("KeyW")) input.keyY -= 0.72;
+        if (pressedKeys.has("ArrowDown") || pressedKeys.has("KeyS")) input.keyY += 0.72;
+
+        if (performance.now() < autoShakeUntil) {
+          // A strong sinusoidal phone acceleration for repeatable desktop tests.
+          // It is kept separate from touch input so it does not accumulate.
+          autoShakePhase += dt * 12.5;
+          const wave = Math.sin(autoShakePhase) + 0.18 * Math.sin(autoShakePhase * 2.17);
+          input.autoX = wave * 6500;
+        } else {
+          input.autoX = damp(input.autoX, 16, dt);
+        }
+
+        if (input.detected && performance.now() - input.lastSensorAt > 1600) {
+          ui.sensorLight.classList.remove("live");
+          ui.sensorText.textContent = "Motion paused · move the phone or use touch controls";
+        }
+      }
+
+      function tubeInteriorBounds() {
+        return {
+          left: tube.x1 + tube.wall + marble.radius,
+          right: tube.x2 - tube.wall - marble.radius,
+          top: tube.y1 + tube.wall + marble.radius,
+          bottom: tube.y2 - tube.wall - marble.radius
+        };
+      }
+
+      function simulateInside(dt) {
+        const tilt = effectiveTilt();
+        const shakeGain = BASE.insideShakeGain * tuning.shake;
+
+        // In a phone-fixed frame, linear phone acceleration acts on the marble
+        // in the opposite direction (an inertial / pseudo-force).
+        const ax = tilt.x * BASE.insideTiltAcceleration * tuning.tilt
+                 - input.motionX * shakeGain
+                 + input.manualX
+                 + input.autoX;
+        const ay = tilt.y * BASE.insideTiltAcceleration * 0.20 * tuning.tilt
+                 - input.motionY * shakeGain * 0.27
+                 + input.manualY * 0.22;
+
+        marble.vx += ax * dt;
+        marble.vy += ay * dt;
+        marble.vx = damp(marble.vx, BASE.insideDrag, dt);
+        marble.vy = damp(marble.vy, BASE.insideDrag * 1.4, dt);
+        marble.vx = clamp(marble.vx, -BASE.maxSpeed, BASE.maxSpeed);
+        marble.vy = clamp(marble.vy, -BASE.maxSpeed, BASE.maxSpeed);
+        marble.x += marble.vx * dt;
+        marble.y += marble.vy * dt;
+
+        const bounds = tubeInteriorBounds();
+        const insideTubeX = marble.x > tube.x1 - marble.radius && marble.x < tube.x2 + marble.radius;
+
+        if (insideTubeX) {
+          if (marble.y < bounds.top) {
+            marble.y = bounds.top;
+            if (marble.vy < 0) marble.vy = -marble.vy * BASE.tubeVerticalBounce;
+          } else if (marble.y > bounds.bottom) {
+            marble.y = bounds.bottom;
+            if (marble.vy > 0) marble.vy = -marble.vy * BASE.tubeVerticalBounce;
+          }
+        }
+
+        if (tube.brokenSide !== "left" && marble.x < bounds.left) {
+          const speed = Math.max(0, -marble.vx);
+          const broke = speed > 0 ? registerEndImpact("left", speed, marble.y) : false;
+          if (broke) {
+            marble.x = bounds.left - 1;
+            marble.vx = -speed * 0.78;
+          } else {
+            marble.x = bounds.left;
+            if (marble.vx < 0) marble.vx = speed * tuning.bounce;
+          }
+        }
+
+        if (tube.brokenSide !== "right" && marble.x > bounds.right) {
+          const speed = Math.max(0, marble.vx);
+          const broke = speed > 0 ? registerEndImpact("right", speed, marble.y) : false;
+          if (broke) {
+            marble.x = bounds.right + 1;
+            marble.vx = speed * 0.78;
+          } else {
+            marble.x = bounds.right;
+            if (marble.vx > 0) marble.vx = -speed * tuning.bounce;
+          }
+        }
+
+        if (world.phase === Phase.OPEN) {
+          const escapedLeft = tube.brokenSide === "left" && marble.x + marble.radius < tube.x1 + tube.height * 0.08;
+          const escapedRight = tube.brokenSide === "right" && marble.x - marble.radius > tube.x2 - tube.height * 0.08;
+          if (escapedLeft || escapedRight) {
+            world.phase = Phase.FREE;
+            marble.vx *= 0.94;
+            marble.vy *= 0.94;
+            showToast("Marble escaped. Tilt the phone to roll it around the screen.");
+          }
+        }
+
+        marble.rotation += (marble.vx / Math.max(1, marble.radius)) * dt;
+      }
+
+      function simulateFree(dt) {
+        const tilt = effectiveTilt();
+        const shakeGain = BASE.freeShakeGain * tuning.shake;
+        const ax = tilt.x * BASE.freeTiltAcceleration * tuning.tilt
+                 - input.motionX * shakeGain
+                 + input.manualX * 0.55
+                 + input.autoX * 0.55;
+        const ay = tilt.y * BASE.freeTiltAcceleration * tuning.tilt
+                 - input.motionY * shakeGain
+                 + input.manualY * 0.55;
+
+        marble.vx += ax * dt;
+        marble.vy += ay * dt;
+        marble.vx = damp(marble.vx, BASE.freeDrag, dt);
+        marble.vy = damp(marble.vy, BASE.freeDrag, dt);
+        marble.vx = clamp(marble.vx, -BASE.maxSpeed, BASE.maxSpeed);
+        marble.vy = clamp(marble.vy, -BASE.maxSpeed, BASE.maxSpeed);
+        marble.x += marble.vx * dt;
+        marble.y += marble.vy * dt;
+
+        const r = marble.radius;
+        const edgeBounce = BASE.screenEdgeBounce;
+        if (marble.x < r) {
+          marble.x = r;
+          if (marble.vx < 0) marble.vx = -marble.vx * edgeBounce;
+          marble.squash = Math.max(marble.squash, clamp(Math.abs(marble.vx) / 1700, 0.03, 0.14));
+        } else if (marble.x > width - r) {
+          marble.x = width - r;
+          if (marble.vx > 0) marble.vx = -marble.vx * edgeBounce;
+          marble.squash = Math.max(marble.squash, clamp(Math.abs(marble.vx) / 1700, 0.03, 0.14));
+        }
+
+        if (marble.y < r) {
+          marble.y = r;
+          if (marble.vy < 0) marble.vy = -marble.vy * edgeBounce;
+          marble.squash = Math.max(marble.squash, clamp(Math.abs(marble.vy) / 1700, 0.03, 0.14));
+        } else if (marble.y > height - r) {
+          marble.y = height - r;
+          if (marble.vy > 0) marble.vy = -marble.vy * edgeBounce;
+          marble.vx *= 0.985;
+          marble.squash = Math.max(marble.squash, clamp(Math.abs(marble.vy) / 1700, 0.03, 0.14));
+        }
+
+        marble.rotation += (Math.hypot(marble.vx, marble.vy) / Math.max(1, marble.radius)) * dt * Math.sign(marble.vx || 1);
+      }
+
+      function updateParticles(dt) {
+        const tilt = effectiveTilt();
+        for (let i = fragments.length - 1; i >= 0; i--) {
+          const f = fragments[i];
+          f.life -= dt;
+          if (f.life <= 0) {
+            fragments.splice(i, 1);
+            continue;
+          }
+          f.vx += tilt.x * BASE.freeTiltAcceleration * 0.38 * dt;
+          f.vy += tilt.y * BASE.freeTiltAcceleration * 0.38 * dt;
+          f.vx = damp(f.vx, 0.35, dt);
+          f.vy = damp(f.vy, 0.35, dt);
+          f.x += f.vx * dt;
+          f.y += f.vy * dt;
+          f.angle += f.spin * dt;
+        }
+
+        for (let i = impactWaves.length - 1; i >= 0; i--) {
+          const wave = impactWaves[i];
+          wave.age += dt;
+          if (wave.age >= wave.life) impactWaves.splice(i, 1);
+        }
+      }
+
+      function fixedUpdate(dt) {
+        world.time += dt;
+        updateInput(dt);
+
+        if (world.phase === Phase.FREE) simulateFree(dt);
+        else simulateInside(dt);
+
+        updateParticles(dt);
+        tube.flash = damp(tube.flash, 5.8, dt);
+        cameraKick = damp(cameraKick, 16, dt);
+        marble.squash = damp(marble.squash, 11, dt);
+      }
+
+      function drawBackground() {
+        ctx.fillStyle = backgroundGradient || "#07101d";
+        ctx.fillRect(0, 0, width, height);
+
+        const glow = ctx.createRadialGradient(tube.cx, tube.cy, 10, tube.cx, tube.cy, Math.max(width, height) * 0.58);
+        glow.addColorStop(0, "rgba(53, 145, 184, 0.12)");
+        glow.addColorStop(0.45, "rgba(18, 67, 96, 0.055)");
+        glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, width, height);
+
+        for (const p of dust) {
+          const pulse = 0.62 + Math.sin(world.time * 0.75 + p.phase) * 0.28;
+          ctx.globalAlpha = p.a * pulse;
+          ctx.fillStyle = "#d8f3ff";
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        // Very faint horizon lines give motion a stable visual reference.
+        ctx.strokeStyle = "rgba(160, 210, 235, 0.025)";
+        ctx.lineWidth = 1;
+        const spacing = 52;
+        ctx.beginPath();
+        for (let y = spacing; y < height; y += spacing) {
+          ctx.moveTo(0, y + 0.5);
+          ctx.lineTo(width, y + 0.5);
+        }
+        ctx.stroke();
+      }
+
+      function drawCracks() {
+        if (!tube.cracks.length) return;
+        ctx.save();
+        roundedRectPath(ctx, tube.x1, tube.y1, tube.length, tube.height, tube.height / 2);
+        ctx.clip();
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        for (const crack of tube.cracks) {
+          for (const path of crack.paths) {
+            if (path.length < 2) continue;
+            ctx.beginPath();
+            for (let i = 0; i < path.length; i++) {
+              const x = tube.x1 + path[i].u * tube.length;
+              const y = tube.y1 + path[i].v * tube.height;
+              if (i === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = `rgba(130, 211, 241, ${0.20 * crack.intensity})`;
+            ctx.lineWidth = 1.55;
+            ctx.stroke();
+            ctx.strokeStyle = `rgba(245, 253, 255, ${0.72 * crack.intensity})`;
+            ctx.lineWidth = 0.48;
+            ctx.stroke();
+          }
+        }
+        ctx.restore();
+      }
+
+      function drawBrokenOpening() {
+        if (!tube.brokenSide || tube.breakEdge.length < 2) return;
+        const left = tube.brokenSide === "left";
+        const edge = tube.breakEdge;
+
+        // Repaint the exact background through the jagged opening. Clipping
+        // avoids the dark wedge that a plain solid-color cutout would create.
+        ctx.save();
+        ctx.beginPath();
+        if (left) {
+          ctx.moveTo(-80, tube.y1 - 80);
+          ctx.lineTo(-80, tube.y2 + 80);
+          for (let i = edge.length - 1; i >= 0; i--) {
+            ctx.lineTo(tube.x1 + edge[i].u * tube.length, tube.y1 + edge[i].v * tube.height);
+          }
+        } else {
+          ctx.moveTo(width + 80, tube.y1 - 80);
+          for (let i = 0; i < edge.length; i++) {
+            ctx.lineTo(tube.x1 + edge[i].u * tube.length, tube.y1 + edge[i].v * tube.height);
+          }
+          ctx.lineTo(width + 80, tube.y2 + 80);
+        }
+        ctx.closePath();
+        ctx.clip();
+        drawBackground();
+        ctx.restore();
+
+        ctx.save();
+        const edgeGlow = ctx.createLinearGradient(tube.x1, tube.y1, tube.x2, tube.y2);
+        edgeGlow.addColorStop(0, "rgba(214, 248, 255, 0.95)");
+        edgeGlow.addColorStop(0.5, "rgba(116, 207, 239, 0.55)");
+        edgeGlow.addColorStop(1, "rgba(214, 248, 255, 0.95)");
+        ctx.beginPath();
+        for (let i = 0; i < edge.length; i++) {
+          const x = tube.x1 + edge[i].u * tube.length;
+          const y = tube.y1 + edge[i].v * tube.height;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = edgeGlow;
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = "rgba(137, 224, 255, 0.7)";
+        ctx.shadowBlur = 9;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawTube() {
+        ctx.save();
+
+        ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
+        ctx.shadowBlur = 30;
+        ctx.shadowOffsetY = 17;
+        roundedRectPath(ctx, tube.x1, tube.y1, tube.length, tube.height, tube.height / 2);
+        ctx.fillStyle = "rgba(0, 0, 0, 0.18)";
+        ctx.fill();
+        ctx.shadowColor = "transparent";
+
+        const glass = ctx.createLinearGradient(0, tube.y1, 0, tube.y2);
+        glass.addColorStop(0, "rgba(224, 250, 255, 0.36)");
+        glass.addColorStop(0.12, "rgba(101, 195, 230, 0.18)");
+        glass.addColorStop(0.34, "rgba(22, 71, 99, 0.13)");
+        glass.addColorStop(0.62, "rgba(7, 29, 47, 0.09)");
+        glass.addColorStop(0.86, "rgba(105, 202, 236, 0.18)");
+        glass.addColorStop(1, "rgba(226, 251, 255, 0.40)");
+        roundedRectPath(ctx, tube.x1, tube.y1, tube.length, tube.height, tube.height / 2);
+        ctx.fillStyle = glass;
+        ctx.fill();
+
+        const innerInset = tube.wall;
+        roundedRectPath(
+          ctx,
+          tube.x1 + innerInset,
+          tube.y1 + innerInset,
+          tube.length - innerInset * 2,
+          tube.height - innerInset * 2,
+          (tube.height - innerInset * 2) / 2
+        );
+        ctx.fillStyle = "rgba(3, 12, 22, 0.21)";
+        ctx.fill();
+
+        roundedRectPath(ctx, tube.x1 + 0.5, tube.y1 + 0.5, tube.length - 1, tube.height - 1, tube.height / 2);
+        ctx.strokeStyle = "rgba(220, 248, 255, 0.58)";
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        roundedRectPath(
+          ctx,
+          tube.x1 + innerInset,
+          tube.y1 + innerInset,
+          tube.length - innerInset * 2,
+          tube.height - innerInset * 2,
+          (tube.height - innerInset * 2) / 2
+        );
+        ctx.strokeStyle = "rgba(137, 219, 248, 0.20)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Specular bands.
+        ctx.beginPath();
+        ctx.moveTo(tube.x1 + tube.height * 0.48, tube.y1 + tube.wall * 0.68);
+        ctx.lineTo(tube.x2 - tube.height * 0.48, tube.y1 + tube.wall * 0.68);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.52)";
+        ctx.lineWidth = 2.1;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(tube.x1 + tube.height * 0.42, tube.y2 - tube.wall * 0.72);
+        ctx.lineTo(tube.x2 - tube.height * 0.42, tube.y2 - tube.wall * 0.72);
+        ctx.strokeStyle = "rgba(124, 216, 247, 0.26)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Damage glow at each end.
+        const sideGlow = (side, damage) => {
+          if (damage <= 0.01) return;
+          const x = side === "left" ? tube.x1 + tube.height * 0.22 : tube.x2 - tube.height * 0.22;
+          const glow = ctx.createRadialGradient(x, tube.cy, 0, x, tube.cy, tube.height * 0.72);
+          glow.addColorStop(0, `rgba(255, 174, 131, ${0.11 + damage * 0.13})`);
+          glow.addColorStop(0.44, `rgba(255, 111, 100, ${damage * 0.08})`);
+          glow.addColorStop(1, "rgba(255, 100, 90, 0)");
+          ctx.fillStyle = glow;
+          ctx.fillRect(x - tube.height, tube.cy - tube.height, tube.height * 2, tube.height * 2);
+        };
+        sideGlow("left", tube.leftDamage);
+        sideGlow("right", tube.rightDamage);
+
+        drawCracks();
+        drawBrokenOpening();
+
+        if (tube.flash > 0.01) {
+          roundedRectPath(ctx, tube.x1, tube.y1, tube.length, tube.height, tube.height / 2);
+          ctx.fillStyle = `rgba(206, 244, 255, ${tube.flash * 0.10})`;
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+
+      function drawImpactWaves() {
+        for (const wave of impactWaves) {
+          const t = clamp(wave.age / wave.life, 0, 1);
+          const radius = lerp(wave.radius, wave.maxRadius, 1 - Math.pow(1 - t, 3));
+          ctx.beginPath();
+          ctx.arc(wave.x, wave.y, radius, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(216, 248, 255, ${(1 - t) * 0.55})`;
+          ctx.lineWidth = 1.4;
+          ctx.stroke();
+        }
+      }
+
+      function drawFragments() {
+        for (const f of fragments) {
+          const alpha = clamp(f.life / f.maxLife, 0, 1);
+          ctx.save();
+          ctx.translate(f.x, f.y);
+          ctx.rotate(f.angle);
+          ctx.globalAlpha = Math.min(0.9, alpha * 1.2);
+          ctx.beginPath();
+          ctx.moveTo(-f.size * 0.55, f.size * 0.42);
+          ctx.lineTo(f.size * (0.25 + f.shape * 0.35), -f.size * 0.58);
+          ctx.lineTo(f.size * 0.62, f.size * 0.34);
+          ctx.closePath();
+          const shard = ctx.createLinearGradient(-f.size, -f.size, f.size, f.size);
+          shard.addColorStop(0, "rgba(245, 255, 255, 0.88)");
+          shard.addColorStop(0.38, "rgba(133, 220, 249, 0.34)");
+          shard.addColorStop(1, "rgba(40, 104, 137, 0.18)");
+          ctx.fillStyle = shard;
+          ctx.fill();
+          ctx.strokeStyle = "rgba(231, 252, 255, 0.72)";
+          ctx.lineWidth = 0.7;
+          ctx.stroke();
+          ctx.restore();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function drawMarble() {
+        const r = marble.radius;
+        const squash = marble.squash;
+        const sx = 1 + squash * 0.48;
+        const sy = 1 - squash * 0.42;
+
+        ctx.save();
+        ctx.translate(marble.x, marble.y);
+        ctx.rotate(marble.rotation * 0.16);
+        ctx.scale(sx, sy);
+
+        ctx.shadowColor = "rgba(0, 0, 0, 0.62)";
+        ctx.shadowBlur = 22;
+        ctx.shadowOffsetY = 10;
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.24)";
+        ctx.fill();
+        ctx.shadowColor = "transparent";
+
+        const body = ctx.createRadialGradient(-r * 0.37, -r * 0.43, r * 0.05, 0, 0, r * 1.05);
+        body.addColorStop(0, "#f5ffff");
+        body.addColorStop(0.11, "#9deaff");
+        body.addColorStop(0.34, "#2e9cc7");
+        body.addColorStop(0.68, "#0b486d");
+        body.addColorStop(0.89, "#05263f");
+        body.addColorStop(1, "#021421");
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fillStyle = body;
+        ctx.fill();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, r - 0.5, 0, Math.PI * 2);
+        ctx.clip();
+
+        ctx.rotate(marble.rotation * 0.48);
+        ctx.beginPath();
+        ctx.moveTo(-r * 1.2, r * 0.14);
+        ctx.bezierCurveTo(-r * 0.55, -r * 0.58, r * 0.1, r * 0.74, r * 1.2, -r * 0.18);
+        ctx.strokeStyle = "rgba(168, 243, 255, 0.30)";
+        ctx.lineWidth = r * 0.20;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(-r * 1.1, -r * 0.42);
+        ctx.bezierCurveTo(-r * 0.4, r * 0.18, r * 0.28, -r * 0.74, r * 1.18, r * 0.36);
+        ctx.strokeStyle = "rgba(9, 43, 79, 0.36)";
+        ctx.lineWidth = r * 0.13;
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.beginPath();
+        ctx.arc(0, 0, r - 0.6, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(210, 250, 255, 0.34)";
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        const highlight = ctx.createRadialGradient(-r * 0.45, -r * 0.48, 0, -r * 0.45, -r * 0.48, r * 0.65);
+        highlight.addColorStop(0, "rgba(255,255,255,0.82)");
+        highlight.addColorStop(0.18, "rgba(255,255,255,0.30)");
+        highlight.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = highlight;
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      function drawDebug() {
+        if (!tuning.debug) return;
+        const tilt = effectiveTilt();
+        const scale = 70;
+
+        ctx.save();
+        ctx.lineCap = "round";
+        ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, monospace";
+        ctx.fillStyle = "rgba(226, 246, 255, 0.82)";
+        ctx.fillText(`phase: ${world.phase}`, 14, height - 126);
+        ctx.fillText(`v: ${marble.vx.toFixed(0)}, ${marble.vy.toFixed(0)} px/s`, 14, height - 108);
+        ctx.fillText(`tilt: ${tilt.x.toFixed(2)}, ${tilt.y.toFixed(2)}`, 14, height - 90);
+        ctx.fillText(`motion: ${input.motionX.toFixed(1)}, ${input.motionY.toFixed(1)} m/s²`, 14, height - 72);
+
+        drawArrow(marble.x, marble.y, marble.vx * 0.06, marble.vy * 0.06, "rgba(255, 196, 107, 0.92)");
+        drawArrow(marble.x, marble.y, tilt.x * scale, tilt.y * scale, "rgba(104, 216, 255, 0.95)");
+        ctx.restore();
+      }
+
+      function drawArrow(x, y, dx, dy, color) {
+        const length = Math.hypot(dx, dy);
+        if (length < 2) return;
+        const angle = Math.atan2(dy, dx);
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + dx, y + dy);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x + dx, y + dy);
+        ctx.lineTo(x + dx - 8 * Math.cos(angle - 0.45), y + dy - 8 * Math.sin(angle - 0.45));
+        ctx.lineTo(x + dx - 8 * Math.cos(angle + 0.45), y + dy - 8 * Math.sin(angle + 0.45));
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function render() {
+        drawBackground();
+        const jitterX = cameraKick > 0.1 ? (Math.random() - 0.5) * cameraKick : 0;
+        const jitterY = cameraKick > 0.1 ? (Math.random() - 0.5) * cameraKick * 0.45 : 0;
+
+        ctx.save();
+        ctx.translate(jitterX, jitterY);
+        drawTube();
+        drawImpactWaves();
+        drawFragments();
+        drawMarble();
+        drawDebug();
+        ctx.restore();
+      }
+
+      function updateHud() {
+        const left = clamp(tube.leftDamage, 0, 1);
+        const right = clamp(tube.rightDamage, 0, 1);
+        ui.leftDamageFill.style.width = `${Math.round(left * 100)}%`;
+        ui.rightDamageFill.style.width = `${Math.round(right * 100)}%`;
+        ui.leftDamageText.textContent = `${Math.round(left * 100)}%`;
+        ui.rightDamageText.textContent = `${Math.round(right * 100)}%`;
+
+        if (world.phase === Phase.SEALED) {
+          ui.stateName.textContent = "SEALED";
+          ui.stateHint.textContent = Math.max(left, right) > 0.02 ? "Cracks are spreading" : "Shake side-to-side";
+        } else if (world.phase === Phase.OPEN) {
+          ui.stateName.textContent = "BREACHED";
+          ui.stateHint.textContent = `Opening on ${tube.brokenSide} · tilt outward`;
+        } else {
+          ui.stateName.textContent = "MARBLE FREE";
+          ui.stateHint.textContent = "Tilt to roll around the screen";
+        }
+      }
+
+      function frame(now) {
+        const frameTime = Math.min(BASE.maxFrameTime, Math.max(0, (now - lastTime) / 1000));
+        lastTime = now;
+        accumulator += frameTime;
+
+        while (accumulator >= BASE.fixedStep) {
+          fixedUpdate(BASE.fixedStep);
+          accumulator -= BASE.fixedStep;
+        }
+
+        render();
+        updateHud();
+        requestAnimationFrame(frame);
+      }
+
+      function applyImpulse(direction) {
+        ensureAudio();
+        ui.intro.classList.add("hidden");
+        const impulse = world.phase === Phase.FREE ? 610 : 910;
+        marble.vx += clamp(direction, -1, 1) * impulse;
+        marble.vx = clamp(marble.vx, -BASE.maxSpeed, BASE.maxSpeed);
+      }
+
+      function startDemoShake() {
+        ensureAudio();
+        ui.intro.classList.add("hidden");
+        autoShakePhase = 0;
+        autoShakeUntil = performance.now() + 2800;
+        if (world.phase !== Phase.FREE) marble.vx += 0;
+      }
+
+      function bindRange(range, output, key, digits = 2, suffix = "×") {
+        const update = () => {
+          tuning[key] = Number(range.value);
+          output.textContent = `${tuning[key].toFixed(digits)}${suffix}`;
+        };
+        range.addEventListener("input", update);
+        update();
+      }
+
+      bindRange(ui.shakeRange, ui.shakeValue, "shake", 2, "×");
+      bindRange(ui.tiltRange, ui.tiltValue, "tilt", 2, "×");
+      bindRange(ui.durabilityRange, ui.durabilityValue, "durability", 2, "×");
+      bindRange(ui.bounceRange, ui.bounceValue, "bounce", 2, "");
+
+      ui.debugToggle.addEventListener("change", () => {
+        tuning.debug = ui.debugToggle.checked;
+      });
+
+      ui.settingsButton.addEventListener("click", () => {
+        const open = !ui.settingsPanel.classList.contains("open");
+        ui.settingsPanel.classList.toggle("open", open);
+        ui.settingsPanel.setAttribute("aria-hidden", String(!open));
+        ui.settingsButton.setAttribute("aria-expanded", String(open));
+      });
+
+      ui.motionButton.addEventListener("click", enableMotion);
+      ui.introMotion.addEventListener("click", enableMotion);
+      ui.introDemo.addEventListener("click", () => {
+        ensureAudio();
+        ui.intro.classList.add("hidden");
+        showToast("Touch mode: drag quickly left/right. Arrow keys also tilt on desktop.");
+      });
+      ui.calibrateButton.addEventListener("click", calibrateTilt);
+      ui.panelCalibrate.addEventListener("click", calibrateTilt);
+      ui.resetButton.addEventListener("click", resetSimulation);
+      ui.kickLeft.addEventListener("click", () => applyImpulse(-1));
+      ui.kickRight.addEventListener("click", () => applyImpulse(1));
+      ui.autoShake.addEventListener("click", startDemoShake);
+
+      canvas.addEventListener("pointerdown", (event) => {
+        ensureAudio();
+        ui.intro.classList.add("hidden");
+        pointer.active = true;
+        pointer.id = event.pointerId;
+        pointer.x = event.clientX;
+        pointer.y = event.clientY;
+        pointer.t = performance.now();
+        canvas.setPointerCapture?.(event.pointerId);
+      });
+
+      canvas.addEventListener("pointermove", (event) => {
+        if (!pointer.active || event.pointerId !== pointer.id) return;
+        const now = performance.now();
+        const dt = Math.max(0.008, (now - pointer.t) / 1000);
+        const dx = event.clientX - pointer.x;
+        const dy = event.clientY - pointer.y;
+        const handVelocityX = dx / dt;
+        const handVelocityY = dy / dt;
+
+        // Dragging represents moving the tube/phone. The marble lags in the
+        // opposite direction because of inertia.
+        input.manualX += clamp(-handVelocityX * 1.75, -8200, 8200);
+        input.manualY += clamp(-handVelocityY * 1.25, -6500, 6500);
+
+        pointer.x = event.clientX;
+        pointer.y = event.clientY;
+        pointer.t = now;
+      });
+
+      const endPointer = (event) => {
+        if (event.pointerId !== pointer.id) return;
+        pointer.active = false;
+        pointer.id = null;
+      };
+      canvas.addEventListener("pointerup", endPointer);
+      canvas.addEventListener("pointercancel", endPointer);
+
+      window.addEventListener("keydown", (event) => {
+        if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(event.code)) {
+          event.preventDefault();
+        }
+        pressedKeys.add(event.code);
+        if (event.code === "Space" && !event.repeat) startDemoShake();
+        if (event.code === "KeyR" && !event.repeat) resetSimulation();
+      });
+
+      window.addEventListener("keyup", (event) => pressedKeys.delete(event.code));
+      window.addEventListener("resize", resize, { passive: true });
+      window.screen?.orientation?.addEventListener?.("change", resize);
+      document.addEventListener("visibilitychange", () => {
+        lastTime = performance.now();
+        accumulator = 0;
+      });
+
+      resize();
+      resetSimulation();
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>
