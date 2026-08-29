@@ -89,7 +89,7 @@
   </div>
 
   <div class="readout">
-    <div id="status" class="status">Tilt the phone to move the drop. When still, it relaxes into a rounded bead; at speed it stretches into a teardrop.</div>
+    <div id="status" class="status">Tilt the phone to move the drop. At rest it becomes almost perfectly circular; while moving, the tail forms opposite the direction of motion and lengthens as speed increases.</div>
     <div id="settings" class="settings">
       <h2>Drop tuning</h2>
       <p>Model combines tilt-gravity, contact-angle hysteresis, surface drag, velocity-dependent deformation and damped shape relaxation.</p>
@@ -369,9 +369,19 @@
     while(da<-Math.PI) da+=Math.PI*2;
     drop.angle += da * Math.min(1,P.response*dt);
 
-    // Elongate with speed, but surface tension limits deformation.
-    const targetElong = Math.min(1.8, (v/650)*P.stretch/P.tension);
+    // Shape deformation begins only after meaningful movement.
+    // At rest the drop relaxes to an almost perfect circle.
+    // Tail length grows progressively with speed.
+    const shapeStartSpeed = 18;
+    const effectiveSpeed = Math.max(0, v - shapeStartSpeed);
+    const normalizedSpeed = effectiveSpeed / 520;
+    const targetElong = Math.min(
+      1.85,
+      Math.pow(normalizedSpeed, 0.82) * P.stretch / P.tension
+    );
     drop.elongation += (targetElong-drop.elongation) * Math.min(1,P.response*dt);
+
+    if (v < 5 && drop.elongation < 0.015) drop.elongation = 0;
 
     // Small damped oscillation from acceleration changes and collisions.
     const forcing = Math.min(1.5, accelMag/900) * P.wobble;
@@ -397,10 +407,17 @@
     ctx.restore();
 
     const r = P.radius;
-    const e = drop.elongation;
-    const wob = Math.sin(t*11 + Math.hypot(drop.vx,drop.vy)*.01) * drop.wobble * 0.08;
-    const longR = r * (1 + e*0.72 + wob);
-    const shortR = r * (1 - Math.min(.42,e*.24) - wob*.35);
+    const e = Math.max(0, drop.elongation);
+    const speedNow = Math.hypot(drop.vx,drop.vy);
+    const wob = Math.sin(t*11 + speedNow*.01) * drop.wobble * 0.055;
+
+    // Local +X is the direction of motion because the canvas is rotated
+    // to drop.angle. The tail therefore always extends toward local -X.
+    const motionAmount = Math.min(1, e / 1.35);
+    const tailLength = r * e * 1.35;
+    const frontR = r * (1 + 0.07 * motionAmount);
+    const rearR = r + tailLength;
+    const widthR = r * (1 - 0.22 * motionAmount + wob);
 
     ctx.save();
     ctx.translate(drop.x,drop.y);
@@ -409,41 +426,98 @@
     // Soft contact shadow.
     ctx.save();
     ctx.scale(1, .62);
-    const sh = ctx.createRadialGradient(0, r*.38, r*.12, 0, r*.38, longR*1.1);
+    const shadowCenter = (frontR - rearR) * 0.22;
+    const shadowRadius = (frontR + rearR) * 0.58;
+    const sh = ctx.createRadialGradient(
+      shadowCenter, r*.38, r*.12,
+      shadowCenter, r*.38, Math.max(r,shadowRadius*1.15)
+    );
     sh.addColorStop(0,'rgba(0,0,0,.28)');
     sh.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=sh;
     ctx.beginPath();
-    ctx.ellipse(0,r*.42,longR*1.08,shortR*.72,0,0,Math.PI*2);
+    ctx.ellipse(
+      shadowCenter,
+      r*.42,
+      Math.max(r,shadowRadius*1.05),
+      Math.max(2,widthR*.72),
+      0,0,Math.PI*2
+    );
     ctx.fill();
     ctx.restore();
 
-    // Main droplet body, stretched along velocity.
+    // Main droplet body.
     ctx.beginPath();
-    const tail = Math.min(longR*.45, r*e*.55);
-    ctx.moveTo(-longR + tail,0);
-    ctx.bezierCurveTo(-longR*.72,-shortR*.96, longR*.25,-shortR*1.04, longR,0);
-    ctx.bezierCurveTo(longR*.30,shortR*1.05,-longR*.72,shortR*.94,-longR + tail,0);
-    ctx.closePath();
 
-    const grad = ctx.createLinearGradient(-longR,-shortR,longR,shortR);
-    grad.addColorStop(0,'rgba(223,249,255,.34)');
-    grad.addColorStop(.25,'rgba(121,218,255,.20)');
-    grad.addColorStop(.62,'rgba(56,166,214,.16)');
-    grad.addColorStop(1,'rgba(214,247,255,.34)');
+    if (e < 0.025) {
+      // Stationary / almost stationary: true circular bead.
+      ctx.arc(0,0,r,0,Math.PI*2);
+    } else {
+      // Moving: rounded front (+X), pointed tail opposite motion (-X).
+      const tipX = -rearR;
+      const shoulderX = -r * (0.28 + 0.24*motionAmount);
+      const frontX = frontR;
+
+      ctx.moveTo(tipX, 0);
+
+      ctx.bezierCurveTo(
+        tipX + rearR*(0.17 + 0.08*(1-motionAmount)),
+        -widthR*(0.18 + 0.20*(1-motionAmount)),
+        shoulderX,
+        -widthR,
+        r*0.12,
+        -widthR
+      );
+
+      ctx.bezierCurveTo(
+        frontX*0.64,
+        -widthR,
+        frontX,
+        -widthR*0.54,
+        frontX,
+        0
+      );
+
+      ctx.bezierCurveTo(
+        frontX,
+        widthR*0.54,
+        frontX*0.64,
+        widthR,
+        r*0.12,
+        widthR
+      );
+
+      ctx.bezierCurveTo(
+        shoulderX,
+        widthR,
+        tipX + rearR*(0.17 + 0.08*(1-motionAmount)),
+        widthR*(0.18 + 0.20*(1-motionAmount)),
+        tipX,
+        0
+      );
+      ctx.closePath();
+    }
+
+    const grad = ctx.createLinearGradient(-rearR,-widthR,frontR,widthR);
+    grad.addColorStop(0,'rgba(207,244,255,.28)');
+    grad.addColorStop(.28,'rgba(121,218,255,.20)');
+    grad.addColorStop(.63,'rgba(56,166,214,.16)');
+    grad.addColorStop(1,'rgba(226,250,255,.38)');
     ctx.fillStyle=grad;
     ctx.fill();
 
     ctx.lineWidth=1.35;
-    ctx.strokeStyle='rgba(220,250,255,.62)';
+    ctx.strokeStyle='rgba(220,250,255,.64)';
     ctx.stroke();
 
     // Internal refraction band.
     ctx.save();
     ctx.globalAlpha=.50;
     ctx.beginPath();
-    ctx.ellipse(longR*.08,shortR*.10,longR*.63,shortR*.58,0,0,Math.PI*2);
-    const inner = ctx.createRadialGradient(longR*.35,-shortR*.35,1,0,0,longR);
+    const bodyCenterX = (frontR-rearR)*0.16;
+    const bodyHalfX = Math.max(r,(frontR+rearR)*0.42);
+    ctx.ellipse(bodyCenterX,widthR*.10,bodyHalfX*.70,widthR*.58,0,0,Math.PI*2);
+    const inner = ctx.createRadialGradient(frontR*.28,-widthR*.35,1,bodyCenterX,0,Math.max(r,bodyHalfX));
     inner.addColorStop(0,'rgba(255,255,255,.45)');
     inner.addColorStop(.35,'rgba(177,235,255,.13)');
     inner.addColorStop(1,'rgba(20,110,160,.04)');
@@ -456,7 +530,7 @@
     ctx.globalAlpha=.78;
     ctx.fillStyle='rgba(255,255,255,.75)';
     ctx.beginPath();
-    ctx.ellipse(longR*.22,-shortR*.40,Math.max(3,r*.18),Math.max(2,r*.085),-.25,0,Math.PI*2);
+    ctx.ellipse(frontR*.22,-widthR*.40,Math.max(3,r*.18),Math.max(2,r*.085),-.25,0,Math.PI*2);
     ctx.fill();
     ctx.restore();
 
@@ -465,7 +539,7 @@
     ctx.globalAlpha=.23;
     ctx.fillStyle='rgba(255,255,255,.8)';
     ctx.beginPath();
-    ctx.ellipse(-longR*.28,shortR*.28,Math.max(2,r*.10),Math.max(1.5,r*.055),0,0,Math.PI*2);
+    ctx.ellipse(-r*.24,widthR*.28,Math.max(2,r*.10),Math.max(1.5,r*.055),0,0,Math.PI*2);
     ctx.fill();
     ctx.restore();
 
