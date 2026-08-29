@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#07101d" />
-  <title>Glass Tube + Marble Physics</title>
+  <title>Vertical Glass Tube + Marble Physics</title>
   <style>
     :root {
       color-scheme: dark;
@@ -268,10 +268,10 @@
     .settings {
       position: absolute;
       z-index: 20;
-      top: calc(var(--safe-top) + 58px);
+      top: calc(var(--safe-top) + 102px);
       right: 12px;
       width: min(350px, calc(100% - 24px));
-      max-height: calc(100% - var(--safe-top) - var(--safe-bottom) - 86px);
+      max-height: calc(100% - var(--safe-top) - var(--safe-bottom) - 132px);
       overflow: auto;
       padding: 14px;
       border: 1px solid var(--line);
@@ -520,18 +520,62 @@
       .state-hint { display: none; }
       .meter-card { padding: 8px 10px; }
     }
+
+
+    .section-label {
+      margin: 18px 0 6px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      color: rgba(174, 220, 241, 0.72);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+    }
+
+    .compact-row {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top-color: rgba(190, 226, 255, 0.10);
+    }
+
+    .brand,
+    .brand-copy,
+    .brand-title {
+      overflow: hidden;
+    }
+
+    .brand-title {
+      text-overflow: ellipsis;
+    }
+
+    @media (max-width: 430px) {
+      .brand {
+        flex: 1 1 155px;
+        max-width: 155px;
+      }
+
+      .brand-title {
+        font-size: 9px;
+        letter-spacing: 0.11em;
+      }
+
+      .toolbar {
+        flex: 0 0 auto;
+        flex-wrap: nowrap;
+      }
+    }
   </style>
 </head>
 <body>
   <div id="app">
-    <canvas id="world" aria-label="Glass tube and marble physics simulation"></canvas>
+    <canvas id="world" aria-label="Vertical glass tube and marble physics simulation"></canvas>
 
     <div class="topbar">
       <div class="brand">
         <span class="brand-dot"></span>
         <div class="brand-copy">
-          <div class="brand-title">GLASS / MARBLE</div>
-          <div class="brand-subtitle">INERTIAL PHYSICS PROTOTYPE</div>
+          <div class="brand-title">VERTICAL TUBE</div>
+          <div class="brand-subtitle">REAL-UNIT INERTIAL PHYSICS</div>
         </div>
       </div>
       <div class="toolbar">
@@ -544,61 +588,153 @@
 
     <div class="sensor-pill">
       <span id="sensorLight" class="sensor-light"></span>
-      <span id="sensorText">Motion sensor not enabled · drag the screen to test</span>
+      <span id="sensorText">Motion sensor not enabled · tap the lower screen to test</span>
     </div>
 
     <div class="hud">
       <div class="meter-card">
-        <div class="meter-label"><span>LEFT CAP DAMAGE</span><span id="leftDamageText">0%</span></div>
-        <div class="meter-track"><div id="leftDamageFill" class="meter-fill"></div></div>
+        <div class="meter-label"><span>TOP CAP DAMAGE</span><span id="topDamageText">0%</span></div>
+        <div class="meter-track"><div id="topDamageFill" class="meter-fill"></div></div>
       </div>
       <div class="state-card">
         <div id="stateName" class="state-name">SEALED</div>
-        <div id="stateHint" class="state-hint">Shake side-to-side</div>
+        <div id="stateHint" class="state-hint">Tap from below or shake vertically</div>
       </div>
       <div class="meter-card">
-        <div class="meter-label"><span>RIGHT CAP DAMAGE</span><span id="rightDamageText">0%</span></div>
-        <div class="meter-track"><div id="rightDamageFill" class="meter-fill"></div></div>
+        <div class="meter-label"><span>BOTTOM CAP DAMAGE</span><span id="bottomDamageText">0%</span></div>
+        <div class="meter-track"><div id="bottomDamageFill" class="meter-fill"></div></div>
       </div>
     </div>
 
     <aside id="settingsPanel" class="settings" aria-hidden="true">
       <h2>Physics tuning</h2>
-      <p class="note">These multipliers are intentionally exposed so the same feel can be reproduced later in SwiftUI.</p>
+      <p class="note">The solver uses metres, seconds, kilograms and joules. Mass changes impact energy and glass damage, but does not change gravitational fall acceleration.</p>
+
+      <div class="section-label">BALL &amp; GRAVITY</div>
+
+      <div class="control">
+        <label for="massRange">Ball mass</label>
+        <output id="massValue">28 g</output>
+        <input id="massRange" type="range" min="5" max="120" step="1" value="28" />
+      </div>
+
+      <div class="control">
+        <label for="gravityRange">Downward gravity</label>
+        <output id="gravityValue">1.00 g</output>
+        <input id="gravityRange" type="range" min="0.10" max="2.50" step="0.05" value="1.00" />
+      </div>
+
+      <div class="control">
+        <label for="ballSizeRange">Ball diameter</label>
+        <output id="ballSizeValue">28 mm</output>
+        <input id="ballSizeRange" type="range" min="12" max="42" step="1" value="28" />
+      </div>
+
+      <div class="control">
+        <label for="bounceRange">Ball restitution / bounce</label>
+        <output id="bounceValue">0.76</output>
+        <input id="bounceRange" type="range" min="0.10" max="0.96" step="0.01" value="0.76" />
+      </div>
+
+      <div class="control">
+        <label for="dragRange">Air drag</label>
+        <output id="dragValue">0.08 s⁻¹</output>
+        <input id="dragRange" type="range" min="0" max="1.50" step="0.02" value="0.08" />
+      </div>
+
+      <div class="control">
+        <label for="frictionRange">Contact friction</label>
+        <output id="frictionValue">0.10</output>
+        <input id="frictionRange" type="range" min="0" max="0.60" step="0.01" value="0.10" />
+      </div>
+
+      <div class="section-label">PHONE MOTION</div>
 
       <div class="control">
         <label for="shakeRange">Shake sensitivity</label>
         <output id="shakeValue">1.00×</output>
-        <input id="shakeRange" type="range" min="0.35" max="2.5" step="0.05" value="1" />
+        <input id="shakeRange" type="range" min="0.20" max="3.00" step="0.05" value="1.00" />
       </div>
 
       <div class="control">
-        <label for="tiltRange">Tilt gravity</label>
-        <output id="tiltValue">1.00×</output>
-        <input id="tiltRange" type="range" min="0.25" max="2.2" step="0.05" value="1" />
+        <label for="tapRange">Bottom-tap launch impulse</label>
+        <output id="tapValue">3.20 m/s</output>
+        <input id="tapRange" type="range" min="0.30" max="7.00" step="0.10" value="3.20" />
       </div>
 
       <div class="control">
-        <label for="durabilityRange">Glass durability</label>
+        <label for="tiltRange">Sideways tilt steering</label>
+        <output id="tiltValue">0.45 g</output>
+        <input id="tiltRange" type="range" min="0" max="1.50" step="0.05" value="0.45" />
+      </div>
+
+      <div class="control">
+        <label for="smoothingRange">Sensor smoothing</label>
+        <output id="smoothingValue">35 ms</output>
+        <input id="smoothingRange" type="range" min="0.006" max="0.180" step="0.003" value="0.035" />
+      </div>
+
+      <div class="control">
+        <label for="peakRange">Fast-tap peak capture</label>
+        <output id="peakValue">0.80×</output>
+        <input id="peakRange" type="range" min="0" max="1.50" step="0.05" value="0.80" />
+      </div>
+
+      <div class="control">
+        <label for="deadzoneRange">Sensor noise dead zone</label>
+        <output id="deadzoneValue">0.10 m/s²</output>
+        <input id="deadzoneRange" type="range" min="0" max="1.00" step="0.02" value="0.10" />
+      </div>
+
+      <div class="debug-row compact-row">
+        <span>Invert vertical sensor direction</span>
+        <label class="switch" aria-label="Invert vertical sensor direction">
+          <input id="invertYToggle" type="checkbox" />
+          <span></span>
+        </label>
+      </div>
+
+      <div class="section-label">GLASS &amp; SCALE</div>
+
+      <div class="control">
+        <label for="durabilityRange">Glass strength</label>
         <output id="durabilityValue">1.00×</output>
-        <input id="durabilityRange" type="range" min="0.45" max="2.5" step="0.05" value="1" />
+        <input id="durabilityRange" type="range" min="0.30" max="3.00" step="0.05" value="1.00" />
       </div>
 
       <div class="control">
-        <label for="bounceRange">Marble bounce</label>
-        <output id="bounceValue">0.70</output>
-        <input id="bounceRange" type="range" min="0.35" max="0.92" step="0.01" value="0.70" />
+        <label for="tubeLengthRange">Real tube length</label>
+        <output id="tubeLengthValue">38 cm</output>
+        <input id="tubeLengthRange" type="range" min="22" max="70" step="1" value="38" />
+      </div>
+
+      <div class="control">
+        <label for="tubeDiameterRange">Tube inner diameter</label>
+        <output id="tubeDiameterValue">56 mm</output>
+        <input id="tubeDiameterRange" type="range" min="42" max="90" step="1" value="56" />
+      </div>
+
+      <div class="control">
+        <label for="edgeBounceRange">Screen-edge bounce after escape</label>
+        <output id="edgeBounceValue">0.62</output>
+        <input id="edgeBounceRange" type="range" min="0.05" max="0.95" step="0.01" value="0.62" />
+      </div>
+
+      <div class="control">
+        <label for="timeScaleRange">Simulation speed</label>
+        <output id="timeScaleValue">1.00×</output>
+        <input id="timeScaleRange" type="range" min="0.20" max="1.50" step="0.05" value="1.00" />
       </div>
 
       <div class="test-grid">
-        <button id="kickLeft">Impulse ←</button>
-        <button id="autoShake" class="warn">Demo shake</button>
-        <button id="kickRight">Impulse →</button>
+        <button id="kickUp">Bottom tap ↑</button>
+        <button id="autoShake" class="warn">Demo bounce</button>
+        <button id="kickDown">Top tap ↓</button>
       </div>
       <button id="panelCalibrate" class="wide-action">Set Current Tilt as Neutral</button>
 
       <div class="debug-row">
-        <span>Show physics vectors</span>
+        <span>Show real-unit physics vectors</span>
         <label class="switch" aria-label="Show physics vectors">
           <input id="debugToggle" type="checkbox" />
           <span></span>
@@ -608,14 +744,14 @@
 
     <div id="intro" class="intro">
       <div class="intro-card">
-        <div class="intro-icon">◉</div>
-        <h1>Shake. Crack. Escape.</h1>
-        <p>The marble reacts to phone acceleration while sealed inside the tube. Repeated hard impacts crack the end caps; once one breaks, tilt the phone to roll the marble around the screen.</p>
+        <div class="intro-icon">↕</div>
+        <h1>Vertical Tube Physics</h1>
+        <p>Gravity always pulls the marble downward. A vertical phone tap or shake gives it an inertial bounce, letting it strike the top and bottom caps. Strong repeated impacts crack and eventually break the glass.</p>
         <div class="intro-actions">
           <button id="introMotion" class="primary">Enable Phone Motion</button>
-          <button id="introDemo">Start with Touch Controls</button>
+          <button id="introDemo">Use Touch Controls</button>
         </div>
-        <div class="intro-footnote">On iPhone, motion access normally requires a tap and a secure HTTPS page. Desktop: drag quickly, use arrow keys, or press Space.</div>
+        <div class="intro-footnote">Tap the lower part of the screen to launch the marble upward. Drag quickly to imitate phone shaking. Desktop: arrows steer, Space runs a bounce demo, and R resets.</div>
       </div>
     </div>
 
@@ -623,1341 +759,1645 @@
   </div>
 
   <script>
-    (() => {
-      "use strict";
+(() => {
+  "use strict";
 
-      // ---------------------------------------------------------------------
-      // Core tunable values. These map cleanly to a future SwiftUI/Game loop.
-      // Units are CSS pixels, seconds, and normalized tilt (-1...1).
-      // ---------------------------------------------------------------------
-      const BASE = Object.freeze({
-        fixedStep: 1 / 120,
-        maxFrameTime: 1 / 20,
-        insideTiltAcceleration: 760,
-        freeTiltAcceleration: 1120,
-        insideShakeGain: 250,
-        freeShakeGain: 125,
-        insideDrag: 0.62,
-        freeDrag: 0.10,
-        tubeVerticalBounce: 0.42,
-        screenEdgeBounce: 0.62,
-        minimumCrackSpeed: 245,
-        instantBreakSpeed: 1900,
-        impactDamageScale: 0.34,
-        marbleMass: 1.0,
-        maxSpeed: 2300
+  // -----------------------------------------------------------------------
+  // VERTICAL GLASS-TUBE PHYSICS REFERENCE
+  //
+  // Internal physics uses metres, seconds, kilograms and joules.
+  // Rendering uses CSS pixels. tube.pixelsPerMeter converts between them.
+  // This makes the constants straightforward to reproduce in Swift.
+  // -----------------------------------------------------------------------
+  const STANDARD_GRAVITY = 9.80665;
+
+  const BASE = Object.freeze({
+    fixedStep: 1 / 180,
+    maxFrameTime: 1 / 15,
+    maxMicroSteps: 14,
+    maximumSpeedMps: 18,
+    glassWallMeters: 0.004,
+    restSpeedMps: 0.13,
+    minimumImpactSpeedMps: 0.22,
+    crackEnergyJ: 0.075,
+    breakEnergyJ: 0.34,
+    instantBreakEnergyJ: 0.72,
+    damageScale: 0.42,
+    sideRestitutionFactor: 0.70,
+    openingTransmission: 0.90,
+    sensorClampMps2: 55,
+    manualClampMps2: 60
+  });
+
+  const canvas = document.getElementById("world");
+  const ctx = canvas.getContext("2d", { alpha: false, desynchronized: true });
+
+  const ui = {
+    intro: document.getElementById("intro"),
+    introMotion: document.getElementById("introMotion"),
+    introDemo: document.getElementById("introDemo"),
+    motionButton: document.getElementById("motionButton"),
+    calibrateButton: document.getElementById("calibrateButton"),
+    resetButton: document.getElementById("resetButton"),
+    settingsButton: document.getElementById("settingsButton"),
+    settingsPanel: document.getElementById("settingsPanel"),
+    sensorLight: document.getElementById("sensorLight"),
+    sensorText: document.getElementById("sensorText"),
+    stateName: document.getElementById("stateName"),
+    stateHint: document.getElementById("stateHint"),
+    topDamageFill: document.getElementById("topDamageFill"),
+    bottomDamageFill: document.getElementById("bottomDamageFill"),
+    topDamageText: document.getElementById("topDamageText"),
+    bottomDamageText: document.getElementById("bottomDamageText"),
+
+    massRange: document.getElementById("massRange"),
+    massValue: document.getElementById("massValue"),
+    gravityRange: document.getElementById("gravityRange"),
+    gravityValue: document.getElementById("gravityValue"),
+    ballSizeRange: document.getElementById("ballSizeRange"),
+    ballSizeValue: document.getElementById("ballSizeValue"),
+    bounceRange: document.getElementById("bounceRange"),
+    bounceValue: document.getElementById("bounceValue"),
+    dragRange: document.getElementById("dragRange"),
+    dragValue: document.getElementById("dragValue"),
+    frictionRange: document.getElementById("frictionRange"),
+    frictionValue: document.getElementById("frictionValue"),
+
+    shakeRange: document.getElementById("shakeRange"),
+    shakeValue: document.getElementById("shakeValue"),
+    tapRange: document.getElementById("tapRange"),
+    tapValue: document.getElementById("tapValue"),
+    tiltRange: document.getElementById("tiltRange"),
+    tiltValue: document.getElementById("tiltValue"),
+    smoothingRange: document.getElementById("smoothingRange"),
+    smoothingValue: document.getElementById("smoothingValue"),
+    peakRange: document.getElementById("peakRange"),
+    peakValue: document.getElementById("peakValue"),
+    deadzoneRange: document.getElementById("deadzoneRange"),
+    deadzoneValue: document.getElementById("deadzoneValue"),
+
+    durabilityRange: document.getElementById("durabilityRange"),
+    durabilityValue: document.getElementById("durabilityValue"),
+    tubeLengthRange: document.getElementById("tubeLengthRange"),
+    tubeLengthValue: document.getElementById("tubeLengthValue"),
+    tubeDiameterRange: document.getElementById("tubeDiameterRange"),
+    tubeDiameterValue: document.getElementById("tubeDiameterValue"),
+    edgeBounceRange: document.getElementById("edgeBounceRange"),
+    edgeBounceValue: document.getElementById("edgeBounceValue"),
+    timeScaleRange: document.getElementById("timeScaleRange"),
+    timeScaleValue: document.getElementById("timeScaleValue"),
+
+    kickUp: document.getElementById("kickUp"),
+    kickDown: document.getElementById("kickDown"),
+    autoShake: document.getElementById("autoShake"),
+    panelCalibrate: document.getElementById("panelCalibrate"),
+    invertYToggle: document.getElementById("invertYToggle"),
+    debugToggle: document.getElementById("debugToggle"),
+    toast: document.getElementById("toast")
+  };
+
+  const tuning = {
+    massG: 28,
+    gravityG: 1.00,
+    ballDiameterMm: 28,
+    restitution: 0.76,
+    airDrag: 0.08,
+    wallFriction: 0.10,
+    shake: 1.00,
+    tapImpulseMps: 3.20,
+    tiltSteering: 0.45,
+    sensorSmoothingS: 0.035,
+    peakCapture: 0.80,
+    sensorDeadzoneMps2: 0.10,
+    glassStrength: 1.00,
+    tubeLengthCm: 38,
+    tubeDiameterMm: 56,
+    edgeBounce: 0.62,
+    timeScale: 1.00,
+    invertVerticalSensor: false,
+    debug: false
+  };
+
+  const Phase = Object.freeze({
+    SEALED: "sealed",
+    OPEN: "open",
+    FREE: "free"
+  });
+
+  let width = 1;
+  let height = 1;
+  let dpr = 1;
+  let lastTime = performance.now();
+  let accumulator = 0;
+  let backgroundGradient = null;
+  let cameraKick = 0;
+  let toastTimer = 0;
+  let audioContext = null;
+  let autoShakeUntil = 0;
+  let autoShakePhase = 0;
+
+  const world = {
+    phase: Phase.SEALED,
+    time: 0,
+    hits: 0,
+    lastImpactEnergyJ: 0,
+    lastImpactSpeedMps: 0,
+    accelerationX: 0,
+    accelerationY: STANDARD_GRAVITY,
+    contact: "none"
+  };
+
+  const tube = {
+    cx: 0,
+    cy: 0,
+    width: 0,
+    length: 0,
+    innerWidth: 0,
+    wall: 10,
+    pixelsPerMeter: 1000,
+    x1: 0,
+    x2: 0,
+    y1: 0,
+    y2: 0,
+    topDamage: 0,
+    bottomDamage: 0,
+    topCrackLevel: 0,
+    bottomCrackLevel: 0,
+    cracks: [],
+    brokenSide: null,
+    breakEdge: [],
+    flash: 0
+  };
+
+  // Position and radius are in pixels. Velocity is in metres per second.
+  const marble = {
+    x: 0,
+    y: 0,
+    vx: 0,
+    vy: 0,
+    radius: 20,
+    rotation: 0,
+    squash: 0,
+    lastImpactTime: -1,
+    grounded: false
+  };
+
+  const input = {
+    attached: false,
+    detected: false,
+    permission: "off",
+    rawTiltX: 0,
+    rawTiltY: 0,
+    tiltX: 0,
+    tiltY: 0,
+    calibrationX: 0,
+    calibrationY: 0,
+    motionX: 0,
+    motionY: 0,
+    motionTargetX: 0,
+    motionTargetY: 0,
+    pendingVelocityX: 0,
+    pendingVelocityY: 0,
+    fallbackGravityX: 0,
+    fallbackGravityY: 0,
+    manualX: 0,
+    manualY: 0,
+    autoX: 0,
+    autoY: 0,
+    keyAccelX: 0,
+    keyAccelY: 0,
+    strength: 0,
+    lastSensorAt: 0,
+    lastMotionSampleAt: 0
+  };
+
+  const pointer = {
+    active: false,
+    id: null,
+    x: 0,
+    y: 0,
+    startX: 0,
+    startY: 0,
+    t: 0,
+    startT: 0,
+    distance: 0
+  };
+
+  const fragments = [];
+  const impactWaves = [];
+  const dust = [];
+  const pressedKeys = new Set();
+  const crackThresholds = [0.10, 0.25, 0.43, 0.64, 0.82, 0.95];
+
+  function mulberry32(seed) {
+    return function random() {
+      let t = seed += 0x6D2B79F5;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function damp(value, lambda, dt) {
+    return value * Math.exp(-lambda * dt);
+  }
+
+  function applyDeadzone(value, deadzone) {
+    const magnitude = Math.abs(value);
+    if (magnitude <= deadzone) return 0;
+    return Math.sign(value) * (magnitude - deadzone);
+  }
+
+  function roundedRectPath(context, x, y, w, h, r) {
+    const radius = Math.min(r, w / 2, h / 2);
+    context.beginPath();
+    context.moveTo(x + radius, y);
+    context.lineTo(x + w - radius, y);
+    context.quadraticCurveTo(x + w, y, x + w, y + radius);
+    context.lineTo(x + w, y + h - radius);
+    context.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+    context.lineTo(x + radius, y + h);
+    context.quadraticCurveTo(x, y + h, x, y + h - radius);
+    context.lineTo(x, y + radius);
+    context.quadraticCurveTo(x, y, x + radius, y);
+    context.closePath();
+  }
+
+  function tubeInteriorBounds() {
+    return {
+      left: tube.x1 + tube.wall + marble.radius,
+      right: tube.x2 - tube.wall - marble.radius,
+      top: tube.y1 + tube.wall + marble.radius,
+      bottom: tube.y2 - tube.wall - marble.radius
+    };
+  }
+
+  function resize() {
+    const oldWidth = width;
+    const oldHeight = height;
+    const oldX = marble.x;
+    const oldY = marble.y;
+    const oldRadius = marble.radius;
+    const hadGeometry = tube.length > 1 && oldWidth > 1 && oldHeight > 1;
+    const oldBounds = hadGeometry ? {
+      left: tube.x1 + tube.wall + oldRadius,
+      right: tube.x2 - tube.wall - oldRadius,
+      top: tube.y1 + tube.wall + oldRadius,
+      bottom: tube.y2 - tube.wall - oldRadius
+    } : null;
+
+    width = Math.max(1, window.innerWidth);
+    height = Math.max(1, window.innerHeight);
+    dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const reservedHeight = height < 650 ? 138 : 190;
+    const usableLength = Math.max(250, height - reservedHeight);
+    tube.length = clamp(Math.min(height * 0.66, width * 1.55, usableLength), 250, 680);
+    tube.cx = width / 2;
+    tube.cy = height * (height < 650 ? 0.47 : 0.46);
+    tube.pixelsPerMeter = tube.length / Math.max(0.18, tuning.tubeLengthCm / 100);
+
+    const physicalWallPx = BASE.glassWallMeters * tube.pixelsPerMeter;
+    tube.wall = clamp(physicalWallPx, 6, 14);
+    const desiredInnerWidth = (tuning.tubeDiameterMm / 1000) * tube.pixelsPerMeter;
+    tube.innerWidth = clamp(desiredInnerWidth, 42, width * 0.46);
+    tube.width = tube.innerWidth + tube.wall * 2;
+
+    tube.x1 = tube.cx - tube.width / 2;
+    tube.x2 = tube.cx + tube.width / 2;
+    tube.y1 = tube.cy - tube.length / 2;
+    tube.y2 = tube.cy + tube.length / 2;
+
+    const desiredRadius = (tuning.ballDiameterMm / 2000) * tube.pixelsPerMeter;
+    marble.radius = clamp(desiredRadius, 8, tube.innerWidth * 0.47);
+
+    if (!hadGeometry) {
+      marble.x = tube.cx;
+      marble.y = tube.cy - tube.length * 0.10;
+    } else if (world.phase === Phase.FREE) {
+      marble.x = clamp(oldX * (width / oldWidth), marble.radius, width - marble.radius);
+      marble.y = clamp(oldY * (height / oldHeight), marble.radius, height - marble.radius);
+    } else {
+      const newBounds = tubeInteriorBounds();
+      const nx = oldBounds.right > oldBounds.left
+        ? (oldX - oldBounds.left) / (oldBounds.right - oldBounds.left)
+        : 0.5;
+      const ny = oldBounds.bottom > oldBounds.top
+        ? (oldY - oldBounds.top) / (oldBounds.bottom - oldBounds.top)
+        : 0.5;
+      marble.x = lerp(newBounds.left, newBounds.right, clamp(nx, 0, 1));
+      marble.y = lerp(newBounds.top, newBounds.bottom, clamp(ny, 0, 1));
+    }
+
+    backgroundGradient = ctx.createLinearGradient(0, 0, width, height);
+    backgroundGradient.addColorStop(0, "#050b15");
+    backgroundGradient.addColorStop(0.46, "#0a1727");
+    backgroundGradient.addColorStop(1, "#06111d");
+
+    createAmbientDust();
+  }
+
+  function createAmbientDust() {
+    dust.length = 0;
+    const random = mulberry32(Math.floor(width * 17 + height * 31));
+    const count = clamp(Math.floor((width * height) / 17000), 18, 70);
+    for (let i = 0; i < count; i++) {
+      dust.push({
+        x: random() * width,
+        y: random() * height,
+        r: 0.4 + random() * 1.25,
+        a: 0.03 + random() * 0.10,
+        phase: random() * Math.PI * 2
       });
+    }
+  }
 
-      const canvas = document.getElementById("world");
-      const ctx = canvas.getContext("2d", { alpha: false, desynchronized: true });
+  function resetSimulation() {
+    world.phase = Phase.SEALED;
+    world.time = 0;
+    world.hits = 0;
+    world.lastImpactEnergyJ = 0;
+    world.lastImpactSpeedMps = 0;
+    world.contact = "none";
+    tube.topDamage = 0;
+    tube.bottomDamage = 0;
+    tube.topCrackLevel = 0;
+    tube.bottomCrackLevel = 0;
+    tube.cracks.length = 0;
+    tube.brokenSide = null;
+    tube.breakEdge.length = 0;
+    tube.flash = 0;
+    fragments.length = 0;
+    impactWaves.length = 0;
+    marble.x = tube.cx;
+    marble.y = tube.cy - tube.length * 0.10;
+    marble.vx = 0;
+    marble.vy = 0;
+    marble.rotation = 0;
+    marble.squash = 0;
+    marble.lastImpactTime = -1;
+    marble.grounded = false;
+    input.manualX = 0;
+    input.manualY = 0;
+    input.pendingVelocityX = 0;
+    input.pendingVelocityY = 0;
+    input.autoX = 0;
+    input.autoY = 0;
+    autoShakeUntil = 0;
+    updateHud();
+  }
 
-      const ui = {
-        intro: document.getElementById("intro"),
-        introMotion: document.getElementById("introMotion"),
-        introDemo: document.getElementById("introDemo"),
-        motionButton: document.getElementById("motionButton"),
-        calibrateButton: document.getElementById("calibrateButton"),
-        resetButton: document.getElementById("resetButton"),
-        settingsButton: document.getElementById("settingsButton"),
-        settingsPanel: document.getElementById("settingsPanel"),
-        sensorLight: document.getElementById("sensorLight"),
-        sensorText: document.getElementById("sensorText"),
-        stateName: document.getElementById("stateName"),
-        stateHint: document.getElementById("stateHint"),
-        leftDamageFill: document.getElementById("leftDamageFill"),
-        rightDamageFill: document.getElementById("rightDamageFill"),
-        leftDamageText: document.getElementById("leftDamageText"),
-        rightDamageText: document.getElementById("rightDamageText"),
-        shakeRange: document.getElementById("shakeRange"),
-        tiltRange: document.getElementById("tiltRange"),
-        durabilityRange: document.getElementById("durabilityRange"),
-        bounceRange: document.getElementById("bounceRange"),
-        shakeValue: document.getElementById("shakeValue"),
-        tiltValue: document.getElementById("tiltValue"),
-        durabilityValue: document.getElementById("durabilityValue"),
-        bounceValue: document.getElementById("bounceValue"),
-        kickLeft: document.getElementById("kickLeft"),
-        kickRight: document.getElementById("kickRight"),
-        autoShake: document.getElementById("autoShake"),
-        panelCalibrate: document.getElementById("panelCalibrate"),
-        debugToggle: document.getElementById("debugToggle"),
-        toast: document.getElementById("toast")
-      };
+  function screenAngle() {
+    const angle = window.screen?.orientation?.angle;
+    if (Number.isFinite(angle)) return angle;
+    const legacy = Number(window.orientation);
+    return Number.isFinite(legacy) ? legacy : 0;
+  }
 
-      const tuning = {
-        shake: 1,
-        tilt: 1,
-        durability: 1,
-        bounce: 0.70,
-        debug: false
-      };
+  function rotateToScreen(x, y) {
+    const radians = screenAngle() * Math.PI / 180;
+    const c = Math.cos(radians);
+    const s = Math.sin(radians);
+    return {
+      x: x * c - y * s,
+      y: x * s + y * c
+    };
+  }
 
-      const Phase = Object.freeze({
-        SEALED: "sealed",
-        OPEN: "open",
-        FREE: "free"
+  function onOrientation(event) {
+    if (!Number.isFinite(event.beta) || !Number.isFinite(event.gamma)) return;
+
+    const beta = event.beta * Math.PI / 180;
+    const gamma = event.gamma * Math.PI / 180;
+    const portraitX = Math.sin(gamma);
+    const portraitY = Math.sin(beta) * Math.cos(gamma);
+    const mapped = rotateToScreen(portraitX, portraitY);
+
+    input.rawTiltX = clamp(mapped.x, -1.15, 1.15);
+    input.rawTiltY = clamp(mapped.y, -1.15, 1.15);
+    markSensorDetected();
+  }
+
+  function onMotion(event) {
+    let ax = null;
+    let ay = null;
+
+    if (event.acceleration &&
+        Number.isFinite(event.acceleration.x) &&
+        Number.isFinite(event.acceleration.y)) {
+      ax = event.acceleration.x;
+      ay = -event.acceleration.y; // Device +Y to canvas +Y-down convention.
+    } else if (event.accelerationIncludingGravity &&
+               Number.isFinite(event.accelerationIncludingGravity.x) &&
+               Number.isFinite(event.accelerationIncludingGravity.y)) {
+      const includingX = event.accelerationIncludingGravity.x;
+      const includingY = -event.accelerationIncludingGravity.y;
+      input.fallbackGravityX = lerp(input.fallbackGravityX, includingX, 0.06);
+      input.fallbackGravityY = lerp(input.fallbackGravityY, includingY, 0.06);
+      ax = includingX - input.fallbackGravityX;
+      ay = includingY - input.fallbackGravityY;
+    }
+
+    if (ax !== null && ay !== null) {
+      const mapped = rotateToScreen(ax, ay);
+      const now = performance.now();
+      const sampleDt = input.lastMotionSampleAt > 0
+        ? clamp((now - input.lastMotionSampleAt) / 1000, 1 / 240, 1 / 20)
+        : 1 / 60;
+
+      const rawX = clamp(mapped.x, -BASE.sensorClampMps2, BASE.sensorClampMps2);
+      const rawY = clamp(mapped.y, -BASE.sensorClampMps2, BASE.sensorClampMps2);
+      const deadzonedX = applyDeadzone(rawX, tuning.sensorDeadzoneMps2);
+      const deadzonedY = applyDeadzone(rawY, tuning.sensorDeadzoneMps2);
+      const adjustedRawY = tuning.invertVerticalSensor ? -deadzonedY : deadzonedY;
+      const adjustedFilteredY = tuning.invertVerticalSensor ? -input.motionY : input.motionY;
+
+      // Preserve the high-frequency part that a low-pass filter would remove.
+      // Integrating this residual as Δv keeps sharp phone taps physically
+      // effective while the regular smoothed acceleration remains stable.
+      const residualX = deadzonedX - input.motionX;
+      const residualY = adjustedRawY - adjustedFilteredY;
+      input.pendingVelocityX = clamp(
+        input.pendingVelocityX - residualX * sampleDt * tuning.shake * tuning.peakCapture,
+        -3.5,
+        3.5
+      );
+      input.pendingVelocityY = clamp(
+        input.pendingVelocityY - residualY * sampleDt * tuning.shake * tuning.peakCapture,
+        -3.5,
+        3.5
+      );
+
+      input.motionTargetX = rawX;
+      input.motionTargetY = rawY;
+      input.strength = Math.hypot(rawX, rawY);
+      input.lastMotionSampleAt = now;
+      markSensorDetected();
+    }
+  }
+
+  function markSensorDetected() {
+    input.detected = true;
+    input.lastSensorAt = performance.now();
+    ui.sensorLight.classList.add("live");
+    ui.sensorText.textContent = "Motion live · shake vertically · gravity remains downward";
+  }
+
+  function attachSensorListeners() {
+    if (input.attached) return;
+    window.addEventListener("devicemotion", onMotion, { passive: true });
+    window.addEventListener("deviceorientation", onOrientation, { passive: true });
+    input.attached = true;
+  }
+
+  async function enableMotion() {
+    ensureAudio();
+    ui.intro.classList.add("hidden");
+
+    if (input.attached && input.permission === "granted") {
+      showToast("Motion is already enabled.");
+      return;
+    }
+
+    try {
+      const motionRequest = (typeof DeviceMotionEvent !== "undefined" &&
+        typeof DeviceMotionEvent.requestPermission === "function")
+        ? DeviceMotionEvent.requestPermission()
+        : Promise.resolve("granted");
+
+      const orientationRequest = (typeof DeviceOrientationEvent !== "undefined" &&
+        typeof DeviceOrientationEvent.requestPermission === "function")
+        ? DeviceOrientationEvent.requestPermission()
+        : Promise.resolve("granted");
+
+      const [motionResult, orientationResult] = await Promise.all([motionRequest, orientationRequest]);
+      const granted = motionResult === "granted" || orientationResult === "granted";
+      if (!granted) throw new Error("Motion permission was not granted.");
+
+      input.permission = "granted";
+      attachSensorListeners();
+      ui.motionButton.textContent = "Motion On";
+      ui.sensorText.textContent = "Waiting for motion data…";
+      showToast(window.isSecureContext
+        ? "Motion enabled. Tap or shake the phone vertically."
+        : "Permission granted, but motion sensors may require an HTTPS page.");
+    } catch (error) {
+      input.permission = "denied";
+      ui.motionButton.textContent = "Motion Blocked";
+      ui.sensorText.textContent = "Motion unavailable · use touch, arrows, or demo bounce";
+      showToast(error?.message || "Motion permission could not be enabled.");
+    }
+  }
+
+  function calibrateTilt() {
+    input.calibrationX = input.rawTiltX;
+    input.calibrationY = input.rawTiltY;
+    showToast("Current phone angle set as neutral.");
+  }
+
+  function ensureAudio() {
+    if (audioContext) {
+      if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
+      return;
+    }
+    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtor) return;
+    try {
+      audioContext = new AudioCtor();
+    } catch (_) {
+      audioContext = null;
+    }
+  }
+
+  function playImpactSound(speedMps, breaking = false) {
+    if (!audioContext) return;
+    const now = audioContext.currentTime;
+    const severity = clamp(speedMps / 5.0, 0.06, 1.35);
+
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.type = breaking ? "sawtooth" : "triangle";
+    oscillator.frequency.setValueAtTime(breaking ? 980 : 390 + severity * 680, now);
+    oscillator.frequency.exponentialRampToValueAtTime(breaking ? 130 : 205, now + (breaking ? 0.22 : 0.075));
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.028 + severity * 0.065, now + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + (breaking ? 0.25 : 0.10));
+    oscillator.connect(gain).connect(audioContext.destination);
+    oscillator.start(now);
+    oscillator.stop(now + (breaking ? 0.27 : 0.12));
+
+    if (breaking) {
+      const bufferLength = Math.floor(audioContext.sampleRate * 0.24);
+      const buffer = audioContext.createBuffer(1, bufferLength, audioContext.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferLength; i++) {
+        const envelope = 1 - i / bufferLength;
+        data[i] = (Math.random() * 2 - 1) * envelope * envelope;
+      }
+      const source = audioContext.createBufferSource();
+      const noiseGain = audioContext.createGain();
+      const filter = audioContext.createBiquadFilter();
+      filter.type = "highpass";
+      filter.frequency.value = 1200;
+      noiseGain.gain.setValueAtTime(0.11, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
+      source.buffer = buffer;
+      source.connect(filter).connect(noiseGain).connect(audioContext.destination);
+      source.start(now);
+    }
+  }
+
+  function showToast(message) {
+    ui.toast.textContent = message;
+    ui.toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => ui.toast.classList.remove("show"), 2500);
+  }
+
+  function effectiveTilt() {
+    return {
+      x: clamp(input.tiltX - input.calibrationX, -1.20, 1.20),
+      y: clamp(input.tiltY - input.calibrationY, -1.20, 1.20)
+    };
+  }
+
+  function addCrack(side, level, impactX = tube.cx) {
+    const seed = (world.hits + 1) * 7919 + level * 104729 + (side === "top" ? 17 : 53);
+    const random = mulberry32(seed);
+    const inward = side === "top" ? 1 : -1;
+    const originV = side === "top" ? 0.025 + random() * 0.035 : 0.975 - random() * 0.035;
+    const impactU = clamp((impactX - tube.x1) / tube.width, 0.12, 0.88);
+    const originU = clamp(lerp(impactU, 0.24 + random() * 0.52, 0.32), 0.08, 0.92);
+    const branches = 2 + Math.floor(level / 2);
+    const paths = [];
+
+    for (let branch = 0; branch < branches; branch++) {
+      const points = [{ u: originU, v: originV }];
+      const steps = 3 + Math.floor(random() * 4);
+      const totalV = 0.045 + random() * 0.060 + level * 0.010;
+      let u = originU;
+      let v = originV;
+      let horizontal = (random() - 0.5) * (0.16 + level * 0.024);
+      if (branch % 2 === 0) horizontal += (branch % 4 === 0 ? -1 : 1) * 0.07;
+
+      for (let step = 1; step <= steps; step++) {
+        v += inward * (totalV / steps) * (0.70 + random() * 0.65);
+        u += horizontal / steps + (random() - 0.5) * 0.050;
+        points.push({ u: clamp(u, 0.02, 0.98), v: clamp(v, 0.008, 0.992) });
+      }
+      paths.push(points);
+
+      if (branch < 1 + Math.floor(level / 3) && points.length > 3) {
+        const splitIndex = 1 + Math.floor(random() * (points.length - 2));
+        const split = points[splitIndex];
+        const branchPath = [{ u: split.u, v: split.v }];
+        let su = split.u;
+        let sv = split.v;
+        const direction = random() > 0.5 ? 1 : -1;
+        for (let s = 0; s < 2 + Math.floor(random() * 3); s++) {
+          sv += inward * (0.010 + random() * 0.014);
+          su += direction * (0.030 + random() * 0.030);
+          branchPath.push({ u: clamp(su, 0.02, 0.98), v: clamp(sv, 0.008, 0.992) });
+        }
+        paths.push(branchPath);
+      }
+    }
+
+    tube.cracks.push({ side, paths, intensity: 0.54 + level * 0.065 });
+  }
+
+  function makeBreakEdge(side) {
+    const random = mulberry32(Math.floor(world.time * 100000) + (side === "top" ? 3301 : 7717));
+    const points = [];
+    const baseV = side === "top" ? 0.105 : 0.895;
+    for (let i = 0; i <= 10; i++) {
+      const u = i / 10;
+      const jag = (random() - 0.5) * 0.075 + Math.sin(i * 2.3) * 0.012;
+      points.push({ u, v: clamp(baseV + jag, 0.045, 0.955) });
+    }
+    tube.breakEdge = points;
+  }
+
+  function spawnFragments(side, speedMps) {
+    const random = mulberry32(Math.floor(world.time * 10000) + (side === "top" ? 2039 : 4051));
+    const outwardY = side === "top" ? -1 : 1;
+    const originY = side === "top" ? tube.y1 + tube.width * 0.24 : tube.y2 - tube.width * 0.24;
+    const count = 30 + Math.floor(clamp(speedMps * 2.4, 0, 16));
+    const speedPx = speedMps * tube.pixelsPerMeter;
+
+    for (let i = 0; i < count; i++) {
+      const spread = (random() - 0.5) * 1.15;
+      const impulse = 110 + random() * 440 + speedPx * (0.06 + random() * 0.07);
+      const life = 0.75 + random() * 1.15;
+      fragments.push({
+        x: tube.cx + (random() - 0.5) * tube.innerWidth * 0.92,
+        y: originY + (random() - 0.5) * tube.wall * 3,
+        vx: Math.sin(spread) * impulse + (random() - 0.5) * 90,
+        vy: outwardY * Math.cos(spread) * impulse + (random() - 0.5) * 130,
+        angle: random() * Math.PI * 2,
+        spin: (random() - 0.5) * 14,
+        size: 3 + random() * 10,
+        life,
+        maxLife: life,
+        shape: random()
       });
+    }
+  }
 
-      let width = 1;
-      let height = 1;
-      let dpr = 1;
-      let lastTime = performance.now();
-      let accumulator = 0;
-      let backgroundGradient = null;
-      let cameraKick = 0;
-      let toastTimer = 0;
-      let audioContext = null;
-      let autoShakeUntil = 0;
-      let autoShakePhase = 0;
+  function breakGlass(side, speedMps) {
+    if (tube.brokenSide) return;
+    tube.brokenSide = side;
+    world.phase = Phase.OPEN;
+    if (side === "top") tube.topDamage = 1;
+    else tube.bottomDamage = 1;
+    makeBreakEdge(side);
+    spawnFragments(side, speedMps);
+    tube.flash = 1;
+    cameraKick = Math.max(cameraKick, 8);
+    playImpactSound(speedMps, true);
+    if (navigator.vibrate && navigator.userActivation?.hasBeenActive) navigator.vibrate([18, 24, 34]);
+  }
 
-      const world = {
-        phase: Phase.SEALED,
-        time: 0,
-        hits: 0
-      };
+  function registerCapImpact(side, speedMps, impactX) {
+    if (speedMps < BASE.minimumImpactSpeedMps) return false;
 
-      const tube = {
-        cx: 0,
-        cy: 0,
-        length: 0,
-        height: 0,
-        wall: 11,
-        x1: 0,
-        x2: 0,
-        y1: 0,
-        y2: 0,
-        leftDamage: 0,
-        rightDamage: 0,
-        leftCrackLevel: 0,
-        rightCrackLevel: 0,
-        cracks: [],
-        brokenSide: null,
-        breakEdge: [],
-        flash: 0
-      };
+    const now = world.time;
+    if (now - marble.lastImpactTime < 0.022) return false;
+    marble.lastImpactTime = now;
+    world.hits += 1;
 
-      const marble = {
-        x: 0,
-        y: 0,
-        vx: 0,
-        vy: 0,
-        radius: 22,
-        rotation: 0,
-        squash: 0,
-        lastImpactTime: -1
-      };
+    const massKg = tuning.massG / 1000;
+    const energyJ = 0.5 * massKg * speedMps * speedMps;
+    world.lastImpactEnergyJ = energyJ;
+    world.lastImpactSpeedMps = speedMps;
 
-      const input = {
-        attached: false,
-        detected: false,
-        permission: "off",
-        rawTiltX: 0,
-        rawTiltY: 0,
-        tiltX: 0,
-        tiltY: 0,
-        calibrationX: 0,
-        calibrationY: 0,
-        motionX: 0,
-        motionY: 0,
-        motionTargetX: 0,
-        motionTargetY: 0,
-        fallbackGravityX: 0,
-        fallbackGravityY: 0,
-        manualX: 0,
-        manualY: 0,
-        autoX: 0,
-        keyX: 0,
-        keyY: 0,
-        strength: 0,
-        lastSensorAt: 0
-      };
+    const impactY = side === "top"
+      ? tube.y1 + tube.wall + marble.radius
+      : tube.y2 - tube.wall - marble.radius;
 
-      const pointer = {
-        active: false,
-        id: null,
-        x: 0,
-        y: 0,
-        t: 0
-      };
+    impactWaves.push({
+      x: clamp(impactX, tube.x1 + tube.wall, tube.x2 - tube.wall),
+      y: impactY,
+      age: 0,
+      life: 0.34,
+      radius: 8,
+      maxRadius: 24 + clamp(speedMps * 8.5, 8, 42)
+    });
 
-      const fragments = [];
-      const impactWaves = [];
-      const dust = [];
-      const pressedKeys = new Set();
+    marble.squash = clamp(speedMps / 8.0, 0.06, 0.26);
+    cameraKick = Math.max(cameraKick, clamp(speedMps * 1.15, 1.0, 7.0));
+    playImpactSound(speedMps, false);
+    if (navigator.vibrate && navigator.userActivation?.hasBeenActive && speedMps > 2.0) navigator.vibrate(speedMps > 4.0 ? 18 : 8);
 
-      const crackThresholds = [0.10, 0.25, 0.43, 0.64, 0.82, 0.95];
+    const crackEnergy = BASE.crackEnergyJ * tuning.glassStrength;
+    const breakEnergy = BASE.breakEnergyJ * tuning.glassStrength;
+    const instantEnergy = BASE.instantBreakEnergyJ * tuning.glassStrength;
+    if (energyJ < crackEnergy) return false;
 
-      // Deterministic-ish random helper for stable-looking cracks.
-      function mulberry32(seed) {
-        return function random() {
-          let t = seed += 0x6D2B79F5;
-          t = Math.imul(t ^ (t >>> 15), t | 1);
-          t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-        };
+    const normalized = clamp((energyJ - crackEnergy) / Math.max(0.001, breakEnergy - crackEnergy), 0, 2.25);
+    const gain = Math.pow(normalized, 1.22) * BASE.damageScale;
+    const damageKey = side === "top" ? "topDamage" : "bottomDamage";
+    const levelKey = side === "top" ? "topCrackLevel" : "bottomCrackLevel";
+    tube[damageKey] = clamp(tube[damageKey] + gain, 0, 1.2);
+    tube.flash = Math.max(tube.flash, clamp(0.12 + normalized * 0.62, 0.12, 0.90));
+
+    while (tube[levelKey] < crackThresholds.length &&
+           tube[damageKey] >= crackThresholds[tube[levelKey]]) {
+      addCrack(side, tube[levelKey] + 1, impactX);
+      tube[levelKey] += 1;
+    }
+
+    if (tube[damageKey] >= 1 || energyJ >= instantEnergy) {
+      breakGlass(side, speedMps);
+      return true;
+    }
+
+    return false;
+  }
+
+  function updateInput(dt) {
+    input.tiltX = lerp(input.tiltX, input.rawTiltX, 1 - Math.exp(-10 * dt));
+    input.tiltY = lerp(input.tiltY, input.rawTiltY, 1 - Math.exp(-10 * dt));
+
+    const now = performance.now();
+    const sampleIsFresh = now - input.lastMotionSampleAt < 135;
+    const targetX = sampleIsFresh
+      ? applyDeadzone(input.motionTargetX, tuning.sensorDeadzoneMps2)
+      : 0;
+    const targetY = sampleIsFresh
+      ? applyDeadzone(input.motionTargetY, tuning.sensorDeadzoneMps2)
+      : 0;
+    const smoothing = Math.max(0.006, tuning.sensorSmoothingS);
+    const sensorAlpha = 1 - Math.exp(-dt / smoothing);
+    input.motionX = lerp(input.motionX, targetX, sensorAlpha);
+    input.motionY = lerp(input.motionY, targetY, sensorAlpha);
+
+    input.manualX = damp(input.manualX, 10.5, dt);
+    input.manualY = damp(input.manualY, 10.5, dt);
+
+    input.keyAccelX = 0;
+    input.keyAccelY = 0;
+    if (pressedKeys.has("ArrowLeft") || pressedKeys.has("KeyA")) input.keyAccelX -= STANDARD_GRAVITY * 0.85;
+    if (pressedKeys.has("ArrowRight") || pressedKeys.has("KeyD")) input.keyAccelX += STANDARD_GRAVITY * 0.85;
+    if (pressedKeys.has("ArrowUp") || pressedKeys.has("KeyW")) input.keyAccelY -= STANDARD_GRAVITY * 1.45;
+    if (pressedKeys.has("ArrowDown") || pressedKeys.has("KeyS")) input.keyAccelY += STANDARD_GRAVITY * 1.45;
+
+    if (now < autoShakeUntil) {
+      autoShakePhase += dt * Math.PI * 2 * 3.15;
+      input.autoY = -Math.sin(autoShakePhase) * 23.5 - Math.sin(autoShakePhase * 2.12) * 3.8;
+      input.autoX = Math.sin(autoShakePhase * 0.51) * 1.3;
+    } else {
+      input.autoX = damp(input.autoX, 14, dt);
+      input.autoY = damp(input.autoY, 14, dt);
+    }
+
+    if (input.detected && now - input.lastSensorAt > 1600) {
+      ui.sensorLight.classList.remove("live");
+      ui.sensorText.textContent = "Motion paused · move the phone or use touch controls";
+    }
+  }
+
+  function currentAcceleration() {
+    const tilt = effectiveTilt();
+    const sensorY = tuning.invertVerticalSensor ? -input.motionY : input.motionY;
+
+    // The tube is fixed to the phone. Device acceleration therefore creates
+    // an equal and opposite pseudo-acceleration on the marble.
+    const ax = tilt.x * STANDARD_GRAVITY * tuning.tiltSteering
+             - input.motionX * tuning.shake
+             + input.manualX
+             + input.autoX
+             + input.keyAccelX;
+
+    // Gravity is deliberately always screen-down. Vertical phone motion is
+    // added as the opposite inertial acceleration, allowing a bottom tap to
+    // launch the marble upward before gravity pulls it back down.
+    const ay = STANDARD_GRAVITY * tuning.gravityG
+             - sensorY * tuning.shake
+             + input.manualY
+             + input.autoY
+             + input.keyAccelY;
+
+    world.accelerationX = ax;
+    world.accelerationY = ay;
+    return { ax, ay };
+  }
+
+  function effectiveRestitution(speedMps, baseRestitution = tuning.restitution) {
+    if (speedMps < BASE.restSpeedMps) return 0;
+    const speedFactor = clamp(0.76 + speedMps * 0.055, 0.76, 1.0);
+    return clamp(baseRestitution * speedFactor, 0, 0.97);
+  }
+
+  function collisionSubsteps(dt, ax, ay) {
+    const speedPx = Math.hypot(marble.vx, marble.vy) * tube.pixelsPerMeter;
+    const accelPx = Math.hypot(ax, ay) * tube.pixelsPerMeter;
+    const predicted = speedPx * dt + 0.5 * accelPx * dt * dt;
+    const stepDistance = Math.max(3, marble.radius * 0.34);
+    return clamp(Math.ceil(predicted / stepDistance), 1, BASE.maxMicroSteps);
+  }
+
+  function resolveTubeSideWalls() {
+    const bounds = tubeInteriorBounds();
+    const verticallyOverlapping = marble.y + marble.radius > tube.y1 && marble.y - marble.radius < tube.y2;
+    if (!verticallyOverlapping) return;
+
+    if (marble.x < bounds.left) {
+      const speed = Math.max(0, -marble.vx);
+      marble.x = bounds.left;
+      if (speed > 0) {
+        const e = effectiveRestitution(speed, tuning.restitution * BASE.sideRestitutionFactor);
+        marble.vx = speed * e;
+        marble.vy *= Math.max(0, 1 - tuning.wallFriction);
+        marble.squash = Math.max(marble.squash, clamp(speed / 9, 0.025, 0.13));
       }
-
-      function clamp(value, min, max) {
-        return Math.max(min, Math.min(max, value));
+      world.contact = "left wall";
+    } else if (marble.x > bounds.right) {
+      const speed = Math.max(0, marble.vx);
+      marble.x = bounds.right;
+      if (speed > 0) {
+        const e = effectiveRestitution(speed, tuning.restitution * BASE.sideRestitutionFactor);
+        marble.vx = -speed * e;
+        marble.vy *= Math.max(0, 1 - tuning.wallFriction);
+        marble.squash = Math.max(marble.squash, clamp(speed / 9, 0.025, 0.13));
       }
+      world.contact = "right wall";
+    }
+  }
 
-      function lerp(a, b, t) {
-        return a + (b - a) * t;
+  function resolveTubeCaps() {
+    const bounds = tubeInteriorBounds();
+
+    if (tube.brokenSide !== "top" && marble.y < bounds.top) {
+      const speed = Math.max(0, -marble.vy);
+      const broke = speed > 0 ? registerCapImpact("top", speed, marble.x) : false;
+      if (broke) {
+        marble.y = bounds.top - 1;
+        marble.vy = -speed * BASE.openingTransmission;
+      } else {
+        marble.y = bounds.top;
+        const e = effectiveRestitution(speed);
+        marble.vy = speed > BASE.restSpeedMps ? speed * e : 0;
+        marble.vx *= Math.max(0, 1 - tuning.wallFriction);
+        world.contact = "top cap";
       }
+    }
 
-      function damp(value, lambda, dt) {
-        return value * Math.exp(-lambda * dt);
-      }
-
-      function roundedRectPath(context, x, y, w, h, r) {
-        const radius = Math.min(r, w / 2, h / 2);
-        context.beginPath();
-        context.moveTo(x + radius, y);
-        context.lineTo(x + w - radius, y);
-        context.quadraticCurveTo(x + w, y, x + w, y + radius);
-        context.lineTo(x + w, y + h - radius);
-        context.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-        context.lineTo(x + radius, y + h);
-        context.quadraticCurveTo(x, y + h, x, y + h - radius);
-        context.lineTo(x, y + radius);
-        context.quadraticCurveTo(x, y, x + radius, y);
-        context.closePath();
-      }
-
-      function resize() {
-        const oldWidth = width;
-        const oldHeight = height;
-        const oldX = marble.x;
-        const oldY = marble.y;
-
-        width = Math.max(1, window.innerWidth);
-        height = Math.max(1, window.innerHeight);
-        dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-
-        canvas.width = Math.round(width * dpr);
-        canvas.height = Math.round(height * dpr);
-        canvas.style.width = `${width}px`;
-        canvas.style.height = `${height}px`;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-        tube.length = Math.min(width * 0.82, 690);
-        tube.height = clamp(width * 0.235, 88, 132);
-        tube.wall = clamp(tube.height * 0.095, 8, 12);
-        tube.cx = width / 2;
-        tube.cy = height * (height < 650 ? 0.46 : 0.45);
-        tube.x1 = tube.cx - tube.length / 2;
-        tube.x2 = tube.cx + tube.length / 2;
-        tube.y1 = tube.cy - tube.height / 2;
-        tube.y2 = tube.cy + tube.height / 2;
-
-        marble.radius = clamp(width * 0.055, 18, 28);
-
-        if (oldWidth <= 1 || oldHeight <= 1) {
-          marble.x = tube.cx;
-          marble.y = tube.cy;
-        } else if (world.phase === Phase.FREE) {
-          marble.x = clamp(oldX * (width / oldWidth), marble.radius, width - marble.radius);
-          marble.y = clamp(oldY * (height / oldHeight), marble.radius, height - marble.radius);
+    if (tube.brokenSide !== "bottom" && marble.y > bounds.bottom) {
+      const speed = Math.max(0, marble.vy);
+      const broke = speed > 0 ? registerCapImpact("bottom", speed, marble.x) : false;
+      if (broke) {
+        marble.y = bounds.bottom + 1;
+        marble.vy = speed * BASE.openingTransmission;
+      } else {
+        marble.y = bounds.bottom;
+        const e = effectiveRestitution(speed);
+        if (speed > BASE.restSpeedMps) {
+          marble.vy = -speed * e;
         } else {
-          const nx = (oldX - (oldWidth / 2)) / Math.max(1, oldWidth);
-          marble.x = tube.cx + nx * width;
-          marble.y = clamp(tube.cy + (oldY - oldHeight * 0.45), tube.y1 + tube.wall + marble.radius, tube.y2 - tube.wall - marble.radius);
+          marble.vy = 0;
+          marble.grounded = true;
         }
-
-        backgroundGradient = ctx.createLinearGradient(0, 0, width, height);
-        backgroundGradient.addColorStop(0, "#050b15");
-        backgroundGradient.addColorStop(0.46, "#0a1727");
-        backgroundGradient.addColorStop(1, "#06111d");
-
-        createAmbientDust();
+        marble.vx *= Math.max(0, 1 - tuning.wallFriction);
+        world.contact = "bottom cap";
       }
+    }
+  }
 
-      function createAmbientDust() {
-        dust.length = 0;
-        const random = mulberry32(Math.floor(width * 17 + height * 31));
-        const count = clamp(Math.floor((width * height) / 17000), 18, 70);
-        for (let i = 0; i < count; i++) {
-          dust.push({
-            x: random() * width,
-            y: random() * height,
-            r: 0.4 + random() * 1.25,
-            a: 0.03 + random() * 0.10,
-            phase: random() * Math.PI * 2
-          });
-        }
-      }
+  function checkEscape() {
+    if (world.phase !== Phase.OPEN) return;
+    const escapedTop = tube.brokenSide === "top" && marble.y + marble.radius < tube.y1 + tube.wall * 0.35;
+    const escapedBottom = tube.brokenSide === "bottom" && marble.y - marble.radius > tube.y2 - tube.wall * 0.35;
 
-      function resetSimulation() {
-        world.phase = Phase.SEALED;
-        world.time = 0;
-        world.hits = 0;
-        tube.leftDamage = 0;
-        tube.rightDamage = 0;
-        tube.leftCrackLevel = 0;
-        tube.rightCrackLevel = 0;
-        tube.cracks.length = 0;
-        tube.brokenSide = null;
-        tube.breakEdge.length = 0;
-        tube.flash = 0;
-        fragments.length = 0;
-        impactWaves.length = 0;
-        marble.x = tube.cx;
-        marble.y = tube.cy;
-        marble.vx = 0;
+    if (escapedTop || escapedBottom) {
+      world.phase = Phase.FREE;
+      marble.vx *= 0.98;
+      marble.vy *= 0.98;
+      showToast("Marble escaped. Gravity stays downward; tilt steers sideways and shaking can bounce it.");
+    }
+  }
+
+  function simulateInside(dt, ax, ay) {
+    const steps = collisionSubsteps(dt, ax, ay);
+    const h = dt / steps;
+
+    for (let i = 0; i < steps; i++) {
+      marble.vx += ax * h;
+      marble.vy += ay * h;
+      const dragFactor = Math.exp(-tuning.airDrag * h);
+      marble.vx *= dragFactor;
+      marble.vy *= dragFactor;
+      marble.vx = clamp(marble.vx, -BASE.maximumSpeedMps, BASE.maximumSpeedMps);
+      marble.vy = clamp(marble.vy, -BASE.maximumSpeedMps, BASE.maximumSpeedMps);
+
+      marble.x += marble.vx * tube.pixelsPerMeter * h;
+      marble.y += marble.vy * tube.pixelsPerMeter * h;
+
+      resolveTubeSideWalls();
+      resolveTubeCaps();
+      checkEscape();
+      if (world.phase === Phase.FREE) break;
+
+      const angularSpeed = Math.hypot(marble.vx, marble.vy) * tube.pixelsPerMeter / Math.max(1, marble.radius);
+      marble.rotation += angularSpeed * h * Math.sign(marble.vx + marble.vy * 0.18 || 1);
+    }
+  }
+
+  function resolveScreenEdges() {
+    const r = marble.radius;
+    const e = tuning.edgeBounce;
+
+    if (marble.x < r) {
+      const speed = Math.max(0, -marble.vx);
+      marble.x = r;
+      marble.vx = speed > BASE.restSpeedMps ? speed * effectiveRestitution(speed, e) : 0;
+      marble.vy *= Math.max(0, 1 - tuning.wallFriction * 0.45);
+      world.contact = "screen left";
+    } else if (marble.x > width - r) {
+      const speed = Math.max(0, marble.vx);
+      marble.x = width - r;
+      marble.vx = speed > BASE.restSpeedMps ? -speed * effectiveRestitution(speed, e) : 0;
+      marble.vy *= Math.max(0, 1 - tuning.wallFriction * 0.45);
+      world.contact = "screen right";
+    }
+
+    if (marble.y < r) {
+      const speed = Math.max(0, -marble.vy);
+      marble.y = r;
+      marble.vy = speed > BASE.restSpeedMps ? speed * effectiveRestitution(speed, e) : 0;
+      marble.vx *= Math.max(0, 1 - tuning.wallFriction * 0.55);
+      world.contact = "screen top";
+    } else if (marble.y > height - r) {
+      const speed = Math.max(0, marble.vy);
+      marble.y = height - r;
+      if (speed > BASE.restSpeedMps) {
+        marble.vy = -speed * effectiveRestitution(speed, e);
+      } else {
         marble.vy = 0;
-        marble.rotation = 0;
-        marble.squash = 0;
-        input.manualX = 0;
-        input.manualY = 0;
-        input.autoX = 0;
-        autoShakeUntil = 0;
-        updateHud();
+        marble.grounded = true;
       }
+      marble.vx *= Math.max(0, 1 - tuning.wallFriction * 0.65);
+      world.contact = "screen floor";
+    }
+  }
 
-      function screenAngle() {
-        const angle = window.screen?.orientation?.angle;
-        if (Number.isFinite(angle)) return angle;
-        const legacy = Number(window.orientation);
-        return Number.isFinite(legacy) ? legacy : 0;
+  function simulateFree(dt, ax, ay) {
+    const steps = collisionSubsteps(dt, ax, ay);
+    const h = dt / steps;
+
+    for (let i = 0; i < steps; i++) {
+      marble.vx += ax * h;
+      marble.vy += ay * h;
+      const dragFactor = Math.exp(-tuning.airDrag * h);
+      marble.vx *= dragFactor;
+      marble.vy *= dragFactor;
+      marble.vx = clamp(marble.vx, -BASE.maximumSpeedMps, BASE.maximumSpeedMps);
+      marble.vy = clamp(marble.vy, -BASE.maximumSpeedMps, BASE.maximumSpeedMps);
+
+      marble.x += marble.vx * tube.pixelsPerMeter * h;
+      marble.y += marble.vy * tube.pixelsPerMeter * h;
+      resolveScreenEdges();
+
+      const angularSpeed = Math.hypot(marble.vx, marble.vy) * tube.pixelsPerMeter / Math.max(1, marble.radius);
+      marble.rotation += angularSpeed * h * Math.sign(marble.vx + marble.vy * 0.18 || 1);
+    }
+  }
+
+  function updateParticles(dt) {
+    const accelPxX = world.accelerationX * tube.pixelsPerMeter;
+    const accelPxY = world.accelerationY * tube.pixelsPerMeter;
+
+    for (let i = fragments.length - 1; i >= 0; i--) {
+      const f = fragments[i];
+      f.life -= dt;
+      if (f.life <= 0) {
+        fragments.splice(i, 1);
+        continue;
       }
-
-      function rotateToScreen(x, y) {
-        const radians = screenAngle() * Math.PI / 180;
-        const c = Math.cos(radians);
-        const s = Math.sin(radians);
-        return {
-          x: x * c - y * s,
-          y: x * s + y * c
-        };
-      }
-
-      function onOrientation(event) {
-        if (!Number.isFinite(event.beta) || !Number.isFinite(event.gamma)) return;
-
-        // Project gravity onto the screen plane, then rotate for the current
-        // portrait/landscape orientation. Canvas +Y points downward.
-        const beta = event.beta * Math.PI / 180;
-        const gamma = event.gamma * Math.PI / 180;
-        const portraitX = Math.sin(gamma);
-        const portraitY = Math.sin(beta) * Math.cos(gamma);
-        const mapped = rotateToScreen(portraitX, portraitY);
-
-        input.rawTiltX = clamp(mapped.x, -1.15, 1.15);
-        input.rawTiltY = clamp(mapped.y, -1.15, 1.15);
-        markSensorDetected();
-      }
-
-      function onMotion(event) {
-        let ax = null;
-        let ay = null;
-
-        if (event.acceleration && Number.isFinite(event.acceleration.x) && Number.isFinite(event.acceleration.y)) {
-          ax = event.acceleration.x;
-          ay = -event.acceleration.y; // Convert device +Y-up to canvas +Y-down.
-        } else if (event.accelerationIncludingGravity &&
-                   Number.isFinite(event.accelerationIncludingGravity.x) &&
-                   Number.isFinite(event.accelerationIncludingGravity.y)) {
-          const includingX = event.accelerationIncludingGravity.x;
-          const includingY = -event.accelerationIncludingGravity.y;
-          input.fallbackGravityX = lerp(input.fallbackGravityX, includingX, 0.075);
-          input.fallbackGravityY = lerp(input.fallbackGravityY, includingY, 0.075);
-          ax = includingX - input.fallbackGravityX;
-          ay = includingY - input.fallbackGravityY;
-        }
-
-        if (ax !== null && ay !== null) {
-          const mapped = rotateToScreen(ax, ay);
-          input.motionTargetX = clamp(mapped.x, -35, 35);
-          input.motionTargetY = clamp(mapped.y, -35, 35);
-          input.strength = Math.hypot(input.motionTargetX, input.motionTargetY);
-          markSensorDetected();
-        }
-      }
-
-      function markSensorDetected() {
-        input.detected = true;
-        input.lastSensorAt = performance.now();
-        ui.sensorLight.classList.add("live");
-        ui.sensorText.textContent = "Motion live · shake side-to-side · tilt after escape";
-      }
-
-      function attachSensorListeners() {
-        if (input.attached) return;
-        window.addEventListener("devicemotion", onMotion, { passive: true });
-        window.addEventListener("deviceorientation", onOrientation, { passive: true });
-        input.attached = true;
-      }
-
-      async function enableMotion() {
-        ensureAudio();
-        ui.intro.classList.add("hidden");
-
-        if (input.attached && input.permission === "granted") {
-          showToast("Motion is already enabled.");
-          return;
-        }
-
-        try {
-          const motionRequest = (typeof DeviceMotionEvent !== "undefined" &&
-            typeof DeviceMotionEvent.requestPermission === "function")
-            ? DeviceMotionEvent.requestPermission()
-            : Promise.resolve("granted");
-
-          const orientationRequest = (typeof DeviceOrientationEvent !== "undefined" &&
-            typeof DeviceOrientationEvent.requestPermission === "function")
-            ? DeviceOrientationEvent.requestPermission()
-            : Promise.resolve("granted");
-
-          const [motionResult, orientationResult] = await Promise.all([motionRequest, orientationRequest]);
-          const granted = motionResult === "granted" || orientationResult === "granted";
-
-          if (!granted) {
-            throw new Error("Motion permission was not granted.");
-          }
-
-          input.permission = "granted";
-          attachSensorListeners();
-          ui.motionButton.textContent = "Motion On";
-          ui.sensorText.textContent = "Waiting for motion data…";
-          showToast(window.isSecureContext
-            ? "Motion enabled. Hold the phone naturally, then shake side-to-side."
-            : "Permission granted, but this browser may require HTTPS before sensors produce data.");
-        } catch (error) {
-          input.permission = "denied";
-          ui.motionButton.textContent = "Motion Blocked";
-          ui.sensorText.textContent = "Motion unavailable · use drag, arrows, or demo shake";
-          showToast(error?.message || "Motion permission could not be enabled.");
-        }
-      }
-
-      function calibrateTilt() {
-        input.calibrationX = input.rawTiltX;
-        input.calibrationY = input.rawTiltY;
-        showToast("Current phone angle set as neutral.");
-      }
-
-      function ensureAudio() {
-        if (audioContext) {
-          if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
-          return;
-        }
-        const AudioCtor = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtor) return;
-        try {
-          audioContext = new AudioCtor();
-        } catch (_) {
-          audioContext = null;
-        }
-      }
-
-      function playImpactSound(speed, breaking = false) {
-        if (!audioContext) return;
-        const now = audioContext.currentTime;
-        const severity = clamp(speed / 1300, 0.08, 1.25);
-
-        const oscillator = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        oscillator.type = breaking ? "sawtooth" : "triangle";
-        oscillator.frequency.setValueAtTime(breaking ? 980 : 420 + severity * 620, now);
-        oscillator.frequency.exponentialRampToValueAtTime(breaking ? 130 : 210, now + (breaking ? 0.22 : 0.075));
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(0.035 + severity * 0.055, now + 0.006);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + (breaking ? 0.25 : 0.10));
-        oscillator.connect(gain).connect(audioContext.destination);
-        oscillator.start(now);
-        oscillator.stop(now + (breaking ? 0.27 : 0.12));
-
-        if (breaking) {
-          const bufferLength = Math.floor(audioContext.sampleRate * 0.24);
-          const buffer = audioContext.createBuffer(1, bufferLength, audioContext.sampleRate);
-          const data = buffer.getChannelData(0);
-          for (let i = 0; i < bufferLength; i++) {
-            const envelope = 1 - i / bufferLength;
-            data[i] = (Math.random() * 2 - 1) * envelope * envelope;
-          }
-          const source = audioContext.createBufferSource();
-          const noiseGain = audioContext.createGain();
-          const filter = audioContext.createBiquadFilter();
-          filter.type = "highpass";
-          filter.frequency.value = 1200;
-          noiseGain.gain.setValueAtTime(0.11, now);
-          noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
-          source.buffer = buffer;
-          source.connect(filter).connect(noiseGain).connect(audioContext.destination);
-          source.start(now);
-        }
-      }
-
-      function showToast(message) {
-        ui.toast.textContent = message;
-        ui.toast.classList.add("show");
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => ui.toast.classList.remove("show"), 2500);
-      }
-
-      function effectiveTilt() {
-        return {
-          x: clamp(input.tiltX - input.calibrationX + input.keyX, -1.25, 1.25),
-          y: clamp(input.tiltY - input.calibrationY + input.keyY, -1.25, 1.25)
-        };
-      }
-
-      function addCrack(side, level, impactY = tube.cy) {
-        const seed = (world.hits + 1) * 7919 + level * 104729 + (side === "left" ? 17 : 53);
-        const random = mulberry32(seed);
-        const inward = side === "left" ? 1 : -1;
-        const originU = side === "left" ? 0.025 + random() * 0.035 : 0.975 - random() * 0.035;
-        const impactV = clamp((impactY - tube.y1) / tube.height, 0.16, 0.84);
-        const originV = clamp(lerp(impactV, 0.24 + random() * 0.52, 0.35), 0.1, 0.9);
-        const branches = 2 + Math.floor(level / 2);
-        const paths = [];
-
-        for (let branch = 0; branch < branches; branch++) {
-          const points = [{ u: originU, v: originV }];
-          const steps = 3 + Math.floor(random() * 4);
-          const totalU = 0.038 + random() * 0.052 + level * 0.009;
-          let u = originU;
-          let v = originV;
-          let vertical = (random() - 0.5) * (0.14 + level * 0.022);
-          if (branch % 2 === 0) vertical += (branch % 4 === 0 ? -1 : 1) * 0.06;
-
-          for (let step = 1; step <= steps; step++) {
-            u += inward * (totalU / steps) * (0.70 + random() * 0.65);
-            v += vertical / steps + (random() - 0.5) * 0.045;
-            points.push({ u: clamp(u, 0.008, 0.992), v: clamp(v, 0.04, 0.96) });
-          }
-          paths.push(points);
-
-          if (branch < 1 + Math.floor(level / 3) && points.length > 3) {
-            const splitIndex = 1 + Math.floor(random() * (points.length - 2));
-            const split = points[splitIndex];
-            const branchPath = [{ u: split.u, v: split.v }];
-            let su = split.u;
-            let sv = split.v;
-            const direction = random() > 0.5 ? 1 : -1;
-            for (let s = 0; s < 2 + Math.floor(random() * 3); s++) {
-              su += inward * (0.010 + random() * 0.013);
-              sv += direction * (0.028 + random() * 0.027);
-              branchPath.push({ u: clamp(su, 0.008, 0.992), v: clamp(sv, 0.04, 0.96) });
-            }
-            paths.push(branchPath);
-          }
-        }
-
-        tube.cracks.push({ side, paths, intensity: 0.54 + level * 0.065 });
-      }
-
-      function makeBreakEdge(side) {
-        const random = mulberry32(Math.floor(world.time * 100000) + (side === "left" ? 3301 : 7717));
-        const points = [];
-        const baseU = side === "left" ? 0.115 : 0.885;
-        for (let i = 0; i <= 9; i++) {
-          const v = i / 9;
-          const jag = (random() - 0.5) * 0.075 + Math.sin(i * 2.3) * 0.012;
-          points.push({ u: clamp(baseU + jag, 0.045, 0.955), v });
-        }
-        tube.breakEdge = points;
-      }
-
-      function spawnFragments(side, speed) {
-        const random = mulberry32(Math.floor(world.time * 10000) + (side === "left" ? 2039 : 4051));
-        const outward = side === "left" ? -1 : 1;
-        const originX = side === "left" ? tube.x1 + tube.height * 0.28 : tube.x2 - tube.height * 0.28;
-        const count = 30 + Math.floor(clamp(speed / 120, 0, 14));
-
-        for (let i = 0; i < count; i++) {
-          const angle = (random() - 0.5) * 1.7;
-          const impulse = 110 + random() * 460 + speed * (0.10 + random() * 0.10);
-          fragments.push({
-            x: originX + (random() - 0.5) * tube.wall * 3,
-            y: tube.cy + (random() - 0.5) * tube.height * 0.88,
-            vx: outward * Math.cos(angle) * impulse + (random() - 0.5) * 90,
-            vy: Math.sin(angle) * impulse + (random() - 0.5) * 170,
-            angle: random() * Math.PI * 2,
-            spin: (random() - 0.5) * 14,
-            size: 3 + random() * 10,
-            life: 0.75 + random() * 1.15,
-            maxLife: 0.75 + random() * 1.15,
-            shape: random()
-          });
-          fragments[fragments.length - 1].maxLife = fragments[fragments.length - 1].life;
-        }
-      }
-
-      function breakGlass(side, speed) {
-        if (tube.brokenSide) return;
-        tube.brokenSide = side;
-        world.phase = Phase.OPEN;
-        if (side === "left") tube.leftDamage = 1;
-        else tube.rightDamage = 1;
-        makeBreakEdge(side);
-        spawnFragments(side, speed);
-        tube.flash = 1;
-        cameraKick = Math.max(cameraKick, 8);
-        playImpactSound(speed, true);
-        if (navigator.vibrate) navigator.vibrate([18, 24, 34]);
-      }
-
-      function registerEndImpact(side, speed, impactY) {
-        const now = world.time;
-        if (now - marble.lastImpactTime < 0.028) return false;
-        marble.lastImpactTime = now;
-        world.hits += 1;
-
-        const impactX = side === "left"
-          ? tube.x1 + tube.wall + marble.radius
-          : tube.x2 - tube.wall - marble.radius;
-
-        impactWaves.push({
-          x: impactX,
-          y: impactY,
-          age: 0,
-          life: 0.34,
-          radius: 8,
-          maxRadius: 24 + clamp(speed * 0.022, 8, 34)
-        });
-
-        marble.squash = clamp(speed / 1200, 0.08, 0.24);
-        cameraKick = Math.max(cameraKick, clamp(speed / 190, 1.2, 6));
-        playImpactSound(speed, false);
-        if (navigator.vibrate && speed > 520) navigator.vibrate(speed > 900 ? 18 : 8);
-
-        if (speed < BASE.minimumCrackSpeed) return false;
-
-        const normalized = clamp((speed - BASE.minimumCrackSpeed) / 850, 0, 1.55);
-        const gain = (Math.pow(normalized, 1.32) * BASE.impactDamageScale) / tuning.durability;
-        const damageKey = side === "left" ? "leftDamage" : "rightDamage";
-        const levelKey = side === "left" ? "leftCrackLevel" : "rightCrackLevel";
-        tube[damageKey] = clamp(tube[damageKey] + gain, 0, 1.2);
-        tube.flash = Math.max(tube.flash, clamp(normalized * 0.72, 0.12, 0.85));
-
-        while (tube[levelKey] < crackThresholds.length &&
-               tube[damageKey] >= crackThresholds[tube[levelKey]]) {
-          addCrack(side, tube[levelKey] + 1, impactY);
-          tube[levelKey] += 1;
-        }
-
-        const shouldBreak = tube[damageKey] >= 1 || speed >= BASE.instantBreakSpeed;
-        if (shouldBreak) {
-          breakGlass(side, speed);
-          return true;
-        }
-
-        return false;
-      }
-
-      function updateInput(dt) {
-        input.tiltX = lerp(input.tiltX, input.rawTiltX, 1 - Math.exp(-10 * dt));
-        input.tiltY = lerp(input.tiltY, input.rawTiltY, 1 - Math.exp(-10 * dt));
-        input.motionX = lerp(input.motionX, input.motionTargetX, 1 - Math.exp(-18 * dt));
-        input.motionY = lerp(input.motionY, input.motionTargetY, 1 - Math.exp(-18 * dt));
-        input.motionTargetX = damp(input.motionTargetX, 7.5, dt);
-        input.motionTargetY = damp(input.motionTargetY, 7.5, dt);
-        input.manualX = damp(input.manualX, 8.2, dt);
-        input.manualY = damp(input.manualY, 8.2, dt);
-
-        input.keyX = 0;
-        input.keyY = 0;
-        if (pressedKeys.has("ArrowLeft") || pressedKeys.has("KeyA")) input.keyX -= 0.72;
-        if (pressedKeys.has("ArrowRight") || pressedKeys.has("KeyD")) input.keyX += 0.72;
-        if (pressedKeys.has("ArrowUp") || pressedKeys.has("KeyW")) input.keyY -= 0.72;
-        if (pressedKeys.has("ArrowDown") || pressedKeys.has("KeyS")) input.keyY += 0.72;
-
-        if (performance.now() < autoShakeUntil) {
-          // A strong sinusoidal phone acceleration for repeatable desktop tests.
-          // It is kept separate from touch input so it does not accumulate.
-          autoShakePhase += dt * 12.5;
-          const wave = Math.sin(autoShakePhase) + 0.18 * Math.sin(autoShakePhase * 2.17);
-          input.autoX = wave * 6500;
-        } else {
-          input.autoX = damp(input.autoX, 16, dt);
-        }
-
-        if (input.detected && performance.now() - input.lastSensorAt > 1600) {
-          ui.sensorLight.classList.remove("live");
-          ui.sensorText.textContent = "Motion paused · move the phone or use touch controls";
-        }
-      }
-
-      function tubeInteriorBounds() {
-        return {
-          left: tube.x1 + tube.wall + marble.radius,
-          right: tube.x2 - tube.wall - marble.radius,
-          top: tube.y1 + tube.wall + marble.radius,
-          bottom: tube.y2 - tube.wall - marble.radius
-        };
-      }
-
-      function simulateInside(dt) {
-        const tilt = effectiveTilt();
-        const shakeGain = BASE.insideShakeGain * tuning.shake;
-
-        // In a phone-fixed frame, linear phone acceleration acts on the marble
-        // in the opposite direction (an inertial / pseudo-force).
-        const ax = tilt.x * BASE.insideTiltAcceleration * tuning.tilt
-                 - input.motionX * shakeGain
-                 + input.manualX
-                 + input.autoX;
-        const ay = tilt.y * BASE.insideTiltAcceleration * 0.20 * tuning.tilt
-                 - input.motionY * shakeGain * 0.27
-                 + input.manualY * 0.22;
-
-        marble.vx += ax * dt;
-        marble.vy += ay * dt;
-        marble.vx = damp(marble.vx, BASE.insideDrag, dt);
-        marble.vy = damp(marble.vy, BASE.insideDrag * 1.4, dt);
-        marble.vx = clamp(marble.vx, -BASE.maxSpeed, BASE.maxSpeed);
-        marble.vy = clamp(marble.vy, -BASE.maxSpeed, BASE.maxSpeed);
-        marble.x += marble.vx * dt;
-        marble.y += marble.vy * dt;
-
-        const bounds = tubeInteriorBounds();
-        const insideTubeX = marble.x > tube.x1 - marble.radius && marble.x < tube.x2 + marble.radius;
-
-        if (insideTubeX) {
-          if (marble.y < bounds.top) {
-            marble.y = bounds.top;
-            if (marble.vy < 0) marble.vy = -marble.vy * BASE.tubeVerticalBounce;
-          } else if (marble.y > bounds.bottom) {
-            marble.y = bounds.bottom;
-            if (marble.vy > 0) marble.vy = -marble.vy * BASE.tubeVerticalBounce;
-          }
-        }
-
-        if (tube.brokenSide !== "left" && marble.x < bounds.left) {
-          const speed = Math.max(0, -marble.vx);
-          const broke = speed > 0 ? registerEndImpact("left", speed, marble.y) : false;
-          if (broke) {
-            marble.x = bounds.left - 1;
-            marble.vx = -speed * 0.78;
-          } else {
-            marble.x = bounds.left;
-            if (marble.vx < 0) marble.vx = speed * tuning.bounce;
-          }
-        }
-
-        if (tube.brokenSide !== "right" && marble.x > bounds.right) {
-          const speed = Math.max(0, marble.vx);
-          const broke = speed > 0 ? registerEndImpact("right", speed, marble.y) : false;
-          if (broke) {
-            marble.x = bounds.right + 1;
-            marble.vx = speed * 0.78;
-          } else {
-            marble.x = bounds.right;
-            if (marble.vx > 0) marble.vx = -speed * tuning.bounce;
-          }
-        }
-
-        if (world.phase === Phase.OPEN) {
-          const escapedLeft = tube.brokenSide === "left" && marble.x + marble.radius < tube.x1 + tube.height * 0.08;
-          const escapedRight = tube.brokenSide === "right" && marble.x - marble.radius > tube.x2 - tube.height * 0.08;
-          if (escapedLeft || escapedRight) {
-            world.phase = Phase.FREE;
-            marble.vx *= 0.94;
-            marble.vy *= 0.94;
-            showToast("Marble escaped. Tilt the phone to roll it around the screen.");
-          }
-        }
-
-        marble.rotation += (marble.vx / Math.max(1, marble.radius)) * dt;
-      }
-
-      function simulateFree(dt) {
-        const tilt = effectiveTilt();
-        const shakeGain = BASE.freeShakeGain * tuning.shake;
-        const ax = tilt.x * BASE.freeTiltAcceleration * tuning.tilt
-                 - input.motionX * shakeGain
-                 + input.manualX * 0.55
-                 + input.autoX * 0.55;
-        const ay = tilt.y * BASE.freeTiltAcceleration * tuning.tilt
-                 - input.motionY * shakeGain
-                 + input.manualY * 0.55;
-
-        marble.vx += ax * dt;
-        marble.vy += ay * dt;
-        marble.vx = damp(marble.vx, BASE.freeDrag, dt);
-        marble.vy = damp(marble.vy, BASE.freeDrag, dt);
-        marble.vx = clamp(marble.vx, -BASE.maxSpeed, BASE.maxSpeed);
-        marble.vy = clamp(marble.vy, -BASE.maxSpeed, BASE.maxSpeed);
-        marble.x += marble.vx * dt;
-        marble.y += marble.vy * dt;
-
-        const r = marble.radius;
-        const edgeBounce = BASE.screenEdgeBounce;
-        if (marble.x < r) {
-          marble.x = r;
-          if (marble.vx < 0) marble.vx = -marble.vx * edgeBounce;
-          marble.squash = Math.max(marble.squash, clamp(Math.abs(marble.vx) / 1700, 0.03, 0.14));
-        } else if (marble.x > width - r) {
-          marble.x = width - r;
-          if (marble.vx > 0) marble.vx = -marble.vx * edgeBounce;
-          marble.squash = Math.max(marble.squash, clamp(Math.abs(marble.vx) / 1700, 0.03, 0.14));
-        }
-
-        if (marble.y < r) {
-          marble.y = r;
-          if (marble.vy < 0) marble.vy = -marble.vy * edgeBounce;
-          marble.squash = Math.max(marble.squash, clamp(Math.abs(marble.vy) / 1700, 0.03, 0.14));
-        } else if (marble.y > height - r) {
-          marble.y = height - r;
-          if (marble.vy > 0) marble.vy = -marble.vy * edgeBounce;
-          marble.vx *= 0.985;
-          marble.squash = Math.max(marble.squash, clamp(Math.abs(marble.vy) / 1700, 0.03, 0.14));
-        }
-
-        marble.rotation += (Math.hypot(marble.vx, marble.vy) / Math.max(1, marble.radius)) * dt * Math.sign(marble.vx || 1);
-      }
-
-      function updateParticles(dt) {
-        const tilt = effectiveTilt();
-        for (let i = fragments.length - 1; i >= 0; i--) {
-          const f = fragments[i];
-          f.life -= dt;
-          if (f.life <= 0) {
-            fragments.splice(i, 1);
-            continue;
-          }
-          f.vx += tilt.x * BASE.freeTiltAcceleration * 0.38 * dt;
-          f.vy += tilt.y * BASE.freeTiltAcceleration * 0.38 * dt;
-          f.vx = damp(f.vx, 0.35, dt);
-          f.vy = damp(f.vy, 0.35, dt);
-          f.x += f.vx * dt;
-          f.y += f.vy * dt;
-          f.angle += f.spin * dt;
-        }
-
-        for (let i = impactWaves.length - 1; i >= 0; i--) {
-          const wave = impactWaves[i];
-          wave.age += dt;
-          if (wave.age >= wave.life) impactWaves.splice(i, 1);
-        }
-      }
-
-      function fixedUpdate(dt) {
-        world.time += dt;
-        updateInput(dt);
-
-        if (world.phase === Phase.FREE) simulateFree(dt);
-        else simulateInside(dt);
-
-        updateParticles(dt);
-        tube.flash = damp(tube.flash, 5.8, dt);
-        cameraKick = damp(cameraKick, 16, dt);
-        marble.squash = damp(marble.squash, 11, dt);
-      }
-
-      function drawBackground() {
-        ctx.fillStyle = backgroundGradient || "#07101d";
-        ctx.fillRect(0, 0, width, height);
-
-        const glow = ctx.createRadialGradient(tube.cx, tube.cy, 10, tube.cx, tube.cy, Math.max(width, height) * 0.58);
-        glow.addColorStop(0, "rgba(53, 145, 184, 0.12)");
-        glow.addColorStop(0.45, "rgba(18, 67, 96, 0.055)");
-        glow.addColorStop(1, "rgba(0, 0, 0, 0)");
-        ctx.fillStyle = glow;
-        ctx.fillRect(0, 0, width, height);
-
-        for (const p of dust) {
-          const pulse = 0.62 + Math.sin(world.time * 0.75 + p.phase) * 0.28;
-          ctx.globalAlpha = p.a * pulse;
-          ctx.fillStyle = "#d8f3ff";
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.globalAlpha = 1;
-
-        // Very faint horizon lines give motion a stable visual reference.
-        ctx.strokeStyle = "rgba(160, 210, 235, 0.025)";
-        ctx.lineWidth = 1;
-        const spacing = 52;
+      f.vx += accelPxX * 0.42 * dt;
+      f.vy += accelPxY * 0.42 * dt;
+      f.vx = damp(f.vx, 0.35, dt);
+      f.vy = damp(f.vy, 0.35, dt);
+      f.x += f.vx * dt;
+      f.y += f.vy * dt;
+      f.angle += f.spin * dt;
+    }
+
+    for (let i = impactWaves.length - 1; i >= 0; i--) {
+      const wave = impactWaves[i];
+      wave.age += dt;
+      if (wave.age >= wave.life) impactWaves.splice(i, 1);
+    }
+  }
+
+  function fixedUpdate(dt) {
+    world.time += dt;
+    world.contact = "none";
+    marble.grounded = false;
+    updateInput(dt);
+
+    // Apply the event-integrated high-frequency sensor impulse once. This is
+    // a velocity change (m/s), not a continuous acceleration.
+    marble.vx = clamp(
+      marble.vx + input.pendingVelocityX,
+      -BASE.maximumSpeedMps,
+      BASE.maximumSpeedMps
+    );
+    marble.vy = clamp(
+      marble.vy + input.pendingVelocityY,
+      -BASE.maximumSpeedMps,
+      BASE.maximumSpeedMps
+    );
+    input.pendingVelocityX = 0;
+    input.pendingVelocityY = 0;
+
+    const { ax, ay } = currentAcceleration();
+
+    if (world.phase === Phase.FREE) simulateFree(dt, ax, ay);
+    else simulateInside(dt, ax, ay);
+
+    updateParticles(dt);
+    tube.flash = damp(tube.flash, 5.8, dt);
+    cameraKick = damp(cameraKick, 16, dt);
+    marble.squash = damp(marble.squash, 11, dt);
+  }
+
+  function drawBackground() {
+    ctx.fillStyle = backgroundGradient || "#07101d";
+    ctx.fillRect(0, 0, width, height);
+
+    const glow = ctx.createRadialGradient(tube.cx, tube.cy, 10, tube.cx, tube.cy, Math.max(width, height) * 0.58);
+    glow.addColorStop(0, "rgba(53, 145, 184, 0.12)");
+    glow.addColorStop(0.45, "rgba(18, 67, 96, 0.055)");
+    glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, width, height);
+
+    for (const p of dust) {
+      const pulse = 0.62 + Math.sin(world.time * 0.75 + p.phase) * 0.28;
+      ctx.globalAlpha = p.a * pulse;
+      ctx.fillStyle = "#d8f3ff";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.strokeStyle = "rgba(160, 210, 235, 0.025)";
+    ctx.lineWidth = 1;
+    const spacing = 52;
+    ctx.beginPath();
+    for (let y = spacing; y < height; y += spacing) {
+      ctx.moveTo(0, y + 0.5);
+      ctx.lineTo(width, y + 0.5);
+    }
+    ctx.stroke();
+  }
+
+  function drawCracks() {
+    if (!tube.cracks.length) return;
+    ctx.save();
+    roundedRectPath(ctx, tube.x1, tube.y1, tube.width, tube.length, tube.width / 2);
+    ctx.clip();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    for (const crack of tube.cracks) {
+      for (const path of crack.paths) {
+        if (path.length < 2) continue;
         ctx.beginPath();
-        for (let y = spacing; y < height; y += spacing) {
-          ctx.moveTo(0, y + 0.5);
-          ctx.lineTo(width, y + 0.5);
-        }
-        ctx.stroke();
-      }
-
-      function drawCracks() {
-        if (!tube.cracks.length) return;
-        ctx.save();
-        roundedRectPath(ctx, tube.x1, tube.y1, tube.length, tube.height, tube.height / 2);
-        ctx.clip();
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-
-        for (const crack of tube.cracks) {
-          for (const path of crack.paths) {
-            if (path.length < 2) continue;
-            ctx.beginPath();
-            for (let i = 0; i < path.length; i++) {
-              const x = tube.x1 + path[i].u * tube.length;
-              const y = tube.y1 + path[i].v * tube.height;
-              if (i === 0) ctx.moveTo(x, y);
-              else ctx.lineTo(x, y);
-            }
-            ctx.strokeStyle = `rgba(130, 211, 241, ${0.20 * crack.intensity})`;
-            ctx.lineWidth = 1.55;
-            ctx.stroke();
-            ctx.strokeStyle = `rgba(245, 253, 255, ${0.72 * crack.intensity})`;
-            ctx.lineWidth = 0.48;
-            ctx.stroke();
-          }
-        }
-        ctx.restore();
-      }
-
-      function drawBrokenOpening() {
-        if (!tube.brokenSide || tube.breakEdge.length < 2) return;
-        const left = tube.brokenSide === "left";
-        const edge = tube.breakEdge;
-
-        // Repaint the exact background through the jagged opening. Clipping
-        // avoids the dark wedge that a plain solid-color cutout would create.
-        ctx.save();
-        ctx.beginPath();
-        if (left) {
-          ctx.moveTo(-80, tube.y1 - 80);
-          ctx.lineTo(-80, tube.y2 + 80);
-          for (let i = edge.length - 1; i >= 0; i--) {
-            ctx.lineTo(tube.x1 + edge[i].u * tube.length, tube.y1 + edge[i].v * tube.height);
-          }
-        } else {
-          ctx.moveTo(width + 80, tube.y1 - 80);
-          for (let i = 0; i < edge.length; i++) {
-            ctx.lineTo(tube.x1 + edge[i].u * tube.length, tube.y1 + edge[i].v * tube.height);
-          }
-          ctx.lineTo(width + 80, tube.y2 + 80);
-        }
-        ctx.closePath();
-        ctx.clip();
-        drawBackground();
-        ctx.restore();
-
-        ctx.save();
-        const edgeGlow = ctx.createLinearGradient(tube.x1, tube.y1, tube.x2, tube.y2);
-        edgeGlow.addColorStop(0, "rgba(214, 248, 255, 0.95)");
-        edgeGlow.addColorStop(0.5, "rgba(116, 207, 239, 0.55)");
-        edgeGlow.addColorStop(1, "rgba(214, 248, 255, 0.95)");
-        ctx.beginPath();
-        for (let i = 0; i < edge.length; i++) {
-          const x = tube.x1 + edge[i].u * tube.length;
-          const y = tube.y1 + edge[i].v * tube.height;
+        for (let i = 0; i < path.length; i++) {
+          const x = tube.x1 + path[i].u * tube.width;
+          const y = tube.y1 + path[i].v * tube.length;
           if (i === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }
-        ctx.strokeStyle = edgeGlow;
-        ctx.lineWidth = 1.5;
-        ctx.shadowColor = "rgba(137, 224, 255, 0.7)";
-        ctx.shadowBlur = 9;
+        ctx.strokeStyle = `rgba(130, 211, 241, ${0.20 * crack.intensity})`;
+        ctx.lineWidth = 1.55;
         ctx.stroke();
-        ctx.restore();
-      }
-
-      function drawTube() {
-        ctx.save();
-
-        ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
-        ctx.shadowBlur = 30;
-        ctx.shadowOffsetY = 17;
-        roundedRectPath(ctx, tube.x1, tube.y1, tube.length, tube.height, tube.height / 2);
-        ctx.fillStyle = "rgba(0, 0, 0, 0.18)";
-        ctx.fill();
-        ctx.shadowColor = "transparent";
-
-        const glass = ctx.createLinearGradient(0, tube.y1, 0, tube.y2);
-        glass.addColorStop(0, "rgba(224, 250, 255, 0.36)");
-        glass.addColorStop(0.12, "rgba(101, 195, 230, 0.18)");
-        glass.addColorStop(0.34, "rgba(22, 71, 99, 0.13)");
-        glass.addColorStop(0.62, "rgba(7, 29, 47, 0.09)");
-        glass.addColorStop(0.86, "rgba(105, 202, 236, 0.18)");
-        glass.addColorStop(1, "rgba(226, 251, 255, 0.40)");
-        roundedRectPath(ctx, tube.x1, tube.y1, tube.length, tube.height, tube.height / 2);
-        ctx.fillStyle = glass;
-        ctx.fill();
-
-        const innerInset = tube.wall;
-        roundedRectPath(
-          ctx,
-          tube.x1 + innerInset,
-          tube.y1 + innerInset,
-          tube.length - innerInset * 2,
-          tube.height - innerInset * 2,
-          (tube.height - innerInset * 2) / 2
-        );
-        ctx.fillStyle = "rgba(3, 12, 22, 0.21)";
-        ctx.fill();
-
-        roundedRectPath(ctx, tube.x1 + 0.5, tube.y1 + 0.5, tube.length - 1, tube.height - 1, tube.height / 2);
-        ctx.strokeStyle = "rgba(220, 248, 255, 0.58)";
-        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = `rgba(245, 253, 255, ${0.72 * crack.intensity})`;
+        ctx.lineWidth = 0.48;
         ctx.stroke();
-
-        roundedRectPath(
-          ctx,
-          tube.x1 + innerInset,
-          tube.y1 + innerInset,
-          tube.length - innerInset * 2,
-          tube.height - innerInset * 2,
-          (tube.height - innerInset * 2) / 2
-        );
-        ctx.strokeStyle = "rgba(137, 219, 248, 0.20)";
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // Specular bands.
-        ctx.beginPath();
-        ctx.moveTo(tube.x1 + tube.height * 0.48, tube.y1 + tube.wall * 0.68);
-        ctx.lineTo(tube.x2 - tube.height * 0.48, tube.y1 + tube.wall * 0.68);
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.52)";
-        ctx.lineWidth = 2.1;
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(tube.x1 + tube.height * 0.42, tube.y2 - tube.wall * 0.72);
-        ctx.lineTo(tube.x2 - tube.height * 0.42, tube.y2 - tube.wall * 0.72);
-        ctx.strokeStyle = "rgba(124, 216, 247, 0.26)";
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        // Damage glow at each end.
-        const sideGlow = (side, damage) => {
-          if (damage <= 0.01) return;
-          const x = side === "left" ? tube.x1 + tube.height * 0.22 : tube.x2 - tube.height * 0.22;
-          const glow = ctx.createRadialGradient(x, tube.cy, 0, x, tube.cy, tube.height * 0.72);
-          glow.addColorStop(0, `rgba(255, 174, 131, ${0.11 + damage * 0.13})`);
-          glow.addColorStop(0.44, `rgba(255, 111, 100, ${damage * 0.08})`);
-          glow.addColorStop(1, "rgba(255, 100, 90, 0)");
-          ctx.fillStyle = glow;
-          ctx.fillRect(x - tube.height, tube.cy - tube.height, tube.height * 2, tube.height * 2);
-        };
-        sideGlow("left", tube.leftDamage);
-        sideGlow("right", tube.rightDamage);
-
-        drawCracks();
-        drawBrokenOpening();
-
-        if (tube.flash > 0.01) {
-          roundedRectPath(ctx, tube.x1, tube.y1, tube.length, tube.height, tube.height / 2);
-          ctx.fillStyle = `rgba(206, 244, 255, ${tube.flash * 0.10})`;
-          ctx.fill();
-        }
-
-        ctx.restore();
       }
+    }
+    ctx.restore();
+  }
 
-      function drawImpactWaves() {
-        for (const wave of impactWaves) {
-          const t = clamp(wave.age / wave.life, 0, 1);
-          const radius = lerp(wave.radius, wave.maxRadius, 1 - Math.pow(1 - t, 3));
-          ctx.beginPath();
-          ctx.arc(wave.x, wave.y, radius, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(216, 248, 255, ${(1 - t) * 0.55})`;
-          ctx.lineWidth = 1.4;
-          ctx.stroke();
-        }
-      }
+  function drawBrokenOpening() {
+    if (!tube.brokenSide || tube.breakEdge.length < 2) return;
+    const edge = tube.breakEdge;
+    const top = tube.brokenSide === "top";
 
-      function drawFragments() {
-        for (const f of fragments) {
-          const alpha = clamp(f.life / f.maxLife, 0, 1);
-          ctx.save();
-          ctx.translate(f.x, f.y);
-          ctx.rotate(f.angle);
-          ctx.globalAlpha = Math.min(0.9, alpha * 1.2);
-          ctx.beginPath();
-          ctx.moveTo(-f.size * 0.55, f.size * 0.42);
-          ctx.lineTo(f.size * (0.25 + f.shape * 0.35), -f.size * 0.58);
-          ctx.lineTo(f.size * 0.62, f.size * 0.34);
-          ctx.closePath();
-          const shard = ctx.createLinearGradient(-f.size, -f.size, f.size, f.size);
-          shard.addColorStop(0, "rgba(245, 255, 255, 0.88)");
-          shard.addColorStop(0.38, "rgba(133, 220, 249, 0.34)");
-          shard.addColorStop(1, "rgba(40, 104, 137, 0.18)");
-          ctx.fillStyle = shard;
-          ctx.fill();
-          ctx.strokeStyle = "rgba(231, 252, 255, 0.72)";
-          ctx.lineWidth = 0.7;
-          ctx.stroke();
-          ctx.restore();
-        }
-        ctx.globalAlpha = 1;
-      }
+    ctx.save();
+    ctx.beginPath();
+    if (top) {
+      ctx.moveTo(tube.x1 - 80, tube.y1 - 80);
+      ctx.lineTo(tube.x2 + 80, tube.y1 - 80);
+    } else {
+      ctx.moveTo(tube.x1 - 80, tube.y2 + 80);
+      ctx.lineTo(tube.x2 + 80, tube.y2 + 80);
+    }
+    for (let i = edge.length - 1; i >= 0; i--) {
+      ctx.lineTo(tube.x1 + edge[i].u * tube.width, tube.y1 + edge[i].v * tube.length);
+    }
+    ctx.closePath();
+    ctx.clip();
+    drawBackground();
+    ctx.restore();
 
-      function drawMarble() {
-        const r = marble.radius;
-        const squash = marble.squash;
-        const sx = 1 + squash * 0.48;
-        const sy = 1 - squash * 0.42;
+    ctx.save();
+    const edgeGlow = ctx.createLinearGradient(tube.x1, 0, tube.x2, 0);
+    edgeGlow.addColorStop(0, "rgba(214, 248, 255, 0.95)");
+    edgeGlow.addColorStop(0.5, "rgba(116, 207, 239, 0.55)");
+    edgeGlow.addColorStop(1, "rgba(214, 248, 255, 0.95)");
+    ctx.beginPath();
+    for (let i = 0; i < edge.length; i++) {
+      const x = tube.x1 + edge[i].u * tube.width;
+      const y = tube.y1 + edge[i].v * tube.length;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = edgeGlow;
+    ctx.lineWidth = 1.5;
+    ctx.shadowColor = "rgba(137, 224, 255, 0.7)";
+    ctx.shadowBlur = 9;
+    ctx.stroke();
+    ctx.restore();
+  }
 
-        ctx.save();
-        ctx.translate(marble.x, marble.y);
-        ctx.rotate(marble.rotation * 0.16);
-        ctx.scale(sx, sy);
+  function drawTube() {
+    ctx.save();
 
-        ctx.shadowColor = "rgba(0, 0, 0, 0.62)";
-        ctx.shadowBlur = 22;
-        ctx.shadowOffsetY = 10;
-        ctx.beginPath();
-        ctx.arc(0, 0, r, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0,0,0,0.24)";
-        ctx.fill();
-        ctx.shadowColor = "transparent";
+    ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
+    ctx.shadowBlur = 30;
+    ctx.shadowOffsetY = 17;
+    roundedRectPath(ctx, tube.x1, tube.y1, tube.width, tube.length, tube.width / 2);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.18)";
+    ctx.fill();
+    ctx.shadowColor = "transparent";
 
-        const body = ctx.createRadialGradient(-r * 0.37, -r * 0.43, r * 0.05, 0, 0, r * 1.05);
-        body.addColorStop(0, "#f5ffff");
-        body.addColorStop(0.11, "#9deaff");
-        body.addColorStop(0.34, "#2e9cc7");
-        body.addColorStop(0.68, "#0b486d");
-        body.addColorStop(0.89, "#05263f");
-        body.addColorStop(1, "#021421");
-        ctx.beginPath();
-        ctx.arc(0, 0, r, 0, Math.PI * 2);
-        ctx.fillStyle = body;
-        ctx.fill();
+    const glass = ctx.createLinearGradient(tube.x1, 0, tube.x2, 0);
+    glass.addColorStop(0, "rgba(224, 250, 255, 0.38)");
+    glass.addColorStop(0.12, "rgba(101, 195, 230, 0.20)");
+    glass.addColorStop(0.34, "rgba(22, 71, 99, 0.13)");
+    glass.addColorStop(0.62, "rgba(7, 29, 47, 0.09)");
+    glass.addColorStop(0.86, "rgba(105, 202, 236, 0.18)");
+    glass.addColorStop(1, "rgba(226, 251, 255, 0.42)");
+    roundedRectPath(ctx, tube.x1, tube.y1, tube.width, tube.length, tube.width / 2);
+    ctx.fillStyle = glass;
+    ctx.fill();
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(0, 0, r - 0.5, 0, Math.PI * 2);
-        ctx.clip();
+    const innerInset = tube.wall;
+    roundedRectPath(
+      ctx,
+      tube.x1 + innerInset,
+      tube.y1 + innerInset,
+      tube.width - innerInset * 2,
+      tube.length - innerInset * 2,
+      (tube.width - innerInset * 2) / 2
+    );
+    ctx.fillStyle = "rgba(3, 12, 22, 0.21)";
+    ctx.fill();
 
-        ctx.rotate(marble.rotation * 0.48);
-        ctx.beginPath();
-        ctx.moveTo(-r * 1.2, r * 0.14);
-        ctx.bezierCurveTo(-r * 0.55, -r * 0.58, r * 0.1, r * 0.74, r * 1.2, -r * 0.18);
-        ctx.strokeStyle = "rgba(168, 243, 255, 0.30)";
-        ctx.lineWidth = r * 0.20;
-        ctx.stroke();
+    roundedRectPath(ctx, tube.x1 + 0.5, tube.y1 + 0.5, tube.width - 1, tube.length - 1, tube.width / 2);
+    ctx.strokeStyle = "rgba(220, 248, 255, 0.58)";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
 
-        ctx.beginPath();
-        ctx.moveTo(-r * 1.1, -r * 0.42);
-        ctx.bezierCurveTo(-r * 0.4, r * 0.18, r * 0.28, -r * 0.74, r * 1.18, r * 0.36);
-        ctx.strokeStyle = "rgba(9, 43, 79, 0.36)";
-        ctx.lineWidth = r * 0.13;
-        ctx.stroke();
-        ctx.restore();
+    roundedRectPath(
+      ctx,
+      tube.x1 + innerInset,
+      tube.y1 + innerInset,
+      tube.width - innerInset * 2,
+      tube.length - innerInset * 2,
+      (tube.width - innerInset * 2) / 2
+    );
+    ctx.strokeStyle = "rgba(137, 219, 248, 0.20)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
 
-        ctx.beginPath();
-        ctx.arc(0, 0, r - 0.6, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(210, 250, 255, 0.34)";
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
+    // Long vertical specular bands make the orientation unmistakable.
+    ctx.beginPath();
+    ctx.moveTo(tube.x1 + tube.wall * 0.78, tube.y1 + tube.width * 0.46);
+    ctx.lineTo(tube.x1 + tube.wall * 0.78, tube.y2 - tube.width * 0.46);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.50)";
+    ctx.lineWidth = 2.1;
+    ctx.stroke();
 
-        const highlight = ctx.createRadialGradient(-r * 0.45, -r * 0.48, 0, -r * 0.45, -r * 0.48, r * 0.65);
-        highlight.addColorStop(0, "rgba(255,255,255,0.82)");
-        highlight.addColorStop(0.18, "rgba(255,255,255,0.30)");
-        highlight.addColorStop(1, "rgba(255,255,255,0)");
-        ctx.fillStyle = highlight;
-        ctx.beginPath();
-        ctx.arc(0, 0, r, 0, Math.PI * 2);
-        ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(tube.x2 - tube.wall * 0.72, tube.y1 + tube.width * 0.42);
+    ctx.lineTo(tube.x2 - tube.wall * 0.72, tube.y2 - tube.width * 0.42);
+    ctx.strokeStyle = "rgba(124, 216, 247, 0.26)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
 
-        ctx.restore();
-      }
+    const capGlow = (side, damage) => {
+      if (damage <= 0.01) return;
+      const y = side === "top" ? tube.y1 + tube.width * 0.22 : tube.y2 - tube.width * 0.22;
+      const glow = ctx.createRadialGradient(tube.cx, y, 0, tube.cx, y, tube.width * 0.78);
+      glow.addColorStop(0, `rgba(255, 174, 131, ${0.11 + damage * 0.13})`);
+      glow.addColorStop(0.44, `rgba(255, 111, 100, ${damage * 0.08})`);
+      glow.addColorStop(1, "rgba(255, 100, 90, 0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(tube.cx - tube.width, y - tube.width, tube.width * 2, tube.width * 2);
+    };
+    capGlow("top", tube.topDamage);
+    capGlow("bottom", tube.bottomDamage);
 
-      function drawDebug() {
-        if (!tuning.debug) return;
-        const tilt = effectiveTilt();
-        const scale = 70;
+    drawCracks();
+    drawBrokenOpening();
 
-        ctx.save();
-        ctx.lineCap = "round";
-        ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, monospace";
-        ctx.fillStyle = "rgba(226, 246, 255, 0.82)";
-        ctx.fillText(`phase: ${world.phase}`, 14, height - 126);
-        ctx.fillText(`v: ${marble.vx.toFixed(0)}, ${marble.vy.toFixed(0)} px/s`, 14, height - 108);
-        ctx.fillText(`tilt: ${tilt.x.toFixed(2)}, ${tilt.y.toFixed(2)}`, 14, height - 90);
-        ctx.fillText(`motion: ${input.motionX.toFixed(1)}, ${input.motionY.toFixed(1)} m/s²`, 14, height - 72);
+    if (tube.flash > 0.01) {
+      roundedRectPath(ctx, tube.x1, tube.y1, tube.width, tube.length, tube.width / 2);
+      ctx.fillStyle = `rgba(206, 244, 255, ${tube.flash * 0.10})`;
+      ctx.fill();
+    }
 
-        drawArrow(marble.x, marble.y, marble.vx * 0.06, marble.vy * 0.06, "rgba(255, 196, 107, 0.92)");
-        drawArrow(marble.x, marble.y, tilt.x * scale, tilt.y * scale, "rgba(104, 216, 255, 0.95)");
-        ctx.restore();
-      }
+    ctx.restore();
+  }
 
-      function drawArrow(x, y, dx, dy, color) {
-        const length = Math.hypot(dx, dy);
-        if (length < 2) return;
-        const angle = Math.atan2(dy, dx);
-        ctx.strokeStyle = color;
-        ctx.fillStyle = color;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + dx, y + dy);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x + dx, y + dy);
-        ctx.lineTo(x + dx - 8 * Math.cos(angle - 0.45), y + dy - 8 * Math.sin(angle - 0.45));
-        ctx.lineTo(x + dx - 8 * Math.cos(angle + 0.45), y + dy - 8 * Math.sin(angle + 0.45));
-        ctx.closePath();
-        ctx.fill();
-      }
+  function drawImpactWaves() {
+    for (const wave of impactWaves) {
+      const t = clamp(wave.age / wave.life, 0, 1);
+      const radius = lerp(wave.radius, wave.maxRadius, 1 - Math.pow(1 - t, 3));
+      ctx.beginPath();
+      ctx.arc(wave.x, wave.y, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(216, 248, 255, ${(1 - t) * 0.55})`;
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+    }
+  }
 
-      function render() {
-        drawBackground();
-        const jitterX = cameraKick > 0.1 ? (Math.random() - 0.5) * cameraKick : 0;
-        const jitterY = cameraKick > 0.1 ? (Math.random() - 0.5) * cameraKick * 0.45 : 0;
+  function drawFragments() {
+    for (const f of fragments) {
+      const alpha = clamp(f.life / f.maxLife, 0, 1);
+      ctx.save();
+      ctx.translate(f.x, f.y);
+      ctx.rotate(f.angle);
+      ctx.globalAlpha = Math.min(0.9, alpha * 1.2);
+      ctx.beginPath();
+      ctx.moveTo(-f.size * 0.55, f.size * 0.42);
+      ctx.lineTo(f.size * (0.25 + f.shape * 0.35), -f.size * 0.58);
+      ctx.lineTo(f.size * 0.62, f.size * 0.34);
+      ctx.closePath();
+      const shard = ctx.createLinearGradient(-f.size, -f.size, f.size, f.size);
+      shard.addColorStop(0, "rgba(245, 255, 255, 0.88)");
+      shard.addColorStop(0.38, "rgba(133, 220, 249, 0.34)");
+      shard.addColorStop(1, "rgba(40, 104, 137, 0.18)");
+      ctx.fillStyle = shard;
+      ctx.fill();
+      ctx.strokeStyle = "rgba(231, 252, 255, 0.72)";
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
 
-        ctx.save();
-        ctx.translate(jitterX, jitterY);
-        drawTube();
-        drawImpactWaves();
-        drawFragments();
-        drawMarble();
-        drawDebug();
-        ctx.restore();
-      }
+  function drawMarble() {
+    const r = marble.radius;
+    const squash = marble.squash;
+    const sx = 1 + squash * 0.48;
+    const sy = 1 - squash * 0.42;
 
-      function updateHud() {
-        const left = clamp(tube.leftDamage, 0, 1);
-        const right = clamp(tube.rightDamage, 0, 1);
-        ui.leftDamageFill.style.width = `${Math.round(left * 100)}%`;
-        ui.rightDamageFill.style.width = `${Math.round(right * 100)}%`;
-        ui.leftDamageText.textContent = `${Math.round(left * 100)}%`;
-        ui.rightDamageText.textContent = `${Math.round(right * 100)}%`;
+    ctx.save();
+    ctx.translate(marble.x, marble.y);
+    ctx.rotate(marble.rotation * 0.16);
+    ctx.scale(sx, sy);
 
-        if (world.phase === Phase.SEALED) {
-          ui.stateName.textContent = "SEALED";
-          ui.stateHint.textContent = Math.max(left, right) > 0.02 ? "Cracks are spreading" : "Shake side-to-side";
-        } else if (world.phase === Phase.OPEN) {
-          ui.stateName.textContent = "BREACHED";
-          ui.stateHint.textContent = `Opening on ${tube.brokenSide} · tilt outward`;
-        } else {
-          ui.stateName.textContent = "MARBLE FREE";
-          ui.stateHint.textContent = "Tilt to roll around the screen";
-        }
-      }
+    ctx.shadowColor = "rgba(0, 0, 0, 0.62)";
+    ctx.shadowBlur = 22;
+    ctx.shadowOffsetY = 10;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0,0,0,0.24)";
+    ctx.fill();
+    ctx.shadowColor = "transparent";
 
-      function frame(now) {
-        const frameTime = Math.min(BASE.maxFrameTime, Math.max(0, (now - lastTime) / 1000));
-        lastTime = now;
-        accumulator += frameTime;
+    const body = ctx.createRadialGradient(-r * 0.37, -r * 0.43, r * 0.05, 0, 0, r * 1.05);
+    body.addColorStop(0, "#f5ffff");
+    body.addColorStop(0.11, "#9deaff");
+    body.addColorStop(0.34, "#2e9cc7");
+    body.addColorStop(0.68, "#0b486d");
+    body.addColorStop(0.89, "#05263f");
+    body.addColorStop(1, "#021421");
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fillStyle = body;
+    ctx.fill();
 
-        while (accumulator >= BASE.fixedStep) {
-          fixedUpdate(BASE.fixedStep);
-          accumulator -= BASE.fixedStep;
-        }
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, 0, r - 0.5, 0, Math.PI * 2);
+    ctx.clip();
 
-        render();
-        updateHud();
-        requestAnimationFrame(frame);
-      }
+    ctx.rotate(marble.rotation * 0.48);
+    ctx.beginPath();
+    ctx.moveTo(-r * 1.2, r * 0.14);
+    ctx.bezierCurveTo(-r * 0.55, -r * 0.58, r * 0.1, r * 0.74, r * 1.2, -r * 0.18);
+    ctx.strokeStyle = "rgba(168, 243, 255, 0.30)";
+    ctx.lineWidth = r * 0.20;
+    ctx.stroke();
 
-      function applyImpulse(direction) {
-        ensureAudio();
-        ui.intro.classList.add("hidden");
-        const impulse = world.phase === Phase.FREE ? 610 : 910;
-        marble.vx += clamp(direction, -1, 1) * impulse;
-        marble.vx = clamp(marble.vx, -BASE.maxSpeed, BASE.maxSpeed);
-      }
+    ctx.beginPath();
+    ctx.moveTo(-r * 1.1, -r * 0.42);
+    ctx.bezierCurveTo(-r * 0.4, r * 0.18, r * 0.28, -r * 0.74, r * 1.18, r * 0.36);
+    ctx.strokeStyle = "rgba(9, 43, 79, 0.36)";
+    ctx.lineWidth = r * 0.13;
+    ctx.stroke();
+    ctx.restore();
 
-      function startDemoShake() {
-        ensureAudio();
-        ui.intro.classList.add("hidden");
-        autoShakePhase = 0;
-        autoShakeUntil = performance.now() + 2800;
-        if (world.phase !== Phase.FREE) marble.vx += 0;
-      }
+    ctx.beginPath();
+    ctx.arc(0, 0, r - 0.6, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(210, 250, 255, 0.34)";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
 
-      function bindRange(range, output, key, digits = 2, suffix = "×") {
-        const update = () => {
-          tuning[key] = Number(range.value);
-          output.textContent = `${tuning[key].toFixed(digits)}${suffix}`;
-        };
-        range.addEventListener("input", update);
-        update();
-      }
+    const highlight = ctx.createRadialGradient(-r * 0.45, -r * 0.48, 0, -r * 0.45, -r * 0.48, r * 0.65);
+    highlight.addColorStop(0, "rgba(255,255,255,0.82)");
+    highlight.addColorStop(0.18, "rgba(255,255,255,0.30)");
+    highlight.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = highlight;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
 
-      bindRange(ui.shakeRange, ui.shakeValue, "shake", 2, "×");
-      bindRange(ui.tiltRange, ui.tiltValue, "tilt", 2, "×");
-      bindRange(ui.durabilityRange, ui.durabilityValue, "durability", 2, "×");
-      bindRange(ui.bounceRange, ui.bounceValue, "bounce", 2, "");
+    ctx.restore();
+  }
 
-      ui.debugToggle.addEventListener("change", () => {
-        tuning.debug = ui.debugToggle.checked;
-      });
+  function drawDebug() {
+    if (!tuning.debug) return;
+    const tilt = effectiveTilt();
+    const velocityScale = tube.pixelsPerMeter * 0.055;
+    const accelerationScale = tube.pixelsPerMeter * 0.012;
 
-      ui.settingsButton.addEventListener("click", () => {
-        const open = !ui.settingsPanel.classList.contains("open");
-        ui.settingsPanel.classList.toggle("open", open);
-        ui.settingsPanel.setAttribute("aria-hidden", String(!open));
-        ui.settingsButton.setAttribute("aria-expanded", String(open));
-      });
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillStyle = "rgba(226, 246, 255, 0.84)";
+    const baseY = height - 162;
+    ctx.fillText(`phase: ${world.phase} · contact: ${world.contact}`, 14, baseY);
+    ctx.fillText(`v: ${marble.vx.toFixed(2)}, ${marble.vy.toFixed(2)} m/s`, 14, baseY + 18);
+    ctx.fillText(`a: ${world.accelerationX.toFixed(2)}, ${world.accelerationY.toFixed(2)} m/s²`, 14, baseY + 36);
+    ctx.fillText(`sensor: ${input.motionX.toFixed(2)}, ${input.motionY.toFixed(2)} m/s²`, 14, baseY + 54);
+    ctx.fillText(`tilt-x: ${tilt.x.toFixed(2)} · scale: ${tube.pixelsPerMeter.toFixed(0)} px/m`, 14, baseY + 72);
+    ctx.fillText(`last impact: ${world.lastImpactSpeedMps.toFixed(2)} m/s · ${world.lastImpactEnergyJ.toFixed(3)} J`, 14, baseY + 90);
 
-      ui.motionButton.addEventListener("click", enableMotion);
-      ui.introMotion.addEventListener("click", enableMotion);
-      ui.introDemo.addEventListener("click", () => {
-        ensureAudio();
-        ui.intro.classList.add("hidden");
-        showToast("Touch mode: drag quickly left/right. Arrow keys also tilt on desktop.");
-      });
-      ui.calibrateButton.addEventListener("click", calibrateTilt);
-      ui.panelCalibrate.addEventListener("click", calibrateTilt);
-      ui.resetButton.addEventListener("click", resetSimulation);
-      ui.kickLeft.addEventListener("click", () => applyImpulse(-1));
-      ui.kickRight.addEventListener("click", () => applyImpulse(1));
-      ui.autoShake.addEventListener("click", startDemoShake);
+    drawArrow(
+      marble.x,
+      marble.y,
+      clamp(marble.vx * velocityScale, -130, 130),
+      clamp(marble.vy * velocityScale, -130, 130),
+      "rgba(255, 196, 107, 0.92)"
+    );
+    drawArrow(
+      marble.x,
+      marble.y,
+      clamp(world.accelerationX * accelerationScale, -110, 110),
+      clamp(world.accelerationY * accelerationScale, -110, 110),
+      "rgba(104, 216, 255, 0.95)"
+    );
+    ctx.restore();
+  }
 
-      canvas.addEventListener("pointerdown", (event) => {
-        ensureAudio();
-        ui.intro.classList.add("hidden");
-        pointer.active = true;
-        pointer.id = event.pointerId;
-        pointer.x = event.clientX;
-        pointer.y = event.clientY;
-        pointer.t = performance.now();
-        canvas.setPointerCapture?.(event.pointerId);
-      });
+  function drawArrow(x, y, dx, dy, color) {
+    const length = Math.hypot(dx, dy);
+    if (length < 2) return;
+    const angle = Math.atan2(dy, dx);
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + dx, y + dy);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + dx, y + dy);
+    ctx.lineTo(x + dx - 8 * Math.cos(angle - 0.45), y + dy - 8 * Math.sin(angle - 0.45));
+    ctx.lineTo(x + dx - 8 * Math.cos(angle + 0.45), y + dy - 8 * Math.sin(angle + 0.45));
+    ctx.closePath();
+    ctx.fill();
+  }
 
-      canvas.addEventListener("pointermove", (event) => {
-        if (!pointer.active || event.pointerId !== pointer.id) return;
-        const now = performance.now();
-        const dt = Math.max(0.008, (now - pointer.t) / 1000);
-        const dx = event.clientX - pointer.x;
-        const dy = event.clientY - pointer.y;
-        const handVelocityX = dx / dt;
-        const handVelocityY = dy / dt;
+  function render() {
+    drawBackground();
+    const jitterX = cameraKick > 0.1 ? (Math.random() - 0.5) * cameraKick * 0.55 : 0;
+    const jitterY = cameraKick > 0.1 ? (Math.random() - 0.5) * cameraKick : 0;
 
-        // Dragging represents moving the tube/phone. The marble lags in the
-        // opposite direction because of inertia.
-        input.manualX += clamp(-handVelocityX * 1.75, -8200, 8200);
-        input.manualY += clamp(-handVelocityY * 1.25, -6500, 6500);
+    ctx.save();
+    ctx.translate(jitterX, jitterY);
+    drawTube();
+    drawImpactWaves();
+    drawFragments();
+    drawMarble();
+    drawDebug();
+    ctx.restore();
+  }
 
-        pointer.x = event.clientX;
-        pointer.y = event.clientY;
-        pointer.t = now;
-      });
+  function updateHud() {
+    const top = clamp(tube.topDamage, 0, 1);
+    const bottom = clamp(tube.bottomDamage, 0, 1);
+    ui.topDamageFill.style.width = `${Math.round(top * 100)}%`;
+    ui.bottomDamageFill.style.width = `${Math.round(bottom * 100)}%`;
+    ui.topDamageText.textContent = `${Math.round(top * 100)}%`;
+    ui.bottomDamageText.textContent = `${Math.round(bottom * 100)}%`;
 
-      const endPointer = (event) => {
-        if (event.pointerId !== pointer.id) return;
-        pointer.active = false;
-        pointer.id = null;
-      };
-      canvas.addEventListener("pointerup", endPointer);
-      canvas.addEventListener("pointercancel", endPointer);
+    if (world.phase === Phase.SEALED) {
+      ui.stateName.textContent = "SEALED";
+      ui.stateHint.textContent = Math.max(top, bottom) > 0.02
+        ? "Cracks are spreading"
+        : "Tap from below or shake vertically";
+    } else if (world.phase === Phase.OPEN) {
+      ui.stateName.textContent = "BREACHED";
+      ui.stateHint.textContent = `Opening at ${tube.brokenSide} · drive the marble through it`;
+    } else {
+      ui.stateName.textContent = "MARBLE FREE";
+      ui.stateHint.textContent = "Gravity down · tilt sideways · shake to bounce";
+    }
+  }
 
-      window.addEventListener("keydown", (event) => {
-        if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(event.code)) {
-          event.preventDefault();
-        }
-        pressedKeys.add(event.code);
-        if (event.code === "Space" && !event.repeat) startDemoShake();
-        if (event.code === "KeyR" && !event.repeat) resetSimulation();
-      });
+  function frame(now) {
+    const frameTime = Math.min(BASE.maxFrameTime, Math.max(0, (now - lastTime) / 1000));
+    lastTime = now;
+    accumulator += frameTime * tuning.timeScale;
 
-      window.addEventListener("keyup", (event) => pressedKeys.delete(event.code));
-      window.addEventListener("resize", resize, { passive: true });
-      window.screen?.orientation?.addEventListener?.("change", resize);
-      document.addEventListener("visibilitychange", () => {
-        lastTime = performance.now();
-        accumulator = 0;
-      });
+    while (accumulator >= BASE.fixedStep) {
+      fixedUpdate(BASE.fixedStep);
+      accumulator -= BASE.fixedStep;
+    }
 
-      resize();
-      resetSimulation();
-      requestAnimationFrame(frame);
-    })();
+    render();
+    updateHud();
+    requestAnimationFrame(frame);
+  }
+
+  function applyVerticalImpulse(direction) {
+    ensureAudio();
+    ui.intro.classList.add("hidden");
+    marble.vy += clamp(direction, -1, 1) * tuning.tapImpulseMps;
+    marble.vy = clamp(marble.vy, -BASE.maximumSpeedMps, BASE.maximumSpeedMps);
+    marble.grounded = false;
+    world.contact = "none";
+  }
+
+  function startDemoShake() {
+    ensureAudio();
+    ui.intro.classList.add("hidden");
+    autoShakePhase = 0;
+    autoShakeUntil = performance.now() + 3600;
+    applyVerticalImpulse(-1);
+  }
+
+  function bindRange(range, output, key, formatter, geometry = false) {
+    const update = () => {
+      tuning[key] = Number(range.value);
+      output.textContent = formatter(tuning[key]);
+      if (geometry) resize();
+    };
+    range.addEventListener("input", update);
+    update();
+  }
+
+  bindRange(ui.massRange, ui.massValue, "massG", value => `${value.toFixed(0)} g`);
+  bindRange(ui.gravityRange, ui.gravityValue, "gravityG", value => `${value.toFixed(2)} g`);
+  bindRange(ui.ballSizeRange, ui.ballSizeValue, "ballDiameterMm", value => `${value.toFixed(0)} mm`, true);
+  bindRange(ui.bounceRange, ui.bounceValue, "restitution", value => value.toFixed(2));
+  bindRange(ui.dragRange, ui.dragValue, "airDrag", value => `${value.toFixed(2)} s⁻¹`);
+  bindRange(ui.frictionRange, ui.frictionValue, "wallFriction", value => value.toFixed(2));
+
+  bindRange(ui.shakeRange, ui.shakeValue, "shake", value => `${value.toFixed(2)}×`);
+  bindRange(ui.tapRange, ui.tapValue, "tapImpulseMps", value => `${value.toFixed(2)} m/s`);
+  bindRange(ui.tiltRange, ui.tiltValue, "tiltSteering", value => `${value.toFixed(2)} g`);
+  bindRange(ui.smoothingRange, ui.smoothingValue, "sensorSmoothingS", value => `${Math.round(value * 1000)} ms`);
+  bindRange(ui.peakRange, ui.peakValue, "peakCapture", value => `${value.toFixed(2)}×`);
+  bindRange(ui.deadzoneRange, ui.deadzoneValue, "sensorDeadzoneMps2", value => `${value.toFixed(2)} m/s²`);
+
+  bindRange(ui.durabilityRange, ui.durabilityValue, "glassStrength", value => `${value.toFixed(2)}×`);
+  bindRange(ui.tubeLengthRange, ui.tubeLengthValue, "tubeLengthCm", value => `${value.toFixed(0)} cm`, true);
+  bindRange(ui.tubeDiameterRange, ui.tubeDiameterValue, "tubeDiameterMm", value => `${value.toFixed(0)} mm`, true);
+  bindRange(ui.edgeBounceRange, ui.edgeBounceValue, "edgeBounce", value => value.toFixed(2));
+  bindRange(ui.timeScaleRange, ui.timeScaleValue, "timeScale", value => `${value.toFixed(2)}×`);
+
+  ui.invertYToggle.addEventListener("change", () => {
+    tuning.invertVerticalSensor = ui.invertYToggle.checked;
+    input.pendingVelocityY = 0;
+    showToast(tuning.invertVerticalSensor
+      ? "Vertical sensor direction inverted."
+      : "Vertical sensor direction restored.");
+  });
+
+  ui.debugToggle.addEventListener("change", () => {
+    tuning.debug = ui.debugToggle.checked;
+  });
+
+  ui.settingsButton.addEventListener("click", () => {
+    const open = !ui.settingsPanel.classList.contains("open");
+    ui.settingsPanel.classList.toggle("open", open);
+    ui.settingsPanel.setAttribute("aria-hidden", String(!open));
+    ui.settingsButton.setAttribute("aria-expanded", String(open));
+  });
+
+  ui.motionButton.addEventListener("click", enableMotion);
+  ui.introMotion.addEventListener("click", enableMotion);
+  ui.introDemo.addEventListener("click", () => {
+    ensureAudio();
+    ui.intro.classList.add("hidden");
+    showToast("Tap the lower screen to launch upward, or drag quickly to simulate a shake.");
+  });
+  ui.calibrateButton.addEventListener("click", calibrateTilt);
+  ui.panelCalibrate.addEventListener("click", calibrateTilt);
+  ui.resetButton.addEventListener("click", resetSimulation);
+  ui.kickUp.addEventListener("click", () => applyVerticalImpulse(-1));
+  ui.kickDown.addEventListener("click", () => applyVerticalImpulse(1));
+  ui.autoShake.addEventListener("click", startDemoShake);
+
+  canvas.addEventListener("pointerdown", event => {
+    ensureAudio();
+    ui.intro.classList.add("hidden");
+    pointer.active = true;
+    pointer.id = event.pointerId;
+    pointer.x = event.clientX;
+    pointer.y = event.clientY;
+    pointer.startX = event.clientX;
+    pointer.startY = event.clientY;
+    pointer.t = performance.now();
+    pointer.startT = pointer.t;
+    pointer.distance = 0;
+    canvas.setPointerCapture?.(event.pointerId);
+  });
+
+  canvas.addEventListener("pointermove", event => {
+    if (!pointer.active || event.pointerId !== pointer.id) return;
+    const now = performance.now();
+    const dt = Math.max(0.008, (now - pointer.t) / 1000);
+    const dx = event.clientX - pointer.x;
+    const dy = event.clientY - pointer.y;
+    pointer.distance += Math.hypot(dx, dy);
+
+    // Touch drag is a desktop/mobile test stand-in for phone acceleration.
+    // A quick downward phone movement gives the marble an upward pseudo-force.
+    const syntheticAx = clamp(-(dx / tube.pixelsPerMeter) / (dt * dt) * 0.22,
+      -BASE.manualClampMps2, BASE.manualClampMps2);
+    const syntheticAy = clamp(-(dy / tube.pixelsPerMeter) / (dt * dt) * 0.22,
+      -BASE.manualClampMps2, BASE.manualClampMps2);
+    input.manualX = clamp(input.manualX + syntheticAx, -BASE.manualClampMps2, BASE.manualClampMps2);
+    input.manualY = clamp(input.manualY + syntheticAy, -BASE.manualClampMps2, BASE.manualClampMps2);
+
+    pointer.x = event.clientX;
+    pointer.y = event.clientY;
+    pointer.t = now;
+  });
+
+  const endPointer = event => {
+    if (event.pointerId !== pointer.id) return;
+    const elapsed = performance.now() - pointer.startT;
+    const wasTap = elapsed < 230 && pointer.distance < 20;
+    if (wasTap && pointer.startY > height * 0.55) {
+      applyVerticalImpulse(-1);
+    } else if (wasTap && pointer.startY < height * 0.34) {
+      applyVerticalImpulse(1);
+    }
+    pointer.active = false;
+    pointer.id = null;
+  };
+  canvas.addEventListener("pointerup", endPointer);
+  canvas.addEventListener("pointercancel", endPointer);
+
+  window.addEventListener("keydown", event => {
+    if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(event.code)) {
+      event.preventDefault();
+    }
+    pressedKeys.add(event.code);
+    if (event.code === "Space" && !event.repeat) startDemoShake();
+    if (event.code === "KeyR" && !event.repeat) resetSimulation();
+  });
+
+  window.addEventListener("keyup", event => pressedKeys.delete(event.code));
+  window.addEventListener("resize", resize, { passive: true });
+  window.screen?.orientation?.addEventListener?.("change", resize);
+  document.addEventListener("visibilitychange", () => {
+    lastTime = performance.now();
+    accumulator = 0;
+  });
+
+  resize();
+  resetSimulation();
+  requestAnimationFrame(frame);
+})();
   </script>
 </body>
 </html>
