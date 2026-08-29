@@ -598,7 +598,7 @@
       </div>
       <div class="state-card">
         <div id="stateName" class="state-name">SEALED</div>
-        <div id="stateHint" class="state-hint">Tap from below or shake vertically</div>
+        <div id="stateHint" class="state-hint">Shake to bounce · tilt to roll</div>
       </div>
       <div class="meter-card">
         <div class="meter-label"><span>BOTTOM CAP DAMAGE</span><span id="bottomDamageText">0%</span></div>
@@ -608,7 +608,7 @@
 
     <aside id="settingsPanel" class="settings" aria-hidden="true">
       <h2>Physics tuning</h2>
-      <p class="note">The solver uses metres, seconds, kilograms and joules. Mass changes impact energy and glass damage, but does not change gravitational fall acceleration.</p>
+      <p class="note">The solver uses metres, seconds, kilograms and joules. There is no fixed screen-down gravity: phone tilt creates the gravity component along the screen. Mass changes impact energy and glass damage, but not gravitational acceleration.</p>
 
       <div class="section-label">BALL &amp; GRAVITY</div>
 
@@ -619,9 +619,9 @@
       </div>
 
       <div class="control">
-        <label for="gravityRange">Downward gravity</label>
+        <label for="gravityRange">Tilt gravity strength</label>
         <output id="gravityValue">1.00 g</output>
-        <input id="gravityRange" type="range" min="0.10" max="2.50" step="0.05" value="1.00" />
+        <input id="gravityRange" type="range" min="0.00" max="1.50" step="0.05" value="1.00" />
       </div>
 
       <div class="control">
@@ -644,8 +644,8 @@
 
       <div class="control">
         <label for="frictionRange">Contact friction</label>
-        <output id="frictionValue">0.10</output>
-        <input id="frictionRange" type="range" min="0" max="0.60" step="0.01" value="0.10" />
+        <output id="frictionValue">0.03</output>
+        <input id="frictionRange" type="range" min="0" max="0.60" step="0.01" value="0.03" />
       </div>
 
       <div class="section-label">PHONE MOTION</div>
@@ -663,9 +663,9 @@
       </div>
 
       <div class="control">
-        <label for="tiltRange">Sideways tilt steering</label>
-        <output id="tiltValue">0.45 g</output>
-        <input id="tiltRange" type="range" min="0" max="1.50" step="0.05" value="0.45" />
+        <label for="tiltRange">Tilt response / rolling factor</label>
+        <output id="tiltValue">0.71×</output>
+        <input id="tiltRange" type="range" min="0.10" max="1.20" step="0.01" value="0.71" />
       </div>
 
       <div class="control">
@@ -746,7 +746,7 @@
       <div class="intro-card">
         <div class="intro-icon">↕</div>
         <h1>Vertical Tube Physics</h1>
-        <p>Gravity always pulls the marble downward. A vertical phone tap or shake gives it an inertial bounce, letting it strike the top and bottom caps. Strong repeated impacts crack and eventually break the glass.</p>
+        <p>There is no fixed screen-down gravity. Gravity is projected into the phone screen from the phone’s tilt, so when the phone is neutral the marble can rest. Tilt the phone to make it roll along the tube; shake or tap the phone to add inertial acceleration and make it bounce into the glass caps. Strong repeated impacts crack and eventually break the glass.</p>
         <div class="intro-actions">
           <button id="introMotion" class="primary">Enable Phone Motion</button>
           <button id="introDemo">Use Touch Controls</button>
@@ -862,10 +862,10 @@
     ballDiameterMm: 28,
     restitution: 0.76,
     airDrag: 0.08,
-    wallFriction: 0.10,
+    wallFriction: 0.03,
     shake: 1.00,
     tapImpulseMps: 3.20,
-    tiltSteering: 0.45,
+    tiltSteering: 0.71,
     sensorSmoothingS: 0.035,
     peakCapture: 0.80,
     sensorDeadzoneMps2: 0.10,
@@ -1254,7 +1254,7 @@
     input.detected = true;
     input.lastSensorAt = performance.now();
     ui.sensorLight.classList.add("live");
-    ui.sensorText.textContent = "Motion live · shake vertically · gravity remains downward";
+    ui.sensorText.textContent = "Motion live · shake to bounce · tilt to roll";
   }
 
   function attachSensorListeners() {
@@ -1293,7 +1293,7 @@
       ui.motionButton.textContent = "Motion On";
       ui.sensorText.textContent = "Waiting for motion data…";
       showToast(window.isSecureContext
-        ? "Motion enabled. Tap or shake the phone vertically."
+        ? "Motion enabled. Shake to bounce, then tilt the phone to roll the marble."
         : "Permission granted, but motion sensors may require an HTTPS page.");
     } catch (error) {
       input.permission = "denied";
@@ -1577,16 +1577,16 @@
 
     // The tube is fixed to the phone. Device acceleration therefore creates
     // an equal and opposite pseudo-acceleration on the marble.
-    const ax = tilt.x * STANDARD_GRAVITY * tuning.tiltSteering
+    const ax = tilt.x * STANDARD_GRAVITY * tuning.gravityG * tuning.tiltSteering
              - input.motionX * tuning.shake
              + input.manualX
              + input.autoX
              + input.keyAccelX;
 
-    // Gravity is deliberately always screen-down. Vertical phone motion is
-    // added as the opposite inertial acceleration, allowing a bottom tap to
-    // launch the marble upward before gravity pulls it back down.
-    const ay = STANDARD_GRAVITY * tuning.gravityG
+    // No fixed screen-down gravity. The gravity component in the screen plane
+    // comes only from phone tilt. For a rolling solid sphere, ideal acceleration
+    // on an incline is about 5/7 of g·sin(theta), hence the default 0.71 factor.
+    const ay = tilt.y * STANDARD_GRAVITY * tuning.gravityG * tuning.tiltSteering
              - sensorY * tuning.shake
              + input.manualY
              + input.autoY
@@ -1687,7 +1687,7 @@
       world.phase = Phase.FREE;
       marble.vx *= 0.98;
       marble.vy *= 0.98;
-      showToast("Marble escaped. Gravity stays downward; tilt steers sideways and shaking can bounce it.");
+      showToast("Marble escaped. Tilt now moves it in any direction; shaking still adds bounce.");
     }
   }
 
@@ -2220,13 +2220,13 @@
       ui.stateName.textContent = "SEALED";
       ui.stateHint.textContent = Math.max(top, bottom) > 0.02
         ? "Cracks are spreading"
-        : "Tap from below or shake vertically";
+        : "Shake to bounce · tilt to roll";
     } else if (world.phase === Phase.OPEN) {
       ui.stateName.textContent = "BREACHED";
       ui.stateHint.textContent = `Opening at ${tube.brokenSide} · drive the marble through it`;
     } else {
       ui.stateName.textContent = "MARBLE FREE";
-      ui.stateHint.textContent = "Gravity down · tilt sideways · shake to bounce";
+      ui.stateHint.textContent = "Tilt = gravity · shake = bounce";
     }
   }
 
@@ -2281,7 +2281,7 @@
 
   bindRange(ui.shakeRange, ui.shakeValue, "shake", value => `${value.toFixed(2)}×`);
   bindRange(ui.tapRange, ui.tapValue, "tapImpulseMps", value => `${value.toFixed(2)} m/s`);
-  bindRange(ui.tiltRange, ui.tiltValue, "tiltSteering", value => `${value.toFixed(2)} g`);
+  bindRange(ui.tiltRange, ui.tiltValue, "tiltSteering", value => `${value.toFixed(2)}×`);
   bindRange(ui.smoothingRange, ui.smoothingValue, "sensorSmoothingS", value => `${Math.round(value * 1000)} ms`);
   bindRange(ui.peakRange, ui.peakValue, "peakCapture", value => `${value.toFixed(2)}×`);
   bindRange(ui.deadzoneRange, ui.deadzoneValue, "sensorDeadzoneMps2", value => `${value.toFixed(2)} m/s²`);
@@ -2316,7 +2316,7 @@
   ui.introDemo.addEventListener("click", () => {
     ensureAudio();
     ui.intro.classList.add("hidden");
-    showToast("Tap the lower screen to launch upward, or drag quickly to simulate a shake.");
+    showToast("Tap the lower screen to simulate an upward phone impulse, drag quickly to simulate shaking, and use tilt/arrows to roll the marble.");
   });
   ui.calibrateButton.addEventListener("click", calibrateTilt);
   ui.panelCalibrate.addEventListener("click", calibrateTilt);
