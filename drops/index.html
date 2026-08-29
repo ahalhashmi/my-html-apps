@@ -89,7 +89,7 @@
   </div>
 
   <div class="readout">
-    <div id="status" class="status">Tilt the phone to move the drop. At rest it becomes almost perfectly circular; while moving, the tail forms opposite the direction of motion and lengthens as speed increases.</div>
+    <div id="status" class="status">Tilt the phone to move the drop. At rest it stays nearly circular; as it moves, the tail grows smoothly opposite the direction of travel and the background inside the drop looks magnified.</div>
     <div id="settings" class="settings">
       <h2>Drop tuning</h2>
       <p>Model combines tilt-gravity, contact-angle hysteresis, surface drag, velocity-dependent deformation and damped shape relaxation.</p>
@@ -148,6 +148,8 @@
 (() => {
   const canvas = document.getElementById('c');
   const ctx = canvas.getContext('2d');
+  const bgCanvas = document.createElement('canvas');
+  const bgCtx = bgCanvas.getContext('2d');
   const motionBtn = document.getElementById('motionBtn');
   const resetBtn = document.getElementById('resetBtn');
   const settingsBtn = document.getElementById('settingsBtn');
@@ -216,13 +218,61 @@
     canvas.style.width = W+'px';
     canvas.style.height = H+'px';
     ctx.setTransform(dpr,0,0,dpr,0,0);
+
+    bgCanvas.width = W;
+    bgCanvas.height = H;
+    rebuildBackground();
+
     if (!drop.initialized) reset();
   }
+  function rebuildBackground(){
+    bgCtx.clearRect(0,0,W,H);
+
+    const g = bgCtx.createRadialGradient(W*0.5, H*0.45, 0, W*0.5, H*0.45, Math.max(W,H)*0.8);
+    g.addColorStop(0, '#10253c');
+    g.addColorStop(0.65, '#08111f');
+    g.addColorStop(1, '#050b14');
+    bgCtx.fillStyle = g;
+    bgCtx.fillRect(0,0,W,H);
+
+    bgCtx.lineWidth = 1;
+
+    // Fine grid every 20 px
+    bgCtx.strokeStyle = 'rgba(148,163,184,0.12)';
+    for(let x=0; x<=W; x+=20){
+      bgCtx.beginPath();
+      bgCtx.moveTo(x+0.5, 0);
+      bgCtx.lineTo(x+0.5, H);
+      bgCtx.stroke();
+    }
+    for(let y=0; y<=H; y+=20){
+      bgCtx.beginPath();
+      bgCtx.moveTo(0, y+0.5);
+      bgCtx.lineTo(W, y+0.5);
+      bgCtx.stroke();
+    }
+
+    // Stronger grid every 100 px
+    bgCtx.strokeStyle = 'rgba(148,163,184,0.20)';
+    for(let x=0; x<=W; x+=100){
+      bgCtx.beginPath();
+      bgCtx.moveTo(x+0.5, 0);
+      bgCtx.lineTo(x+0.5, H);
+      bgCtx.stroke();
+    }
+    for(let y=0; y<=H; y+=100){
+      bgCtx.beginPath();
+      bgCtx.moveTo(0, y+0.5);
+      bgCtx.lineTo(W, y+0.5);
+      bgCtx.stroke();
+    }
+  }
+
   addEventListener('resize', resize);
 
   const drop = {
     x:0, y:0, vx:0, vy:0,
-    angle:0, elongation:0, wobble:0,
+    angle:0, elongation:0, shapeMix:0, wobble:0,
     initialized:false
   };
 
@@ -238,6 +288,7 @@
     drop.vx = drop.vy = 0;
     drop.angle = 0;
     drop.elongation = 0;
+    drop.shapeMix = 0;
     drop.wobble = 0;
     drop.initialized = true;
   }
@@ -369,19 +420,29 @@
     while(da<-Math.PI) da+=Math.PI*2;
     drop.angle += da * Math.min(1,P.response*dt);
 
-    // Shape deformation begins only after meaningful movement.
-    // At rest the drop relaxes to an almost perfect circle.
-    // Tail length grows progressively with speed.
-    const shapeStartSpeed = 18;
+    // Smooth shape deformation driven by actual velocity.
+    // A separate shape-mix parameter avoids a snappy switch
+    // between circular and teardrop profiles.
+    const shapeStartSpeed = 10;
+    const shapeFullSpeed = 170;
     const effectiveSpeed = Math.max(0, v - shapeStartSpeed);
     const normalizedSpeed = effectiveSpeed / 520;
     const targetElong = Math.min(
-      1.85,
-      Math.pow(normalizedSpeed, 0.82) * P.stretch / P.tension
+      1.95,
+      Math.pow(normalizedSpeed, 0.90) * P.stretch / Math.max(0.35, P.tension)
     );
-    drop.elongation += (targetElong-drop.elongation) * Math.min(1,P.response*dt);
 
-    if (v < 5 && drop.elongation < 0.015) drop.elongation = 0;
+    const deformRate = targetElong > drop.elongation ? P.response * 0.82 : P.response * 0.42;
+    const deformBlend = 1 - Math.exp(-deformRate * dt);
+    drop.elongation += (targetElong - drop.elongation) * deformBlend;
+
+    const rawMix = Math.max(0, Math.min(1, (v - shapeStartSpeed) / (shapeFullSpeed - shapeStartSpeed)));
+    const targetShapeMix = rawMix * rawMix * (3 - 2 * rawMix); // smoothstep
+    const mixBlend = 1 - Math.exp(-(2.2 + P.response * 0.28) * dt);
+    drop.shapeMix += (targetShapeMix - drop.shapeMix) * mixBlend;
+
+    if (v < 1.5 && Math.abs(drop.elongation) < 0.002) drop.elongation = 0;
+    if (v < 1.5 && Math.abs(drop.shapeMix) < 0.002) drop.shapeMix = 0;
 
     // Small damped oscillation from acceleration changes and collisions.
     const forcing = Math.min(1.5, accelMag/900) * P.wobble;
@@ -409,15 +470,43 @@
     const r = P.radius;
     const e = Math.max(0, drop.elongation);
     const speedNow = Math.hypot(drop.vx,drop.vy);
-    const wob = Math.sin(t*11 + speedNow*.01) * drop.wobble * 0.055;
+    const m = Math.max(0, Math.min(1, drop.shapeMix));
+    const wob = Math.sin(t*11 + speedNow*.01) * drop.wobble * 0.035 * (0.25 + 0.75*m);
 
     // Local +X is the direction of motion because the canvas is rotated
     // to drop.angle. The tail therefore always extends toward local -X.
-    const motionAmount = Math.min(1, e / 1.35);
-    const tailLength = r * e * 1.35;
-    const frontR = r * (1 + 0.07 * motionAmount);
+    const tailLength = r * e * 1.28 * (0.18 + 0.82*m);
+    const frontExtra = r * (0.015 + 0.075*m + 0.015*e);
+    const frontR = r + frontExtra;
     const rearR = r + tailLength;
-    const widthR = r * (1 - 0.22 * motionAmount + wob);
+    const widthR = Math.max(r*0.72, r * (1 - 0.13*m + wob));
+
+    function makeDropPath(){
+      const path = new Path2D();
+      const samples = 96;
+      for(let i=0;i<=samples;i++){
+        const th = (i / samples) * Math.PI * 2;
+        const c = Math.cos(th);
+        const s = Math.sin(th);
+
+        // Front remains rounded while rear extends progressively.
+        const frontBlend = Math.pow((1 + c) * 0.5, 1.55);
+        const rearBlend = Math.pow((1 - c) * 0.5, 1.08 + 1.35*m);
+        const axialRadius = r + frontExtra * frontBlend + tailLength * rearBlend;
+
+        // Slightly tighten the body toward the tail.
+        const localWidth = widthR * (1 - 0.11*m*rearBlend);
+        const x = axialRadius * c;
+        const y = localWidth * s;
+
+        if(i===0) path.moveTo(x,y);
+        else path.lineTo(x,y);
+      }
+      path.closePath();
+      return path;
+    }
+
+    const dropPath = makeDropPath();
 
     ctx.save();
     ctx.translate(drop.x,drop.y);
@@ -426,123 +515,106 @@
     // Soft contact shadow.
     ctx.save();
     ctx.scale(1, .62);
-    const shadowCenter = (frontR - rearR) * 0.22;
-    const shadowRadius = (frontR + rearR) * 0.58;
+    const shadowCenter = (frontR - rearR) * 0.18;
+    const shadowRadiusX = Math.max(r, (frontR + rearR) * 0.56);
     const sh = ctx.createRadialGradient(
-      shadowCenter, r*.38, r*.12,
-      shadowCenter, r*.38, Math.max(r,shadowRadius*1.15)
+      shadowCenter, r*.38, r*.10,
+      shadowCenter, r*.38, shadowRadiusX*1.12
     );
-    sh.addColorStop(0,'rgba(0,0,0,.28)');
+    sh.addColorStop(0,'rgba(0,0,0,.25)');
     sh.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=sh;
+    ctx.fillStyle = sh;
     ctx.beginPath();
     ctx.ellipse(
       shadowCenter,
       r*.42,
-      Math.max(r,shadowRadius*1.05),
-      Math.max(2,widthR*.72),
+      shadowRadiusX,
+      Math.max(2,widthR*.70),
       0,0,Math.PI*2
     );
     ctx.fill();
     ctx.restore();
 
-    // Main droplet body.
-    ctx.beginPath();
+    // Magnified / distorted background inside the droplet.
+    ctx.save();
+    ctx.clip(dropPath);
 
-    if (e < 0.025) {
-      // Stationary / almost stationary: true circular bead.
-      ctx.arc(0,0,r,0,Math.PI*2);
-    } else {
-      // Moving: rounded front (+X), pointed tail opposite motion (-X).
-      const tipX = -rearR;
-      const shoulderX = -r * (0.28 + 0.24*motionAmount);
-      const frontX = frontR;
+    const lensPad = 12;
+    const destX = -rearR - lensPad;
+    const destY = -widthR - lensPad;
+    const destW = rearR + frontR + lensPad*2;
+    const destH = widthR*2 + lensPad*2;
 
-      ctx.moveTo(tipX, 0);
+    const magX = 1.22 + 0.10*m;
+    const magY = 1.18 + 0.06*m;
+    const srcW = Math.max(8, destW / magX);
+    const srcH = Math.max(8, destH / magY);
 
-      ctx.bezierCurveTo(
-        tipX + rearR*(0.17 + 0.08*(1-motionAmount)),
-        -widthR*(0.18 + 0.20*(1-motionAmount)),
-        shoulderX,
-        -widthR,
-        r*0.12,
-        -widthR
-      );
+    const srcX = Math.max(0, Math.min(W - srcW, drop.x - srcW/2 + Math.cos(drop.angle) * r * 0.05));
+    const srcY = Math.max(0, Math.min(H - srcH, drop.y - srcH/2 + Math.sin(drop.angle) * r * 0.04));
 
-      ctx.bezierCurveTo(
-        frontX*0.64,
-        -widthR,
-        frontX,
-        -widthR*0.54,
-        frontX,
-        0
-      );
+    ctx.globalAlpha = 0.96;
+    ctx.drawImage(bgCanvas, srcX, srcY, srcW, srcH, destX, destY, destW, destH);
 
-      ctx.bezierCurveTo(
-        frontX,
-        widthR*0.54,
-        frontX*0.64,
-        widthR,
-        r*0.12,
-        widthR
-      );
+    // A subtle second pass gives a more refracted / distorted look.
+    ctx.globalAlpha = 0.18;
+    ctx.drawImage(
+      bgCanvas,
+      Math.max(0, Math.min(W - srcW*0.985, srcX + 3.5*m)),
+      Math.max(0, Math.min(H - srcH*0.985, srcY - 2.5*m)),
+      srcW*0.985, srcH*0.985,
+      destX + 1.5, destY + 1.0, destW - 3.0, destH - 2.0
+    );
+    ctx.restore();
 
-      ctx.bezierCurveTo(
-        shoulderX,
-        widthR,
-        tipX + rearR*(0.17 + 0.08*(1-motionAmount)),
-        widthR*(0.18 + 0.20*(1-motionAmount)),
-        tipX,
-        0
-      );
-      ctx.closePath();
-    }
-
+    // Transparent water body.
     const grad = ctx.createLinearGradient(-rearR,-widthR,frontR,widthR);
-    grad.addColorStop(0,'rgba(207,244,255,.28)');
-    grad.addColorStop(.28,'rgba(121,218,255,.20)');
-    grad.addColorStop(.63,'rgba(56,166,214,.16)');
-    grad.addColorStop(1,'rgba(226,250,255,.38)');
-    ctx.fillStyle=grad;
-    ctx.fill();
+    grad.addColorStop(0,'rgba(214,247,255,.18)');
+    grad.addColorStop(.22,'rgba(125,223,255,.16)');
+    grad.addColorStop(.58,'rgba(56,166,214,.12)');
+    grad.addColorStop(1,'rgba(232,252,255,.28)');
+    ctx.fillStyle = grad;
+    ctx.fill(dropPath);
 
-    ctx.lineWidth=1.35;
-    ctx.strokeStyle='rgba(220,250,255,.64)';
-    ctx.stroke();
+    // Outer edge.
+    ctx.lineWidth = 1.35;
+    ctx.strokeStyle = 'rgba(222,251,255,.66)';
+    ctx.stroke(dropPath);
 
     // Internal refraction band.
     ctx.save();
-    ctx.globalAlpha=.50;
+    ctx.globalAlpha = .56;
     ctx.beginPath();
-    const bodyCenterX = (frontR-rearR)*0.16;
-    const bodyHalfX = Math.max(r,(frontR+rearR)*0.42);
-    ctx.ellipse(bodyCenterX,widthR*.10,bodyHalfX*.70,widthR*.58,0,0,Math.PI*2);
-    const inner = ctx.createRadialGradient(frontR*.28,-widthR*.35,1,bodyCenterX,0,Math.max(r,bodyHalfX));
-    inner.addColorStop(0,'rgba(255,255,255,.45)');
-    inner.addColorStop(.35,'rgba(177,235,255,.13)');
-    inner.addColorStop(1,'rgba(20,110,160,.04)');
-    ctx.fillStyle=inner;
+    const bodyCenterX = (frontR - rearR) * 0.10;
+    const bodyHalfX = Math.max(r, (frontR + rearR) * 0.40);
+    ctx.ellipse(bodyCenterX, widthR*.07, bodyHalfX*.72, widthR*.56, 0, 0, Math.PI*2);
+    const inner = ctx.createRadialGradient(frontR*.24, -widthR*.30, 1, bodyCenterX, 0, Math.max(r,bodyHalfX));
+    inner.addColorStop(0,'rgba(255,255,255,.48)');
+    inner.addColorStop(.30,'rgba(192,240,255,.14)');
+    inner.addColorStop(1,'rgba(20,110,160,.03)');
+    ctx.fillStyle = inner;
     ctx.fill();
     ctx.restore();
 
     // Bright specular highlight.
     ctx.save();
-    ctx.globalAlpha=.78;
-    ctx.fillStyle='rgba(255,255,255,.75)';
+    ctx.globalAlpha = .80;
+    ctx.fillStyle = 'rgba(255,255,255,.76)';
     ctx.beginPath();
-    ctx.ellipse(frontR*.22,-widthR*.40,Math.max(3,r*.18),Math.max(2,r*.085),-.25,0,Math.PI*2);
+    ctx.ellipse(frontR*.20, -widthR*.38, Math.max(3,r*.18), Math.max(2,r*.085), -.25, 0, Math.PI*2);
     ctx.fill();
     ctx.restore();
 
     // Secondary faint highlight.
     ctx.save();
-    ctx.globalAlpha=.23;
-    ctx.fillStyle='rgba(255,255,255,.8)';
+    ctx.globalAlpha = .24;
+    ctx.fillStyle = 'rgba(255,255,255,.82)';
     ctx.beginPath();
-    ctx.ellipse(-r*.24,widthR*.28,Math.max(2,r*.10),Math.max(1.5,r*.055),0,0,Math.PI*2);
+    ctx.ellipse(-r*.20 - tailLength*0.10, widthR*.26, Math.max(2,r*.10), Math.max(1.5,r*.055), 0, 0, Math.PI*2);
     ctx.fill();
     ctx.restore();
 
+    ctx.restore();
     ctx.restore();
   }
 
