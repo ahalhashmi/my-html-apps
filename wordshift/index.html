@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0b1020">
-  <title>WordShift — 4-Letter Word Ladder</title>
+  <title>WordShift — 2-Player Word Ladder</title>
   <style>
     :root {
       --bg: #080c18;
@@ -603,6 +603,267 @@
       75% { transform: translateX(5px); }
     }
 
+
+
+    .multiplayer-panel {
+      margin: -2px 0 23px;
+      border: 1px solid var(--line);
+      border-radius: 19px;
+      background: var(--panel-2);
+      overflow: hidden;
+    }
+
+    .mp-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 15px 16px;
+    }
+
+    .mp-title-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--muted);
+      box-shadow: 0 0 0 4px rgba(151,165,196,.09);
+    }
+
+    .status-dot.waiting {
+      background: var(--warn);
+      box-shadow: 0 0 0 4px rgba(255,209,102,.10);
+    }
+
+    .status-dot.connected {
+      background: var(--good);
+      box-shadow: 0 0 0 4px rgba(94,224,156,.10);
+    }
+
+    .status-dot.error {
+      background: var(--bad);
+      box-shadow: 0 0 0 4px rgba(255,107,124,.10);
+    }
+
+    .mp-subtitle {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .mp-lobby {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      padding: 0 16px 16px;
+    }
+
+    .mp-create {
+      min-height: 46px;
+      border: 0;
+      border-radius: 13px;
+      padding: 0 16px;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), #6475f2);
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .join-box {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .room-input {
+      width: 100%;
+      min-width: 0;
+      min-height: 46px;
+      border-radius: 13px;
+      border: 1px solid var(--line);
+      outline: none;
+      background: var(--surface);
+      color: var(--text);
+      padding: 0 13px;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      font-size: 16px;
+      font-weight: 850;
+    }
+
+    .mp-join, .mp-small-btn {
+      min-height: 46px;
+      border-radius: 13px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      padding: 0 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .mp-small-btn {
+      min-height: 36px;
+      font-size: 11px;
+      padding: 0 11px;
+    }
+
+    .mp-small-btn.danger { color: var(--bad); }
+
+    .mp-create:disabled, .mp-join:disabled, .mp-small-btn:disabled {
+      opacity: .5;
+      cursor: default;
+    }
+
+    .mp-error {
+      display: none;
+      margin: -5px 16px 14px;
+      color: var(--bad);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .mp-error.show { display: block; }
+
+    .mp-session {
+      display: none;
+      padding: 0 16px 16px;
+    }
+
+    .mp-session.show { display: block; }
+
+    .room-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-top: 1px solid var(--line);
+      padding-top: 13px;
+      margin-bottom: 11px;
+    }
+
+    .room-code-wrap {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .room-code {
+      display: inline-block;
+      margin-left: 7px;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 950;
+      letter-spacing: .16em;
+    }
+
+    .mp-connection {
+      min-height: 18px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    .versus-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .player-card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      padding: 11px;
+    }
+
+    .player-card.you {
+      border-color: rgba(124,140,255,.25);
+    }
+
+    .player-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 850;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .player-state {
+      max-width: 88px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .player-scoreline {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      margin-top: 9px;
+    }
+
+    .mini-stat {
+      min-width: 0;
+      text-align: center;
+    }
+
+    .mini-stat strong {
+      display: block;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.1;
+      font-weight: 900;
+    }
+
+    .mini-stat span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 750;
+      text-transform: uppercase;
+    }
+
+    .vs-chip {
+      align-self: center;
+      width: 29px;
+      height: 29px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 900;
+    }
+
+    .connection-note {
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
     @media (max-width: 850px) {
       .layout { grid-template-columns: 1fr; }
       .sidebar { grid-template-columns: 1fr 1fr; }
@@ -630,6 +891,7 @@
       }
       .stats { grid-template-columns: repeat(2, 1fr); }
       .guess-form { grid-template-columns: 1fr; }
+      .mp-lobby { grid-template-columns: 1fr; }
       .primary-btn { width: 100%; }
       .sidebar { grid-template-columns: 1fr; }
       .top-actions { gap: 6px; }
@@ -637,6 +899,8 @@
 
     @media (max-width: 390px) {
       .difficulty-wrap > span { display: none; }
+      .join-box { grid-template-columns: 1fr auto; }
+      .room-code { display: block; margin: 3px 0 0; }
       .streak { padding: 0 10px; }
       .challenge { margin-bottom: 20px; }
       .game-card { padding: 13px; }
@@ -658,7 +922,7 @@
         <div class="logo" aria-hidden="true">WS</div>
         <div class="brand-copy">
           <h1 class="brand-title">WordShift</h1>
-          <div class="brand-subtitle">Change one letter. Keep every word real.</div>
+          <div class="brand-subtitle">Race a friend. Change one letter. Keep every word real.</div>
         </div>
       </div>
       <div class="top-actions">
@@ -681,6 +945,64 @@
           </label>
           <div class="streak" title="Rounds solved in a row">🔥 Streak <strong id="streakValue">0</strong></div>
         </div>
+
+        <section class="multiplayer-panel" aria-label="Two-player live race">
+          <div class="mp-head">
+            <div>
+              <div class="mp-title-row">
+                <span class="status-dot" id="mpStatusDot" aria-hidden="true"></span>
+                <span>2-Player Live Race</span>
+              </div>
+              <div class="mp-subtitle" id="mpSubtitle">Create a room or join a friend's code.</div>
+            </div>
+            <button class="mp-small-btn danger" id="leaveRoomBtn" type="button" hidden>Leave</button>
+          </div>
+
+          <div class="mp-lobby" id="mpLobby">
+            <button class="mp-create" id="createRoomBtn" type="button">Create room</button>
+            <div class="join-box">
+              <input class="room-input" id="roomCodeInput" type="text" maxlength="6"
+                     inputmode="text" autocapitalize="characters" autocomplete="off"
+                     spellcheck="false" placeholder="ROOM CODE" aria-label="Room code">
+              <button class="mp-join" id="joinRoomBtn" type="button">Join</button>
+            </div>
+          </div>
+          <div class="mp-error" id="mpError" role="alert"></div>
+
+          <div class="mp-session" id="mpSession">
+            <div class="room-line">
+              <div class="room-code-wrap">ROOM <strong class="room-code" id="roomCodeLabel">------</strong></div>
+              <div style="display:flex; gap:7px; flex-wrap:wrap; justify-content:flex-end">
+                <button class="mp-small-btn" id="copyCodeBtn" type="button">Copy code</button>
+                <button class="mp-small-btn" id="shareCodeBtn" type="button">Share</button>
+              </div>
+            </div>
+            <div class="mp-connection" id="mpConnection">Waiting for connection…</div>
+
+            <div class="versus-grid">
+              <div class="player-card you">
+                <div class="player-label"><span>You</span><span class="player-state" id="yourRaceState">Ready</span></div>
+                <div class="player-scoreline">
+                  <div class="mini-stat"><strong id="yourMoves">0</strong><span>Moves</span></div>
+                  <div class="mini-stat"><strong id="yourAttempts">0</strong><span>Tries</span></div>
+                  <div class="mini-stat"><strong id="yourRaceScore">0</strong><span>Score</span></div>
+                </div>
+              </div>
+
+              <div class="vs-chip">VS</div>
+
+              <div class="player-card">
+                <div class="player-label"><span>Friend</span><span class="player-state" id="friendRaceState">Waiting</span></div>
+                <div class="player-scoreline">
+                  <div class="mini-stat"><strong id="friendMoves">—</strong><span>Moves</span></div>
+                  <div class="mini-stat"><strong id="friendAttempts">—</strong><span>Tries</span></div>
+                  <div class="mini-stat"><strong id="friendRaceScore">—</strong><span>Score</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="connection-note">Both players receive the same verified puzzle. The first player to reach the goal wins the round.</div>
+          </div>
+        </section>
 
         <div class="challenge">
           <div class="word-block">
@@ -783,13 +1105,14 @@
           </div>
           <div class="offline-pill">
             <span class="dot" aria-hidden="true"></span>
-            <span id="dictionaryMeta">Offline dictionary loaded</span>
+            <span id="dictionaryMeta">Offline word dictionary · multiplayer uses internet</span>
           </div>
         </section>
       </aside>
     </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
   <script>
     (() => {
       "use strict";
@@ -834,7 +1157,28 @@
         rulesBtn: document.getElementById("rulesBtn"),
         rulesPanel: document.getElementById("rulesPanel"),
         themeBtn: document.getElementById("themeBtn"),
-        dictionaryMeta: document.getElementById("dictionaryMeta")
+        dictionaryMeta: document.getElementById("dictionaryMeta"),
+        mpStatusDot: document.getElementById("mpStatusDot"),
+        mpSubtitle: document.getElementById("mpSubtitle"),
+        mpLobby: document.getElementById("mpLobby"),
+        mpError: document.getElementById("mpError"),
+        mpSession: document.getElementById("mpSession"),
+        createRoomBtn: document.getElementById("createRoomBtn"),
+        roomCodeInput: document.getElementById("roomCodeInput"),
+        joinRoomBtn: document.getElementById("joinRoomBtn"),
+        leaveRoomBtn: document.getElementById("leaveRoomBtn"),
+        roomCodeLabel: document.getElementById("roomCodeLabel"),
+        copyCodeBtn: document.getElementById("copyCodeBtn"),
+        shareCodeBtn: document.getElementById("shareCodeBtn"),
+        mpConnection: document.getElementById("mpConnection"),
+        yourRaceState: document.getElementById("yourRaceState"),
+        friendRaceState: document.getElementById("friendRaceState"),
+        yourMoves: document.getElementById("yourMoves"),
+        yourAttempts: document.getElementById("yourAttempts"),
+        yourRaceScore: document.getElementById("yourRaceScore"),
+        friendMoves: document.getElementById("friendMoves"),
+        friendAttempts: document.getElementById("friendAttempts"),
+        friendRaceScore: document.getElementById("friendRaceScore")
       };
 
       const wildcardMap = new Map();
@@ -921,6 +1265,368 @@
         streak: Number(safeGet("wordshift_streak", "0")) || 0,
         lastPuzzleKey: ""
       };
+
+      const mp = {
+        peer: null,
+        conn: null,
+        role: "solo",
+        roomCode: "",
+        connected: false,
+        connecting: false,
+        roundId: "",
+        winner: "",
+        retries: 0,
+        opponent: {
+          moves: 0,
+          attempts: 0,
+          score: 0,
+          finished: false
+        }
+      };
+
+      const ROOM_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+      function randomToken(length = 10) {
+        let out = "";
+        const values = new Uint32Array(length);
+        if (window.crypto && crypto.getRandomValues) {
+          crypto.getRandomValues(values);
+          for (let i = 0; i < length; i++) out += ROOM_CHARS[values[i] % ROOM_CHARS.length];
+        } else {
+          for (let i = 0; i < length; i++) out += ROOM_CHARS[Math.floor(Math.random() * ROOM_CHARS.length)];
+        }
+        return out;
+      }
+
+      function peerIdFromCode(code) {
+        return "wordshift-v2-" + code;
+      }
+
+      function normalizeRoomCode(value) {
+        return String(value || "")
+          .toUpperCase()
+          .replace(/[^A-Z2-9]/g, "")
+          .replace(/[IO01]/g, "")
+          .slice(0, 6);
+      }
+
+      function setMpError(text = "") {
+        els.mpError.textContent = text;
+        els.mpError.classList.toggle("show", Boolean(text));
+      }
+
+      function setMpStatus(kind, subtitle) {
+        els.mpStatusDot.className = "status-dot" + (kind ? " " + kind : "");
+        if (subtitle) els.mpSubtitle.textContent = subtitle;
+      }
+
+      function resetOpponent() {
+        mp.opponent = { moves: 0, attempts: 0, score: 0, finished: false };
+      }
+
+      function updateMultiplayerUI() {
+        const active = mp.role !== "solo";
+        els.mpLobby.style.display = active ? "none" : "grid";
+        els.mpSession.classList.toggle("show", active);
+        els.leaveRoomBtn.hidden = !active;
+        els.roomCodeLabel.textContent = mp.roomCode || "------";
+
+        els.yourMoves.textContent = state.moves;
+        els.yourAttempts.textContent = state.attempts;
+        els.yourRaceScore.textContent = currentScore().toLocaleString();
+
+        els.friendMoves.textContent = mp.connected ? mp.opponent.moves : "—";
+        els.friendAttempts.textContent = mp.connected ? mp.opponent.attempts : "—";
+        els.friendRaceScore.textContent = mp.connected ? Number(mp.opponent.score || 0).toLocaleString() : "—";
+
+        let yourState = "Ready";
+        if (state.finished && mp.winner) yourState = mp.winner === mp.role ? "Winner" : "Finished";
+        else if (state.finished) yourState = "Solved";
+        else if (mp.connected) yourState = "Playing";
+        els.yourRaceState.textContent = yourState;
+
+        let friendState = "Waiting";
+        if (mp.connected) friendState = mp.opponent.finished ? "Solved" : "Playing";
+        if (mp.winner) friendState = mp.winner === (mp.role === "host" ? "guest" : "host") ? "Winner" : "Finished";
+        els.friendRaceState.textContent = friendState;
+
+        if (mp.role === "guest" && mp.connected) {
+          els.difficulty.disabled = true;
+          els.newBtn.disabled = true;
+          els.newBtn.textContent = "Host picks next";
+        } else {
+          els.difficulty.disabled = false;
+          if (!state.finished || mp.role !== "guest") els.newBtn.disabled = false;
+          els.newBtn.textContent = "New puzzle";
+        }
+      }
+
+      function sendMp(payload) {
+        if (!mp.conn || !mp.connected || !mp.conn.open) return false;
+        try {
+          mp.conn.send(payload);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      function broadcastProgress() {
+        if (!mp.connected) return;
+        sendMp({
+          type: "progress",
+          roundId: mp.roundId,
+          moves: state.moves,
+          attempts: state.attempts,
+          score: currentScore(),
+          finished: state.finished
+        });
+        updateMultiplayerUI();
+      }
+
+      function closeMultiplayer({ startSolo = false, message = "" } = {}) {
+        try { if (mp.conn) mp.conn.close(); } catch {}
+        try { if (mp.peer) mp.peer.destroy(); } catch {}
+        mp.peer = null;
+        mp.conn = null;
+        mp.role = "solo";
+        mp.roomCode = "";
+        mp.connected = false;
+        mp.connecting = false;
+        mp.roundId = "";
+        mp.winner = "";
+        mp.retries = 0;
+        resetOpponent();
+        setMpError("");
+        setMpStatus("", message || "Create a room or join a friend's code.");
+        els.mpConnection.textContent = "Waiting for connection…";
+        updateMultiplayerUI();
+        if (startSolo) startRound();
+      }
+
+      function showConnectionLost() {
+        if (mp.role === "solo") return;
+        mp.connected = false;
+        mp.connecting = false;
+        setMpStatus("error", "Connection lost. Leave the room or reconnect with a new code.");
+        els.mpConnection.textContent = "Your friend disconnected.";
+        updateMultiplayerUI();
+      }
+
+      function applyRaceResult(winnerRole, winnerStats = {}) {
+        if (!mp.connected || mp.winner) return;
+        mp.winner = winnerRole;
+        state.finished = true;
+        const localWon = winnerRole === mp.role;
+        const remoteRole = mp.role === "host" ? "guest" : "host";
+
+        if (winnerRole === remoteRole) {
+          mp.opponent.finished = true;
+          if (Number.isFinite(winnerStats.moves)) mp.opponent.moves = winnerStats.moves;
+          if (Number.isFinite(winnerStats.attempts)) mp.opponent.attempts = winnerStats.attempts;
+          if (Number.isFinite(winnerStats.score)) mp.opponent.score = winnerStats.score;
+        }
+
+        if (localWon) {
+          state.streak += 1;
+          safeSet("wordshift_streak", state.streak);
+          const score = currentScore();
+          const oldBest = Number(safeGet(bestKey(), "0")) || 0;
+          if (score > oldBest) safeSet(bestKey(), score);
+          els.winBanner.textContent =
+            "🏆 You win! " + state.moves + " moves · " + state.attempts +
+            " attempts · " + score.toLocaleString() + " points.";
+          els.winBanner.classList.add("show");
+          setMessage("You reached the goal first. The host can start the next round.", "good");
+        } else {
+          state.streak = 0;
+          safeSet("wordshift_streak", "0");
+          state.finished = true;
+          els.winBanner.textContent =
+            "Your friend wins this round" +
+            (Number.isFinite(winnerStats.moves) ? " in " + winnerStats.moves + " moves." : ".");
+          els.winBanner.classList.add("show");
+          setMessage("Round over. Try to take the next one.", "warn");
+        }
+
+        els.guessInput.disabled = true;
+        els.submitBtn.disabled = true;
+        els.hintBtn.disabled = true;
+        els.giveUpBtn.disabled = true;
+        updateStats();
+        updateBestDisplay();
+        updateMultiplayerUI();
+      }
+
+      function declareRaceWinner(winnerRole, winnerStats) {
+        if (mp.role !== "host" || mp.winner) return;
+        sendMp({ type: "raceResult", roundId: mp.roundId, winner: winnerRole, stats: winnerStats || {} });
+        applyRaceResult(winnerRole, winnerStats || {});
+      }
+
+      function handleMpData(data) {
+        if (!data || typeof data !== "object") return;
+
+        if (data.type === "round" && mp.role === "guest") {
+          if (!data.puzzle || !data.roundId) return;
+          if (typeof data.difficulty === "string" && PUZZLES[data.difficulty]) {
+            els.difficulty.value = data.difficulty;
+          }
+          mp.roundId = data.roundId;
+          mp.winner = "";
+          resetOpponent();
+          resetRoundToPuzzle(data.puzzle);
+          setMessage("Race started — reach " + data.puzzle.goal.toUpperCase() + " before your friend.", "good");
+          updateMultiplayerUI();
+          return;
+        }
+
+        if (data.roundId && mp.roundId && data.roundId !== mp.roundId) return;
+
+        if (data.type === "progress") {
+          mp.opponent.moves = Math.max(0, Number(data.moves) || 0);
+          mp.opponent.attempts = Math.max(0, Number(data.attempts) || 0);
+          mp.opponent.score = Math.max(0, Number(data.score) || 0);
+          mp.opponent.finished = Boolean(data.finished);
+          updateMultiplayerUI();
+          return;
+        }
+
+        if (data.type === "finish" && mp.role === "host") {
+          mp.opponent.finished = true;
+          mp.opponent.moves = Math.max(0, Number(data.stats && data.stats.moves) || 0);
+          mp.opponent.attempts = Math.max(0, Number(data.stats && data.stats.attempts) || 0);
+          mp.opponent.score = Math.max(0, Number(data.stats && data.stats.score) || 0);
+          declareRaceWinner("guest", data.stats || {});
+          return;
+        }
+
+        if (data.type === "forfeit" && mp.role === "host") {
+          declareRaceWinner("host", {
+            moves: state.moves,
+            attempts: state.attempts,
+            score: currentScore()
+          });
+          return;
+        }
+
+        if (data.type === "raceResult" && mp.role === "guest") {
+          applyRaceResult(data.winner, data.stats || {});
+        }
+      }
+
+      function attachConnection(conn) {
+        mp.conn = conn;
+
+        conn.on("data", handleMpData);
+        conn.on("close", showConnectionLost);
+        conn.on("error", () => showConnectionLost());
+        conn.on("open", () => {
+          mp.connected = true;
+          mp.connecting = false;
+          setMpError("");
+          setMpStatus("connected", "Friend connected — both phones are linked live.");
+          els.mpConnection.textContent = mp.role === "host"
+            ? "Connected. Starting a fresh shared round…"
+            : "Connected. Waiting for the host's puzzle…";
+          updateMultiplayerUI();
+
+          if (mp.role === "host") {
+            startRound();
+          } else {
+            els.guessInput.disabled = true;
+            els.submitBtn.disabled = true;
+            els.hintBtn.disabled = true;
+            els.giveUpBtn.disabled = true;
+          }
+        });
+      }
+
+      function createRoom(retry = false) {
+        if (!window.Peer) {
+          setMpError("Multiplayer library could not load. Check your internet connection and reload the page.");
+          setMpStatus("error", "Multiplayer needs an internet connection.");
+          return;
+        }
+
+        if (!retry) closeMultiplayer();
+        mp.role = "host";
+        mp.connecting = true;
+        mp.roomCode = randomToken(6);
+        setMpError("");
+        setMpStatus("waiting", "Share this code with your friend.");
+        els.mpConnection.textContent = "Waiting for Player 2 to join…";
+        updateMultiplayerUI();
+
+        const peer = new window.Peer(peerIdFromCode(mp.roomCode));
+        mp.peer = peer;
+
+        peer.on("open", () => {
+          mp.connecting = false;
+          setMpStatus("waiting", "Room created. Share the 6-character code.");
+          els.mpConnection.textContent = "Waiting for Player 2 to join…";
+        });
+
+        peer.on("connection", conn => {
+          if (mp.conn && mp.conn.open) {
+            try { conn.close(); } catch {}
+            return;
+          }
+          attachConnection(conn);
+        });
+
+        peer.on("error", err => {
+          if (err && err.type === "unavailable-id" && mp.retries < 5) {
+            mp.retries += 1;
+            try { peer.destroy(); } catch {}
+            createRoom(true);
+            return;
+          }
+          setMpError("Could not create the room. Check your connection and try again.");
+          setMpStatus("error", "Room creation failed.");
+        });
+      }
+
+      function joinRoom() {
+        const code = normalizeRoomCode(els.roomCodeInput.value);
+        els.roomCodeInput.value = code;
+
+        if (code.length !== 6) {
+          setMpError("Enter the full 6-character room code.");
+          return;
+        }
+        if (!window.Peer) {
+          setMpError("Multiplayer library could not load. Check your internet connection and reload the page.");
+          setMpStatus("error", "Multiplayer needs an internet connection.");
+          return;
+        }
+
+        closeMultiplayer();
+        mp.role = "guest";
+        mp.roomCode = code;
+        mp.connecting = true;
+        setMpStatus("waiting", "Connecting to room " + code + "…");
+        els.mpConnection.textContent = "Looking for the host…";
+        updateMultiplayerUI();
+
+        const peer = new window.Peer();
+        mp.peer = peer;
+
+        peer.on("open", () => {
+          const conn = peer.connect(peerIdFromCode(code), {
+            reliable: true,
+            serialization: "json",
+            metadata: { app: "wordshift", version: 2 }
+          });
+          attachConnection(conn);
+        });
+
+        peer.on("error", () => {
+          setMpError("Could not join that room. Check the code and make sure the host is still waiting.");
+          setMpStatus("error", "Unable to join room " + code + ".");
+        });
+      }
+
 
       function renderTiles(container, word) {
         container.innerHTML = "";
@@ -1013,6 +1719,7 @@
       function reject(text) {
         state.invalidAttempts++;
         updateStats();
+        broadcastProgress();
         setMessage(text, "bad");
         els.entryPanel.classList.remove("shake");
         void els.entryPanel.offsetWidth;
@@ -1037,10 +1744,7 @@
         return chosen || pool[0];
       }
 
-      function startRound() {
-        const puzzle = choosePuzzle();
-        if (!puzzle) return;
-
+      function resetRoundToPuzzle(puzzle) {
         state.puzzle = puzzle;
         state.current = puzzle.start;
         state.history = [puzzle.start];
@@ -1069,16 +1773,73 @@
         updateStats();
         updateHistory();
         updateBestDisplay();
+        updateMultiplayerUI();
 
         window.setTimeout(() => els.guessInput.focus(), 50);
       }
 
+      function startRound() {
+        if (mp.connected && mp.role === "guest") {
+          setMessage("Only the room host can start the next multiplayer puzzle.", "warn");
+          return;
+        }
+
+        const puzzle = choosePuzzle();
+        if (!puzzle) return;
+
+        if (mp.connected && mp.role === "host") {
+          mp.roundId = randomToken(12);
+          mp.winner = "";
+          resetOpponent();
+        }
+
+        resetRoundToPuzzle(puzzle);
+
+        if (mp.connected && mp.role === "host") {
+          sendMp({
+            type: "round",
+            roundId: mp.roundId,
+            difficulty: els.difficulty.value,
+            puzzle
+          });
+          els.mpConnection.textContent = "Live race in progress.";
+          updateMultiplayerUI();
+        }
+      }
+
       function finishRound() {
         state.finished = true;
+        const score = currentScore();
+
+        if (mp.connected) {
+          const stats = { moves: state.moves, attempts: state.attempts, score };
+          broadcastProgress();
+
+          els.winBanner.textContent =
+            "Goal reached! " + state.moves + " moves · " + state.attempts +
+            " attempts · " + score.toLocaleString() + " points.";
+          els.winBanner.classList.add("show");
+          setMessage(mp.role === "host" ? "Checking the race result…" : "Solved — waiting for the host to confirm the winner…", "good");
+
+          els.guessInput.disabled = true;
+          els.submitBtn.disabled = true;
+          els.hintBtn.disabled = true;
+          els.giveUpBtn.disabled = true;
+
+          if (mp.role === "host") {
+            declareRaceWinner("host", stats);
+          } else {
+            sendMp({ type: "finish", roundId: mp.roundId, stats });
+          }
+
+          updateStats();
+          updateMultiplayerUI();
+          return;
+        }
+
         state.streak += 1;
         safeSet("wordshift_streak", state.streak);
 
-        const score = currentScore();
         const oldBest = Number(safeGet(bestKey(), "0")) || 0;
         if (score > oldBest) safeSet(bestKey(), score);
 
@@ -1142,6 +1903,7 @@
 
         updateHistory();
         updateStats();
+        broadcastProgress();
 
         if (word === state.puzzle.goal) {
           finishRound();
@@ -1174,6 +1936,7 @@
 
         state.hints++;
         updateStats();
+        broadcastProgress();
         setMessage("Hint: try " + path[1].toUpperCase() + ".", "warn");
       }
 
@@ -1182,20 +1945,37 @@
 
         state.finished = true;
         state.gaveUp = true;
-        state.streak = 0;
-        safeSet("wordshift_streak", "0");
 
         const solution = state.puzzle.solution.map(w => w.toUpperCase()).join(" → ");
         els.solutionBox.innerHTML =
           "<strong>One shortest solution:</strong><br>" + solution;
         els.solutionBox.classList.add("show");
 
-        setMessage("Solution revealed. This round does not count toward your streak.", "warn");
         els.guessInput.disabled = true;
         els.submitBtn.disabled = true;
         els.hintBtn.disabled = true;
         els.giveUpBtn.disabled = true;
 
+        if (mp.connected) {
+          broadcastProgress();
+          if (mp.role === "host") {
+            declareRaceWinner("guest", {
+              moves: mp.opponent.moves,
+              attempts: mp.opponent.attempts,
+              score: mp.opponent.score
+            });
+          } else {
+            sendMp({ type: "forfeit", roundId: mp.roundId });
+            setMessage("You gave up. Your friend wins this round.", "warn");
+          }
+          updateStats();
+          updateMultiplayerUI();
+          return;
+        }
+
+        state.streak = 0;
+        safeSet("wordshift_streak", "0");
+        setMessage("Solution revealed. This round does not count toward your streak.", "warn");
         updateStats();
       }
 
@@ -1214,6 +1994,52 @@
       els.newBtn.addEventListener("click", startRound);
       els.hintBtn.addEventListener("click", showHint);
       els.giveUpBtn.addEventListener("click", giveUp);
+
+      els.createRoomBtn.addEventListener("click", () => createRoom(false));
+      els.joinRoomBtn.addEventListener("click", joinRoom);
+      els.leaveRoomBtn.addEventListener("click", () => closeMultiplayer({ startSolo: true }));
+
+      els.roomCodeInput.addEventListener("input", () => {
+        els.roomCodeInput.value = normalizeRoomCode(els.roomCodeInput.value);
+        setMpError("");
+      });
+
+      els.roomCodeInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          joinRoom();
+        }
+      });
+
+      els.copyCodeBtn.addEventListener("click", async () => {
+        if (!mp.roomCode) return;
+        try {
+          await navigator.clipboard.writeText(mp.roomCode);
+          els.copyCodeBtn.textContent = "Copied";
+          window.setTimeout(() => { els.copyCodeBtn.textContent = "Copy code"; }, 1200);
+        } catch {
+          els.roomCodeInput.value = mp.roomCode;
+          els.roomCodeInput.focus();
+          els.roomCodeInput.select();
+          setMpError("Copy was blocked by the browser. The room code is selected for manual copy.");
+        }
+      });
+
+      els.shareCodeBtn.addEventListener("click", async () => {
+        if (!mp.roomCode) return;
+        const text = "Join my WordShift room: " + mp.roomCode;
+        if (navigator.share) {
+          try { await navigator.share({ title: "WordShift", text }); } catch {}
+        } else {
+          try {
+            await navigator.clipboard.writeText(text);
+            els.shareCodeBtn.textContent = "Copied";
+            window.setTimeout(() => { els.shareCodeBtn.textContent = "Share"; }, 1200);
+          } catch {
+            setMpError(text);
+          }
+        }
+      });
 
       els.difficulty.addEventListener("change", () => {
         updateBestDisplay();
@@ -1244,9 +2070,10 @@
       });
 
       els.dictionaryMeta.textContent =
-        WORDS.length.toLocaleString() + " valid 4-letter words · fully offline";
+        WORDS.length.toLocaleString() + " valid 4-letter words · solo offline · 2-player online";
 
       updateBestDisplay();
+      updateMultiplayerUI();
       startRound();
     })();
   </script>
