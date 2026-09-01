@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <title>WordShift — 4-Letter Word Ladder</title>
+  <style>
+    :root {
+      --bg: #080c18;
+      --bg-2: #0d1428;
+      --panel: rgba(18, 26, 48, 0.86);
+      --panel-2: rgba(25, 35, 62, 0.76);
+      --surface: #151f38;
+      --surface-2: #1c2948;
+      --text: #f7f9ff;
+      --muted: #97a5c4;
+      --line: rgba(255,255,255,.10);
+      --accent: #7c8cff;
+      --accent-2: #54d6c6;
+      --good: #5ee09c;
+      --warn: #ffd166;
+      --bad: #ff6b7c;
+      --shadow: 0 24px 80px rgba(0,0,0,.34);
+      --radius: 24px;
+    }
+
+    body.light {
+      --bg: #f4f6fb;
+      --bg-2: #e9eef8;
+      --panel: rgba(255,255,255,.90);
+      --panel-2: rgba(247,249,254,.92);
+      --surface: #ffffff;
+      --surface-2: #eef2fb;
+      --text: #11182a;
+      --muted: #66718b;
+      --line: rgba(17,24,42,.10);
+      --accent: #5969ec;
+      --accent-2: #18a997;
+      --good: #179c62;
+      --warn: #b77800;
+      --bad: #d74455;
+      --shadow: 0 22px 70px rgba(45,61,98,.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(124,140,255,.18), transparent 34rem),
+        radial-gradient(circle at 100% 30%, rgba(84,214,198,.12), transparent 28rem),
+        linear-gradient(150deg, var(--bg), var(--bg-2));
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                   "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .app {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 26px 0 46px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, var(--accent), var(--accent-2));
+      color: white;
+      font-weight: 900;
+      letter-spacing: -.06em;
+      box-shadow: 0 10px 28px rgba(91,111,238,.24);
+    }
+
+    .brand-copy { min-width: 0; }
+
+    .brand-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 850;
+      letter-spacing: -.03em;
+    }
+
+    .brand-subtitle {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 13px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease;
+    }
+
+    .icon-btn:hover { border-color: rgba(124,140,255,.45); }
+    .icon-btn:active { transform: scale(.96); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(290px, .75fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .game-card { padding: 24px; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .difficulty-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    select {
+      min-height: 42px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: var(--surface);
+      padding: 0 34px 0 12px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(124,140,255,.14);
+    }
+
+    .streak {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      padding: 0 13px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .streak strong { color: var(--text); }
+
+    .challenge {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 18px;
+      margin: 8px 0 26px;
+    }
+
+    .word-block { text-align: center; }
+
+    .eyebrow {
+      display: block;
+      margin-bottom: 9px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .word-tiles {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(42px, 60px));
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tile {
+      aspect-ratio: 1;
+      border-radius: 15px;
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, var(--surface-2), var(--surface));
+      font-size: clamp(22px, 4vw, 31px);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -.03em;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+    }
+
+    .word-block.goal .tile {
+      border-color: rgba(84,214,198,.28);
+      background:
+        linear-gradient(145deg, rgba(84,214,198,.14), transparent 90%),
+        var(--surface);
+    }
+
+    .arrow {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--surface);
+      font-size: 21px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+      margin-bottom: 22px;
+    }
+
+    .stat {
+      min-width: 0;
+      padding: 13px 10px;
+      border-radius: 15px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      text-align: center;
+    }
+
+    .stat-value {
+      display: block;
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -.03em;
+    }
+
+    .stat-label {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .entry-panel {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel-2);
+      padding: 18px;
+    }
+
+    .current-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .current-copy {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .current-copy strong {
+      color: var(--text);
+      font-size: 15px;
+      letter-spacing: .12em;
+    }
+
+    .par-copy {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .guess-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+    }
+
+    .guess-input {
+      min-width: 0;
+      min-height: 56px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      padding: 0 17px;
+      text-transform: uppercase;
+      font-size: 21px;
+      font-weight: 850;
+      letter-spacing: .22em;
+    }
+
+    .guess-input::placeholder {
+      color: var(--muted);
+      opacity: .55;
+      letter-spacing: .08em;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .primary-btn {
+      min-width: 118px;
+      min-height: 56px;
+      border: 0;
+      border-radius: 16px;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), #6475f2);
+      padding: 0 20px;
+      font-weight: 850;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(82,99,223,.22);
+      transition: transform .16s ease, filter .16s ease;
+    }
+
+    .primary-btn:hover { filter: brightness(1.06); }
+    .primary-btn:active { transform: scale(.98); }
+    .primary-btn:disabled { opacity: .5; cursor: default; box-shadow: none; }
+
+    .message {
+      min-height: 24px;
+      margin-top: 11px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .message.good { color: var(--good); }
+    .message.bad { color: var(--bad); }
+    .message.warn { color: var(--warn); }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .secondary-btn {
+      min-height: 44px;
+      border-radius: 13px;
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: var(--surface);
+      padding: 0 15px;
+      font-weight: 750;
+      cursor: pointer;
+      transition: transform .16s ease, border-color .16s ease;
+    }
+
+    .secondary-btn:hover { border-color: rgba(124,140,255,.42); }
+    .secondary-btn:active { transform: scale(.98); }
+    .secondary-btn.danger { color: var(--bad); }
+
+    .solution-box {
+      display: none;
+      margin-top: 14px;
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      padding: 12px 13px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .solution-box.show { display: block; }
+    .solution-box strong { color: var(--text); }
+
+    .sidebar {
+      display: grid;
+      gap: 18px;
+    }
+
+    .history-card, .info-card { padding: 19px; }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 850;
+      letter-spacing: -.01em;
+    }
+
+    .best {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .best strong { color: var(--good); }
+
+    .ladder {
+      position: relative;
+      display: grid;
+      gap: 8px;
+    }
+
+    .ladder::before {
+      content: "";
+      position: absolute;
+      left: 19px;
+      top: 16px;
+      bottom: 16px;
+      width: 1px;
+      background: var(--line);
+    }
+
+    .step {
+      position: relative;
+      display: grid;
+      grid-template-columns: 38px 1fr auto;
+      align-items: center;
+      gap: 9px;
+      min-height: 42px;
+      border-radius: 12px;
+      padding: 5px 8px 5px 0;
+    }
+
+    .step-index {
+      position: relative;
+      z-index: 1;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .step-word {
+      font-size: 15px;
+      font-weight: 850;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .step-delta {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .step.latest {
+      background: rgba(124,140,255,.08);
+    }
+
+    .step.latest .step-index {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .empty-history {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      padding: 7px 0;
+    }
+
+    .info-card {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .rules {
+      display: none;
+      margin-top: 10px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .rules.show { display: block; }
+
+    .rules ol {
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+
+    .rules li { margin: 5px 0; }
+
+    .offline-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      padding: 7px 10px;
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .03em;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--good);
+      box-shadow: 0 0 0 4px rgba(94,224,156,.10);
+    }
+
+    .win-banner {
+      display: none;
+      margin-bottom: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(94,224,156,.22);
+      background: rgba(94,224,156,.09);
+      padding: 13px 14px;
+      color: var(--good);
+      font-size: 13px;
+      font-weight: 750;
+      line-height: 1.45;
+    }
+
+    .win-banner.show {
+      display: block;
+      animation: pop .3s ease both;
+    }
+
+    .shake { animation: shake .28s ease; }
+
+    @keyframes pop {
+      from { opacity: 0; transform: translateY(5px) scale(.985); }
+      to { opacity: 1; transform: none; }
+    }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    @media (max-width: 850px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      .app {
+        width: min(100% - 18px, 1180px);
+        padding-top: 14px;
+      }
+
+      .brand-subtitle { display: none; }
+      .game-card { padding: 16px; }
+      .toolbar { margin-bottom: 20px; }
+      .challenge { gap: 9px; }
+      .word-tiles {
+        grid-template-columns: repeat(4, minmax(35px, 1fr));
+        gap: 5px;
+      }
+      .tile { border-radius: 11px; }
+      .arrow {
+        width: 34px;
+        height: 34px;
+        font-size: 16px;
+      }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .guess-form { grid-template-columns: 1fr; }
+      .primary-btn { width: 100%; }
+      .sidebar { grid-template-columns: 1fr; }
+      .top-actions { gap: 6px; }
+    }
+
+    @media (max-width: 390px) {
+      .difficulty-wrap > span { display: none; }
+      .streak { padding: 0 10px; }
+      .challenge { margin-bottom: 20px; }
+      .game-card { padding: 13px; }
+      .entry-panel { padding: 14px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important;
+        transition-duration: .001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">WS</div>
+        <div class="brand-copy">
+          <h1 class="brand-title">WordShift</h1>
+          <div class="brand-subtitle">Change one letter. Keep every word real.</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="rulesBtn" type="button" aria-label="Show game rules" title="Rules">?</button>
+        <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle theme" title="Toggle theme">☼</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="card game-card" aria-label="WordShift game">
+        <div class="toolbar">
+          <label class="difficulty-wrap">
+            <span>Difficulty</span>
+            <select id="difficulty" aria-label="Difficulty">
+              <option value="easy">Easy · 3–4</option>
+              <option value="medium" selected>Medium · 5–6</option>
+              <option value="hard">Hard · 7–8</option>
+              <option value="expert">Expert · 9–11</option>
+            </select>
+          </label>
+          <div class="streak" title="Rounds solved in a row">🔥 Streak <strong id="streakValue">0</strong></div>
+        </div>
+
+        <div class="challenge">
+          <div class="word-block">
+            <span class="eyebrow">Start</span>
+            <div class="word-tiles" id="startTiles" aria-label="Start word"></div>
+          </div>
+
+          <div class="arrow" aria-hidden="true">→</div>
+
+          <div class="word-block goal">
+            <span class="eyebrow">Goal</span>
+            <div class="word-tiles" id="goalTiles" aria-label="Goal word"></div>
+          </div>
+        </div>
+
+        <div class="stats" aria-label="Score">
+          <div class="stat">
+            <span class="stat-value" id="movesValue">0</span>
+            <span class="stat-label">Moves</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="parValue">–</span>
+            <span class="stat-label">Par</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="attemptsValue">0</span>
+            <span class="stat-label">Attempts</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="scoreValue">0</span>
+            <span class="stat-label">Score</span>
+          </div>
+        </div>
+
+        <div class="win-banner" id="winBanner" role="status"></div>
+
+        <div class="entry-panel" id="entryPanel">
+          <div class="current-line">
+            <div class="current-copy">Current: <strong id="currentWord">----</strong></div>
+            <div class="par-copy" id="paceCopy">Find the shortest route</div>
+          </div>
+
+          <form class="guess-form" id="guessForm" autocomplete="off">
+            <input
+              class="guess-input"
+              id="guessInput"
+              type="text"
+              inputmode="text"
+              maxlength="4"
+              minlength="4"
+              spellcheck="false"
+              autocorrect="off"
+              autocapitalize="characters"
+              enterkeyhint="go"
+              placeholder="TYPE 4 LETTERS"
+              aria-label="Enter a four-letter word"
+            >
+            <button class="primary-btn" id="submitBtn" type="submit">Submit word</button>
+          </form>
+
+          <div class="message" id="message" aria-live="polite">
+            Change exactly one letter from the current word.
+          </div>
+
+          <div class="actions">
+            <button class="secondary-btn" id="hintBtn" type="button">Hint</button>
+            <button class="secondary-btn" id="newBtn" type="button">New puzzle</button>
+            <button class="secondary-btn danger" id="giveUpBtn" type="button">Give up</button>
+          </div>
+
+          <div class="solution-box" id="solutionBox"></div>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="card history-card">
+          <div class="section-head">
+            <h2 class="section-title">Your ladder</h2>
+            <div class="best">Best <strong id="bestValue">—</strong></div>
+          </div>
+          <div class="ladder" id="ladder"></div>
+        </section>
+
+        <section class="card info-card">
+          <div class="section-head">
+            <h2 class="section-title">How it works</h2>
+          </div>
+          <div>
+            Reach the goal by changing <strong style="color:var(--text)">one letter at a time</strong>.
+            Every submitted step must be a valid 4-letter English word.
+          </div>
+          <div class="rules" id="rulesPanel">
+            <ol>
+              <li>Change exactly one letter.</li>
+              <li>Do not rearrange the letters.</li>
+              <li>Every step must exist in the built-in dictionary.</li>
+              <li>Lower moves are better; invalid attempts and hints reduce score.</li>
+              <li>Every generated puzzle is verified to have a solution.</li>
+            </ol>
+          </div>
+          <div class="offline-pill">
+            <span class="dot" aria-hidden="true"></span>
+            <span id="dictionaryMeta">Offline dictionary loaded</span>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const WORDS = ["abbe","abel","able","ably","ache","acid","acme","acne","acre","acte","acts","adam","adds","aden","adve","afar","agar","aged","ages","agog","agra","ague","aide","aids","aime","aims","airs","airy","ajar","akin","alae","alan","alas","alba","ally","alma","alms","aloe","alps","also","alte","alum","amen","amid","amie","amos","amoy","anal","andy","anel","anew","anna","anne","anon","ante","anti","ants","anus","apes","apex","arab","arat","arch","arcy","area","aren","arid","arms","army","arts","asch","ashy","asia","asks","atom","aunt","auto","avec","avez","avow","away","awed","awls","awry","axes","axis","ayez","azor","azov","azur","babe","baby","back","bade","bags","bail","bait","bake","bald","balk","ball","band","bane","bang","bank","bare","bark","barn","bars","bart","base","bask","bass","bast","bath","bead","beak","beam","bean","bear","beat","beau","beck","beds","beef","been","beer","bees","bell","belt","bend","bent","berg","beri","best","beta","beth","bets","bias","bide","bids","bien","bier","bike","bile","bill","bind","bipp","bird","bite","bits","bled","blew","bloc","blot","blow","blue","blur","boat","body","boer","boil","bold","bolt","bomb","bond","bone","bons","bony","book","boom","boon","boor","boot","bore","born","bory","boss","both","bout","bowl","bows","boys","brag","brat","bred","brig","brim","brow","bryn","bubo","buck","buds","buff","bulb","bulk","bull","bump","bunt","burn","burr","bury","bush","bust","busy","bute","butt","buzz","cabs","cady","cafe","cage","cahd","cain","cake","calf","call","calm","came","camp","cane","cape","caps","card","care","carl","carp","cars","cart","case","cash","cast","cats","cava","cave","cela","cell","cent","chap","chas","chat","chef","cher","chew","chin","chip","chit","chop","chum","cite","city","clad","clan","claw","clay","clip","clot","club","clue","coal","coat","coax","cobb","cock","code","cody","cogs","coil","coin","cold","coli","colt","coma","comb","come","cond","cone","cong","cook","cool","cope","copy","cord","core","cork","corn","cost","cosy","coup","cows","coxa","crab","cret","crew","crib","crop","crow","cruz","cuba","cubs","cuff","cult","cups","curb","cure","curl","curt","cusp","cuts","cwow","cyst","czar","dahe","dale","dame","damn","damp","dams","dane","dank","dans","dare","dark","dart","dash","data","date","dato","dave","davy","dawn","days","dead","deaf","deah","deal","dean","dear","debs","debt","deck","deed","deem","deep","deer","deft","defy","deny","dere","desk","deux","dews","dewy","dial","diam","diaz","dice","dick","didn","died","dies","diet","dieu","digs","dine","dint","dire","dirk","dirt","disc","dish","disk","dive","dock","docs","dodd","does","dogs","dole","doll","dome","domo","donc","done","dont","doom","door","dora","dorr","dose","dost","doth","dots","dove","down","doze","drab","drag","dram","draw","dred","drew","drip","dron","drop","drug","drum","dual","duck","duct","duel","dues","duke","dull","duly","dumb","dump","dung","dupe","dura","dusk","dust","duty","dyed","each","earl","earn","ears","ease","east","easy","eats","echo","ecka","eddy","eden","edge","edin","edit","efim","eggs","elba","elbe","eley","else","emit","emma","endo","ends","enns","entr","envy","epic","eric","erie","erza","esch","etat","etes","eton","etre","euer","even","ever","evil","exam","exit","eyed","eyes","face","fact","fade","fads","fail","fain","fair","fait","fall","fame","fare","farm","faro","fast","fate","fats","faut","fear","feat","feed","feel","fees","feet","fell","felo","felt","fera","fess","fete","fiat","fiew","figs","file","fili","fill","film","fils","find","fine","fire","firm","firs","fish","fist","fits","five","flag","flap","flat","flaw","flax","flay","flea","fled","flee","flew","flex","flog","flop","flow","foal","foam","foch","foci","foes","fogs","foie","foil","foka","fold","folk","fond","font","food","fool","foot","ford","fore","fork","form","fort","foul","four","fowl","foxy","fray","fred","free","fret","frog","from","frye","fuck","fuel","full","fund","furs","fury","fuse","fuss","fwom","gage","gain","gait","gale","gall","game","gang","gaol","gape","gaps","garb","gare","gase","gash","gasp","gate","gaul","gave","gaze","gear","gems","gene","genu","germ","gets","gibb","gibe","gift","gilt","gird","girl","girt","gist","give","glad","glee","glen","glio","glow","glum","goal","goat","gods","goes","gold","golf","gone","gong","good","goot","gory","gosp","gott","gout","gown","grab","graf","gram","gras","gray","grew","grey","grid","grim","grin","grip","grit","grms","gros","grow","guai","guam","gulf","gulp","gums","guns","gush","gust","hack","hadn","hail","hair","hale","half","hall","halo","halt","hand","hang","hans","hard","hare","hark","harm","harp","hart","hasn","hasp","hast","hata","hate","hath","hats","haul","have","hawk","hayn","hays","haze","head","heah","heal","heap","hear","heat","heed","heel","heir","held","hell","helm","help","hemp","herb","herd","here","hero","herr","hers","hewn","hide","high","hill","hilt","hind","hint","hips","hire","hise","hiss","hits","hive","hoar","hoax","hoch","hoes","hofs","hogs","hold","hole","holt","holy","home","hood","hoof","hook","hope","horn","hors","host","hour","howe","howl","html","http","hubs","huge","hugh","hugo","hull","hume","hump","hung","hunt","hurt","hush","huts","hyde","hymn","ibid","icel","ices","icon","idea","idle","idly","idol","igni","ilii","ilio","ills","ilya","inch","inns","inst","into","iodi","iota","iowa","iris","iron","isle","item","ivan","jack","jail","jake","jane","jaws","jazz","jean","jeff","jena","jerk","jest","jets","jews","joan","jobs","joel","john","join","joke","jolt","jose","jove","jowl","joys","juan","judy","jugs","july","jump","june","jury","just","kalb","kann","kari","karl","karp","kate","keen","keep","kent","kept","keys","khan","kick","kiev","kill","kind","king","kirk","kiss","kite","kits","klan","klux","knee","knew","knit","knob","knot","know","knox","koko","kopf","krug","kvas","lace","lack","lads","lady","lafa","laid","lain","lair","lake","lamb","lame","lamp","land","lane","lank","lark","lash","last","lata","late","lava","lawn","laws","lays","lazy","lead","leaf","leak","lean","leap","lech","left","legs","lend","lens","lent","leon","less","lest","lets","levi","levy","liar","lice","lick","lids","lied","lies","lieu","life","lift","like","lily","limb","lime","limp","line","link","lint","linz","lion","lips","lisa","lise","lisp","list","live","liza","load","loaf","loam","loan","lock","lodi","logs","loin","lome","lone","long","look","loom","loop","loot","lope","lord","lore","lose","loss","lost","lots","loud","lout","love","lows","luck","lucy","luff","luke","lull","lump","lung","lure","lush","lust","lynn","lyon","lyre","mack","made","maid","mail","maim","main","mais","make","mala","male","mall","malo","malt","mane","mann","many","maps","mare","mark","marm","mars","marx","mary","mash","mask","mass","mast","mate","mats","matt","mawr","mayo","mead","meal","mean","meat","meek","meet","mein","mele","melk","melt","meme","mend","menu","mere","mesh","mess","mete","mews","mice","mien","mike","mild","mile","milk","mill","mimi","mind","mine","mint","miss","mist","mlle","moan","mobs","mock","mode","mold","mole","monk","mood","moon","moor","more","mori","mort","moss","most","mots","mott","move","mown","much","muco","muff","muir","mule","muse","muss","must","mute","myth","myxo","nail","naiv","name","nape","nasi","naso","navy","nays","near","neat","neck","need","ness","nest","nets","neve","news","next","nice","nick","nigh","nile","nina","nine","noah","node","nods","noel","noma","none","nook","noon","norm","nose","note","noun","nous","nova","novo","noxa","null","numb","nuns","nuts","oaks","oars","oath","oats","ober","obey","odds","oder","odor","ohio","oils","oily","okay","olga","olin","omen","omit","omne","once","ones","only","onto","onya","oooh","ooze","opal","open","oral","orel","ores","oris","otis","otto","ours","oval","oven","over","ovum","owed","owen","owes","owns","oxen","pace","pack","pads","page","pago","paid","pail","pain","pair","pale","pall","palm","pals","pane","pang","pans","papa","para","pari","park","parr","part","pass","past","pate","path","paul","pawn","paws","pays","peak","peal","pear","peas","peck","peep","peer","pegs","pelt","penn","pens","pent","pere","peri","peru","pest","pets","peur","pgdp","phil","pick","pier","pies","pigs","pike","pile","pill","pine","pink","pins","pint","pipe","pips","piti","pits","pitt","pity","plan","plat","play","plea","plot","plow","plug","plum","plus","pock","poem","poet","poky","pole","polk","poll","poly","pomp","pond","pont","pony","pooh","pool","poor","pope","pork","port","pose","post","pots","pott","pour","pray","prey","prim","prof","prop","puff","pull","pulp","pump","punt","puny","pure","push","puts","quay","quid","quit","quod","quos","race","rack","raft","rage","rags","raid","rail","rain","rake","rams","rang","rank","rape","rapp","rapt","rare","rash","rate","rath","rats","raum","rays","read","real","reap","rear","reed","reef","reek","reid","rein","rely","rent","rest","rete","ribs","rice","rich","rico","ride","rien","rife","rift","ring","riot","ripe","rire","rise","risk","rite","road","roam","roan","roar","robe","robs","rock","rode","rods","role","roll","rome","roof","rook","room","root","rope","rosa","rose","ross","rosy","roth","rout","roux","rowe","rows","rrrr","rubs","ruby","rude","rugs","ruin","rule","rung","runs","ruse","rush","rust","ruth","ruts","ruza","saar","sack","sacs","safe","safi","sage","said","sail","sait","sake","sale","salt","same","sand","sane","sang","sank","sans","sash","sate","saul","save","sawn","saws","saxe","says","scab","scan","scar","scot","scow","scut","seal","seas","seat","sect","seed","seek","seem","seen","sees","sein","self","sell","semi","send","sens","sent","sept","sera","serf","sero","sets","sewn","sexe","shag","shah","shak","sham","shan","shaw","shed","shew","ship","shit","shod","shoe","shop","shot","show","shun","shut","siam","sick","side","sigh","sign","sila","silk","sill","sing","sink","sins","sird","sire","site","sits","situ","sitz","size","skin","slab","slam","slap","slav","slay","slew","slid","slim","slip","slit","slop","slot","slow","slur","slut","snap","snow","snub","snug","soak","soap","soar","sobs","sock","soda","sofa","soft","soie","soil","sold","sole","soll","solo","some","song","sons","sont","soon","soot","sore","sort","soto","sots","soul","soup","sour","sous","sown","sows","span","spas","spat","sped","spin","spit","spot","spun","spur","stab","stag","star","stay","stem","step","stew","stir","stop","stud","such","suck","sued","suez","suis","suit","sums","sung","sunk","sure","surf","surg","swab","swag","swam","swan","swap","sway","swim","syme","tack","tact","tafa","taft","tags","tail","take","takh","tale","talk","tall","tame","tank","tape","task","tate","taut","taxi","team","tear","tell","tend","tenn","teno","tens","tent","term","test","tete","text","than","that","thaw","thee","them","then","they","thin","this","thou","thud","thus","tick","tide","tidy","tied","tier","ties","tile","till","tilt","time","tint","tiny","tips","tire","titi","toes","toil","told","toll","tomb","tone","tons","tony","took","tool","tops","tore","torn","tory","toss","tour","tout","town","toys","trap","tray","tree","tres","trim","trip","trod","trop","trot","troy","true","tsar","tube","tubs","tuck","tuft","tula","tune","turf","turk","turn","tver","twas","twig","twin","twos","twot","twue","tyne","type","tyre","uffa","ugly","ulna","undo","unit","unna","unto","upon","urea","urge","uric","used","user","uses","utah","vain","vale","vara","vary","vasa","vase","vaso","vast","veal","veil","vein","vell","vena","vent","vera","verb","vere","vert","very","vest","veto","veux","vewy","vice","view","viii","vile","vill","vine","vise","vish","viva","vive","vlas","void","voir","voit","vols","vote","vous","vows","vult","wade","wage","wags","wail","wait","wake","walk","wall","walt","wand","want","waps","ward","ware","warm","warn","warp","wars","wart","wary","wash","wasn","wast","watt","wave","wavy","waxy","ways","wead","weak","weal","wear","weed","week","weep","weib","weir","weld","well","welt","wens","went","wept","were","wert","west","wetu","weyl","what","when","whew","whig","whim","whip","whit","whoa","whom","wick","wide","wife","wigs","wiki","wild","will","wilt","wily","wind","wine","wing","wink","wins","wipe","wire","wirt","wiry","wise","wish","wisp","with","wits","woes","woke","wolf","womb","wont","wood","woof","wool","woot","word","wore","work","worm","worn","wove","wrap","writ","xiii","xvii","xxii","xxiv","xxix","xxvi","xxxi","xxxv","yale","yard","yarn","yawn","yeah","year","yeas","yell","yelp","yeux","yoke","yore","york","your","yuma","yuri","zeal","zere","zero","zest","zeus","zheg","zinc","zone"];
+      const PREFERRED_WORDS = ["aide","back","bald","ball","band","bank","bare","base","bear","beat","been","bees","bell","bent","best","bill","bind","bird","bite","body","bold","bond","bone","bony","book","boot","bore","born","burn","call","calm","came","camp","card","care","cart","case","cast","cent","chin","coal","coat","coin","cold","come","cook","cord","corn","cost","cure","cyst","damp","dare","dark","date","dawn","days","dead","deal","dear","deed","deep","died","does","dogs","done","door","dose","down","duct","duel","dull","dust","ears","ease","east","easy","else","face","fact","fail","fair","fall","farm","fast","fate","fear","feel","feet","fell","felt","file","fill","find","fine","fire","firm","fish","fold","folk","fond","food","fool","foot","form","foul","full","gain","game","gate","gave","gaze","give","goal","goes","gold","gone","good","gown","hair","half","hall","halt","hand","hard","hare","harm","hate","have","head","heal","hear","heat","heel","held","help","here","hero","hers","hide","hill","hive","hold","holy","home","hope","host","hour","join","joke","just","keen","keep","kept","kill","kind","king","kiss","lack","laid","lake","lamp","land","lane","last","late","lead","left","legs","lent","less","lest","lies","life","lift","like","limb","lime","line","lips","list","live","lock","long","look","lord","lose","loss","lost","loud","love","luck","made","maid","main","make","male","mark","mass","meet","mere","mild","mile","milk","mind","mine","miss","mist","mood","moon","more","most","move","must","nail","name","near","need","next","nice","none","nose","note","pace","pack","page","paid","pain","pair","pale","palm","part","pass","past","pick","pink","pole","pond","pool","poor","pose","post","pour","pull","pure","race","rage","rain","rang","rank","rare","rate","rays","read","real","rear","rest","rice","rich","ride","ring","rise","risk","road","roar","rode","role","roll","roof","room","root","rose","rosy","ruin","rule","safe","said","sake","sale","salt","same","sang","sank","save","says","seas","seat","seek","seem","seen","sees","self","sell","send","sent","sick","side","silk","sing","site","size","sobs","sofa","soft","soil","sold","sole","some","song","sons","soon","sore","sort","soul","sunk","sure","tail","take","tale","talk","tall","task","tear","tell","tend","tent","test","text","than","that","them","then","they","thin","this","thus","tide","tied","ties","till","time","toes","told","toll","tone","took","torn","town","turn","vain","vast","vein","vice","vote","wait","wake","walk","wall","want","warm","wars","wash","wave","ways","weak","wear","week","weep","well","went","wept","were","west","what","when","wide","wife","wild","will","wind","wine","wing","wire","wise","wish","with","woke","wood","wool","word","wore","work","worn","yard","year","your","zeal","zone"];
+      const PUZZLES = {"easy":[{"start":"told","goal":"bank","par":4,"solution":["told","bold","bald","band","bank"]},{"start":"held","goal":"bent","par":4,"solution":["held","head","heat","beat","bent"]},{"start":"lack","goal":"band","par":3,"solution":["lack","back","bank","band"]},{"start":"wall","goal":"task","par":3,"solution":["wall","walk","talk","task"]},{"start":"word","goal":"aide","par":4,"solution":["word","wore","wire","wide","aide"]},{"start":"wide","goal":"here","par":3,"solution":["wide","wire","were","here"]},{"start":"hall","goal":"wind","par":4,"solution":["hall","wall","will","wild","wind"]},{"start":"bald","goal":"bone","par":3,"solution":["bald","band","bond","bone"]},{"start":"self","goal":"ball","par":3,"solution":["self","sell","bell","ball"]},{"start":"have","goal":"lift","par":4,"solution":["have","hive","live","life","lift"]},{"start":"post","goal":"live","par":4,"solution":["post","lost","lose","love","live"]},{"start":"kind","goal":"live","par":4,"solution":["kind","mind","mine","line","live"]},{"start":"turn","goal":"wore","par":3,"solution":["turn","torn","worn","wore"]},{"start":"bone","goal":"sort","par":3,"solution":["bone","bore","sore","sort"]},{"start":"loss","goal":"ride","par":4,"solution":["loss","lose","rose","rise","ride"]},{"start":"food","goal":"hand","par":4,"solution":["food","fond","bond","band","hand"]},{"start":"gone","goal":"band","par":3,"solution":["gone","bone","bond","band"]},{"start":"same","goal":"cost","par":4,"solution":["same","came","case","cast","cost"]},{"start":"wing","goal":"bald","par":4,"solution":["wing","wind","bind","band","bald"]},{"start":"hard","goal":"told","par":4,"solution":["hard","card","cord","cold","told"]},{"start":"rich","goal":"risk","par":3,"solution":["rich","rice","rise","risk"]},{"start":"sold","goal":"palm","par":4,"solution":["sold","sole","sale","pale","palm"]},{"start":"rise","goal":"mere","par":4,"solution":["rise","wise","wire","were","mere"]},{"start":"none","goal":"food","par":4,"solution":["none","bone","bond","fond","food"]},{"start":"keep","goal":"seek","par":3,"solution":["keep","keen","seen","seek"]},{"start":"palm","goal":"rose","par":4,"solution":["palm","pale","pole","role","rose"]},{"start":"cost","goal":"just","par":3,"solution":["cost","most","must","just"]},{"start":"feel","goal":"tall","par":3,"solution":["feel","fell","tell","tall"]},{"start":"pace","goal":"sole","par":3,"solution":["pace","pale","sale","sole"]},{"start":"come","goal":"last","par":4,"solution":["come","came","case","cast","last"]},{"start":"soft","goal":"more","par":3,"solution":["soft","sort","sore","more"]},{"start":"find","goal":"love","par":4,"solution":["find","fine","line","live","love"]},{"start":"note","goal":"past","par":4,"solution":["note","nose","pose","post","past"]},{"start":"time","goal":"rich","par":4,"solution":["time","tide","ride","rice","rich"]},{"start":"best","goal":"rear","par":3,"solution":["best","beat","bear","rear"]},{"start":"foot","goal":"kind","par":4,"solution":["foot","food","fond","find","kind"]},{"start":"tall","goal":"self","par":3,"solution":["tall","tell","sell","self"]},{"start":"lift","goal":"loss","par":3,"solution":["lift","list","lost","loss"]},{"start":"test","goal":"head","par":4,"solution":["test","best","beat","heat","head"]},{"start":"were","goal":"harm","par":3,"solution":["were","here","hare","harm"]},{"start":"sure","goal":"came","par":3,"solution":["sure","cure","care","came"]},{"start":"cart","goal":"work","par":4,"solution":["cart","card","cord","word","work"]},{"start":"rode","goal":"have","par":4,"solution":["rode","ride","hide","hive","have"]},{"start":"here","goal":"rate","par":3,"solution":["here","hare","rare","rate"]},{"start":"pack","goal":"made","par":4,"solution":["pack","pace","pale","male","made"]},{"start":"tied","goal":"deal","par":4,"solution":["tied","died","deed","dead","deal"]},{"start":"cart","goal":"loud","par":4,"solution":["cart","card","cord","lord","loud"]},{"start":"heal","goal":"deep","par":4,"solution":["heal","head","dead","deed","deep"]},{"start":"walk","goal":"full","par":3,"solution":["walk","wall","fall","full"]},{"start":"wool","goal":"soul","par":3,"solution":["wool","fool","foul","soul"]},{"start":"camp","goal":"ease","par":3,"solution":["camp","came","case","ease"]},{"start":"laid","goal":"make","par":4,"solution":["laid","land","lane","lake","make"]},{"start":"near","goal":"cent","par":4,"solution":["near","bear","beat","bent","cent"]},{"start":"hill","goal":"tail","par":3,"solution":["hill","till","tall","tail"]},{"start":"most","goal":"note","par":4,"solution":["most","lost","lose","nose","note"]},{"start":"take","goal":"laid","par":4,"solution":["take","lake","lane","land","laid"]},{"start":"fond","goal":"bank","par":3,"solution":["fond","bond","band","bank"]},{"start":"were","goal":"aide","par":3,"solution":["were","wire","wide","aide"]},{"start":"join","goal":"turn","par":4,"solution":["join","coin","corn","torn","turn"]},{"start":"line","goal":"side","par":3,"solution":["line","wine","wide","side"]},{"start":"find","goal":"holy","par":4,"solution":["find","fond","fold","hold","holy"]},{"start":"cure","goal":"cast","par":3,"solution":["cure","care","case","cast"]},{"start":"hold","goal":"bony","par":3,"solution":["hold","bold","bond","bony"]},{"start":"bear","goal":"sent","par":3,"solution":["bear","beat","seat","sent"]},{"start":"came","goal":"rate","par":3,"solution":["came","care","rare","rate"]},{"start":"card","goal":"good","par":4,"solution":["card","cord","word","wood","good"]},{"start":"take","goal":"sole","par":3,"solution":["take","sake","sale","sole"]},{"start":"hers","goal":"cart","par":4,"solution":["hers","here","hare","care","cart"]},{"start":"limb","goal":"wide","par":4,"solution":["limb","lime","time","tide","wide"]},{"start":"none","goal":"sure","par":4,"solution":["none","bone","bore","sore","sure"]},{"start":"fine","goal":"word","par":4,"solution":["fine","fire","wire","wore","word"]},{"start":"sole","goal":"give","par":4,"solution":["sole","sale","save","gave","give"]},{"start":"side","goal":"limb","par":4,"solution":["side","tide","time","lime","limb"]},{"start":"fear","goal":"west","par":4,"solution":["fear","bear","beat","best","west"]},{"start":"fell","goal":"duel","par":3,"solution":["fell","full","dull","duel"]},{"start":"limb","goal":"lift","par":3,"solution":["limb","lime","life","lift"]},{"start":"call","goal":"same","par":4,"solution":["call","tall","tale","sale","same"]},{"start":"tied","goal":"dead","par":3,"solution":["tied","died","deed","dead"]},{"start":"rosy","goal":"race","par":4,"solution":["rosy","rose","rise","rice","race"]},{"start":"role","goal":"fill","par":4,"solution":["role","roll","toll","till","fill"]},{"start":"mild","goal":"well","par":3,"solution":["mild","wild","will","well"]},{"start":"gone","goal":"worn","par":4,"solution":["gone","bone","bore","wore","worn"]},{"start":"harm","goal":"ease","par":4,"solution":["harm","hare","care","case","ease"]},{"start":"down","goal":"worn","par":3,"solution":["down","town","torn","worn"]},{"start":"ease","goal":"same","par":3,"solution":["ease","case","came","same"]},{"start":"harm","goal":"date","par":3,"solution":["harm","hare","dare","date"]},{"start":"born","goal":"wide","par":4,"solution":["born","worn","wore","wire","wide"]},{"start":"work","goal":"loud","par":3,"solution":["work","word","lord","loud"]},{"start":"pass","goal":"coat","par":4,"solution":["pass","past","post","cost","coat"]},{"start":"nail","goal":"told","par":4,"solution":["nail","tail","tall","toll","told"]},{"start":"race","goal":"wine","par":4,"solution":["race","rice","rise","wise","wine"]},{"start":"wind","goal":"firm","par":4,"solution":["wind","find","fine","fire","firm"]},{"start":"rare","goal":"born","par":3,"solution":["rare","bare","bore","born"]},{"start":"were","goal":"late","par":4,"solution":["were","here","hare","hate","late"]},{"start":"sore","goal":"race","par":4,"solution":["sore","bore","bare","rare","race"]},{"start":"bell","goal":"task","par":4,"solution":["bell","tell","tall","talk","task"]},{"start":"fill","goal":"gold","par":4,"solution":["fill","till","toll","told","gold"]},{"start":"sole","goal":"folk","par":3,"solution":["sole","sold","fold","folk"]},{"start":"read","goal":"tied","par":4,"solution":["read","dead","deed","died","tied"]},{"start":"case","goal":"dark","par":3,"solution":["case","care","dare","dark"]}],"medium":[{"start":"nose","goal":"face","par":5,"solution":["nose","rose","rise","rice","race","face"]},{"start":"mine","goal":"foot","par":5,"solution":["mine","mind","find","fond","food","foot"]},{"start":"will","goal":"gone","par":6,"solution":["will","wild","wind","bind","bond","bone","gone"]},{"start":"dare","goal":"gold","par":5,"solution":["dare","care","card","cord","cold","gold"]},{"start":"gold","goal":"race","par":6,"solution":["gold","cold","cord","card","care","rare","race"]},{"start":"bank","goal":"foot","par":5,"solution":["bank","band","bond","fond","food","foot"]},{"start":"have","goal":"wind","par":5,"solution":["have","hive","live","line","wine","wind"]},{"start":"laid","goal":"wide","par":5,"solution":["laid","land","lane","line","wine","wide"]},{"start":"hers","goal":"form","par":5,"solution":["hers","here","hare","harm","farm","form"]},{"start":"rise","goal":"gold","par":5,"solution":["rise","rose","role","sole","sold","gold"]},{"start":"cyst","goal":"rate","par":5,"solution":["cyst","cast","case","care","rare","rate"]},{"start":"hold","goal":"wife","par":6,"solution":["hold","cold","cord","word","wore","wire","wife"]},{"start":"harm","goal":"vice","par":5,"solution":["harm","hare","rare","race","rice","vice"]},{"start":"rose","goal":"sent","par":5,"solution":["rose","lose","lost","lest","lent","sent"]},{"start":"wish","goal":"hers","par":5,"solution":["wish","wise","wire","were","here","hers"]},{"start":"hard","goal":"coal","par":6,"solution":["hard","card","cart","cast","cost","coat","coal"]},{"start":"wear","goal":"told","par":5,"solution":["wear","hear","head","held","hold","told"]},{"start":"kind","goal":"feel","par":6,"solution":["kind","find","fine","file","fill","fell","feel"]},{"start":"yard","goal":"give","par":5,"solution":["yard","hard","hare","have","gave","give"]},{"start":"sing","goal":"rode","par":5,"solution":["sing","wing","wine","wide","ride","rode"]},{"start":"burn","goal":"good","par":5,"solution":["burn","born","worn","word","wood","good"]},{"start":"born","goal":"mine","par":5,"solution":["born","worn","wore","wire","wine","mine"]},{"start":"cold","goal":"joke","par":5,"solution":["cold","cord","word","wore","woke","joke"]},{"start":"fair","goal":"fine","par":5,"solution":["fair","fail","fall","fill","file","fine"]},{"start":"note","goal":"rich","par":5,"solution":["note","nose","rose","rise","rice","rich"]},{"start":"late","goal":"ring","par":5,"solution":["late","lane","line","wine","wing","ring"]},{"start":"fine","goal":"joke","par":5,"solution":["fine","fire","wire","wore","woke","joke"]},{"start":"laid","goal":"gold","par":5,"solution":["laid","land","band","bald","bold","gold"]},{"start":"palm","goal":"fond","par":6,"solution":["palm","pale","sale","sole","sold","fold","fond"]},{"start":"none","goal":"palm","par":5,"solution":["none","nose","pose","pole","pale","palm"]},{"start":"here","goal":"down","par":6,"solution":["here","were","wore","worn","torn","town","down"]},{"start":"thin","goal":"bore","par":5,"solution":["thin","chin","coin","corn","born","bore"]},{"start":"palm","goal":"come","par":5,"solution":["palm","pale","sale","same","some","come"]},{"start":"kind","goal":"call","par":5,"solution":["kind","wind","wild","will","wall","call"]},{"start":"sake","goal":"rosy","par":5,"solution":["sake","sale","sole","role","rose","rosy"]},{"start":"vote","goal":"part","par":6,"solution":["vote","note","nose","pose","post","past","part"]},{"start":"cold","goal":"take","par":5,"solution":["cold","told","toll","tall","tale","take"]},{"start":"took","goal":"band","par":6,"solution":["took","look","lock","lack","back","bank","band"]},{"start":"wife","goal":"sold","par":5,"solution":["wife","wire","wore","sore","sole","sold"]},{"start":"lift","goal":"role","par":5,"solution":["lift","list","lost","lose","rose","role"]},{"start":"coal","goal":"ease","par":5,"solution":["coal","coat","cost","cast","case","ease"]},{"start":"save","goal":"full","par":5,"solution":["save","sale","tale","tall","fall","full"]},{"start":"vote","goal":"food","par":6,"solution":["vote","note","none","bone","bond","fond","food"]},{"start":"good","goal":"ride","par":6,"solution":["good","gold","sold","sole","role","rode","ride"]},{"start":"else","goal":"face","par":5,"solution":["else","ease","east","fast","fact","face"]},{"start":"born","goal":"life","par":5,"solution":["born","worn","wore","wire","wife","life"]},{"start":"good","goal":"hide","par":6,"solution":["good","wood","word","wore","wire","wide","hide"]},{"start":"bald","goal":"work","par":5,"solution":["bald","bold","cold","cord","word","work"]},{"start":"good","goal":"full","par":6,"solution":["good","gold","told","toll","tell","fell","full"]},{"start":"fell","goal":"corn","par":6,"solution":["fell","tell","toll","told","cold","cord","corn"]},{"start":"find","goal":"sake","par":5,"solution":["find","fine","line","like","lake","sake"]},{"start":"lord","goal":"cyst","par":5,"solution":["lord","cord","card","cart","cast","cyst"]},{"start":"talk","goal":"pure","par":6,"solution":["talk","tale","sale","sole","sore","sure","pure"]},{"start":"note","goal":"best","par":5,"solution":["note","nose","lose","lost","lest","best"]},{"start":"body","goal":"help","par":6,"solution":["body","bony","bond","bold","hold","held","help"]},{"start":"real","goal":"good","par":6,"solution":["real","read","head","held","hold","gold","good"]},{"start":"chin","goal":"wide","par":6,"solution":["chin","coin","corn","worn","wore","wire","wide"]},{"start":"wall","goal":"wife","par":5,"solution":["wall","will","wild","wind","wine","wife"]},{"start":"sofa","goal":"cure","par":5,"solution":["sofa","soft","sort","sore","sure","cure"]},{"start":"name","goal":"hers","par":5,"solution":["name","came","care","hare","here","hers"]},{"start":"tail","goal":"bony","par":6,"solution":["tail","tall","ball","bald","band","bond","bony"]},{"start":"pass","goal":"love","par":5,"solution":["pass","past","last","lost","lose","love"]},{"start":"lost","goal":"gave","par":5,"solution":["lost","lose","love","live","give","gave"]},{"start":"ease","goal":"hero","par":5,"solution":["ease","case","care","hare","here","hero"]},{"start":"role","goal":"walk","par":5,"solution":["role","sole","sale","tale","talk","walk"]},{"start":"said","goal":"fire","par":6,"solution":["said","laid","land","lane","line","fine","fire"]},{"start":"wild","goal":"safe","par":5,"solution":["wild","mild","mile","male","sale","safe"]},{"start":"hers","goal":"cost","par":6,"solution":["hers","here","hare","care","case","cast","cost"]},{"start":"holy","goal":"year","par":5,"solution":["holy","hold","held","head","hear","year"]},{"start":"rode","goal":"test","par":5,"solution":["rode","rose","lose","lost","lest","test"]},{"start":"fail","goal":"bird","par":6,"solution":["fail","fall","ball","bald","band","bind","bird"]},{"start":"love","goal":"else","par":6,"solution":["love","lose","lost","last","east","ease","else"]},{"start":"nail","goal":"line","par":6,"solution":["nail","fail","fall","fill","file","fine","line"]},{"start":"good","goal":"sure","par":5,"solution":["good","gold","sold","sole","sore","sure"]},{"start":"ball","goal":"loud","par":6,"solution":["ball","bald","bold","cold","cord","lord","loud"]},{"start":"told","goal":"line","par":5,"solution":["told","fold","fond","find","fine","line"]},{"start":"cast","goal":"work","par":5,"solution":["cast","cart","card","cord","word","work"]},{"start":"sure","goal":"walk","par":6,"solution":["sure","sore","sole","sale","tale","talk","walk"]},{"start":"foot","goal":"head","par":5,"solution":["foot","food","fold","hold","held","head"]},{"start":"tone","goal":"harm","par":5,"solution":["tone","bone","bore","bare","hare","harm"]},{"start":"fail","goal":"wing","par":6,"solution":["fail","fall","wall","will","wild","wind","wing"]},{"start":"fool","goal":"note","par":6,"solution":["fool","food","fond","bond","bone","none","note"]},{"start":"bold","goal":"hide","par":6,"solution":["bold","sold","sole","role","rode","ride","hide"]},{"start":"page","goal":"good","par":6,"solution":["page","pale","sale","sole","sold","gold","good"]},{"start":"feel","goal":"wife","par":6,"solution":["feel","fell","fill","file","fire","wire","wife"]},{"start":"fall","goal":"rose","par":5,"solution":["fall","tall","toll","roll","role","rose"]},{"start":"worn","goal":"mind","par":5,"solution":["worn","wore","wire","wine","mine","mind"]},{"start":"were","goal":"chin","par":5,"solution":["were","wore","worn","corn","coin","chin"]},{"start":"like","goal":"fail","par":6,"solution":["like","line","fine","file","fill","fall","fail"]},{"start":"wall","goal":"wide","par":5,"solution":["wall","will","wild","wind","wine","wide"]},{"start":"word","goal":"kill","par":6,"solution":["word","wore","wire","fire","file","fill","kill"]},{"start":"came","goal":"coal","par":5,"solution":["came","case","cast","cost","coat","coal"]},{"start":"bold","goal":"burn","par":5,"solution":["bold","cold","cord","corn","born","burn"]},{"start":"kind","goal":"lack","par":5,"solution":["kind","bind","band","bank","back","lack"]},{"start":"form","goal":"rays","par":5,"solution":["form","farm","warm","wars","ways","rays"]},{"start":"fate","goal":"cyst","par":5,"solution":["fate","face","fact","fast","cast","cyst"]},{"start":"move","goal":"west","par":5,"solution":["move","love","lose","lost","lest","west"]},{"start":"sing","goal":"give","par":5,"solution":["sing","wing","wine","line","live","give"]},{"start":"camp","goal":"hers","par":5,"solution":["camp","came","care","hare","here","hers"]},{"start":"kill","goal":"save","par":5,"solution":["kill","till","tall","tale","sale","save"]}],"hard":[{"start":"then","goal":"bone","par":7,"solution":["then","thin","chin","coin","corn","born","bore","bone"]},{"start":"wear","goal":"rose","par":7,"solution":["wear","bear","beat","best","lest","lost","lose","rose"]},{"start":"life","goal":"rear","par":7,"solution":["life","lift","left","lest","best","beat","bear","rear"]},{"start":"note","goal":"help","par":7,"solution":["note","none","bone","bond","bold","hold","held","help"]},{"start":"life","goal":"year","par":7,"solution":["life","lift","left","lest","best","beat","bear","year"]},{"start":"then","goal":"wine","par":8,"solution":["then","thin","chin","coin","corn","worn","wore","wire","wine"]},{"start":"than","goal":"were","par":7,"solution":["than","thin","chin","coin","corn","worn","wore","were"]},{"start":"when","goal":"wore","par":7,"solution":["when","then","thin","chin","coin","corn","worn","wore"]},{"start":"bald","goal":"thin","par":7,"solution":["bald","bold","cold","cord","corn","coin","chin","thin"]},{"start":"thin","goal":"holy","par":7,"solution":["thin","chin","coin","corn","cord","cold","hold","holy"]},{"start":"rich","goal":"legs","par":7,"solution":["rich","rice","rise","rose","lose","loss","less","legs"]},{"start":"help","goal":"burn","par":7,"solution":["help","held","hold","cold","cord","corn","born","burn"]},{"start":"have","goal":"sofa","par":7,"solution":["have","save","same","some","sore","sort","soft","sofa"]},{"start":"hand","goal":"poor","par":7,"solution":["hand","band","bond","fond","food","fool","pool","poor"]},{"start":"sofa","goal":"talk","par":7,"solution":["sofa","soft","sort","sore","sole","sale","tale","talk"]},{"start":"paid","goal":"hide","par":7,"solution":["paid","laid","land","lane","line","live","hive","hide"]},{"start":"sofa","goal":"gate","par":7,"solution":["sofa","soft","sort","sore","some","same","game","gate"]},{"start":"base","goal":"this","par":8,"solution":["base","bare","bore","born","corn","coin","chin","thin","this"]},{"start":"were","goal":"duel","par":7,"solution":["were","wire","fire","file","fill","full","dull","duel"]},{"start":"them","goal":"told","par":8,"solution":["them","then","thin","chin","coin","corn","cord","cold","told"]},{"start":"race","goal":"gown","par":7,"solution":["race","rare","bare","bore","born","torn","town","gown"]},{"start":"when","goal":"bore","par":7,"solution":["when","then","thin","chin","coin","corn","born","bore"]},{"start":"body","goal":"calm","par":7,"solution":["body","bony","bond","band","bald","ball","call","calm"]},{"start":"this","goal":"yard","par":7,"solution":["this","thin","chin","coin","corn","cord","card","yard"]},{"start":"then","goal":"base","par":8,"solution":["then","thin","chin","coin","corn","born","bore","bare","base"]},{"start":"aide","goal":"join","par":7,"solution":["aide","wide","wire","wore","worn","corn","coin","join"]},{"start":"holy","goal":"this","par":8,"solution":["holy","hold","cold","cord","corn","coin","chin","thin","this"]},{"start":"land","goal":"poor","par":7,"solution":["land","band","bond","fond","food","fool","pool","poor"]},{"start":"this","goal":"held","par":8,"solution":["this","thin","chin","coin","corn","cord","cold","hold","held"]},{"start":"bold","goal":"when","par":8,"solution":["bold","cold","cord","corn","coin","chin","thin","then","when"]},{"start":"risk","goal":"calm","par":7,"solution":["risk","rise","rose","role","pole","pale","palm","calm"]},{"start":"wood","goal":"this","par":7,"solution":["wood","word","worn","corn","coin","chin","thin","this"]},{"start":"wore","goal":"they","par":7,"solution":["wore","worn","corn","coin","chin","thin","then","they"]},{"start":"duel","goal":"kind","par":7,"solution":["duel","dull","full","fill","will","wild","wind","kind"]},{"start":"tail","goal":"loud","par":7,"solution":["tail","tall","toll","told","cold","cord","lord","loud"]},{"start":"gold","goal":"when","par":8,"solution":["gold","cold","cord","corn","coin","chin","thin","then","when"]},{"start":"bone","goal":"than","par":7,"solution":["bone","bore","born","corn","coin","chin","thin","than"]},{"start":"thus","goal":"word","par":7,"solution":["thus","this","thin","chin","coin","corn","worn","word"]},{"start":"nose","goal":"dear","par":7,"solution":["nose","lose","lost","lest","best","beat","bear","dear"]},{"start":"limb","goal":"fail","par":7,"solution":["limb","lime","line","fine","file","fill","fall","fail"]},{"start":"when","goal":"bare","par":8,"solution":["when","then","thin","chin","coin","corn","born","bore","bare"]},{"start":"they","goal":"cold","par":7,"solution":["they","then","thin","chin","coin","corn","cord","cold"]},{"start":"wife","goal":"duel","par":7,"solution":["wife","wine","fine","file","fill","full","dull","duel"]},{"start":"when","goal":"word","par":7,"solution":["when","then","thin","chin","coin","corn","worn","word"]},{"start":"wood","goal":"them","par":8,"solution":["wood","word","worn","corn","coin","chin","thin","then","them"]},{"start":"loud","goal":"this","par":7,"solution":["loud","lord","cord","corn","coin","chin","thin","this"]},{"start":"sofa","goal":"hero","par":7,"solution":["sofa","soft","sort","sore","more","mere","here","hero"]},{"start":"they","goal":"gown","par":8,"solution":["they","then","thin","chin","coin","corn","torn","town","gown"]},{"start":"hold","goal":"they","par":8,"solution":["hold","cold","cord","corn","coin","chin","thin","then","they"]},{"start":"bold","goal":"them","par":8,"solution":["bold","cold","cord","corn","coin","chin","thin","then","them"]},{"start":"fool","goal":"limb","par":7,"solution":["fool","food","fond","find","fine","line","lime","limb"]},{"start":"gown","goal":"then","par":7,"solution":["gown","town","torn","corn","coin","chin","thin","then"]},{"start":"note","goal":"heat","par":7,"solution":["note","nose","lose","lost","lest","best","beat","heat"]},{"start":"that","goal":"down","par":8,"solution":["that","than","thin","chin","coin","corn","torn","town","down"]},{"start":"they","goal":"bare","par":8,"solution":["they","then","thin","chin","coin","corn","born","bore","bare"]},{"start":"thus","goal":"cold","par":7,"solution":["thus","this","thin","chin","coin","corn","cord","cold"]},{"start":"well","goal":"note","par":7,"solution":["well","tell","toll","roll","role","rose","nose","note"]},{"start":"thus","goal":"wood","par":8,"solution":["thus","this","thin","chin","coin","corn","worn","word","wood"]},{"start":"told","goal":"when","par":8,"solution":["told","cold","cord","corn","coin","chin","thin","then","when"]},{"start":"ring","goal":"loud","par":7,"solution":["ring","wing","wine","wire","wore","word","lord","loud"]},{"start":"coal","goal":"ride","par":7,"solution":["coal","coat","cost","lost","lose","rose","rise","ride"]},{"start":"poor","goal":"wide","par":7,"solution":["poor","pool","wool","wood","word","wore","wire","wide"]},{"start":"then","goal":"cart","par":7,"solution":["then","thin","chin","coin","corn","cord","card","cart"]},{"start":"life","goal":"heal","par":7,"solution":["life","lift","left","lest","best","beat","heat","heal"]},{"start":"they","goal":"loud","par":8,"solution":["they","then","thin","chin","coin","corn","cord","lord","loud"]},{"start":"they","goal":"turn","par":7,"solution":["they","then","thin","chin","coin","corn","torn","turn"]},{"start":"hear","goal":"nose","par":7,"solution":["hear","bear","beat","best","lest","lost","lose","nose"]},{"start":"limb","goal":"pain","par":7,"solution":["limb","lime","line","lane","land","laid","paid","pain"]},{"start":"else","goal":"told","par":7,"solution":["else","ease","case","care","card","cord","cold","told"]},{"start":"note","goal":"tail","par":7,"solution":["note","nose","rose","role","roll","toll","tall","tail"]},{"start":"turn","goal":"help","par":7,"solution":["turn","torn","corn","cord","cold","hold","held","help"]},{"start":"with","goal":"good","par":7,"solution":["with","wish","wise","wire","wore","word","wood","good"]},{"start":"then","goal":"gold","par":7,"solution":["then","thin","chin","coin","corn","cord","cold","gold"]},{"start":"sold","goal":"them","par":8,"solution":["sold","cold","cord","corn","coin","chin","thin","then","them"]},{"start":"gown","goal":"wish","par":7,"solution":["gown","town","torn","worn","wore","wire","wise","wish"]},{"start":"that","goal":"turn","par":7,"solution":["that","than","thin","chin","coin","corn","torn","turn"]},{"start":"hold","goal":"then","par":7,"solution":["hold","cold","cord","corn","coin","chin","thin","then"]},{"start":"feel","goal":"work","par":7,"solution":["feel","fell","fill","file","fire","wire","wore","work"]},{"start":"kind","goal":"town","par":7,"solution":["kind","wind","wine","wire","wore","worn","torn","town"]},{"start":"hide","goal":"thin","par":8,"solution":["hide","wide","wire","wore","worn","corn","coin","chin","thin"]}],"expert":[{"start":"held","goal":"thus","par":9,"solution":["held","hold","cold","cord","corn","coin","chin","thin","this","thus"]},{"start":"life","goal":"when","par":10,"solution":["life","wife","wire","wore","worn","corn","coin","chin","thin","then","when"]},{"start":"mood","goal":"they","par":9,"solution":["mood","wood","word","worn","corn","coin","chin","thin","then","they"]},{"start":"thus","goal":"king","par":11,"solution":["thus","this","thin","chin","coin","corn","worn","wore","wire","wine","wing","king"]},{"start":"than","goal":"hide","par":9,"solution":["than","thin","chin","coin","corn","worn","wore","wire","wide","hide"]},{"start":"when","goal":"wife","par":9,"solution":["when","then","thin","chin","coin","corn","worn","wore","wire","wife"]},{"start":"they","goal":"wife","par":9,"solution":["they","then","thin","chin","coin","corn","worn","wore","wire","wife"]},{"start":"holy","goal":"thus","par":9,"solution":["holy","hold","cold","cord","corn","coin","chin","thin","this","thus"]},{"start":"aide","goal":"thus","par":10,"solution":["aide","wide","wire","wore","worn","corn","coin","chin","thin","this","thus"]},{"start":"them","goal":"wife","par":9,"solution":["them","then","thin","chin","coin","corn","worn","wore","wire","wife"]},{"start":"mood","goal":"them","par":9,"solution":["mood","wood","word","worn","corn","coin","chin","thin","then","them"]},{"start":"thus","goal":"wine","par":9,"solution":["thus","this","thin","chin","coin","corn","worn","wore","wire","wine"]},{"start":"joke","goal":"thus","par":9,"solution":["joke","woke","wore","worn","corn","coin","chin","thin","this","thus"]},{"start":"thus","goal":"base","par":9,"solution":["thus","this","thin","chin","coin","corn","born","bore","bare","base"]},{"start":"ring","goal":"this","par":10,"solution":["ring","wing","wine","wire","wore","worn","corn","coin","chin","thin","this"]},{"start":"life","goal":"this","par":9,"solution":["life","wife","wire","wore","worn","corn","coin","chin","thin","this"]},{"start":"wide","goal":"them","par":9,"solution":["wide","wire","wore","worn","corn","coin","chin","thin","then","them"]},{"start":"wing","goal":"this","par":9,"solution":["wing","wine","wire","wore","worn","corn","coin","chin","thin","this"]},{"start":"when","goal":"base","par":9,"solution":["when","then","thin","chin","coin","corn","born","bore","bare","base"]},{"start":"wide","goal":"they","par":9,"solution":["wide","wire","wore","worn","corn","coin","chin","thin","then","they"]},{"start":"thus","goal":"bald","par":9,"solution":["thus","this","thin","chin","coin","corn","cord","cold","bold","bald"]},{"start":"aide","goal":"this","par":9,"solution":["aide","wide","wire","wore","worn","corn","coin","chin","thin","this"]},{"start":"wine","goal":"when","par":9,"solution":["wine","wire","wore","worn","corn","coin","chin","thin","then","when"]},{"start":"good","goal":"thus","par":9,"solution":["good","gold","cold","cord","corn","coin","chin","thin","this","thus"]},{"start":"rise","goal":"thus","par":10,"solution":["rise","wise","wire","wore","worn","corn","coin","chin","thin","this","thus"]},{"start":"king","goal":"this","par":10,"solution":["king","wing","wine","wire","wore","worn","corn","coin","chin","thin","this"]},{"start":"thus","goal":"wife","par":9,"solution":["thus","this","thin","chin","coin","corn","worn","wore","wire","wife"]},{"start":"this","goal":"hide","par":9,"solution":["this","thin","chin","coin","corn","worn","wore","wire","wide","hide"]},{"start":"they","goal":"joke","par":9,"solution":["they","then","thin","chin","coin","corn","worn","wore","woke","joke"]},{"start":"rise","goal":"this","par":9,"solution":["rise","wise","wire","wore","worn","corn","coin","chin","thin","this"]},{"start":"bald","goal":"they","par":9,"solution":["bald","bold","cold","cord","corn","coin","chin","thin","then","they"]},{"start":"wing","goal":"thus","par":10,"solution":["wing","wine","wire","wore","worn","corn","coin","chin","thin","this","thus"]},{"start":"joke","goal":"them","par":9,"solution":["joke","woke","wore","worn","corn","coin","chin","thin","then","them"]},{"start":"thus","goal":"wide","par":9,"solution":["thus","this","thin","chin","coin","corn","worn","wore","wire","wide"]},{"start":"help","goal":"thus","par":10,"solution":["help","held","hold","cold","cord","corn","coin","chin","thin","this","thus"]},{"start":"life","goal":"then","par":9,"solution":["life","wife","wire","wore","worn","corn","coin","chin","thin","then"]},{"start":"risk","goal":"thus","par":11,"solution":["risk","rise","wise","wire","wore","worn","corn","coin","chin","thin","this","thus"]},{"start":"bald","goal":"them","par":9,"solution":["bald","bold","cold","cord","corn","coin","chin","thin","then","them"]},{"start":"thus","goal":"ring","par":11,"solution":["thus","this","thin","chin","coin","corn","worn","wore","wire","wine","wing","ring"]},{"start":"king","goal":"thin","par":9,"solution":["king","wing","wine","wire","wore","worn","corn","coin","chin","thin"]},{"start":"thin","goal":"risk","par":9,"solution":["thin","chin","coin","corn","worn","wore","wire","wise","rise","risk"]},{"start":"when","goal":"wide","par":9,"solution":["when","then","thin","chin","coin","corn","worn","wore","wire","wide"]},{"start":"life","goal":"thus","par":10,"solution":["life","wife","wire","wore","worn","corn","coin","chin","thin","this","thus"]},{"start":"thus","goal":"mood","par":9,"solution":["thus","this","thin","chin","coin","corn","worn","word","wood","mood"]},{"start":"then","goal":"hide","par":9,"solution":["then","thin","chin","coin","corn","worn","wore","wire","wide","hide"]},{"start":"here","goal":"thus","par":9,"solution":["here","were","wore","worn","corn","coin","chin","thin","this","thus"]},{"start":"this","goal":"help","par":9,"solution":["this","thin","chin","coin","corn","cord","cold","hold","held","help"]},{"start":"ring","goal":"thin","par":9,"solution":["ring","wing","wine","wire","wore","worn","corn","coin","chin","thin"]},{"start":"hide","goal":"thus","par":10,"solution":["hide","wide","wire","wore","worn","corn","coin","chin","thin","this","thus"]},{"start":"when","goal":"joke","par":9,"solution":["when","then","thin","chin","coin","corn","worn","wore","woke","joke"]}]};
+
+      const WORD_SET = new Set(WORDS);
+      const PREFERRED_SET = new Set(PREFERRED_WORDS);
+
+      const difficultyMultiplier = {
+        easy: 1.00,
+        medium: 1.25,
+        hard: 1.55,
+        expert: 1.90
+      };
+
+      const els = {
+        difficulty: document.getElementById("difficulty"),
+        startTiles: document.getElementById("startTiles"),
+        goalTiles: document.getElementById("goalTiles"),
+        movesValue: document.getElementById("movesValue"),
+        parValue: document.getElementById("parValue"),
+        attemptsValue: document.getElementById("attemptsValue"),
+        scoreValue: document.getElementById("scoreValue"),
+        currentWord: document.getElementById("currentWord"),
+        paceCopy: document.getElementById("paceCopy"),
+        guessForm: document.getElementById("guessForm"),
+        guessInput: document.getElementById("guessInput"),
+        submitBtn: document.getElementById("submitBtn"),
+        message: document.getElementById("message"),
+        hintBtn: document.getElementById("hintBtn"),
+        newBtn: document.getElementById("newBtn"),
+        giveUpBtn: document.getElementById("giveUpBtn"),
+        solutionBox: document.getElementById("solutionBox"),
+        ladder: document.getElementById("ladder"),
+        streakValue: document.getElementById("streakValue"),
+        bestValue: document.getElementById("bestValue"),
+        winBanner: document.getElementById("winBanner"),
+        entryPanel: document.getElementById("entryPanel"),
+        rulesBtn: document.getElementById("rulesBtn"),
+        rulesPanel: document.getElementById("rulesPanel"),
+        themeBtn: document.getElementById("themeBtn"),
+        dictionaryMeta: document.getElementById("dictionaryMeta")
+      };
+
+      const wildcardMap = new Map();
+
+      WORDS.forEach(word => {
+        for (let i = 0; i < 4; i++) {
+          const key = word.slice(0, i) + "*" + word.slice(i + 1);
+          if (!wildcardMap.has(key)) wildcardMap.set(key, []);
+          wildcardMap.get(key).push(word);
+        }
+      });
+
+      function neighbors(word) {
+        const found = new Set();
+        for (let i = 0; i < 4; i++) {
+          const key = word.slice(0, i) + "*" + word.slice(i + 1);
+          const group = wildcardMap.get(key) || [];
+          group.forEach(w => {
+            if (w !== word) found.add(w);
+          });
+        }
+        return Array.from(found).sort((a, b) => {
+          const ap = PREFERRED_SET.has(a) ? 0 : 1;
+          const bp = PREFERRED_SET.has(b) ? 0 : 1;
+          return ap - bp || a.localeCompare(b);
+        });
+      }
+
+      function shortestPath(start, goal) {
+        if (start === goal) return [start];
+
+        const queue = [start];
+        let head = 0;
+        const previous = new Map([[start, null]]);
+
+        while (head < queue.length) {
+          const current = queue[head++];
+
+          for (const next of neighbors(current)) {
+            if (previous.has(next)) continue;
+            previous.set(next, current);
+
+            if (next === goal) {
+              const path = [goal];
+              let p = current;
+              while (p !== null) {
+                path.push(p);
+                p = previous.get(p);
+              }
+              return path.reverse();
+            }
+
+            queue.push(next);
+          }
+        }
+        return null;
+      }
+
+      function safeGet(key, fallback) {
+        try {
+          const value = localStorage.getItem(key);
+          return value === null ? fallback : value;
+        } catch {
+          return fallback;
+        }
+      }
+
+      function safeSet(key, value) {
+        try {
+          localStorage.setItem(key, String(value));
+        } catch {}
+      }
+
+      let state = {
+        puzzle: null,
+        current: "",
+        history: [],
+        moves: 0,
+        attempts: 0,
+        invalidAttempts: 0,
+        hints: 0,
+        finished: false,
+        gaveUp: false,
+        streak: Number(safeGet("wordshift_streak", "0")) || 0,
+        lastPuzzleKey: ""
+      };
+
+      function renderTiles(container, word) {
+        container.innerHTML = "";
+        for (const letter of word.toUpperCase()) {
+          const tile = document.createElement("span");
+          tile.className = "tile";
+          tile.textContent = letter;
+          container.appendChild(tile);
+        }
+      }
+
+      function differenceCount(a, b) {
+        let count = 0;
+        for (let i = 0; i < 4; i++) {
+          if (a[i] !== b[i]) count++;
+        }
+        return count;
+      }
+
+      function currentScore() {
+        if (!state.puzzle) return 0;
+        const mult = difficultyMultiplier[els.difficulty.value] || 1;
+        const base = Math.round(1000 * mult);
+        const overPar = Math.max(0, state.moves - state.puzzle.par);
+        return Math.max(
+          0,
+          base - (overPar * 110) - (state.invalidAttempts * 35) - (state.hints * 120)
+        );
+      }
+
+      function bestKey() {
+        return "wordshift_best_" + els.difficulty.value;
+      }
+
+      function updateBestDisplay() {
+        const best = Number(safeGet(bestKey(), "0")) || 0;
+        els.bestValue.textContent = best > 0 ? best.toLocaleString() : "—";
+      }
+
+      function updateStats() {
+        els.movesValue.textContent = state.moves;
+        els.attemptsValue.textContent = state.attempts;
+        els.parValue.textContent = state.puzzle ? state.puzzle.par : "—";
+        els.scoreValue.textContent = currentScore().toLocaleString();
+        els.streakValue.textContent = state.streak;
+
+        if (!state.puzzle) return;
+
+        const remaining = Math.max(0, state.puzzle.par - state.moves);
+        if (state.finished) {
+          els.paceCopy.textContent = state.gaveUp ? "Round ended" : "Puzzle complete";
+        } else if (state.moves === 0) {
+          els.paceCopy.textContent = "Par " + state.puzzle.par + " moves";
+        } else if (remaining > 0) {
+          els.paceCopy.textContent = remaining + " par move" + (remaining === 1 ? "" : "s") + " left";
+        } else {
+          els.paceCopy.textContent = "Over par — keep going";
+        }
+      }
+
+      function updateHistory() {
+        els.ladder.innerHTML = "";
+
+        state.history.forEach((word, index) => {
+          const row = document.createElement("div");
+          row.className = "step" + (index === state.history.length - 1 ? " latest" : "");
+
+          const idx = document.createElement("div");
+          idx.className = "step-index";
+          idx.textContent = index;
+
+          const label = document.createElement("div");
+          label.className = "step-word";
+          label.textContent = word;
+
+          const delta = document.createElement("div");
+          delta.className = "step-delta";
+          delta.textContent = index === 0 ? "START" : "1 letter";
+
+          row.append(idx, label, delta);
+          els.ladder.appendChild(row);
+        });
+      }
+
+      function setMessage(text, type = "") {
+        els.message.textContent = text;
+        els.message.className = "message" + (type ? " " + type : "");
+      }
+
+      function reject(text) {
+        state.invalidAttempts++;
+        updateStats();
+        setMessage(text, "bad");
+        els.entryPanel.classList.remove("shake");
+        void els.entryPanel.offsetWidth;
+        els.entryPanel.classList.add("shake");
+      }
+
+      function choosePuzzle() {
+        const difficulty = els.difficulty.value;
+        const pool = PUZZLES[difficulty];
+        if (!pool || !pool.length) return null;
+
+        let chosen = null;
+        for (let i = 0; i < 12; i++) {
+          const candidate = pool[Math.floor(Math.random() * pool.length)];
+          const key = candidate.start + ">" + candidate.goal;
+          if (key !== state.lastPuzzleKey || pool.length === 1) {
+            chosen = candidate;
+            state.lastPuzzleKey = key;
+            break;
+          }
+        }
+        return chosen || pool[0];
+      }
+
+      function startRound() {
+        const puzzle = choosePuzzle();
+        if (!puzzle) return;
+
+        state.puzzle = puzzle;
+        state.current = puzzle.start;
+        state.history = [puzzle.start];
+        state.moves = 0;
+        state.attempts = 0;
+        state.invalidAttempts = 0;
+        state.hints = 0;
+        state.finished = false;
+        state.gaveUp = false;
+
+        renderTiles(els.startTiles, puzzle.start);
+        renderTiles(els.goalTiles, puzzle.goal);
+
+        els.currentWord.textContent = puzzle.start.toUpperCase();
+        els.solutionBox.classList.remove("show");
+        els.solutionBox.innerHTML = "";
+        els.winBanner.classList.remove("show");
+        els.winBanner.textContent = "";
+        els.guessInput.value = "";
+        els.guessInput.disabled = false;
+        els.submitBtn.disabled = false;
+        els.hintBtn.disabled = false;
+        els.giveUpBtn.disabled = false;
+
+        setMessage("Change exactly one letter from " + puzzle.start.toUpperCase() + ".");
+        updateStats();
+        updateHistory();
+        updateBestDisplay();
+
+        window.setTimeout(() => els.guessInput.focus(), 50);
+      }
+
+      function finishRound() {
+        state.finished = true;
+        state.streak += 1;
+        safeSet("wordshift_streak", state.streak);
+
+        const score = currentScore();
+        const oldBest = Number(safeGet(bestKey(), "0")) || 0;
+        if (score > oldBest) safeSet(bestKey(), score);
+
+        const parDiff = state.moves - state.puzzle.par;
+        let performance = "Perfect route!";
+        if (parDiff === 1) performance = "Just 1 move over par.";
+        if (parDiff > 1) performance = parDiff + " moves over par.";
+
+        els.winBanner.textContent =
+          "Solved! " + state.moves + " moves · " +
+          state.attempts + " attempts · " +
+          score.toLocaleString() + " points. " + performance;
+        els.winBanner.classList.add("show");
+
+        setMessage("Goal reached. Start a new puzzle when you're ready.", "good");
+        els.guessInput.disabled = true;
+        els.submitBtn.disabled = true;
+        els.hintBtn.disabled = true;
+        els.giveUpBtn.disabled = true;
+
+        updateStats();
+        updateBestDisplay();
+      }
+
+      function submitGuess(raw) {
+        if (!state.puzzle || state.finished) return;
+
+        const word = raw.trim().toLowerCase();
+        state.attempts++;
+
+        if (!/^[a-z]{4}$/.test(word)) {
+          reject("Enter exactly 4 letters.");
+          return;
+        }
+
+        if (!WORD_SET.has(word)) {
+          reject(word.toUpperCase() + " is not in the built-in English dictionary.");
+          return;
+        }
+
+        if (word === state.current) {
+          reject("That's already your current word.");
+          return;
+        }
+
+        const changed = differenceCount(state.current, word);
+        if (changed !== 1) {
+          reject(
+            changed === 0
+              ? "Change one letter."
+              : "You changed " + changed + " letters. Change exactly one."
+          );
+          return;
+        }
+
+        state.current = word;
+        state.history.push(word);
+        state.moves++;
+        els.currentWord.textContent = word.toUpperCase();
+        els.guessInput.value = "";
+
+        updateHistory();
+        updateStats();
+
+        if (word === state.puzzle.goal) {
+          finishRound();
+          return;
+        }
+
+        const path = shortestPath(word, state.puzzle.goal);
+        if (path) {
+          const remaining = path.length - 1;
+          setMessage(
+            "Valid. " + remaining + " move" + (remaining === 1 ? "" : "s") +
+            " from the goal on a shortest route from here.",
+            "good"
+          );
+        } else {
+          setMessage("Valid word. Keep shifting one letter at a time.", "good");
+        }
+
+        els.guessInput.focus();
+      }
+
+      function showHint() {
+        if (!state.puzzle || state.finished) return;
+
+        const path = shortestPath(state.current, state.puzzle.goal);
+        if (!path || path.length < 2) {
+          setMessage("No hint available from this position.", "warn");
+          return;
+        }
+
+        state.hints++;
+        updateStats();
+        setMessage("Hint: try " + path[1].toUpperCase() + ".", "warn");
+      }
+
+      function giveUp() {
+        if (!state.puzzle || state.finished) return;
+
+        state.finished = true;
+        state.gaveUp = true;
+        state.streak = 0;
+        safeSet("wordshift_streak", "0");
+
+        const solution = state.puzzle.solution.map(w => w.toUpperCase()).join(" → ");
+        els.solutionBox.innerHTML =
+          "<strong>One shortest solution:</strong><br>" + solution;
+        els.solutionBox.classList.add("show");
+
+        setMessage("Solution revealed. This round does not count toward your streak.", "warn");
+        els.guessInput.disabled = true;
+        els.submitBtn.disabled = true;
+        els.hintBtn.disabled = true;
+        els.giveUpBtn.disabled = true;
+
+        updateStats();
+      }
+
+      els.guessInput.addEventListener("input", () => {
+        els.guessInput.value = els.guessInput.value
+          .replace(/[^a-zA-Z]/g, "")
+          .slice(0, 4)
+          .toUpperCase();
+      });
+
+      els.guessForm.addEventListener("submit", event => {
+        event.preventDefault();
+        submitGuess(els.guessInput.value);
+      });
+
+      els.newBtn.addEventListener("click", startRound);
+      els.hintBtn.addEventListener("click", showHint);
+      els.giveUpBtn.addEventListener("click", giveUp);
+
+      els.difficulty.addEventListener("change", () => {
+        updateBestDisplay();
+        startRound();
+      });
+
+      els.rulesBtn.addEventListener("click", () => {
+        const open = els.rulesPanel.classList.toggle("show");
+        els.rulesBtn.setAttribute("aria-label", open ? "Hide game rules" : "Show game rules");
+      });
+
+      function applyTheme(theme) {
+        const light = theme === "light";
+        document.body.classList.toggle("light", light);
+        els.themeBtn.textContent = light ? "☾" : "☼";
+        els.themeBtn.setAttribute("aria-label", light ? "Switch to dark theme" : "Switch to light theme");
+      }
+
+      const storedTheme = safeGet("wordshift_theme", "");
+      const initialTheme = storedTheme ||
+        (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      applyTheme(initialTheme);
+
+      els.themeBtn.addEventListener("click", () => {
+        const next = document.body.classList.contains("light") ? "dark" : "light";
+        applyTheme(next);
+        safeSet("wordshift_theme", next);
+      });
+
+      els.dictionaryMeta.textContent =
+        WORDS.length.toLocaleString() + " valid 4-letter words · fully offline";
+
+      updateBestDisplay();
+      startRound();
+    })();
+  </script>
+</body>
+</html>
