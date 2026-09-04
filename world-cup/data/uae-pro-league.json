@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-31T17:28:44.334Z",
+  "generated_at": "2026-09-04T13:48:54.658Z",
   "source": {
     "name": "UAE Pro League",
     "url": "https://www.uaepl.ae/en/fixtures"
@@ -25051,7 +25051,7 @@
         {
           "id": "22e17f54-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f54-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84511",
+          "opta_id": "9wtd4vvaexrv3wtnfg3t01ez8",
           "date_utc": "2026-09-10T13:40:00.000Z",
           "home_team_id": "united",
           "away_team_id": "shabab-alahli",
@@ -25073,7 +25073,7 @@
         {
           "id": "22e17f57-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f57-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84513",
+          "opta_id": "9wh929a2le0kjmpvo6k5ibxuc",
           "date_utc": "2026-09-10T13:40:00.000Z",
           "home_team_id": "al-jazira",
           "away_team_id": "al-nasr",
@@ -25095,7 +25095,7 @@
         {
           "id": "22e17f4e-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f4e-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84508",
+          "opta_id": "9x2uuh5ymn9vsrv6evbulqk9g",
           "date_utc": "2026-09-10T16:15:00.000Z",
           "home_team_id": "al-ain",
           "away_team_id": "al-wasl",
@@ -25117,7 +25117,7 @@
         {
           "id": "22e17f52-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f52-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84510",
+          "opta_id": "9xcghwlrappl79lgb0sjz87bo",
           "date_utc": "2026-09-11T13:40:00.000Z",
           "home_team_id": "hatta",
           "away_team_id": "al-dhafra",
@@ -25139,7 +25139,7 @@
         {
           "id": "22e17f59-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f59-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84514",
+          "opta_id": "9xlzco6ehuer7rqtb5s5tzl04",
           "date_utc": "2026-09-11T13:40:00.000Z",
           "home_team_id": "khorfakkan",
           "away_team_id": "bani-yas",
@@ -25161,7 +25161,7 @@
         {
           "id": "22e17f50-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f50-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84509",
+          "opta_id": "9xvk60zaot3xdc94rta62m6tw",
           "date_utc": "2026-09-11T16:15:00.000Z",
           "home_team_id": "ajman",
           "away_team_id": "kalba",
@@ -25183,7 +25183,7 @@
         {
           "id": "22e17f55-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f55-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "84512",
+          "opta_id": "9y53dt42iq1nkssdpx2t978yc",
           "date_utc": "2026-09-11T16:15:00.000Z",
           "home_team_id": "al-wahda",
           "away_team_id": "sharjah",
@@ -25809,7 +25809,7 @@
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_893397894.png"
         }
       ],
-      "liveFetchedAt": "2026-08-31T17:28:44.334Z"
+      "liveFetchedAt": "2026-09-04T13:48:54.658Z"
     }
   }
 }
