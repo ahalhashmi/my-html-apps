@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f6f5f1">
+<title>Ribbon Logo Studio</title>
+<style>
+:root{--page:#f6f5f1;--paper:#fff;--ink:#252b2a;--muted:#7b817d;--line:#e5e7e1;--soft:#f4f5f1;--accent:#ff2331;--green:#356e64;--gold:#a77722;--radius:18px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--page);-webkit-font-smoothing:antialiased}button,input,select{font:inherit}button,select{cursor:pointer}button{color:inherit;-webkit-tap-highlight-color:transparent}button:disabled{opacity:.32;cursor:not-allowed}button:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #94bdb4;outline-offset:3px}button svg{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}button{display:inline-flex;justify-content:center;align-items:center;gap:8px}a{color:var(--green)}
+.header{height:78px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 32px;border-bottom:1px solid var(--line);background:var(--page)}.brand{display:flex;align-items:center;gap:13px;min-width:0}.brand-mark{width:39px;height:43px;flex-shrink:0}.brand h1{font-size:19px;font-weight:680;letter-spacing:-.6px;margin:0}.brand p{margin:4px 0 0;font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase}.header-actions{display:flex;align-items:center;gap:10px}.button{min-height:40px;padding:10px 15px;border:1px solid var(--line);border-radius:10px;background:var(--paper);font-size:12px;font-weight:650;white-space:nowrap}.button:hover{background:#eef0eb}.button.primary{color:#fff;background:var(--ink);border-color:var(--ink)}.button.primary:hover{background:#3e4744}.icon-button{border:1px solid var(--line);background:#fff;border-radius:9px;width:35px;height:35px;padding:8px}.icon-button:hover:not(:disabled){background:var(--soft)}
+.workspace{max-width:1880px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 362px;min-height:calc(100vh - 78px);min-height:calc(100dvh - 78px)}.preview-column{min-width:0;padding:27px 28px 20px;display:flex;flex-direction:column;gap:16px}.eyebrow{font-size:10px;font-weight:750;letter-spacing:1.8px;color:var(--muted);text-transform:uppercase}.preview-head{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:24px}.preview-head .eyebrow{display:flex;align-items:center;gap:8px}.live-dot{width:6px;height:6px;border-radius:50%;background:#4f8e77}.preview-subtitle{font-size:11px;color:var(--muted)}
+.stage-card{position:relative;flex:1;min-height:460px;border:1px solid #e2e5dc;border-radius:var(--radius);overflow:hidden;background:white;box-shadow:0 4px 20px #333a2710}.stage-toolbar{position:absolute;top:16px;left:18px;right:18px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:8px;pointer-events:none}.stage-toolbar>*{pointer-events:auto}.stage-unit{font:10px var(--mono);color:#8b908b;letter-spacing:.6px;background:#ffffffd9;border:1px solid #edf0e9;border-radius:6px;padding:7px 9px}.toggle-bar{display:flex;align-items:center;gap:5px;padding:4px;border:1px solid #e8ebe4;background:#ffffffed;border-radius:11px;backdrop-filter:blur(8px)}.tool-toggle{font-size:11px;font-weight:600;min-height:31px;border:0;border-radius:7px;padding:6px 9px;background:transparent;color:#858c86}.tool-toggle[aria-pressed="true"]{color:#355f57;background:#eaf1eb}.tool-toggle svg{width:15px;height:15px}.stage{position:absolute;inset:0;touch-action:none;cursor:grab;outline:none}.stage.panning{cursor:grabbing}.stage [data-handle]{cursor:ew-resize}.stage [data-handle="height"],.stage [data-handle="armWidth"],.stage [data-handle="peelY"]{cursor:ns-resize}.stage [data-dimension]{cursor:pointer}.stage [data-dimension]:hover .dimension-label{fill:#eef3eb}.stage-footer{position:absolute;bottom:15px;left:18px;right:18px;z-index:2;display:flex;justify-content:space-between;gap:10px;align-items:center;pointer-events:none}.stage-footer>*{pointer-events:auto}.view-controls{display:flex;align-items:center;gap:3px;background:#fffffff0;border:1px solid var(--line);border-radius:10px;padding:4px;box-shadow:0 2px 5px #00000003}.view-controls button{border:0;border-radius:6px;background:transparent;min-width:29px;height:29px;font-size:18px}.view-controls button:hover{background:var(--soft)}.view-controls .fit{font-size:11px;min-width:40px;font-weight:650}.zoom-label{font:10px var(--mono);min-width:45px;text-align:center;color:#626b63}.view-separator{height:14px;width:1px;background:var(--line);margin:0 3px}.stage-help{font-size:10px;color:#8b918a;background:#ffffffda;padding:6px 8px;border-radius:6px}.out-of-view{position:absolute;z-index:4;bottom:66px;left:50%;transform:translateX(-50%);border:1px solid #eadabd;background:#fff9ee;color:#89642a;border-radius:9px;padding:8px 12px;font-size:11px;font-weight:600;box-shadow:0 3px 15px #3825070b;white-space:nowrap}.out-of-view[hidden]{display:none}
+.summary-strip{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:10px}.summary-card{padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:#fdfdfa;min-width:0}.summary-card .caption{font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:7px}.summary-card strong{font:13px var(--mono);font-weight:550;display:block;white-space:nowrap}.summary-card small{font:10px var(--mono);color:var(--muted);margin-left:4px}.preview-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:15px;font-size:10px;color:var(--muted)}.preview-foot span:last-child{white-space:nowrap}.status-dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:5px;background:#6b9882}
+.sidebar{border-left:1px solid var(--line);background:#fff;display:flex;flex-direction:column;min-width:0;min-height:0}.sidebar-top{padding:23px 23px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}.sidebar-top h2{font-size:17px;font-weight:650;letter-spacing:-.4px;margin:0}.sidebar-top .history{display:flex;gap:5px}.controls-scroll{overflow:auto;scrollbar-width:thin;scrollbar-color:#dcded7 transparent;overscroll-behavior:contain}.control-section{padding:21px 23px;border-bottom:1px solid var(--line)}.section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px}.section-heading h3{font-size:12px;margin:0;font-weight:700;letter-spacing:.05px}.preset-button{border:1px solid #ead8ae;color:#8e682b;background:#fff9eb;border-radius:7px;font-size:10px;font-weight:650;padding:6px 8px;gap:5px}.preset-button .phi{font:16px Georgia,serif;line-height:12px}.measure-row+.measure-row{margin-top:19px}.control-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.control-label label{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:550}.symbol{display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;border:1px solid #e1e5e0;border-radius:6px;color:#5f6c65;background:#f5f7f2;font:10px var(--mono)}.symbol.peel{color:#997024;background:#fff9eb;border-color:#efe2c5}.number-wrap{display:flex;align-items:center;border:1px solid var(--line);border-radius:7px;background:#fafbf8;overflow:hidden;flex-shrink:0}.number-wrap:focus-within{border-color:#7fa99d;box-shadow:0 0 0 2px #7fa99d22}.number-wrap input{border:0;outline:0;background:transparent;width:79px;padding:7px 4px 7px 8px;font:12px var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}.number-wrap span{font:10px var(--mono);color:#949b93;padding:0 8px 0 2px}.number-wrap input::-webkit-inner-spin-button{opacity:.5}.range-wrap{display:flex;align-items:center;gap:10px}.range-wrap input[type=range]{width:100%;height:16px;margin:0;appearance:none;-webkit-appearance:none;outline:0;background:transparent;cursor:pointer;--track:#edf0e9;--fill:#626e67}.range-wrap input[type=range]::-webkit-slider-runnable-track{height:4px;background:linear-gradient(to right,var(--fill) 0%,var(--fill) var(--pct,40%),var(--track) var(--pct,40%),var(--track) 100%);border-radius:5px}.range-wrap input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:14px;height:14px;background:#fff;border:2px solid var(--fill);border-radius:50%;margin-top:-5px;box-shadow:0 1px 3px #0002}.range-wrap input[type=range]::-moz-range-track{height:4px;border-radius:5px;background:var(--track)}.range-wrap input[type=range]::-moz-range-progress{height:4px;background:var(--fill)}.range-wrap input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;border:2px solid var(--fill);background:#fff}.range-wrap input:focus-visible{outline:2px solid #a9c6b9;outline-offset:4px;border-radius:3px}.peel-controls input[type=range]{--fill:#be8c35}.tiny-note{font-size:10px;line-height:1.6;color:#8a9189;margin:12px 0 0}.link-control{display:flex;align-items:center;gap:6px;border:0;background:#eff5ef;color:#517063;border-radius:6px;padding:5px 7px;font-size:10px}.link-control svg{width:13px;height:13px}.link-control[aria-pressed="false"]{background:#f5f5f2;color:#92978d}.reference-select{width:100%;font-size:10px;color:#6c756d;background:#f9faf6;border:1px solid var(--line);border-radius:7px;padding:7px 23px 7px 9px;margin-top:8px}.reference-note{margin:14px 0 0;padding:10px 11px;border-radius:8px;background:#f5f7f1;color:#7a8577;font-size:10px;line-height:1.55}.control-section.details{padding-top:17px;padding-bottom:17px}.details summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:650;min-height:20px}.details summary::-webkit-details-marker{display:none}.details summary::after{content:'+';font-size:18px;font-weight:400;color:#8d978e}.details[open] summary::after{content:'−'}.details-content{padding-top:21px}.percent-value{font:11px var(--mono);color:#7b847b}.color-row{display:flex;justify-content:space-between;gap:8px;margin-bottom:18px}.color-control{display:flex;align-items:center;gap:7px;font-size:10px;color:#71796f}.color-control input[type=color]{appearance:none;-webkit-appearance:none;padding:0;background:none;border:0;width:27px;height:27px;cursor:pointer;border-radius:8px}.color-control input[type=color]::-webkit-color-swatch-wrapper{padding:2px}.color-control input[type=color]::-webkit-color-swatch{border:1px solid #00000018;border-radius:6px}.check-line{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;font-size:11px;color:#646f66}.switch{position:relative;display:inline-block;width:30px;height:18px;flex-shrink:0}.switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}.switch i{display:block;pointer-events:none;width:100%;height:100%;border-radius:20px;background:#dce2d8;transition:background .15s}.switch i::after{content:'';display:block;position:absolute;width:12px;height:12px;top:3px;left:3px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #0002;transition:transform .15s}.switch input:checked+i{background:#567f6a}.switch input:checked+i::after{transform:translateX(12px)}.switch input:focus-visible+i{outline:3px solid #9dbdac;outline-offset:3px}.sidebar-bottom{font-size:10px;line-height:1.6;color:#8b9388;padding:17px 23px;background:#fafbf7}.sidebar-bottom strong{font-weight:650;color:#6c796a}.notice{min-height:0;margin:0;color:#99702d;font-size:10px;line-height:1.5}.notice:not(:empty){padding-top:10px}
+.toast{position:fixed;bottom:25px;left:50%;transform:translate(-50%,18px);background:#28372e;color:#fff;border-radius:10px;box-shadow:0 6px 25px #0002;padding:12px 18px;font-size:12px;max-width:calc(100vw - 30px);text-align:center;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:30}.toast.visible{opacity:1;transform:translate(-50%,0)}.dialog{border:1px solid var(--line);border-radius:20px;padding:27px;width:410px;max-width:calc(100vw - 28px);color:var(--ink);box-shadow:0 25px 100px #0002;background:#fff}.dialog::backdrop{background:#18251d55;backdrop-filter:blur(5px)}.dialog-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}.dialog h2{margin:0;font-size:21px;letter-spacing:-.7px}.dialog p{font-size:12px;color:var(--muted);line-height:1.7;margin:0 0 22px}.format-options{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:20px}.format-option{position:relative;display:block;border:1px solid var(--line);border-radius:11px;padding:15px;cursor:pointer;background:#fbfcf9}.format-option:has(input:checked){border-color:#5a846c;box-shadow:0 0 0 1px #5a846c;background:#f2f7f0}.format-option input{position:absolute;right:12px;top:12px;accent-color:#517c60}.format-option strong{font:15px var(--mono);display:block;margin-bottom:5px}.format-option small{font-size:10px;color:var(--muted)}.export-option{display:flex;align-items:center;gap:9px;font-size:12px;margin:14px 0}.export-option input{accent-color:#517c60;width:15px;height:15px}.export-resolution{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;margin:20px 0}.export-resolution[hidden]{display:none}.export-resolution select{border:1px solid var(--line);background:#f9fbf6;border-radius:7px;padding:8px;font:12px var(--mono)}.dialog .download{width:100%;margin-top:15px;min-height:45px}.dialog .dialog-note{font-size:10px;text-align:center;margin:12px 0 0}.dialog-error{font-size:11px;color:#ab3d32;margin-top:12px;line-height:1.5}.export-fallback{font-size:11px;margin-top:14px;text-align:center;line-height:1.6}.export-fallback[hidden]{display:none}
+@media(min-width:981px){.workspace{height:calc(100vh - 78px);height:calc(100dvh - 78px);min-height:700px;grid-template-rows:minmax(0,1fr)}.controls-scroll{flex:1;min-height:0}.preview-column{overflow:hidden}.stage-card{min-height:380px}}
+@media(min-width:1650px){.workspace{grid-template-columns:minmax(0,1fr) 390px}.preview-column{padding:30px 38px 23px}.control-section{padding-left:27px;padding-right:27px}}
+@media(max-width:1150px) and (min-width:981px){.workspace{grid-template-columns:minmax(0,1fr) 330px}.preview-column{padding:22px 18px 18px}.header{padding:0 23px}.control-section{padding:20px}.stage-help{display:none}.summary-card{padding:12px 10px}.summary-card strong{font-size:11px}.preview-subtitle{display:none}}
+@media(max-width:980px){.header{height:70px;padding:0 22px}.workspace{display:block;min-height:calc(100dvh - 70px)}.preview-column{padding:20px 20px 18px;gap:13px}.stage-card{flex:none;height:590px}.sidebar{border-left:0;border-top:1px solid var(--line);border-radius:20px 20px 0 0;overflow:hidden}.sidebar-top{padding:20px 24px}.controls-scroll{display:grid;grid-template-columns:1fr 1fr;overflow:visible}.control-section{border-right:1px solid var(--line);padding:22px 24px}.sidebar-bottom{grid-column:1 / -1}.preview-foot{padding:0 2px}.summary-card{padding:13px 16px}}
+@media(max-width:580px){.header{padding:0 16px;gap:10px;height:67px}.brand{gap:9px}.brand h1{font-size:15px;letter-spacing:-.4px}.brand p{font-size:8px;letter-spacing:1px;margin-top:3px}.brand-mark{width:28px;height:34px}.header-actions{gap:6px}.header-actions .button{min-height:36px;font-size:10px;padding:8px 10px;border-radius:8px;gap:5px}.header-actions .button svg{width:14px;height:14px}.desktop-word{display:none}.preview-column{padding:17px 12px 17px;gap:11px}.preview-head{padding:0 4px}.eyebrow{font-size:9px;letter-spacing:1.2px}.preview-subtitle{font-size:9px}.stage-card{height:480px;border-radius:15px;min-height:400px}.stage-toolbar{top:11px;left:11px;right:11px}.stage-unit{font-size:8px;padding:6px 7px}.toggle-bar{gap:2px;padding:3px;border-radius:9px}.tool-toggle{padding:5px 7px;font-size:9px;gap:4px;min-height:27px}.tool-toggle svg{width:13px;height:13px}.tool-toggle .optional-label{display:none}.stage-footer{bottom:11px;left:11px;right:11px}.stage-help{display:none}.view-controls{padding:3px}.view-controls button{height:27px}.summary-strip{gap:6px}.summary-card{padding:12px 9px;border-radius:10px}.summary-card .caption{font-size:8px;letter-spacing:.6px;margin-bottom:6px}.summary-card strong{font-size:9.5px;letter-spacing:-.1px}.summary-card small{font-size:8px;margin-left:2px}.preview-foot{font-size:9px}.preview-foot .foot-extra{display:none}.controls-scroll{display:block}.sidebar-top{padding:20px}.control-section{padding:22px 20px;border-right:0}.control-label label{font-size:12px}.number-wrap input{font-size:16px;width:93px;padding:7px 5px 7px 10px}.number-wrap span{font-size:11px}.range-wrap input[type=range]{height:23px}.range-wrap input[type=range]::-webkit-slider-thumb{width:20px;height:20px;margin-top:-8px}.range-wrap input[type=range]::-moz-range-thumb{width:17px;height:17px}.section-heading h3{font-size:13px}.reference-select{font-size:12px;padding:9px}.tiny-note{font-size:11px}.link-control{font-size:11px;padding:6px 8px}.preset-button{font-size:11px;padding:7px 9px}.sidebar-bottom{padding:18px 20px}.check-line{font-size:12px}.color-control{font-size:11px}.toast{font-size:11px}.stage-toolbar .tool-toggle{min-width:29px}.dialog{padding:23px}}
+/* On phones the canvas stays visible while the controls scroll below it. */
+@media(max-width:580px) and (min-height:650px){html,body{height:100%;overflow:hidden}.workspace{display:flex;flex-direction:column;height:calc(100vh - 67px);height:calc(100dvh - 67px);min-height:0}.preview-column{flex:0 0 auto;padding:10px 12px 10px;gap:8px}.preview-head{min-height:15px}.preview-subtitle{display:none}.stage-card{height:clamp(300px,45dvh,420px);min-height:0}.summary-card{padding:9px 8px}.summary-card .caption{margin-bottom:5px}.preview-foot{display:none}.sidebar{flex:1;min-height:0}.sidebar-top{padding:11px 19px;flex:0 0 auto}.sidebar-top h2{font-size:16px}.controls-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:env(safe-area-inset-bottom,0px)}.control-section{padding:20px}.sidebar-bottom{padding-bottom:24px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media print{.header-actions,.sidebar,.stage-toolbar,.stage-footer,.preview-head,.preview-foot,.toast,.out-of-view{display:none!important}.workspace{display:block;height:auto;min-height:0}.header{border:0}.preview-column{padding:0}.stage-card{height:75vh;box-shadow:none;border:0}.summary-strip{margin-top:10px}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 42 48" aria-hidden="true"><path d="M6 3Q6 0 9 0H24L32 9V30H40Q42 30 42 32V44Q42 47 39 47H19Q16 47 14 44L6 30Z" fill="#ff2633"/><path d="M24 0Q28 1 32 9Q26 9 25 6Z" fill="#ffdc4a"/><path d="M6 30H32" stroke="#fff" stroke-opacity=".7" stroke-width=".6"/></svg>
+    <div><h1>Ribbon Logo Studio</h1><p>Shape. Measure. Refine.</p></div>
+  </div>
+  <div class="header-actions">
+    <button class="button" id="save-html" title="Save this complete editor with the current settings"><svg viewBox="0 0 24 24"><path d="M14 3H5v18h14V8Z"/><path d="M14 3v5h5M8 13l-2 2 2 2m8-4 2 2-2 2m-3-5-2 6"/></svg><span><span class="desktop-word">Save </span>HTML</span></button>
+    <button class="button primary" id="open-export"><svg viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 15v5h16v-5"/></svg>Export</button>
+  </div>
+</header>
+<main class="workspace">
+  <section class="preview-column" aria-label="Live logo preview">
+    <div class="preview-head"><span class="eyebrow"><i class="live-dot"></i>Live canvas</span><span class="preview-subtitle">A real vector. Every dimension is editable.</span></div>
+    <div class="stage-card" id="stage-card">
+      <svg id="stage" class="stage" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Editable red ribbon L logo with a yellow peeled corner" tabindex="0"></svg>
+      <div class="stage-toolbar">
+        <span class="stage-unit">UNITS · u</span>
+        <div class="toggle-bar" aria-label="Canvas overlays">
+          <button class="tool-toggle" id="measure-toggle" aria-pressed="true" title="Show or hide measurements (M)"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 5v4m4-4v6m4-6v4"/></svg>Measures</button>
+          <button class="tool-toggle" id="grid-toggle" aria-pressed="false" title="Show or hide a one-unit grid (G)"><svg viewBox="0 0 24 24"><path d="M8 3v18M16 3v18M3 8h18M3 16h18"/></svg><span class="optional-label">Grid</span></button>
+          <button class="tool-toggle" id="handles-toggle" aria-pressed="false" title="Show draggable sizing handles"><svg viewBox="0 0 24 24"><path d="M7 5h10M19 7v10M17 19H7M5 17V7"/><path d="M3 3h4v4H3zM17 3h4v4h-4zM3 17h4v4H3zM17 17h4v4h-4z"/></svg><span class="optional-label">Handles</span></button>
+        </div>
+      </div>
+      <button class="out-of-view" id="out-of-view" hidden>Logo extends beyond the view — Fit</button>
+      <div class="stage-footer">
+        <div class="view-controls" aria-label="Zoom controls"><button id="zoom-out" aria-label="Zoom out">−</button><span class="zoom-label" id="zoom-label">100%</span><button id="zoom-in" aria-label="Zoom in">+</button><span class="view-separator"></span><button class="fit" id="fit-view" title="Fit the logo (F)">Fit</button></div>
+        <span class="stage-help" id="stage-help">Drag to pan · Double-click to fit</span>
+      </div>
+    </div>
+    <div class="summary-strip">
+      <div class="summary-card"><span class="caption">Peel · x × y</span><strong id="stat-peel">1.618 × 1.618 <small>u</small></strong></div>
+      <div class="summary-card"><span class="caption">Stroke · v / h</span><strong id="stat-width">2.618 / 2.618 <small>u</small></strong></div>
+      <div class="summary-card"><span class="caption">Overall · w × h</span><strong id="stat-bounds">4.236 × 6.854 <small>u</small></strong></div>
+    </div>
+    <div class="preview-foot"><span id="save-status"><i class="status-dot"></i>Self-contained · Works offline</span><span class="foot-extra">Fixed view scale while editing. <strong>Fit</strong> to reframe.</span></div>
+  </section>
+  <aside class="sidebar" aria-label="Logo controls">
+    <div class="sidebar-top"><h2>Your proportions</h2><div class="history"><button class="icon-button" id="undo" aria-label="Undo" title="Undo (Ctrl / ⌘ Z)" disabled><svg viewBox="0 0 24 24"><path d="M8 4 3 9l5 5M3 9h10a7 7 0 0 1 0 14" transform="translate(0 -2)"/></svg></button><button class="icon-button" id="redo" aria-label="Redo" title="Redo (Ctrl / ⌘ Shift Z)" disabled><svg viewBox="0 0 24 24"><path d="m16 4 5 5-5 5m5-5H11a7 7 0 0 0 0 14" transform="translate(0 -2)"/></svg></button></div></div>
+    <div class="controls-scroll">
+      <section class="control-section">
+        <div class="section-heading"><h3>Length & height</h3><button class="preset-button" id="golden-preset" title="Apply 1.618 / 2.618 / 4.236 / 6.854 to the selected measurement references"><span class="phi">φ</span> Golden preset</button></div>
+        <div class="measure-row">
+          <div class="control-label"><label for="num-length"><span class="symbol">L</span>Horizontal length</label><div class="number-wrap"><input id="num-length" type="number" step="0.001" inputmode="decimal" data-number="length" value="4.236"><span>u</span></div></div>
+          <div class="range-wrap"><input aria-label="Horizontal length" type="range" data-range="length" min="2.768" max="20" step="0.001" value="4.236"></div>
+          <select id="length-ref" class="reference-select" aria-label="Horizontal length measurement reference"><option value="full">Measure the full top edge</option><option value="extension">Measure only the exposed extension</option></select>
+        </div>
+        <div class="measure-row">
+          <div class="control-label"><label for="num-height"><span class="symbol">H</span>Vertical height</label><div class="number-wrap"><input id="num-height" type="number" step="0.001" inputmode="decimal" data-number="height" value="6.854"><span>u</span></div></div>
+          <div class="range-wrap"><input aria-label="Vertical height" type="range" data-range="height" min="2.968" max="25" step="0.001" value="6.854"></div>
+          <select id="height-ref" class="reference-select" aria-label="Vertical height measurement reference"><option value="overall">Measure top → bottom of the logo</option><option value="fold">Measure top → horizontal fold</option></select>
+        </div>
+        <p class="reference-note">Height adjustments move the top edge, not the fold or the stroke widths. Switching a measurement reference does not resize the logo.</p>
+        <p class="notice" id="limit-notice" aria-live="polite"></p>
+      </section>
+      <section class="control-section">
+        <div class="section-heading"><h3>Stroke widths</h3><button class="link-control" id="link-widths" aria-pressed="true" title="Keep vertical and horizontal stroke widths equal"><svg viewBox="0 0 24 24"><path d="m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 1 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0" transform="translate(1 1)"/></svg><span>Linked</span></button></div>
+        <div class="measure-row"><div class="control-label"><label for="num-stemWidth"><span class="symbol">Wv</span>Vertical stroke</label><div class="number-wrap"><input id="num-stemWidth" type="number" step="0.001" inputmode="decimal" data-number="stemWidth" value="2.618"><span>u</span></div></div><div class="range-wrap"><input aria-label="Vertical stroke width" type="range" data-range="stemWidth" min=".2" max="4.086" step="0.001" value="2.618"></div></div>
+        <div class="measure-row"><div class="control-label"><label for="num-armWidth"><span class="symbol">Wh</span>Horizontal stroke</label><div class="number-wrap"><input id="num-armWidth" type="number" step="0.001" inputmode="decimal" data-number="armWidth" value="2.618"><span>u</span></div></div><div class="range-wrap"><input aria-label="Horizontal stroke thickness" type="range" data-range="armWidth" min=".2" max="4.086" step="0.001" value="2.618"></div></div>
+        <p class="tiny-note">Linked strokes always have exactly the same thickness. Unlink them to edit each independently.</p>
+      </section>
+      <section class="control-section peel-controls">
+        <div class="section-heading"><h3>Peeled corner</h3><button class="link-control" id="link-peel" aria-pressed="true" title="Keep the horizontal and vertical peel spans equal"><svg viewBox="0 0 24 24"><path d="M8 5h11v11M5 8v11h11M9 9l6 6m-6 0 6-6"/></svg><span>Equal sides</span></button></div>
+        <div class="measure-row"><div class="control-label"><label for="num-peelX"><span class="symbol peel">Px</span>Horizontal peel</label><div class="number-wrap"><input id="num-peelX" type="number" step="0.001" inputmode="decimal" data-number="peelX" value="1.618"><span>u</span></div></div><div class="range-wrap"><input aria-label="Horizontal peel span" type="range" data-range="peelX" min="0" max="2.538" step="0.001" value="1.618"></div></div>
+        <div class="measure-row"><div class="control-label"><label for="num-peelY"><span class="symbol peel">Py</span>Vertical peel</label><div class="number-wrap"><input id="num-peelY" type="number" step="0.001" inputmode="decimal" data-number="peelY" value="1.618"><span>u</span></div></div><div class="range-wrap"><input aria-label="Vertical peel span" type="range" data-range="peelY" min="0" max="2.538" step="0.001" value="1.618"></div></div>
+        <div class="measure-row"><div class="control-label"><label for="curl">Curl depth</label><output class="percent-value" id="curl-output">62%</output></div><div class="range-wrap"><input id="curl" type="range" min="0" max="1" step=".01" data-finish="curl" value=".62"></div></div>
+        <p class="tiny-note">Peel measurements are the horizontal and vertical spans from the original top-right corner, not the curved edge length.</p>
+      </section>
+      <details class="control-section details" id="finish-details"><summary>Material & finish</summary><div class="details-content">
+        <div class="color-row"><label class="color-control"><input type="color" id="front-color" value="#ff1424" aria-label="Front color">Front</label><label class="color-control"><input type="color" id="back-color" value="#ffdc32" aria-label="Peeled back color">Back</label><label class="color-control"><input type="color" id="canvas-color" value="#ffffff" aria-label="Canvas color">Canvas</label></div>
+        <div class="measure-row"><div class="control-label"><label for="fold">Lower fold</label><output class="percent-value" id="fold-output">70%</output></div><div class="range-wrap"><input id="fold" type="range" min=".2" max=".95" step=".01" data-finish="fold" value=".7"></div></div>
+        <div class="measure-row"><div class="control-label"><label for="radius">Corner rounding</label><output class="percent-value" id="radius-output">0.180 u</output></div><div class="range-wrap"><input id="radius" type="range" min="0" max=".6" step=".01" data-finish="radius" value=".18"></div></div>
+        <div class="measure-row"><div class="control-label"><label for="gloss">Gloss</label><output class="percent-value" id="gloss-output">80%</output></div><div class="range-wrap"><input id="gloss" type="range" min="0" max="1" step=".01" data-finish="gloss" value=".8"></div></div>
+        <label class="check-line">Soft shadows<span class="switch"><input id="shadows" type="checkbox" checked><i></i></span></label>
+        <label class="check-line">Flat vector style<span class="switch"><input id="flat" type="checkbox"><i></i></span></label>
+      </div></details>
+      <div class="sidebar-bottom"><strong>Built to your proportions.</strong> The golden preset uses peel 1.618, both widths 2.618, length 4.236 and height 6.854. It respects the two selected measurement references. Measurements are straight, projected dimensions.</div>
+    </div>
+  </aside>
+</main>
+<dialog class="dialog" id="export-dialog" aria-labelledby="export-heading">
+  <div class="dialog-head"><h2 id="export-heading">Make it yours.</h2><button class="icon-button" id="close-export" aria-label="Close export"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+  <p>Export the artwork, with or without dimensions. The HTML button saves the complete editable studio.</p>
+  <div class="format-options"><label class="format-option"><input type="radio" name="export-format" value="svg" checked><strong>SVG</strong><small>Scalable vector</small></label><label class="format-option"><input type="radio" name="export-format" value="png"><strong>PNG</strong><small>High-resolution image</small></label></div>
+  <label class="export-option"><input id="export-measures" type="checkbox">Include measurement numbers</label>
+  <label class="export-option"><input id="export-transparent" type="checkbox" checked>Transparent background</label>
+  <label class="export-resolution" id="resolution-row" hidden>Longest edge<select id="export-size"><option value="1024">1024 px</option><option value="2048" selected>2048 px</option><option value="4096">4096 px</option></select></label>
+  <button class="button primary download" id="download-artwork"><svg viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 15v5h16v-5"/></svg><span>Download SVG</span></button>
+  <p class="dialog-note">No grid or editing handles are included.</p>
+  <div class="dialog-error" id="export-error" role="alert"></div>
+  <div class="export-fallback" id="export-fallback" hidden>Export ready. <a id="export-link" target="_blank" rel="noopener">Open or save the file</a>.</div>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script id="initial-state" type="application/json">{"saveId":"original","model":null}</script>
+<script>
+(() => {
+'use strict';
+// All artwork, controls, fonts and exports are self-contained. No network requests.
+// Geometry is in abstract units. The lower fold is anchored at (0, 0).
+// Increasing height therefore moves ONLY the top edge upward.
+const DEFAULTS = Object.freeze({length:4.236,height:6.854,stemWidth:2.618,armWidth:2.618,peelX:1.618,peelY:1.618,lengthRef:'full',heightRef:'overall',linkWidths:true,linkPeel:true,curl:.62,fold:.70,radius:.18,gloss:.80,front:'#ff1424',back:'#ffdc32',canvas:'#ffffff',shadows:true,flat:false,showMeasures:true,showGrid:false,showHandles:false});
+const KEYS = ['length','height','stemWidth','armWidth','peelX','peelY'];
+const $ = id => document.getElementById(id);
+const clamp = (n,a,b) => Math.min(b,Math.max(a,n));
+const round = n => Math.round((n + Number.EPSILON)*1000)/1000;
+const fmt = n => (Math.abs(n)<.0005?0:n).toFixed(3);
+const nstr = n => String(Math.round(n*100000)/100000);
+const clone = s => ({...s});
+const serialize = s => JSON.stringify(s);
+let boot = {};try{boot=JSON.parse($('initial-state').textContent)}catch(_){}
+const STORAGE_KEY='ribbon-logo-studio-v1:'+String(boot.saveId||'original')+':'+location.pathname;
+let storageOK=true;
+function cleanModel(candidate){
+  const s={...DEFAULTS}; if(!candidate||typeof candidate!=='object')return s;
+  for(const k of Object.keys(s)){
+    if(typeof s[k]==='number'&&Number.isFinite(Number(candidate[k])))s[k]=Number(candidate[k]);
+    else if(typeof s[k]==='boolean'&&typeof candidate[k]==='boolean')s[k]=candidate[k];
+    else if(['front','back','canvas'].includes(k)&&/^#[0-9a-f]{6}$/i.test(candidate[k]||''))s[k]=candidate[k];
+  }
+  if(['full','extension'].includes(candidate.lengthRef))s.lengthRef=candidate.lengthRef;
+  if(['overall','fold'].includes(candidate.heightRef))s.heightRef=candidate.heightRef;
+  s.stemWidth=round(clamp(s.stemWidth,.2,12));s.armWidth=round(clamp(s.armWidth,.2,12));
+  s.length=round(clamp(s.length,s.lengthRef==='full'?.35:.15,s.lengthRef==='full'?40:40-s.stemWidth));
+  s.height=round(clamp(s.height,s.heightRef==='overall'?.55:.35,s.heightRef==='overall'?45:45-s.armWidth));
+  s.stemWidth=round(clamp(s.stemWidth,.2,s.lengthRef==='full'?Math.min(12,s.length-.15):12));
+  s.armWidth=round(clamp(s.armWidth,.2,s.heightRef==='overall'?Math.min(12,s.height-.35):12));
+  if(s.linkWidths)s.stemWidth=s.armWidth=Math.min(s.stemWidth,s.armWidth);
+  s.curl=clamp(s.curl,0,1);s.fold=clamp(s.fold,.2,.95);s.radius=clamp(s.radius,0,.6);s.gloss=clamp(s.gloss,0,1);
+  constrainPeel(s);return s;
+}
+let state=cleanModel(boot.model);
+try{const saved=localStorage.getItem(STORAGE_KEY);if(saved)state=cleanModel(JSON.parse(saved));}catch(_){storageOK=false;}
+function geometry(s=state){
+  const L=s.lengthRef==='full'?s.length:s.length+s.stemWidth;
+  const stemH=s.heightRef==='overall'?s.height-s.armWidth:s.height;
+  return {L,stemH,top:-stemH,bottom:s.armWidth,W:s.stemWidth,totalH:stemH+s.armWidth};
+}
+function constrainPeel(s){
+  const g=geometry(s), mx=Math.max(0,s.stemWidth-.08), my=Math.max(0,g.stemH-.08);
+  s.peelX=round(clamp(s.peelX,0,mx));s.peelY=round(clamp(s.peelY,0,my));
+  if(s.linkPeel)s.peelX=s.peelY=Math.min(s.peelX,s.peelY);
+  // A zero span means the corner is not peeled. Do not retain a one-axis slit.
+  if(s.peelX<.001||s.peelY<.001)s.peelX=s.peelY=0;
+}
+function limits(key,s=state){
+  const g=geometry(s);
+  const wmax=s.lengthRef==='full'?Math.min(12,s.length-.15):Math.min(12,40-s.length);
+  const hmax=s.heightRef==='overall'?Math.min(12,s.height-.35):Math.min(12,45-s.height);
+  switch(key){
+    case 'length':return [s.lengthRef==='full'?s.stemWidth+.15:.15,s.lengthRef==='full'?40:40-s.stemWidth];
+    case 'height':return [s.heightRef==='overall'?s.armWidth+.35:.35,s.heightRef==='overall'?45:45-s.armWidth];
+    case 'stemWidth':return [.2,s.linkWidths?Math.min(wmax,hmax):wmax];
+    case 'armWidth':return [.2,s.linkWidths?Math.min(wmax,hmax):hmax];
+    case 'peelX':return [0,s.linkPeel?Math.min(s.stemWidth-.08,g.stemH-.08):s.stemWidth-.08];
+    case 'peelY':return [0,s.linkPeel?Math.min(s.stemWidth-.08,g.stemH-.08):g.stemH-.08];
+    default:return [0,1];
+  }
+}
+let history=[clone(state)],future=[],saveTimer,noticeTimer,toastTimer;
+let camera={x:0,y:0,w:10,h:10},fitScale=1,size={w:700,h:680},ready=false;
+let activePointer=null,raf=0,renderNeedsControls=false;
+const svg=$('stage');
+const inputMap=Object.fromEntries(KEYS.map(k=>[k,{num:document.querySelector(`[data-number="${k}"]`),range:document.querySelector(`[data-range="${k}"]`)}]));
+function tell(message){$('toast').textContent=message;$('toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),2600)}
+function notice(message){$('limit-notice').textContent=message;clearTimeout(noticeTimer);if(message)noticeTimer=setTimeout(()=>$('limit-notice').textContent='',5000)}
+function persist(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(STORAGE_KEY,serialize(state));storageOK=true;$('save-status').innerHTML='<i class="status-dot"></i>Saved locally · No account needed';}catch(_){storageOK=false;$('save-status').textContent='Use Save HTML to keep your settings';}},250)}
+function commit(){
+  if(serialize(state)!==serialize(history[history.length-1])){history.push(clone(state));if(history.length>80)history.shift();future=[];}
+  syncHistory();persist();
+}
+function syncHistory(){$('undo').disabled=history.length<2;$('redo').disabled=future.length===0;}
+function undo(){commitPending();if(history.length<2)return;future.push(history.pop());state=clone(history[history.length-1]);queueRender(true);syncHistory();persist();}
+function redo(){commitPending();if(!future.length)return;state=clone(future.pop());history.push(clone(state));queueRender(true);syncHistory();persist();}
+function commitPending(){if(serialize(state)!==serialize(history[history.length-1]))commit();}
+function setDimension(key,value,{quiet=false}={}){
+  if(!Number.isFinite(value))return;
+  const [mn,mx]=limits(key);const limited=round(clamp(value,mn,mx));
+  const oldPx=state.peelX,oldPy=state.peelY;
+  state[key]=limited;
+  if(state.linkWidths&&['stemWidth','armWidth'].includes(key))state.stemWidth=state.armWidth=limited;
+  if(['peelX','peelY'].includes(key)){
+    if(state.linkPeel)state.peelX=state.peelY=limited;
+    else if(limited>0){const other=key==='peelX'?'peelY':'peelX';if(state[other]===0)state[other]=Math.min(limited,limits(other)[1]);}
+  }
+  constrainPeel(state);
+  if(!quiet){
+    if(Math.abs(value-limited)>.001)notice(`Available range: ${fmt(mn)}–${fmt(mx)} u. Increase the enclosing length or height for more space.`);
+    else if(!['peelX','peelY'].includes(key)&&(state.peelX<oldPx||state.peelY<oldPy))notice('The peel was reduced to stay inside the resized corner.');
+    else notice('');
+  }
+  queueRender(true);persist();
+}
+function mix(hex,target,t){const a=hex.slice(1).match(/../g).map(x=>parseInt(x,16));const b=target.slice(1).match(/../g).map(x=>parseInt(x,16));return '#'+a.map((v,i)=>Math.round(v+(b[i]-v)*t).toString(16).padStart(2,'0')).join('');}
+function fitCamera(){
+  const g=geometry(),w=size.w,h=size.h;
+  // These gutters are in screen pixels; dimensions remain legible on phones.
+  const margin=state.showMeasures?{l:65,r:67,t:111,b:61}:{l:40,r:40,t:73,b:58};
+  const scale=Math.max(.01,Math.min((w-margin.l-margin.r)/g.L,(h-margin.t-margin.b)/g.totalH));
+  camera.w=w/scale;camera.h=h/scale;
+  camera.x=-margin.l/scale-Math.max(0,(w-margin.l-margin.r)/scale-g.L)/2;
+  camera.y=g.top-margin.t/scale-Math.max(0,(h-margin.t-margin.b)/scale-g.totalH)/2;
+  fitScale=scale;ready=true;queueRender(false);
+}
+function zoom(factor){
+  const old=camera.w,newW=clamp(old/factor,.15,1000),real=old/newW;
+  const cx=camera.x+old/2,cy=camera.y+camera.h/2;
+  camera.w=newW;camera.h/=real;camera.x=cx-camera.w/2;camera.y=cy-camera.h/2;queueRender(false);
+}
+function queueRender(controls=false){renderNeedsControls=renderNeedsControls||controls;if(raf)return;raf=requestAnimationFrame(()=>{raf=0;render();if(renderNeedsControls){syncControls();renderNeedsControls=false;}})}
+function paintRange(el){const min=Number(el.min),max=Number(el.max);const pct=max===min?0:clamp((Number(el.value)-min)/(max-min)*100,0,100);el.style.setProperty('--pct',pct+'%')}
+function syncControls(){
+  for(const k of KEYS){const {num,range}=inputMap[k],[min,max]=limits(k);range.min=nstr(min);const sliderMax=['length','height'].includes(k)?Math.min(max,Math.max(k==='length'?20:25,state[k])):max;range.max=nstr(sliderMax);range.value=state[k];num.min=nstr(min);num.max=nstr(max);if(document.activeElement!==num)num.value=fmt(state[k]);paintRange(range);}
+  $('length-ref').value=state.lengthRef;$('height-ref').value=state.heightRef;
+  for(const [id,key,on,off] of [['link-widths','linkWidths','Linked','Independent'],['link-peel','linkPeel','Equal sides','Independent']]){$(id).setAttribute('aria-pressed',state[key]);$(id).querySelector('span').textContent=state[key]?on:off;}
+  for(const [id,key] of [['measure-toggle','showMeasures'],['grid-toggle','showGrid'],['handles-toggle','showHandles']])$(id).setAttribute('aria-pressed',state[key]);
+  for(const k of ['curl','fold','radius','gloss']){$(k).value=state[k];paintRange($(k));$(k+'-output').textContent=k==='radius'?fmt(state[k])+' u':Math.round(state[k]*100)+'%';}
+  for(const k of ['front','back','canvas'])$(k+'-color').value=state[k];
+  $('flat').checked=state.flat;$('shadows').checked=state.shadows;
+  const g=geometry();$('stat-peel').innerHTML=`${fmt(state.peelX)} × ${fmt(state.peelY)} <small>u</small>`;
+  $('stat-width').innerHTML=`${fmt(state.stemWidth)} / ${fmt(state.armWidth)} <small>u</small>`;
+  $('stat-bounds').innerHTML=`${fmt(g.L)} × ${fmt(g.totalH)} <small>u</small>`;
+  $('stage-help').textContent=state.showHandles?'Drag a point to resize · Drag canvas to pan':'Drag to pan · Double-click to fit';
+}
+function paths(s){
+  const g=geometry(s),{L,W,top:t,bottom:b,stemH}=g;
+  const px=s.peelX,py=s.peelY,hasPeel=px>.0005&&py>.0005;
+  const rt=Math.min(s.radius,(W-(hasPeel?px:0))*.48,stemH*.22),ra=Math.min(s.radius,b*.23,(L-W+.1)*.35);
+  const run=Math.min(W*s.fold,L-ra-.12),br=Math.min(b*.17,W*.16,(L-run-ra)*.38);
+  const ax=W-px;
+  const outer=hasPeel?`C ${nstr(ax+px*.32)} ${nstr(t+py*.015)}, ${nstr(W-px*.045)} ${nstr(t+py*.62)}, ${nstr(W)} ${nstr(t+py)}`:`Q ${nstr(W)} ${nstr(t)}, ${nstr(W)} ${nstr(t+rt)}`;
+  const topPath=`M ${nstr(rt)} ${nstr(t)} H ${nstr(hasPeel?ax:W-rt)} ${outer}`;
+  const baseEnd=`H ${nstr(run+br)} C ${nstr(run)} ${nstr(b)}, ${nstr(run-br*.5)} ${nstr(b-br*.25)}, ${nstr(run-br)} ${nstr(b-br*1.1)} L ${nstr(Math.min(.12,W*.06))} ${nstr(Math.min(.22,b*.17))} C 0 ${nstr(Math.min(.05,b*.035))}, 0 ${nstr(-Math.min(.08,stemH*.07))}, 0 ${nstr(-Math.min(.36,stemH*.18))}`;
+  const silhouette=`${topPath} V 0 H ${nstr(L-ra)} Q ${nstr(L)} 0 ${nstr(L)} ${nstr(ra)} V ${nstr(b-ra)} Q ${nstr(L)} ${nstr(b)} ${nstr(L-ra)} ${nstr(b)} ${baseEnd} V ${nstr(t+rt)} Q 0 ${nstr(t)} ${nstr(rt)} ${nstr(t)} Z`;
+  const stem=`${topPath} V 0 H 0 V ${nstr(t+rt)} Q 0 ${nstr(t)} ${nstr(rt)} ${nstr(t)} Z`;
+  const arm=`M 0 0 H ${nstr(L-ra)} Q ${nstr(L)} 0 ${nstr(L)} ${nstr(ra)} V ${nstr(b-ra)} Q ${nstr(L)} ${nstr(b)} ${nstr(L-ra)} ${nstr(b)} ${baseEnd} C 0 ${nstr(-Math.min(.13,stemH*.08))}, ${nstr(W*.025)} 0, ${nstr(W*.23)} 0 Z`;
+  // Curl stays within its exact px × py bounding box for all curl depths.
+  const inner=s.curl;
+  const peel=hasPeel?`M ${nstr(ax)} ${nstr(t)} ${outer} C ${nstr(W-px*.06)} ${nstr(t+py*(.78+.17*inner))}, ${nstr(ax+px*(.27-.04*inner))} ${nstr(t+py*(.99-.10*inner))}, ${nstr(ax+px*(.20-.10*inner))} ${nstr(t+py*(.52+.14*inner))} C ${nstr(ax+px*(.06+.06*inner))} ${nstr(t+py*.24)}, ${nstr(ax+px*.08)} ${nstr(t+py*.045)}, ${nstr(ax)} ${nstr(t)} Z`:'';
+  return {...g,px,py,ax,rt,ra,run,br,hasPeel,silhouette,stem,arm,peel};
+}
+function rulerMarkup(s,u){
+  const g=geometry(s),fs=11.4*u, lineWidth=1,cs={basic:'#56645c',width:'#3f7b71',peel:'#a0782c'};
+  const heightEnd=s.heightRef==='overall'?g.bottom:0,lengthStart=s.lengthRef==='full'?0:g.W;
+  function line(x1,y1,x2,y2,color,extra=''){return `<line x1="${nstr(x1)}" y1="${nstr(y1)}" x2="${nstr(x2)}" y2="${nstr(y2)}" stroke="${color}" stroke-width="${lineWidth}" vector-effect="non-scaling-stroke" ${extra}/>`;}
+  function label(x,y,text,color,rotate=0){
+    const width=(text.length*6.15+13)*u,height=21*u;
+    return `<g transform="translate(${nstr(x)} ${nstr(y)}) rotate(${rotate})"><rect class="dimension-label" x="${nstr(-width/2)}" y="${nstr(-height/2)}" width="${nstr(width)}" height="${nstr(height)}" rx="${nstr(4*u)}" fill="#fff" fill-opacity=".96"/><text x="0" y="0" dy=".34em" text-anchor="middle" font-size="${nstr(fs)}" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-weight="500" fill="${color}">${text}</text></g>`;
+  }
+  function horizontal(key,x1,x2,actualY,y,text,color){
+    const arrow=Math.min(4.6*u,Math.abs(x2-x1)*.20),d=3*u;
+    let a=line(x1,actualY,x1,y-d,color,'opacity=".4"')+line(x2,actualY,x2,y-d,color,'opacity=".4"')+line(x1,y,x2,y,color);
+    if(x2-x1>.001)a+=`<path d="M ${nstr(x1+arrow)} ${nstr(y-arrow*.48)} L ${nstr(x1)} ${nstr(y)} L ${nstr(x1+arrow)} ${nstr(y+arrow*.48)} M ${nstr(x2-arrow)} ${nstr(y-arrow*.48)} L ${nstr(x2)} ${nstr(y)} L ${nstr(x2-arrow)} ${nstr(y+arrow*.48)}" fill="none" stroke="${color}" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+    return `<g data-dimension="${key}" role="button" aria-label="Edit ${key}: ${fmt(s[key])} units"><title>${key}: ${fmt(s[key])} units. Select to edit.</title>${a}${label((x1+x2)/2,y-10*u,text,color)}</g>`;
+  }
+  function vertical(key,y1,y2,actualX,x,text,color){
+    const arrow=Math.min(4.6*u,Math.abs(y2-y1)*.20),ex=x>actualX?3*u:-3*u;
+    let a=line(actualX,y1,x+ex,y1,color,'opacity=".4"')+line(actualX,y2,x+ex,y2,color,'opacity=".4"')+line(x,y1,x,y2,color);
+    if(y2-y1>.001)a+=`<path d="M ${nstr(x-arrow*.48)} ${nstr(y1+arrow)} L ${nstr(x)} ${nstr(y1)} L ${nstr(x+arrow*.48)} ${nstr(y1+arrow)} M ${nstr(x-arrow*.48)} ${nstr(y2-arrow)} L ${nstr(x)} ${nstr(y2)} L ${nstr(x+arrow*.48)} ${nstr(y2-arrow)}" fill="none" stroke="${color}" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+    return `<g data-dimension="${key}" role="button" aria-label="Edit ${key}: ${fmt(s[key])} units"><title>${key}: ${fmt(s[key])} units. Select to edit.</title>${a}${label(x+(x>actualX?11:-11)*u,(y1+y2)/2,text,color,-90)}</g>`;
+  }
+  let m='';
+  m+=horizontal('stemWidth',0,g.W,g.top,g.top-50*u,'Wv '+fmt(s.stemWidth),cs.width);
+  m+=horizontal('peelX',g.W-s.peelX,g.W,g.top,g.top-20*u,'Px '+fmt(s.peelX),cs.peel);
+  m+=vertical('height',g.top,heightEnd,0,-31*u,'H '+fmt(s.height),cs.basic);
+  m+=horizontal('length',lengthStart,g.L,0,-26*u,'L '+fmt(s.length),cs.basic);
+  m+=vertical('armWidth',0,g.bottom,g.L,g.L+24*u,'Wh '+fmt(s.armWidth),cs.width);
+  m+=vertical('peelY',g.top,g.top+s.peelY,g.W,g.W+24*u,'Py '+fmt(s.peelY),cs.peel);
+  if(s.peelX>0&&s.peelY>0)m+=`<path d="M ${nstr(g.W-s.peelX)} ${nstr(g.top)} H ${nstr(g.W)} V ${nstr(g.top+s.peelY)}" fill="none" stroke="${cs.peel}" stroke-width=".8" stroke-dasharray="3 3" opacity=".45" vector-effect="non-scaling-stroke"/>`;
+  return `<g id="measurements">${m}</g>`;
+}
+function scene(s,{u,view,measures=true,grid=false,handles=false,bg=null}){
+  const p=paths(s),{L,W,top:t,bottom:b,stemH,px,py,ax}=p;
+  const red=s.front,dark=mix(red,'#650400',.51),redHi=mix(red,'#ffffff',.12),yellow=s.back,yellowDark=mix(yellow,'#cd7900',.36),yellowHi=mix(yellow,'#ffffed',.70),gloss=s.gloss;
+  const shadow=s.shadows&&!s.flat;
+  const outlineWidth=Math.min(.013,W*.007,b*.007);
+  const foldScale=Math.min(1,W/2.618,b/2.618,stemH/1.0);
+  const fs=nstr(foldScale),glowRX=W*.63,glowRY=Math.min(b*.48,stemH*.36);
+  const bgRect=bg?`<rect x="${nstr(view.x)}" y="${nstr(view.y)}" width="${nstr(view.w)}" height="${nstr(view.h)}" fill="${bg}"/>`:'';
+  const defs=`<defs>
+    <linearGradient id="redStem" x1="0" y1="${nstr(t)}" x2="${nstr(W*.82)}" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="${redHi}"/><stop offset=".36" stop-color="${red}"/><stop offset="1" stop-color="${mix(red,'#a90000',.22)}"/></linearGradient>
+    <linearGradient id="redArm" x1="0" y1="${nstr(b*.5)}" x2="${nstr(L)}" y2="${nstr(b*.30)}" gradientUnits="userSpaceOnUse"><stop stop-color="${dark}"/><stop offset="${nstr(Math.min(.56,p.run/L*.8))}" stop-color="${red}"/><stop offset=".63" stop-color="${redHi}"/><stop offset="1" stop-color="${red}"/></linearGradient>
+    <linearGradient id="foldShade" x1="0" y1="0" x2="${nstr(W*.9)}" y2="${nstr(-W*.6)}" gradientUnits="userSpaceOnUse"><stop stop-color="#700700" stop-opacity="${nstr(.22*gloss)}"/><stop offset=".29" stop-color="#bd0000" stop-opacity="0"/><stop offset=".50" stop-color="#ffffff" stop-opacity="${nstr(.10*gloss)}"/><stop offset=".95" stop-color="#ff9090" stop-opacity="0"/></linearGradient>
+    <radialGradient id="stemGlow" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(${nstr(W*.04)} ${nstr(-glowRY*.13)}) scale(${nstr(glowRX)} ${nstr(glowRY)})"><stop stop-color="#ffffff" stop-opacity="${nstr(.88*gloss)}"/><stop offset=".20" stop-color="#ffe0dd" stop-opacity="${nstr(.62*gloss)}"/><stop offset=".55" stop-color="#ffb9b0" stop-opacity="${nstr(.14*gloss)}"/><stop offset="1" stop-color="#ffaaaa" stop-opacity="0"/></radialGradient>
+    <linearGradient id="peelGold" x1="${nstr(ax)}" y1="${nstr(t+py*.74)}" x2="${nstr(W)}" y2="${nstr(t+py*.15)}" gradientUnits="userSpaceOnUse"><stop stop-color="${yellowDark}"/><stop offset=".26" stop-color="${yellow}"/><stop offset=".56" stop-color="${yellowHi}"/><stop offset=".79" stop-color="${yellow}"/><stop offset="1" stop-color="${yellowDark}"/></linearGradient>
+    <linearGradient id="peelEdge" x1="${nstr(ax)}" y1="${nstr(t)}" x2="${nstr(W)}" y2="${nstr(t+py)}" gradientUnits="userSpaceOnUse"><stop stop-color="#ffffff" stop-opacity=".2"/><stop offset=".6" stop-color="#ffffdb" stop-opacity=".7"/><stop offset="1" stop-color="#fffed4" stop-opacity=".25"/></linearGradient>
+    <filter id="logoShadow" x="-35%" y="-20%" width="180%" height="165%" color-interpolation-filters="sRGB"><feDropShadow dx=".012" dy=".055" stdDeviation=".043" flood-color="#3d1611" flood-opacity=".13"/><feDropShadow dx=".012" dy=".11" stdDeviation=".105" flood-color="#392819" flood-opacity=".08"/></filter>
+    <filter id="foldShadow" x="-80%" y="-70%" width="300%" height="300%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${nstr(.14*foldScale)}"/></filter>
+    <filter id="peelShadow" x="-60%" y="-50%" width="230%" height="240%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${nstr(Math.min(px,py)*(.035+.035*s.curl))}"/></filter>
+    <clipPath id="stemClip"><path d="${p.stem}"/></clipPath><clipPath id="bodyClip"><path d="${p.silhouette}"/></clipPath>
+    <pattern id="unitGrid" width="1" height="1" patternUnits="userSpaceOnUse"><path d="M 1 0 H 0 V 1" fill="none" stroke="#526454" stroke-opacity=".14" stroke-width=".6" vector-effect="non-scaling-stroke"/><circle cx="0" cy="0" r="${nstr(1.2*u)}" fill="#667a64" fill-opacity=".18"/></pattern>
+  </defs>`;
+  let content=`<title>Parametric ribbon L logo</title><desc>Horizontal length ${fmt(s.length)}, vertical height ${fmt(s.height)}, vertical width ${fmt(s.stemWidth)}, horizontal width ${fmt(s.armWidth)}, peel ${fmt(px)} by ${fmt(py)} units. Length reference: ${s.lengthRef}. Height reference: ${s.heightRef}.</desc>${defs}${bgRect}`;
+  if(grid)content+=`<rect x="${nstr(view.x)}" y="${nstr(view.y)}" width="${nstr(view.w)}" height="${nstr(view.h)}" fill="url(#unitGrid)"/>`;
+  if(shadow)content+=`<path d="M 0 -.05 L ${nstr(p.run-.1)} ${nstr(b-.02)}" fill="none" stroke="#342116" stroke-opacity=".21" stroke-width="${nstr(.19*foldScale)}" filter="url(#foldShadow)" transform="translate(${nstr(-.05*foldScale)} ${nstr(.1*foldScale)})"/>`;
+  content+=`<g id="logo-artwork"><path id="logo-silhouette" d="${p.silhouette}" fill="${red}" ${shadow?'filter="url(#logoShadow)"':''}/><g clip-path="url(#bodyClip)"><path d="${p.stem}" fill="${s.flat?red:'url(#redStem)'}"/>`;
+  if(!s.flat)content+=`<path d="${p.stem}" fill="url(#stemGlow)"/><path d="M 0 -.04 Q ${nstr(W*.12)} .012 ${nstr(W*.40)} 0 H ${nstr(W)}" fill="none" stroke="#6f0800" stroke-opacity=".11" stroke-width="${nstr(.09*foldScale)}"/>`;
+  content+=`<path id="horizontal-arm" d="${p.arm}" fill="${s.flat?mix(red,'#9b0000',.08):'url(#redArm)'}"/>`;
+  if(!s.flat)content+=`<path d="${p.arm}" fill="url(#foldShade)"/><path d="M ${nstr(W*.22)} 0 H ${nstr(L-p.ra)}" fill="none" stroke="#fff2e9" stroke-opacity="${nstr(.60*gloss)}" stroke-width="${nstr(.017*foldScale)}"/><path d="M ${nstr(p.run+p.br)} ${nstr(b-.012)} H ${nstr(L-p.ra)}" fill="none" stroke="#6d0300" stroke-opacity=".13" stroke-width="${nstr(.014*foldScale)}"/>`;
+  content+='</g>';
+  if(p.hasPeel){
+    if(shadow)content+=`<g clip-path="url(#stemClip)"><path d="${p.peel}" fill="#5a1000" opacity="${nstr(.48+.10*s.curl)}" transform="translate(${nstr(-px*.055)} ${nstr(py*(.075+.035*s.curl))})" filter="url(#peelShadow)"/></g>`;
+    content+=`<path id="peeled-corner" d="${p.peel}" fill="${s.flat?yellow:'url(#peelGold)'}" ${!s.flat?`stroke="url(#peelEdge)" stroke-width="${nstr(Math.min(px,py)*.007)}"`:''}/>`;
+  }
+  if(!s.flat)content+=`<path d="${p.silhouette}" fill="none" stroke="#ffffff" stroke-opacity=".22" stroke-width="${nstr(outlineWidth)}"/>`;
+  content+='</g>';
+  if(measures)content+=rulerMarkup(s,u);
+  if(handles){
+    const hy=t+py+(stemH-py)*.52;
+    const list=[['height',(W-px)*.35,t],['length',L,b*.50],['stemWidth',W,hy],['armWidth',Math.max(W,L-.4),b],['peelX',W-px,t],['peelY',W,t+py]];
+    content+='<g id="sizing-handles">'+list.map(([key,x,y])=>`<g data-handle="${key}" role="button" aria-label="Drag to change ${key}"><title>Drag to change ${key}</title><circle cx="${nstr(x)}" cy="${nstr(y)}" r="${nstr(13*u)}" fill="transparent"/><circle cx="${nstr(x)}" cy="${nstr(y)}" r="${nstr(4.5*u)}" fill="#fff" stroke="${key.startsWith('peel')?'#ad7b28':'#396e61'}" stroke-width="1.6" vector-effect="non-scaling-stroke"/></g>`).join('')+'</g>';
+  }
+  return content;
+}
+function render(){
+  if(!ready)return;
+  const u=camera.w/size.w;
+  svg.setAttribute('viewBox',`${nstr(camera.x)} ${nstr(camera.y)} ${nstr(camera.w)} ${nstr(camera.h)}`);
+  svg.innerHTML=scene(state,{u,view:camera,measures:state.showMeasures,grid:state.showGrid,handles:state.showHandles,bg:state.canvas});
+  $('stage-card').style.backgroundColor=state.canvas;
+  $('zoom-label').textContent=Math.round((1/u)/fitScale*100)+'%';
+  const g=geometry(),gap=5*u;
+  $('out-of-view').hidden=!(0<camera.x-gap||g.L>camera.x+camera.w+gap||g.top<camera.y-gap||g.bottom>camera.y+camera.h+gap);
+}
+// Inputs: preserve the active text field while typing, including incomplete decimals.
+for(const k of KEYS){
+  const {num,range}=inputMap[k];
+  range.addEventListener('input',()=>setDimension(k,range.valueAsNumber));range.addEventListener('change',commit);
+  num.addEventListener('input',()=>{if(Number.isFinite(num.valueAsNumber))setDimension(k,num.valueAsNumber)});
+  num.addEventListener('change',()=>{if(Number.isFinite(num.valueAsNumber))setDimension(k,num.valueAsNumber);num.value=fmt(state[k]);commit()});
+  num.addEventListener('blur',()=>{num.value=fmt(state[k]);commit()});
+  num.addEventListener('keydown',e=>{if(e.key==='Enter'){num.blur();e.preventDefault()}});
+}
+for(const key of ['curl','fold','radius','gloss']){
+  const el=$(key);el.addEventListener('input',()=>{state[key]=el.valueAsNumber;queueRender(true);persist()});el.addEventListener('change',commit);
+}
+for(const key of ['front','back','canvas']){const el=$(key+'-color');el.addEventListener('input',()=>{state[key]=el.value;queueRender(true);persist()});el.addEventListener('change',commit)}
+for(const key of ['shadows','flat'])$(key).addEventListener('change',()=>{state[key]=$(key).checked;queueRender(true);commit()});
+$('length-ref').addEventListener('change',()=>{commitPending();const g=geometry();state.lengthRef=$('length-ref').value;state.length=round(state.lengthRef==='full'?g.L:g.L-g.W);queueRender(true);commit();tell('Measurement reference changed. Logo size preserved.')});
+$('height-ref').addEventListener('change',()=>{commitPending();const g=geometry();state.heightRef=$('height-ref').value;state.height=round(state.heightRef==='overall'?g.totalH:g.stemH);queueRender(true);commit();tell('Measurement reference changed. Logo size preserved.')});
+$('link-widths').addEventListener('click',()=>{commitPending();state.linkWidths=!state.linkWidths;if(state.linkWidths)setDimension('stemWidth',state.stemWidth);queueRender(true);commit()});
+$('link-peel').addEventListener('click',()=>{commitPending();state.linkPeel=!state.linkPeel;if(state.linkPeel)setDimension('peelX',state.peelX);queueRender(true);commit()});
+for(const [id,key] of [['measure-toggle','showMeasures'],['grid-toggle','showGrid'],['handles-toggle','showHandles']])$(id).addEventListener('click',()=>{commitPending();state[key]=!state[key];queueRender(true);commit()});
+$('golden-preset').addEventListener('click',()=>{
+  commitPending();Object.assign(state,{length:4.236,height:6.854,stemWidth:2.618,armWidth:2.618,peelX:1.618,peelY:1.618,linkWidths:true,linkPeel:true});
+  constrainPeel(state);syncControls();fitCamera();commit();notice('');tell('Golden dimensions applied to the selected references.');
+});
+$('undo').addEventListener('click',undo);$('redo').addEventListener('click',redo);
+$('fit-view').addEventListener('click',fitCamera);$('out-of-view').addEventListener('click',fitCamera);
+$('zoom-in').addEventListener('click',()=>zoom(1.18));$('zoom-out').addEventListener('click',()=>zoom(1/1.18));
+svg.addEventListener('dblclick',e=>{if(!e.target.closest('[data-handle]'))fitCamera()});
+function pointerUnit(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const matrix=svg.getScreenCTM();return matrix?pt.matrixTransform(matrix.inverse()):{x:0,y:0}}
+svg.addEventListener('pointerdown',e=>{
+  if(e.button!==0||activePointer)return;
+  const handle=e.target.closest('[data-handle]'),dim=e.target.closest('[data-dimension]');
+  if(dim&&!handle){const key=dim.dataset.dimension;const el=inputMap[key]?.num;if(el){el.scrollIntoView({behavior:'smooth',block:'nearest'});el.focus({preventScroll:true});el.select()}return;}
+  commitPending();const point=pointerUnit(e);
+  activePointer={id:e.pointerId,key:handle?.dataset.handle||null,start:point,startClient:{x:e.clientX,y:e.clientY},camera:{...camera},model:clone(state)};
+  svg.setPointerCapture(e.pointerId);e.preventDefault();if(!handle)svg.classList.add('panning');
+});
+svg.addEventListener('pointermove',e=>{
+  if(!activePointer||activePointer.id!==e.pointerId)return;
+  const a=activePointer;
+  if(!a.key){camera.x=a.camera.x-(e.clientX-a.startClient.x)*a.camera.w/size.w;camera.y=a.camera.y-(e.clientY-a.startClient.y)*a.camera.h/size.h;queueRender(false);return;}
+  const p=pointerUnit(e),g=geometry(a.model),dx=p.x-a.start.x,dy=p.y-a.start.y;
+  let val=a.model[a.key];
+  if(a.key==='height')val-=dy;
+  else if(a.key==='length'||a.key==='stemWidth')val+=dx;
+  else if(a.key==='armWidth')val+=dy;
+  else if(a.key==='peelX')val-=dx;
+  else if(a.key==='peelY')val+=dy;
+  setDimension(a.key,val,{quiet:true});
+});
+function endPointer(e){if(!activePointer||activePointer.id!==e.pointerId)return;const resized=!!activePointer.key;activePointer=null;svg.classList.remove('panning');try{svg.releasePointerCapture(e.pointerId)}catch(_){}if(resized)commit();}
+svg.addEventListener('pointerup',endPointer);svg.addEventListener('pointercancel',endPointer);svg.addEventListener('lostpointercapture',endPointer);
+svg.addEventListener('wheel',e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();zoom(e.deltaY<0?1.08:1/1.08)}},{passive:false});
+document.addEventListener('keydown',e=>{
+  const editing=/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)||e.target.isContentEditable;
+  if(editing||$('export-dialog').open)return;
+  const key=e.key.toLowerCase();
+  if((e.ctrlKey||e.metaKey)&&key==='z'){e.preventDefault();e.shiftKey?redo():undo();}
+  else if((e.ctrlKey||e.metaKey)&&key==='y'){e.preventDefault();redo();}
+  else if(!e.ctrlKey&&!e.metaKey&&!e.altKey){if(key==='f'){e.preventDefault();fitCamera()}else if(key==='m')$('measure-toggle').click();else if(key==='g')$('grid-toggle').click();else if(key==='+'||key==='=')zoom(1.18);else if(key==='-')zoom(1/1.18)}
+});
+// Resize the viewport, not the logo. A manual Fit always includes all dimensions.
+const resizeObserver=new ResizeObserver(entries=>{const r=entries[0].contentRect;if(r.width<=0||r.height<=0)return;size={w:r.width,h:r.height};fitCamera();});
+resizeObserver.observe($('stage-card'));
+// Artwork exports are created from geometry, never from a screenshot of the UI.
+function artworkSvg({measures=false,transparent=true,longest=2048}={}){
+  const g=geometry(),max=Math.max(g.L,g.totalH);
+  const u=max/560; // Consistent label size independent of current canvas zoom.
+  const margin=measures?{l:65*u,r:67*u,t:75*u,b:24*u}:{l:.48,r:.48,t:.30,b:.53};
+  const view={x:-margin.l,y:g.top-margin.t,w:g.L+margin.l+margin.r,h:g.totalH+margin.t+margin.b};
+  const width=Math.max(1,Math.round(longest*view.w/Math.max(view.w,view.h))),height=Math.max(1,Math.round(longest*view.h/Math.max(view.w,view.h)));
+  let body=scene(state,{u,view,measures,grid:false,handles:false,bg:transparent?null:state.canvas});
+  // Exported dimensions are ordinary SVG, not interactive controls.
+  body=body.replace(/ data-dimension="[^"]*"/g,'').replace(/ role="button"/g,'');
+  return {text:`<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${nstr(view.x)} ${nstr(view.y)} ${nstr(view.w)} ${nstr(view.h)}">${body}</svg>`,width,height};
+}
+const pendingUrls=new Set();
+function createDownload(blob,name,{fallback=false}={}){
+  const url=URL.createObjectURL(blob);pendingUrls.add(url);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+  if(fallback){$('export-link').href=url;$('export-link').download=name;$('export-fallback').hidden=false;}
+  // Keep the latest URL valid for the fallback link; revoke all URLs on page exit.
+  if(!fallback)setTimeout(()=>{URL.revokeObjectURL(url);pendingUrls.delete(url)},60000);
+  return url;
+}
+window.addEventListener('pagehide',()=>{for(const url of pendingUrls)URL.revokeObjectURL(url)});
+$('save-html').addEventListener('click',()=>{
+  commitPending();
+  try{
+    const root=document.documentElement.cloneNode(true);
+    root.querySelector('#initial-state').textContent=JSON.stringify({saveId:Date.now().toString(36),model:state}).replace(/</g,'\\u003c');
+    root.querySelector('#export-dialog').removeAttribute('open');root.querySelector('#export-fallback').hidden=true;root.querySelector('#export-error').textContent='';
+    root.querySelector('#export-link').removeAttribute('href');root.querySelector('#stage').innerHTML='';root.querySelector('#stage').classList.remove('panning');root.querySelector('#toast').classList.remove('visible');
+    root.querySelectorAll('input,button,select').forEach(el=>el.removeAttribute('autofocus'));
+    createDownload(new Blob(['<!DOCTYPE html>\n'+root.outerHTML],{type:'text/html;charset=utf-8'}),'ribbon-logo-editor.html');tell('Editable HTML created with your current settings.');
+  }catch(err){tell('The editor could not be saved: '+err.message)}
+});
+function exportFormat(){return document.querySelector('input[name="export-format"]:checked').value}
+$('open-export').addEventListener('click',()=>{commitPending();$('export-error').textContent='';$('export-fallback').hidden=true;if(typeof $('export-dialog').showModal==='function')$('export-dialog').showModal();else $('export-dialog').setAttribute('open','')});
+$('close-export').addEventListener('click',()=>{if(typeof $('export-dialog').close==='function')$('export-dialog').close();else $('export-dialog').removeAttribute('open')});
+$('export-dialog').addEventListener('click',e=>{if(e.target===$('export-dialog')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('close-export').click()}});
+document.querySelectorAll('[name="export-format"]').forEach(el=>el.addEventListener('change',()=>{const format=exportFormat();$('resolution-row').hidden=format!=='png';$('download-artwork').querySelector('span').textContent='Download '+format.toUpperCase();$('export-error').textContent='';$('export-fallback').hidden=true;}));
+$('download-artwork').addEventListener('click',async()=>{
+  const button=$('download-artwork');button.disabled=true;$('export-error').textContent='';
+  try{
+    const format=exportFormat(),measures=$('export-measures').checked,transparent=$('export-transparent').checked,longest=Number($('export-size').value);
+    const art=artworkSvg({measures,transparent,longest}),svgBlob=new Blob([art.text],{type:'image/svg+xml;charset=utf-8'});
+    const suffix=measures?'-measured':'';
+    if(format==='svg')createDownload(svgBlob,`ribbon-logo${suffix}.svg`,{fallback:true});
+    else{
+      const svgUrl=URL.createObjectURL(svgBlob);
+      try{
+        const image=await new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('The browser could not render the SVG. Try exporting SVG instead.'));im.src=svgUrl;});
+        const canvas=document.createElement('canvas');canvas.width=art.width;canvas.height=art.height;const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Image export is not supported in this browser. Export SVG instead.');ctx.drawImage(image,0,0,art.width,art.height);
+        const png=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG export failed. Try a smaller resolution.')),'image/png'));
+        createDownload(png,`ribbon-logo${suffix}.png`,{fallback:true});canvas.width=canvas.height=1;
+      }finally{URL.revokeObjectURL(svgUrl)}
+    }
+    tell(format.toUpperCase()+' export created.');
+  }catch(err){$('export-error').textContent=err.message||'Export failed. Try SVG or a smaller PNG.';}
+  finally{button.disabled=false;}
+});
+syncControls();syncHistory();if(!storageOK)$('save-status').textContent='Use Save HTML to keep your settings';
+})();
+</script>
+</body>
+</html>
