@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-07T10:13:21.650Z",
+  "generated_at": "2026-09-07T15:49:32.816Z",
   "source": {
     "name": "UAE Pro League",
     "url": "https://www.uaepl.ae/en/fixtures"
@@ -25097,7 +25097,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://dubai.platinumlist.net/event-tickets/108020/united-fc-vs-shabab-al-ahli-fc",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -25119,7 +25119,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://abu-dhabi.platinumlist.net/event-tickets/108022/al-jazira-fc-vs-al-nasr-fc",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -25163,7 +25163,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://dubai.platinumlist.net/event-tickets/108028/hatta-fc-vs-al-dhafra-fc?_gl=1*1ox8xr8*_gcl_au*MTI2MDI2MjU1MS4xNzg4MTcxNjI5*_ga*MTM3MTAyODAxOC4xNzg4MTcxNjMw*_ga_MJ1Y407XEH*czE3ODg3NzU5MDgkbzIkZzEkdDE3ODg3NzYwMDIkajI2JGwwJGg1NTYyMzkwNzkkZEYxVlo2VENCVE4tTWdyV2xfeEpMbTliazVuRGdiczhWZUE.*_ga_ELQY469HQT*czE3ODg3NzU5MDgkbzIkZzEkdDE3ODg3NzU5ODIkajYwJGwwJGgwJGRZZ213LU1HT3dwbTl2aTc3Z21XRHF2WGdiWkNrcV9VSE9R",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -25185,7 +25185,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://sharjah.platinumlist.net/event-tickets/108030/khorfakkan-fc-vs-baniyas-fc?_gl=1*1rwuze1*_gcl_au*MTI2MDI2MjU1MS4xNzg4MTcxNjI5*_ga*MTM3MTAyODAxOC4xNzg4MTcxNjMw*_ga_MJ1Y407XEH*czE3ODg3NzU5MDgkbzIkZzEkdDE3ODg3NzYxNzgkajU1JGwwJGg1NTYyMzkwNzkkZEYxVlo2VENCVE4tTWdyV2xfeEpMbTliazVuRGdiczhWZUE.*_ga_ELQY469HQT*czE3ODg3NzU5MDgkbzIkZzEkdDE3ODg3NzYxNTQkajIzJGwwJGgwJGRZZ213LU1HT3dwbTl2aTc3Z21XRHF2WGdiWkNrcV9VSE9R",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -25229,7 +25229,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://abu-dhabi.platinumlist.net/event-tickets/108035/al-wahda-fc-vs-sharjah-fc?_gl=1*1cj5ft1*_gcl_au*MTI2MDI2MjU1MS4xNzg4MTcxNjI5*_ga*MTM3MTAyODAxOC4xNzg4MTcxNjMw*_ga_MJ1Y407XEH*czE3ODg3NzU5MDgkbzIkZzEkdDE3ODg3NzYxMTEkajU3JGwwJGg1NTYyMzkwNzkkZEYxVlo2VENCVE4tTWdyV2xfeEpMbTliazVuRGdiczhWZUE.*_ga_ELQY469HQT*czE3ODg3NzU5MDgkbzIkZzEkdDE3ODg3NzYwNTYkajU5JGwwJGgwJGRZZ213LU1HT3dwbTl2aTc3Z21XRHF2WGdiWkNrcV9VSE9R",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -25911,7 +25911,7 @@
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_893397894.png"
         }
       ],
-      "liveFetchedAt": "2026-09-07T10:13:21.650Z"
+      "liveFetchedAt": "2026-09-07T15:49:32.816Z"
     }
   }
 }
