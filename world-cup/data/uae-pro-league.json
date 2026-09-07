@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-06T19:28:14.191Z",
+  "generated_at": "2026-09-07T10:13:21.650Z",
   "source": {
     "name": "UAE Pro League",
     "url": "https://www.uaepl.ae/en/fixtures"
@@ -25141,7 +25141,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://al-ain.platinumlist.net/event-tickets/108026/al-ain-fc-vs-al-wasl-fc?_gl=1*1398yj*_gcl_au*MTI2MDI2MjU1MS4xNzg4MTcxNjI5*_ga*MTM3MTAyODAxOC4xNzg4MTcxNjMw*_ga_MJ1Y407XEH*czE3ODg3NzU5MDgkbzIkZzAkdDE3ODg3NzU5MzUkajMzJGwwJGg1NTYyMzkwNzkkZEYxVlo2VENCVE4tTWdyV2xfeEpMbTliazVuRGdiczhWZUE.*_ga_ELQY469HQT*czE3ODg3NzU5MDgkbzIkZzAkdDE3ODg3NzU5MDgkajYwJGwwJGgwJGRZZ213LU1HT3dwbTl2aTc3Z21XRHF2WGdiWkNrcV9VSE9R",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -25207,7 +25207,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://ajman.platinumlist.net/event-tickets/108033/ajman-fc-vs-kalba-fc?_gl=1*1bvjxk3*_gcl_au*MTI2MDI2MjU1MS4xNzg4MTcxNjI5*_ga*MTM3MTAyODAxOC4xNzg4MTcxNjMw*_ga_MJ1Y407XEH*czE3ODg3NzU5MDgkbzIkZzEkdDE3ODg3NzU5NzEkajU3JGwwJGg1NTYyMzkwNzkkZEYxVlo2VENCVE4tTWdyV2xfeEpMbTliazVuRGdiczhWZUE.*_ga_ELQY469HQT*czE3ODg3NzU5MDgkbzIkZzEkdDE3ODg3NzU5NDMkajI1JGwwJGgwJGRZZ213LU1HT3dwbTl2aTc3Z21XRHF2WGdiWkNrcV9VSE9R",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -25911,7 +25911,7 @@
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_893397894.png"
         }
       ],
-      "liveFetchedAt": "2026-09-06T19:28:14.191Z"
+      "liveFetchedAt": "2026-09-07T10:13:21.650Z"
     }
   }
 }
