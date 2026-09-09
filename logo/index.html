@@ -42,15 +42,35 @@
 @media(max-width:760px){.logo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.logo-choice[data-open-logo="z"]{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr}.logo-choice[data-open-logo="z"] .logo-preview{height:100%;min-height:230px}.logo-choice[data-open-logo="z"] .logo-meta{border-top:0;border-left:1px solid var(--line);display:flex;flex-direction:column;justify-content:center}}
 @media(max-width:580px){.z-triple{font-size:8px;gap:1px}.z-triple>span+span{padding-left:2px}body[data-logo="z"] .summary-card .caption{font-size:7px;letter-spacing:.35px}.logo-choice[data-open-logo="z"] .logo-preview{min-height:210px}}
 @media(max-width:359px){.z-triple{font-size:7px;gap:0}.z-triple>span+span{padding-left:1px}}
+
+/* Folded G. Existing L, A and Z artwork code remains untouched. */
+.home-screen{max-width:1440px}.logo-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.logo-preview{height:280px;padding:25px 23px}
+.stage [data-handle="gHeight"],.stage [data-handle="gTopWidth"],.stage [data-handle="gBottomWidth"],.stage [data-handle="gMiddleWidth"],.stage [data-handle="gMid"]{cursor:ns-resize}
+.g-fold-presets{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.g-fold-choice{min-height:70px;display:flex;flex-direction:column;gap:7px;padding:11px 8px;border:1px solid var(--line);border-radius:10px;background:#fafbf8;font-size:11px;font-weight:600;color:#7a8475}
+.g-fold-choice svg{width:42px;height:32px;stroke-width:1.3}
+.g-fold-choice[aria-pressed="true"]{border-color:#6a927b;background:#eff6ef;color:#355f49;box-shadow:0 0 0 1px #6a927b}
+.g-fold-choice:hover{background:#eff5eb}
+.g-paused{opacity:.45}.g-paused input{cursor:not-allowed}
+.g-match-row{display:flex;justify-content:flex-end;margin-top:10px}
+.g-match-row button{min-height:34px;padding:7px 9px;font-size:10px;border:1px solid #dce6d5;border-radius:7px;background:#f5f8f1;color:#526e47}
+.g-quick-link{min-height:32px;padding:4px 0;margin-top:10px;background:none;border:0;color:#356e64;font-size:11px;font-weight:650}
+@media(max-width:1100px){.home-screen{max-width:850px}.logo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.logo-preview{height:270px}}
+@media(max-width:760px){.logo-choice[data-open-logo="z"]{grid-column:auto;display:block}.logo-choice[data-open-logo="z"] .logo-preview{height:270px;min-height:0}.logo-choice[data-open-logo="z"] .logo-meta{border-left:0;border-top:1px solid var(--line);display:block}}
+@media(max-width:580px){.logo-preview,.logo-choice[data-open-logo="z"] .logo-preview{height:208px;padding:20px 14px;min-height:0}.g-fold-choice{min-height:83px;font-size:12px}.g-match-row button{min-height:42px;font-size:11px}.g-quick-link{min-height:40px}.g-fold-presets{gap:10px}body[data-logo="g"] .summary-card .caption{font-size:7px;letter-spacing:.25px}body[data-logo="g"] .summary-card strong{font-size:9px}}
+@media(max-width:359px){.logo-preview,.logo-choice[data-open-logo="z"] .logo-preview{height:184px}body[data-logo="g"] .summary-card strong{font-size:8px}}
+
 </style>
 </head>
 <body data-screen="home" data-logo="l">
 <header class="header"><div class="brand"><svg class="brand-mark" viewBox="0 0 42 48" aria-hidden="true"><path d="M6 3Q6 0 9 0H24L32 9V30H40Q42 30 42 32V44Q42 47 39 47H19Q16 47 14 44L6 30Z" fill="#ff2633"/><path d="M24 0Q28 1 32 9Q26 9 25 6Z" fill="#ffdc4a"/><path d="M6 30H32" stroke="#fff" stroke-opacity=".7" stroke-width=".6"/></svg><div><h1>Ribbon Logo Studio</h1><p>Shape. Measure. Refine.</p></div></div><div class="header-actions"><button class="button" id="save-html" title="Save this complete editor with the current settings"><svg viewBox="0 0 24 24"><path d="M14 3H5v18h14V8Z"/><path d="M14 3v5h5M8 13l-2 2 2 2m8-4 2 2-2 2m-3-5-2 6"/></svg><span><span class="desktop-word">Save </span>HTML</span></button><button class="button primary" id="open-export" hidden><svg viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 15v5h16v-5"/></svg>Export</button></div></header>
-<section class="home-screen" id="home-screen" aria-labelledby="home-title"><div class="home-intro"><div><span class="eyebrow">YOUR RIBBON COLLECTION</span><h2 id="home-title">Choose your ribbon.</h2><p>Three characters. Their own proportions.<br>Pick a logo to shape, measure and export.</p></div><span class="home-count">03 / EDITABLE LOGOS</span></div><div class="logo-grid">
+<section class="home-screen" id="home-screen" aria-labelledby="home-title"><div class="home-intro"><div><span class="eyebrow">YOUR RIBBON COLLECTION</span><h2 id="home-title">Choose your ribbon.</h2><p>Four characters. Their own proportions.<br>Pick a logo to shape, measure and export.</p></div><span class="home-count">04 / EDITABLE LOGOS</span></div><div class="logo-grid">
 <button class="logo-choice" data-open-logo="l" aria-label="Open original L logo editor"><div class="logo-preview"><svg id="home-preview-l" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Original L</h3><span class="logo-badge">Original</span></div><span class="logo-description">Your original ribbon and yellow peel.<br>The same geometry and controls.</span><span class="logo-cta">Edit L<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button>
 <button class="logo-choice" data-open-logo="a" aria-label="Open folded A logo editor"><div class="logo-preview dark"><svg id="home-preview-a" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Folded A</h3><span class="logo-badge">New</span></div><span class="logo-description">A continuous-looking folded ribbon.<br>Constant-width sides. No crossbar.</span><span class="logo-cta">Edit A<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button>
 <button class="logo-choice" data-open-logo="z" aria-label="Open folded Z logo editor"><div class="logo-preview dark"><svg id="home-preview-z" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Folded Z</h3><span class="logo-badge">New</span></div><span class="logo-description">Two folds. Three constant-width tapes.<br>Shape the width, height and diagonal.</span><span class="logo-cta">Edit Z<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button>
-</div><div class="home-footer"><span><i class="status-dot"></i>Separate settings and undo history for each logo.</span><span>Works offline · Save HTML keeps all three designs.</span></div></section>
+<button class="logo-choice" data-open-logo="g" aria-label="Open folded G logo editor"><div class="logo-preview dark"><svg id="home-preview-g" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Folded G</h3><span class="logo-badge">New</span></div><span class="logo-description">Five tape runs. Four folded turns.<br>Cut or rectangular right-middle fold.</span><span class="logo-cta">Edit G<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button>
+</div><div class="home-footer"><span><i class="status-dot"></i>Separate settings and undo history for each logo.</span><span>Works offline · Save HTML keeps all four designs.</span></div></section>
 <main class="workspace" id="editor-workspace" hidden><section class="preview-column" aria-label="Live logo preview">
 <div class="preview-head"><div class="logo-navigation"><button class="back-home" id="back-home" hidden aria-label="Back to logo selection"><svg viewBox="0 0 24 24"><path d="m13 5-7 7 7 7M6 12h14"/></svg>Logos</button><span class="active-logo-name" id="active-logo-name">Original L</span></div><span class="eyebrow"><i class="live-dot"></i>Live canvas</span><span class="preview-subtitle">A real vector. Every dimension is editable.</span></div>
 <div class="stage-card" id="stage-card"><svg id="stage" class="stage" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Editable red ribbon L logo with a yellow peeled corner" tabindex="0"></svg><div class="stage-toolbar"><span class="stage-unit">UNITS · u</span><div class="toggle-bar" aria-label="Canvas overlays"><button class="tool-toggle" id="measure-toggle" aria-pressed="true" title="Show or hide measurements (M)"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 5v4m4-4v6m4-6v4"/></svg>Measures</button><button class="tool-toggle" id="grid-toggle" aria-pressed="false" title="Show or hide a one-unit grid (G)"><svg viewBox="0 0 24 24"><path d="M8 3v18M16 3v18M3 8h18M3 16h18"/></svg><span class="optional-label">Grid</span></button><button class="tool-toggle" id="handles-toggle" aria-pressed="false" title="Show draggable sizing handles"><svg viewBox="0 0 24 24"><path d="M7 5h10M19 7v10M17 19H7M5 17V7"/><path d="M3 3h4v4H3zM17 3h4v4h-4zM3 17h4v4H3zM17 17h4v4h-4z"/></svg><span class="optional-label">Handles</span></button></div></div><button class="out-of-view" id="out-of-view" hidden>Logo extends beyond the view — Fit</button><div class="stage-footer"><div class="view-controls" aria-label="Zoom controls"><button id="zoom-out" aria-label="Zoom out">−</button><span class="zoom-label" id="zoom-label">100%</span><button id="zoom-in" aria-label="Zoom in">+</button><span class="view-separator"></span><button class="fit" id="fit-view" title="Fit the logo (F)">Fit</button></div><span class="stage-help" id="stage-help">Drag to pan · Double-click to fit</span></div></div>
@@ -73,6 +93,31 @@
 <section class="control-section"><div class="section-heading"><h3>Character proportions</h3><button class="preset-button a-preset" id="z-reference-preset" title="Restore the Z reference size, tape widths and folds">Reference preset</button></div><div class="measure-row"><div class="control-label"><label for="num-zWidth"><span class="symbol">W</span>Overall width</label><div class="number-wrap"><input id="num-zWidth" type="number" step=".001" inputmode="decimal" data-z-number="zWidth" value="5.180"><span>u</span></div></div><div class="range-wrap"><input aria-label="Overall width" type="range" data-z-range="zWidth" min=".1" max="45" step=".001" value="5.180"></div></div><div class="measure-row"><div class="control-label"><label for="num-zHeight"><span class="symbol">H</span>Character height</label><div class="number-wrap"><input id="num-zHeight" type="number" step=".001" inputmode="decimal" data-z-number="zHeight" value="6.854"><span>u</span></div></div><div class="range-wrap"><input aria-label="Character height" type="range" data-z-range="zHeight" min=".1" max="45" step=".001" value="6.854"></div></div><div class="a-angle-row" style="margin-top:19px"><div class="measure-row"><div class="control-label"><label for="num-zAngle"><span class="symbol">θ</span>Diagonal angle</label><div class="number-wrap"><input id="num-zAngle" type="number" step=".01" inputmode="decimal" data-z-number="zAngle" value="43.77"><span>°</span></div></div><div class="range-wrap"><input aria-label="Diagonal angle" type="range" data-z-range="zAngle" min=".1" max="45" step=".01" value="43.77"></div></div></div><p class="reference-note">Width and height measure the finished character, not a virtual frame. Changing the angle changes width while keeping height fixed. Tape thicknesses stay unchanged.</p><p class="notice" id="z-limit-notice" aria-live="polite"></p></section>
 <section class="control-section"><div class="section-heading"><h3>Tape widths</h3><button class="link-control" id="z-link-widths" aria-pressed="true" title="Keep top, diagonal and bottom tape widths exactly equal"><svg viewBox="0 0 24 24"><path d="m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 1 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0" transform="translate(1 1)"/></svg><span>All linked</span></button></div><div class="measure-row"><div class="control-label"><label for="num-topWidth"><span class="symbol">T</span>Top tape</label><div class="number-wrap"><input id="num-topWidth" type="number" step=".001" inputmode="decimal" data-z-number="topWidth" value="1.550"><span>u</span></div></div><div class="range-wrap"><input aria-label="Top tape" type="range" data-z-range="topWidth" min=".1" max="45" step=".001" value="1.550"></div></div><div class="measure-row"><div class="control-label"><label for="num-diagonalWidth"><span class="symbol">D</span>Diagonal tape</label><div class="number-wrap"><input id="num-diagonalWidth" type="number" step=".001" inputmode="decimal" data-z-number="diagonalWidth" value="1.550"><span>u</span></div></div><div class="range-wrap"><input aria-label="Diagonal tape" type="range" data-z-range="diagonalWidth" min=".1" max="45" step=".001" value="1.550"></div></div><div class="measure-row"><div class="control-label"><label for="num-bottomWidth"><span class="symbol">B</span>Bottom tape</label><div class="number-wrap"><input id="num-bottomWidth" type="number" step=".001" inputmode="decimal" data-z-number="bottomWidth" value="1.550"><span>u</span></div></div><div class="range-wrap"><input aria-label="Bottom tape" type="range" data-z-range="bottomWidth" min=".1" max="45" step=".001" value="1.550"></div></div><p class="tiny-note">All linked gives every tape the same thickness. Unlink to edit each one separately. The diagonal is measured perpendicular to its edges, not horizontally.</p><p class="reference-note">Straight tape edges remain parallel when you resize the character. Rounded corners and folded transitions are allowed to bend; the straight runs do not taper.</p></section>
 <section class="control-section"><div class="section-heading"><h3>Fold bends</h3><span class="percent-value">Two red folds</span></div><div class="measure-row"><div class="control-label"><label for="zTopFold">Upper-right fold</label><output class="percent-value" id="zTopFold-output">70%</output></div><div class="range-wrap"><input id="zTopFold" type="range" min="0" max="1" step=".01" value=".70" aria-label="Upper-right fold bend"></div></div><div class="measure-row"><div class="control-label"><label for="zBottomFold">Lower-left fold</label><output class="percent-value" id="zBottomFold-output">70%</output></div><div class="range-wrap"><input id="zBottomFold" type="range" min="0" max="1" step=".01" value=".70" aria-label="Lower-left fold bend"></div></div><p class="tiny-note">Adjust each ribbon bend without changing the overall size or straight tape thickness. Corner rounding, colors, gloss and shadows are under Material &amp; finish.</p></section></div>
+
+<div class="mode-controls" id="g-controls" hidden>
+<section class="control-section"><div class="section-heading"><h3>Character proportions</h3><button class="preset-button a-preset" id="g-reference-preset" title="Restore G reference proportions and the original rectangular right-middle fold">Reference preset</button></div>
+<div class="measure-row"><div class="control-label"><label for="num-gWidth"><span class="symbol">W</span>Overall width</label><div class="number-wrap"><input id="num-gWidth" type="number" step=".001" inputmode="decimal" data-g-number="gWidth" value="5.400"><span>u</span></div></div><div class="range-wrap"><input aria-label="Overall width" type="range" data-g-range="gWidth" min="0" max="45" step=".001" value="5.400"></div></div><div class="measure-row"><div class="control-label"><label for="num-gHeight"><span class="symbol">H</span>Character height</label><div class="number-wrap"><input id="num-gHeight" type="number" step=".001" inputmode="decimal" data-g-number="gHeight" value="6.854"><span>u</span></div></div><div class="range-wrap"><input aria-label="Character height" type="range" data-g-range="gHeight" min="0" max="45" step=".001" value="6.854"></div></div>
+<p class="reference-note">Exact finished width and height. Resizing does not stretch the tape. The reference preset also restores the rectangular right-middle fold.</p><p class="notice" id="g-limit-notice" aria-live="polite"></p></section>
+<section class="control-section"><div class="section-heading"><h3>Middle bar</h3><span class="percent-value">Position &amp; reach</span></div>
+<div class="measure-row"><div class="control-label"><label for="num-gReach"><span class="symbol">↔</span>Bar reach from right</label><div class="number-wrap"><input id="num-gReach" type="number" step=".001" inputmode="decimal" data-g-number="gReach" value="3.110"><span>u</span></div></div><div class="range-wrap"><input aria-label="Bar reach from right" type="range" data-g-range="gReach" min="0" max="45" step=".001" value="3.110"></div></div><div class="measure-row"><div class="control-label"><label for="num-gMid"><span class="symbol">↕</span>Distance below top</label><div class="number-wrap"><input id="num-gMid" type="number" step=".001" inputmode="decimal" data-g-number="gMid" value="2.960"><span>u</span></div></div><div class="range-wrap"><input aria-label="Distance below top" type="range" data-g-range="gMid" min="0" max="45" step=".001" value="2.960"></div></div>
+<p class="tiny-note">Reach moves the free end left or right. Distance below top raises or lowers the middle bar and its last fold. A small gap remains open to the left stem.</p></section>
+<section class="control-section" id="g-last-fold-section"><div class="section-heading"><h3>Right-middle fold</h3><span class="percent-value">Last turn</span></div>
+<div class="g-fold-presets" role="group" aria-label="Right-middle fold shape">
+<button class="g-fold-choice" data-g-last-style="cut" aria-pressed="true" title="45-degree cut, like the top-left turn"><svg viewBox="0 0 44 32" aria-hidden="true"><path d="M3 3H29L41 15V29H29V15H3Z"/><path d="M29 15H36Q41 15 41 20" opacity=".5"/></svg>Corner cut</button>
+<button class="g-fold-choice" data-g-last-style="rect" aria-pressed="false" title="Original rectangular turn"><svg viewBox="0 0 44 32" aria-hidden="true"><path d="M3 3H36Q41 3 41 8V29H29V15H3Z"/><path d="M29 15H36Q41 15 41 20" opacity=".5"/></svg>Rectangular</button>
+</div>
+<div id="g-cut-fields"><div class="measure-row"><div class="control-label"><label for="num-gLastCut"><span class="symbol">C</span>Corner cut size</label><div class="number-wrap"><input id="num-gLastCut" type="number" step=".001" inputmode="decimal" data-g-number="gLastCut" value="1.350"><span>u</span></div></div><div class="range-wrap"><input aria-label="Corner cut size" type="range" data-g-range="gLastCut" min="0" max="45" step=".001" value="1.350"></div></div>
+<div class="g-match-row"><button id="g-match-cut" title="Copy the top-left corner cut size">Match top-left cut</button></div></div>
+<p class="tiny-note" id="g-last-note">An actual 45° corner cut, like the top-left turn.</p>
+<div style="margin-top:20px"><div class="measure-row"><div class="control-label"><label for="gLastBend">Last fold softness</label><output class="percent-value" id="gLastBend-output">70%</output></div><div class="range-wrap"><input id="gLastBend" type="range" min="0" max="1" step=".01" value="0.70" aria-label="Last fold softness"></div></div></div>
+<p class="tiny-note">Cut size removes equal horizontal and vertical spans. Softness changes the rolled seam, not the straight diagonal. Use Corner rounding for sharp or softened cut endpoints.</p></section>
+<section class="control-section"><div class="section-heading"><h3>Tape widths</h3><button class="link-control" id="g-link-widths" aria-pressed="true" title="Keep all five tape widths exactly equal"><svg viewBox="0 0 24 24"><path d="m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 1 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0" transform="translate(1 1)"/></svg><span>All linked</span></button></div>
+<div class="measure-row"><div class="control-label"><label for="num-gTopWidth"><span class="symbol">T</span>Top tape</label><div class="number-wrap"><input id="num-gTopWidth" type="number" step=".001" inputmode="decimal" data-g-number="gTopWidth" value="1.350"><span>u</span></div></div><div class="range-wrap"><input aria-label="Top tape" type="range" data-g-range="gTopWidth" min="0" max="45" step=".001" value="1.350"></div></div><div class="measure-row"><div class="control-label"><label for="num-gLeftWidth"><span class="symbol">L</span>Left tape</label><div class="number-wrap"><input id="num-gLeftWidth" type="number" step=".001" inputmode="decimal" data-g-number="gLeftWidth" value="1.350"><span>u</span></div></div><div class="range-wrap"><input aria-label="Left tape" type="range" data-g-range="gLeftWidth" min="0" max="45" step=".001" value="1.350"></div></div><div class="measure-row"><div class="control-label"><label for="num-gBottomWidth"><span class="symbol">B</span>Bottom tape</label><div class="number-wrap"><input id="num-gBottomWidth" type="number" step=".001" inputmode="decimal" data-g-number="gBottomWidth" value="1.350"><span>u</span></div></div><div class="range-wrap"><input aria-label="Bottom tape" type="range" data-g-range="gBottomWidth" min="0" max="45" step=".001" value="1.350"></div></div><div class="measure-row"><div class="control-label"><label for="num-gRightWidth"><span class="symbol">R</span>Right return</label><div class="number-wrap"><input id="num-gRightWidth" type="number" step=".001" inputmode="decimal" data-g-number="gRightWidth" value="1.350"><span>u</span></div></div><div class="range-wrap"><input aria-label="Right return" type="range" data-g-range="gRightWidth" min="0" max="45" step=".001" value="1.350"></div></div><div class="measure-row"><div class="control-label"><label for="num-gMiddleWidth"><span class="symbol">M</span>Middle tape</label><div class="number-wrap"><input id="num-gMiddleWidth" type="number" step=".001" inputmode="decimal" data-g-number="gMiddleWidth" value="1.350"><span>u</span></div></div><div class="range-wrap"><input aria-label="Middle tape" type="range" data-g-range="gMiddleWidth" min="0" max="45" step=".001" value="1.350"></div></div>
+<p class="tiny-note">All linked keeps the five tapes the same width. Unlink for independent control. Long edges stay parallel; only the folds and end caps curve.</p></section>
+<section class="control-section"><div class="section-heading"><h3>Other fold corners</h3><span class="percent-value">Three turns</span></div>
+<div class="measure-row"><div class="control-label"><label for="num-gTopCut"><span class="symbol">C1</span>Top-left corner cut</label><div class="number-wrap"><input id="num-gTopCut" type="number" step=".001" inputmode="decimal" data-g-number="gTopCut" value="1.350"><span>u</span></div></div><div class="range-wrap"><input aria-label="Top-left corner cut" type="range" data-g-range="gTopCut" min="0" max="45" step=".001" value="1.350"></div></div><div class="measure-row"><div class="control-label"><label for="num-gBottomCut"><span class="symbol">C3</span>Bottom-right cut</label><div class="number-wrap"><input id="num-gBottomCut" type="number" step=".001" inputmode="decimal" data-g-number="gBottomCut" value="1.350"><span>u</span></div></div><div class="range-wrap"><input aria-label="Bottom-right cut" type="range" data-g-range="gBottomCut" min="0" max="45" step=".001" value="1.350"></div></div><div class="measure-row"><div class="control-label"><label for="gLowerFold">Lower-left roll</label><output class="percent-value" id="gLowerFold-output">70%</output></div><div class="range-wrap"><input id="gLowerFold" type="range" min="0" max="1" step=".01" value="0.70" aria-label="Lower-left roll"></div></div><div class="measure-row"><div class="control-label"><label for="gFoldBend">Upper & lower bend softness</label><output class="percent-value" id="gFoldBend-output">70%</output></div><div class="range-wrap"><input id="gFoldBend" type="range" min="0" max="1" step=".01" value="0.70" aria-label="Upper & lower bend softness"></div></div>
+<p class="tiny-note">Cut sizes are 45° diagonal trims, limited to the adjacent tape widths. The lower-left roll keeps a rounded outer corner. None of these controls changes the character’s overall size.</p></section>
+</div>
 <details class="control-section details" id="finish-details"><summary>Material & finish</summary><div class="details-content"><div class="color-row"><label class="color-control"><input type="color" id="front-color" value="#ff1424" aria-label="Front color">Front</label><label class="color-control"><input type="color" id="back-color" value="#ffdc32" aria-label="Peeled back color"><span id="back-color-label">Back</span></label><label class="color-control"><input type="color" id="canvas-color" value="#ffffff" aria-label="Canvas color">Canvas</label></div><div class="measure-row"><div class="control-label"><label for="fold">Lower fold</label><output class="percent-value" id="fold-output">70%</output></div><div class="range-wrap"><input id="fold" type="range" min=".2" max=".95" step=".01" data-finish="fold" value=".7"></div></div><div class="measure-row"><div class="control-label"><label for="radius">Corner rounding</label><output class="percent-value" id="radius-output">0.180 u</output></div><div class="range-wrap"><input id="radius" type="range" min="0" max=".6" step=".01" data-finish="radius" value=".18"></div></div><div class="measure-row"><div class="control-label"><label for="gloss">Gloss</label><output class="percent-value" id="gloss-output">80%</output></div><div class="range-wrap"><input id="gloss" type="range" min="0" max="1" step=".01" data-finish="gloss" value=".8"></div></div><label class="check-line">Soft shadows<span class="switch"><input id="shadows" type="checkbox" checked><i></i></span></label><label class="check-line">Flat vector style<span class="switch"><input id="flat" type="checkbox"><i></i></span></label></div></details>
 <div class="sidebar-bottom" id="sidebar-description"><strong>Built to your proportions.</strong> The golden preset uses peel 1.618, both widths 2.618, length 4.236 and height 6.854. It respects the two selected measurement references. Measurements are straight, projected dimensions.</div></div></aside></main>
 <dialog class="dialog" id="export-dialog" aria-labelledby="export-heading"><div class="dialog-head"><h2 id="export-heading">Make it yours.</h2><button class="icon-button" id="close-export" aria-label="Close export"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><p>Export the artwork, with or without dimensions. The HTML button saves the complete editable studio.</p><div class="format-options"><label class="format-option"><input type="radio" name="export-format" value="svg" checked><strong>SVG</strong><small>Scalable vector</small></label><label class="format-option"><input type="radio" name="export-format" value="png"><strong>PNG</strong><small>High-resolution image</small></label></div><label class="export-option"><input id="export-measures" type="checkbox">Include measurement numbers</label><label class="export-option"><input id="export-transparent" type="checkbox" checked>Transparent background</label><label class="export-resolution" id="resolution-row" hidden>Longest edge<select id="export-size"><option value="1024">1024 px</option><option value="2048" selected>2048 px</option><option value="4096">4096 px</option></select></label><button class="button primary download" id="download-artwork"><svg viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 15v5h16v-5"/></svg><span>Download SVG</span></button><p class="dialog-note">No grid or editing handles are included.</p><div class="dialog-error" id="export-error" role="alert"></div><div class="export-fallback" id="export-fallback" hidden>Export ready. <a id="export-link" target="_blank" rel="noopener">Open or save the file</a>.</div></dialog>
@@ -91,7 +136,12 @@ const Z_DEFAULTS=Object.freeze({...DEFAULTS,zWidth:5.180,zHeight:6.854,topWidth:
 const Z_TAPES=['topWidth','diagonalWidth','bottomWidth'];
 const Z_KEYS=['zWidth','zHeight','zAngle',...Z_TAPES];
 const Z_GAP=.15;
-const LOGO_MODES=['l','a','z'];
+const G_DEFAULTS=Object.freeze({...DEFAULTS,gWidth:5.400,gHeight:6.854,gTopWidth:1.350,gLeftWidth:1.350,gBottomWidth:1.350,gRightWidth:1.350,gMiddleWidth:1.350,gReach:3.110,gMid:2.960,gTopCut:1.350,gBottomCut:1.350,gLastCut:1.350,gLastStyle:'cut',gFoldBend:.70,gLowerFold:.70,gLastBend:.70,linkWidths:true,front:'#ff1424',back:'#ff1424',canvas:'#000000',radius:.28,gloss:.80});
+const G_TAPES=['gTopWidth','gLeftWidth','gBottomWidth','gRightWidth','gMiddleWidth'];
+const G_CUTS=['gTopCut','gBottomCut','gLastCut'];
+const G_KEYS=['gWidth','gHeight','gReach','gMid',...G_TAPES,...G_CUTS];
+const G_GAP=.15;
+const LOGO_MODES=['l','a','z','g'];
 const KEYS = ['length','height','stemWidth','armWidth','peelX','peelY'];
 const $ = id => document.getElementById(id);
 const clamp = (n,a,b) => Math.min(b,Math.max(a,n));
@@ -154,10 +204,12 @@ let savedA=cleanAModel(boot.models?.a);
 try{const saved=localStorage.getItem(STORAGE_KEY+':a');if(saved)savedA=cleanAModel(JSON.parse(saved));}catch(_){storageOK=false;}
 let savedZ=cleanZModel(boot.models?.z);
 try{const saved=localStorage.getItem(STORAGE_KEY+':z');if(saved)savedZ=cleanZModel(JSON.parse(saved));}catch(_){storageOK=false;}
-const models={l:clone(state),a:clone(savedA),z:clone(savedZ)};
-const modeHistory={l:{history:[clone(state)],future:[]},a:{history:[clone(savedA)],future:[]},z:{history:[clone(savedZ)],future:[]}};
-const scrollByMode={l:0,a:0,z:0};
-const saveTimers={l:null,a:null,z:null};
+let savedG=cleanGModel(boot.models?.g);
+try{const saved=localStorage.getItem(STORAGE_KEY+':g');if(saved)savedG=cleanGModel(JSON.parse(saved));}catch(_){storageOK=false;}
+const models={l:clone(state),a:clone(savedA),z:clone(savedZ),g:clone(savedG)};
+const modeHistory={l:{history:[clone(state)],future:[]},a:{history:[clone(savedA)],future:[]},z:{history:[clone(savedZ)],future:[]},g:{history:[clone(savedG)],future:[]}};
+const scrollByMode={l:0,a:0,z:0,g:0};
+const saveTimers={l:null,a:null,z:null,g:null};
 const L_DESCRIPTION=$('sidebar-description').innerHTML;
 let history=[clone(state)],future=[],saveTimer,noticeTimer,toastTimer;
 let camera={x:0,y:0,w:10,h:10},fitScale=1,size={w:700,h:680},ready=false;
@@ -210,7 +262,7 @@ function mix(hex,target,t){const a=hex.slice(1).match(/../g).map(x=>parseInt(x,1
 function fitCamera(){
   const g=currentGeometry(),w=size.w,h=size.h;
   // These gutters are in screen pixels; dimensions remain legible on phones.
-  const margin=state.showMeasures?(activeLogo==='z'?{l:64,r:34,t:72,b:102}:activeLogo==='a'?{l:64,r:34,t:72,b:112}:{l:65,r:67,t:111,b:61}):{l:40,r:40,t:73,b:58};
+  const margin=state.showMeasures?((activeLogo==='z'||activeLogo==='g')?{l:64,r:34,t:72,b:102}:activeLogo==='a'?{l:64,r:34,t:72,b:112}:{l:65,r:67,t:111,b:61}):{l:40,r:40,t:73,b:58};
   const scale=Math.max(.01,Math.min((w-margin.l-margin.r)/g.L,(h-margin.t-margin.b)/g.totalH));
   camera.w=w/scale;camera.h=h/scale;
   camera.x=-margin.l/scale-Math.max(0,(w-margin.l-margin.r)/scale-g.L)/2;
@@ -454,7 +506,7 @@ function pointerUnit(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clie
 svg.addEventListener('pointerdown',e=>{
   if(e.button!==0||activePointer)return;
   const handle=e.target.closest('[data-handle]'),dim=e.target.closest('[data-dimension]');
-  if(dim&&!handle){e.preventDefault();const key=dim.dataset.dimension;const el=(activeLogo==='z'?zInputMap:activeLogo==='a'?aInputMap:inputMap)[key]?.num;if(el){el.scrollIntoView({behavior:'smooth',block:'nearest'});el.focus({preventScroll:true});el.select()}return;}
+  if(dim&&!handle){e.preventDefault();const key=dim.dataset.dimension;const el=(activeLogo==='g'?gInputMap:activeLogo==='z'?zInputMap:activeLogo==='a'?aInputMap:inputMap)[key]?.num;if(el){el.scrollIntoView({behavior:'smooth',block:'nearest'});el.focus({preventScroll:true});el.select()}return;}
   commitPending();const point=pointerUnit(e);
   activePointer={id:e.pointerId,key:handle?.dataset.handle||null,start:point,startClient:{x:e.clientX,y:e.clientY},camera:{...camera},model:clone(state)};
   svg.setPointerCapture(e.pointerId);e.preventDefault();if(!handle)svg.classList.add('panning');
@@ -473,6 +525,15 @@ svg.addEventListener('pointermove',e=>{
       val+=dx*normal.x+dy*normal.y;
     }
     setADimension(a.key,val,{quiet:true});return;
+  }
+  if(activeLogo==='g'){
+    let val=a.model[a.key];
+    if(a.key==='gHeight')val-=dy;
+    else if(a.key==='gWidth'||a.key==='gLeftWidth')val+=dx;
+    else if(a.key==='gReach'||a.key==='gRightWidth'||a.key==='gLastCut')val-=dx;
+    else if(a.key==='gBottomWidth')val-=dy;
+    else if(['gTopWidth','gMiddleWidth','gMid'].includes(a.key))val+=dy;
+    setGDimension(a.key,val,{quiet:true});return;
   }
   if(activeLogo==='z'){
     let val=a.model[a.key];
@@ -510,7 +571,7 @@ resizeObserver.observe($('stage-card'));
 function artworkSvg({measures=false,transparent=true,longest=2048}={}){
   const g=currentGeometry(),max=Math.max(g.L,g.totalH);
   const u=max/560;
-  const margin=measures?(activeLogo==='z'?{l:65*u,r:35*u,t:30*u,b:70*u}:activeLogo==='a'?{l:65*u,r:35*u,t:30*u,b:70*u}:{l:65*u,r:67*u,t:75*u,b:24*u}):{l:.48,r:.48,t:.30,b:.53};
+  const margin=measures?((activeLogo==='z'||activeLogo==='g')?{l:65*u,r:35*u,t:30*u,b:70*u}:activeLogo==='a'?{l:65*u,r:35*u,t:30*u,b:70*u}:{l:65*u,r:67*u,t:75*u,b:24*u}):{l:.48,r:.48,t:.30,b:.53};
   const view={x:-margin.l,y:g.top-margin.t,w:g.L+margin.l+margin.r,h:g.totalH+margin.t+margin.b};
   const width=Math.max(1,Math.round(longest*view.w/Math.max(view.w,view.h))),height=Math.max(1,Math.round(longest*view.h/Math.max(view.w,view.h)));
   let body=currentScene(state,{u,view,measures,grid:false,handles:false,bg:transparent?null:state.canvas});
@@ -534,7 +595,7 @@ $('save-html').addEventListener('click',()=>{
     root.querySelector('#export-link').removeAttribute('href');root.querySelector('#stage').innerHTML='';root.querySelector('#stage').classList.remove('panning');root.querySelector('#toast').classList.remove('visible');
     root.querySelector('body').dataset.screen='home';root.querySelector('#home-screen').hidden=false;root.querySelector('#editor-workspace').hidden=true;root.querySelector('#back-home').hidden=true;root.querySelector('#open-export').hidden=true;
     root.querySelectorAll('input,button,select').forEach(el=>el.removeAttribute('autofocus'));
-    createDownload(new Blob(['<!DOCTYPE html>\n'+root.outerHTML],{type:'text/html;charset=utf-8'}),'ribbon-logo-studio-l-a-z.html');tell('Editable HTML created with your current settings.');
+    createDownload(new Blob(['<!DOCTYPE html>\n'+root.outerHTML],{type:'text/html;charset=utf-8'}),'ribbon-logo-studio-l-a-z-g.html');tell('Editable HTML created with your current settings.');
   }catch(err){tell('The editor could not be saved: '+err.message)}
 });
 function exportFormat(){return document.querySelector('input[name="export-format"]:checked').value}
@@ -1013,11 +1074,276 @@ $('z-reference-preset').addEventListener('click',()=>{
 });
 
 // ---------------------------------------------------------------------------
-// Shared studio shell: switching never converts or rescales either logo.
+// FOLDED G — five constant-width runs and four separately formed ribbon turns.
+// This is constructed from paths, never by stretching a bitmap or an SVG group.
+// Local coordinates are x: 0..W, y: 0..H; the finished face is translated by -H.
+// The right-middle chamfer removes an equal X/Y span: a true 45-degree cut.
+// Only fold transitions curve; the long edges of every tape remain parallel.
 // ---------------------------------------------------------------------------
-function currentGeometry(s=state){return activeLogo==='z'?zGeometry(s):activeLogo==='a'?aGeometry(s):geometry(s);}
-function currentScene(s,options){return activeLogo==='z'?zScene(s,options):activeLogo==='a'?aScene(s,options):scene(s,options);}
-function syncControls(){if(activeLogo==='z')syncZControls();else if(activeLogo==='a')syncAControls();else syncLControls();}
+function gDimensions(s){
+  return {W:s.gWidth,H:s.gHeight,LW:s.gLeftWidth,T:s.gTopWidth,B:s.gBottomWidth,
+    R:s.gRightWidth,M:s.gMiddleWidth,Y:s.gMid,reach:s.gReach,X:s.gWidth-s.gReach,
+    bottomY:s.gHeight-s.gBottomWidth,innerRight:s.gWidth-s.gRightWidth};
+}
+function gCutCap(key,s){
+  if(key==='gTopCut')return floor3(Math.min(s.gLeftWidth,s.gTopWidth));
+  if(key==='gBottomCut')return floor3(Math.min(s.gRightWidth,s.gBottomWidth));
+  return floor3(Math.min(s.gRightWidth,s.gMiddleWidth));
+}
+function gConstrainCuts(s){
+  for(const key of G_CUTS)s[key]=round(clamp(s[key],0,gCutCap(key,s)));
+}
+function cleanGModel(candidate){
+  const s={...G_DEFAULTS};
+  if(candidate&&typeof candidate==='object'){
+    for(const k of Object.keys(s)){
+      if(typeof s[k]==='number'&&candidate[k]!==null&&candidate[k]!==''&&Number.isFinite(Number(candidate[k])))s[k]=Number(candidate[k]);
+      else if(typeof s[k]==='boolean'&&typeof candidate[k]==='boolean')s[k]=candidate[k];
+      else if(['front','back','canvas'].includes(k)&&/^#[0-9a-f]{6}$/i.test(candidate[k]||''))s[k]=candidate[k];
+    }
+    if(['cut','rect'].includes(candidate.gLastStyle))s.gLastStyle=candidate.gLastStyle;
+  }
+  s.gWidth=round(clamp(s.gWidth,.8,40));s.gHeight=round(clamp(s.gHeight,1.2,45));
+  for(const k of G_TAPES)s[k]=round(clamp(s[k],.1,12));
+  if(s.linkWidths){
+    const t=Math.max(.1,floor3(Math.min(...G_TAPES.map(k=>s[k]),(s.gWidth-2*G_GAP)/2,(s.gHeight-2*G_GAP)/3)));
+    for(const k of G_TAPES)s[k]=t;
+  }else{
+    // Repair imported dimensions without ever shrinking a tape below .100 u.
+    for(const [keys,available] of [[['gLeftWidth','gRightWidth'],s.gWidth-2*G_GAP],[['gTopWidth','gMiddleWidth','gBottomWidth'],s.gHeight-2*G_GAP]]){
+      const sum=keys.reduce((total,k)=>total+s[k],0);
+      if(sum>available){const f=(available-keys.length*.1)/(sum-keys.length*.1);for(const k of keys)s[k]=Math.max(.1,floor3(.1+(s[k]-.1)*f));}
+    }
+  }
+  s.gReach=round(clamp(s.gReach,ceil3(s.gRightWidth+G_GAP),floor3(s.gWidth-s.gLeftWidth-G_GAP)));
+  s.gMid=round(clamp(s.gMid,ceil3(s.gTopWidth+G_GAP),floor3(s.gHeight-s.gMiddleWidth-s.gBottomWidth-G_GAP)));
+  for(const k of ['gFoldBend','gLowerFold','gLastBend','gloss'])s[k]=clamp(s[k],0,1);
+  s.radius=clamp(s.radius,0,.6);gConstrainCuts(s);return s;
+}
+function gValid(s){
+  const p=gDimensions(s),e=1e-8;
+  return [p.W,p.H,p.Y,p.reach,...G_TAPES.map(k=>s[k])].every(Number.isFinite)&&
+    p.W>=.8-e&&p.W<=40+e&&p.H>=1.2-e&&p.H<=45+e&&
+    G_TAPES.every(k=>s[k]>=.1-e&&s[k]<=12+e)&&
+    p.reach>=p.R+G_GAP-e&&p.reach<=p.W-p.LW-G_GAP+e&&
+    p.Y>=p.T+G_GAP-e&&p.Y+p.M+p.B+G_GAP<=p.H+e&&
+    G_CUTS.every(k=>Number.isFinite(s[k])&&s[k]>=0&&s[k]<=gCutCap(k,s)+e);
+}
+function gLimits(key,s=state){
+  const p=gDimensions(s);
+  if(key==='gWidth')return [ceil3(p.reach+p.LW+G_GAP),40];
+  if(key==='gHeight')return [ceil3(p.Y+p.M+p.B+G_GAP),45];
+  if(key==='gReach')return [ceil3(p.R+G_GAP),floor3(p.W-p.LW-G_GAP)];
+  if(key==='gMid')return [ceil3(p.T+G_GAP),floor3(p.H-p.M-p.B-G_GAP)];
+  if(G_CUTS.includes(key))return [0,gCutCap(key,s)];
+  let max;
+  if(s.linkWidths)max=Math.min(p.W-p.reach-G_GAP,p.reach-G_GAP,p.Y-G_GAP,(p.H-p.Y-G_GAP)/2);
+  else max=key==='gLeftWidth'?p.W-p.reach-G_GAP:key==='gRightWidth'?p.reach-G_GAP:key==='gTopWidth'?p.Y-G_GAP:key==='gMiddleWidth'?p.H-p.Y-p.B-G_GAP:p.H-p.Y-p.M-G_GAP;
+  return [.1,Math.max(.1,floor3(Math.min(12,max)))];
+}
+function setGDimension(key,value,{quiet=false}={}){
+  if(!G_KEYS.includes(key)||!Number.isFinite(value))return;
+  const [min,max]=gLimits(key),limited=round(clamp(value,min,max)),oldCuts=G_CUTS.map(k=>state[k]);
+  state[key]=limited;
+  if(state.linkWidths&&G_TAPES.includes(key))for(const k of G_TAPES)state[k]=limited;
+  gConstrainCuts(state);
+  if(!quiet){
+    if(Math.abs(limited-value)>.001)notice(`Available range: ${fmt(min)}–${fmt(max)} u. Keep room for the middle opening, or adjust the tape widths first.`);
+    else if(G_CUTS.some((k,i)=>state[k]<oldCuts[i]-.0001))notice('Corner cuts were reduced to fit the thinner tape. Character width and height stay unchanged.');
+    else notice('');
+  }
+  queueRender(true);persist();
+}
+const gGeometryCache=new Map();
+function gGeometry(s=state){
+  const key=[...G_KEYS.map(k=>s[k]),s.radius,s.gFoldBend,s.gLowerFold,s.gLastBend,s.gLastStyle].join('|');
+  if(gGeometryCache.has(key))return gGeometryCache.get(key);
+  const d=gDimensions(s),{W,H,LW,T,B,R,M,Y,X,bottomY,innerRight}=d;
+  const cut=s.gLastStyle==='cut'?s.gLastCut:0,tc=s.gTopCut,bc=s.gBottomCut;
+  const minTape=Math.min(LW,T,B,R,M),pad=Math.max(W,H)+1,r=s.radius;
+  const lowerRadius=Math.min(LW,B)*(.55+1.04*s.gLowerFold);
+  const corners=[];
+  const add=(name,x,y,radius=r)=>corners.push({name,x,y,radius});
+  add('topLeftTop',tc,0);add('topEndTop',W,0);add('topEndBottom',W,T);
+  add('innerTopLeft',LW,T,0);add('innerBottomLeft',LW,bottomY,0);
+  add('innerBottomRight',innerRight,bottomY,0);add('innerMiddleRight',innerRight,Y+M,0);
+  add('middleEndBottom',X,Y+M);add('middleEndTop',X,Y);
+  if(cut>1e-8){add('lastTop',W-cut,Y);add('lastRight',W,Y+cut);}
+  else add('lastRect',W,Y,Math.max(r,Math.min(M,R)*(.12+.27*s.gLastBend)));
+  if(bc>1e-8){add('bottomRightSide',W,H-bc);add('bottomRightBase',W-bc,H);}
+  else add('bottomRightRect',W,H,Math.max(r,Math.min(B,R)*.25));
+  add('bottomLeft',0,H,lowerRadius);
+  if(tc>1e-8)add('topLeftSide',0,tc);
+  const poly=aRoundedPolygon(corners.map(c=>({x:c.x,y:c.y})),corners.map(c=>c.radius),true);
+  const named=Object.fromEntries(corners.map((c,i)=>[c.name,poly.corners[i]]));
+  // Upper-left ribbon peels around the chamfer and turns into a parallel stem.
+  const topDepth=Math.min(Math.min(LW,T)*(.14+.25*s.gFoldBend),(W-LW)*.35);
+  const topFlatMin=named.topLeftTop.exit.x,topFlatMax=named.topEndTop.entry.x;
+  const topStart={x:clamp(Math.max(LW+topDepth,tc+r*.50),topFlatMin+(topFlatMax-topFlatMin)*.10,topFlatMax-(topFlatMax-topFlatMin)*.10),y:0};
+  const topEnd={x:LW,y:Math.min(T*.85,Math.max(topDepth,tc-LW+topDepth))};
+  const topBend=`M ${pointText(topStart)} C ${nstr(LW+topDepth*.15)} 0 ${nstr(LW)} ${nstr(topEnd.y*.20)} ${pointText(topEnd)}`;
+  const leftFace=`${topBend} V ${nstr(H+pad)} H ${nstr(-pad)} V ${nstr(-pad)} H ${nstr(topStart.x)} Z`;
+  const topSeam=`${topBend} V ${nstr(bottomY)}`;
+  // The lower-left roll is tangent to both the vertical side and level base.
+  const noseY=Math.min(bottomY-Math.min(LW,B)*.10,named.bottomLeft.exit.y);
+  const nose={x:0,y:noseY},bottomStart={x:Math.min(LW,B)*(.13+.19*s.gLowerFold),y:bottomY};
+  const lowerBend=`M ${pointText(nose)} C 0 ${nstr(bottomY)} ${nstr(bottomStart.x*.22)} ${nstr(bottomY)} ${pointText(bottomStart)}`;
+  const lowerSeam=`${lowerBend} H ${nstr(W)}`;
+  const lowerVisibleSeam=`${lowerBend} H ${nstr(innerRight)}`;
+  const bottomFace=`${lowerSeam} H ${nstr(W+pad)} V ${nstr(H+pad)} H ${nstr(-pad)} V ${nstr(noseY)} Z`;
+  // The rising return overlays the bottom tape at the lower-right chamfer.
+  const brDepth=Math.min(Math.min(R,B)*(.13+.23*s.gFoldBend),(innerRight-LW)*.45);
+  const brStartY=H-brDepth;
+  const bottomFlatMin=named.bottomLeft.entry.x,bottomFlatMax=(named.bottomRightBase||named.bottomRightRect).exit.x;
+  const brEndX=clamp(Math.min(innerRight-brDepth*.65,W-bc-r*.50),bottomFlatMin+(bottomFlatMax-bottomFlatMin)*.05,bottomFlatMax-(bottomFlatMax-bottomFlatMin)*.05);
+  const rightSeam=`M ${nstr(innerRight)} ${nstr(Y+M)} V ${nstr(brStartY)} C ${nstr(innerRight)} ${nstr(H)} ${nstr(brEndX+brDepth*.24)} ${nstr(H)} ${nstr(brEndX)} ${nstr(H)}`;
+  const rightFace=`M ${nstr(innerRight)} ${nstr(Y)} V ${nstr(brStartY)} C ${nstr(innerRight)} ${nstr(H)} ${nstr(brEndX+brDepth*.24)} ${nstr(H)} ${nstr(brEndX)} ${nstr(H)} H ${nstr(W+pad)} V ${nstr(Y)} Z`;
+  // Last turn: the face boundary curls over the return below the mid bar.
+  // The outer chamfer and the rolled seam are distinct controls.
+  const lastDepth=Math.min(Math.min(M,R)*(.06+.28*s.gLastBend),Math.max(0,H-bc-Y-M)*.44);
+  const lastStart={x:W-lastDepth,y:Y+M},lastEnd={x:W,y:Y+M+lastDepth};
+  const lastBend=`M ${pointText(lastStart)} C ${nstr(W-lastDepth*.43)} ${nstr(Y+M)} ${nstr(W)} ${nstr(lastEnd.y-lastDepth*.43)} ${pointText(lastEnd)}`;
+  const midSeam=`M ${nstr(X)} ${nstr(Y+M)} H ${nstr(lastStart.x)} ${lastBend.replace(/^M [^C]+/,'')}`;
+  const midFace=`${midSeam} H ${nstr(W+pad)} V ${nstr(Y)} H ${nstr(X)} Z`;
+  const result={...d,...poly,named,cut,tc,bc,minTape,topStart,topEnd,topBend,topSeam,leftFace,
+    lowerBend,lowerSeam,lowerVisibleSeam,bottomFace,nose,bottomStart,rightSeam,rightFace,midSeam,midFace,lastBend,lastEnd,lastStart,
+    L:W,top:-H,bottom:0,totalH:H,stemH:H};
+  gGeometryCache.set(key,result);if(gGeometryCache.size>48)gGeometryCache.delete(gGeometryCache.keys().next().value);
+  return result;
+}
+function gRulers(s,p,u){
+  const dark=parseInt(s.canvas.slice(1,3),16)*.2126+parseInt(s.canvas.slice(3,5),16)*.7152+parseInt(s.canvas.slice(5,7),16)*.0722<110;
+  const color=dark?'#b8c8bf':'#566b5e',tape=dark?'#d7e7dc':'#3f7b71';
+  const line=(a,b,c=color,opacity=1)=>`<path d="M ${pointText(a)} L ${pointText(b)}" fill="none" stroke="${c}" stroke-opacity="${opacity}" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+  function label(x,y,text,angle=0){
+    const w=(text.length*6.15+13)*u;
+    return `<g transform="translate(${nstr(x)} ${nstr(y)}) rotate(${angle})"><rect class="dimension-label" x="${nstr(-w/2)}" y="${nstr(-10.5*u)}" width="${nstr(w)}" height="${nstr(21*u)}" rx="${nstr(4*u)}" fill="#fff" fill-opacity=".97"/><text x="0" y="0" dy=".34em" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="${nstr(11.4*u)}" font-weight="500" fill="#3c6151">${text}</text></g>`;
+  }
+  function arrows(a,b,c=color){
+    const dir=unitDirection(a,b),n={x:-dir.y,y:dir.x},len=Math.hypot(b.x-a.x,b.y-a.y),r=Math.min(4.6*u,len*.2);
+    const pt=(p,k,t)=>({x:p.x+dir.x*k+n.x*r*.48*t,y:p.y+dir.y*k+n.y*r*.48*t});
+    return line(a,b,c)+`<path d="M ${pointText(pt(a,r,-1))} L ${pointText(a)} L ${pointText(pt(a,r,1))} M ${pointText(pt(b,-r,-1))} L ${pointText(b)} L ${pointText(pt(b,-r,1))}" fill="none" stroke="${c}" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+  }
+  const group=(key,text,content)=>`<g data-dimension="${key}" role="button" aria-label="Edit ${text}"><title>${text}. Select to edit.</title>${content}</g>`;
+  const hy=-30*u,wy=26*u;
+  let m=group('gWidth',`overall width ${fmt(p.W)} units`,line({x:0,y:0},{x:0,y:wy+3*u},color,.42)+line({x:p.W,y:0},{x:p.W,y:wy+3*u},color,.42)+arrows({x:0,y:wy},{x:p.W,y:wy})+label(p.W/2,wy+13*u,'W '+fmt(p.W)));
+  m+=group('gHeight',`overall height ${fmt(p.H)} units`,line({x:p.tc,y:-p.H},{x:hy-3*u,y:-p.H},color,.42)+line({x:p.LW,y:0},{x:hy-3*u,y:0},color,.42)+arrows({x:hy,y:-p.H},{x:hy,y:0})+label(hy-12*u,-p.H/2,'H '+fmt(p.H),-90));
+  const tx=(Math.max(p.LW,p.tc)+p.W)*.5,ly=(p.T+p.bottomY)*.5-p.H,bx=(p.LW+p.innerRight)*.5,ry=(p.Y+p.M+p.bottomY)*.5-p.H,mx=p.X+(p.innerRight-p.X)*.40;
+  m+=group('gTopWidth',`top tape ${fmt(p.T)} units`,arrows({x:tx,y:-p.H},{x:tx,y:-p.H+p.T},tape)+label(tx+13*u,-p.H+p.T/2,'T '+fmt(p.T),-90));
+  m+=group('gLeftWidth',`left tape ${fmt(p.LW)} units`,arrows({x:0,y:ly},{x:p.LW,y:ly},tape)+label(p.LW/2,ly-14*u,'L '+fmt(p.LW)));
+  m+=group('gBottomWidth',`bottom tape ${fmt(p.B)} units`,arrows({x:bx,y:-p.B},{x:bx,y:0},tape)+label(bx-13*u,-p.B/2,'B '+fmt(p.B),-90));
+  m+=group('gRightWidth',`right return tape ${fmt(p.R)} units`,arrows({x:p.innerRight,y:ry},{x:p.W,y:ry},tape)+label(p.W-p.R/2,ry-14*u,'R '+fmt(p.R)));
+  m+=group('gMiddleWidth',`middle tape ${fmt(p.M)} units`,arrows({x:mx,y:p.Y-p.H},{x:mx,y:p.Y+p.M-p.H},tape)+label(mx+13*u,p.Y+p.M/2-p.H,'M '+fmt(p.M),-90));
+  return `<g id="g-measurements">${m}</g>`;
+}
+function gScene(s,{u,view,measures=true,grid=false,handles=false,bg=null}){
+  const p=gGeometry(s),{W,H,LW,T,B,R,M,Y,X,bottomY,innerRight}=p,gloss=s.gloss,front=s.front,rear=s.back;
+  const material=Math.min(1,p.minTape/1.35,H/6.854),thin=p.minTape*.006,shadow=s.shadows&&!s.flat;
+  const dark=parseInt(s.canvas.slice(1,3),16)*.2126+parseInt(s.canvas.slice(3,5),16)*.7152+parseInt(s.canvas.slice(5,7),16)*.0722<110;
+  const gridColor=dark?'#c4e0cb':'#526454';
+  const rect=fill=>`<rect x="${nstr(view.x)}" y="${nstr(view.y)}" width="${nstr(view.w)}" height="${nstr(view.h)}" fill="${fill}"/>`;
+  let content=`<title>Parametric folded ribbon G logo</title><desc>Finished face width ${fmt(W)} and height ${fmt(H)} units. Top ${fmt(T)}, left ${fmt(LW)}, bottom ${fmt(B)}, right ${fmt(R)}, middle ${fmt(M)} units. All straight tape edges are parallel and widths are measured perpendicular to them. Middle bar starts ${fmt(Y)} below the top and reaches ${fmt(p.reach)} from the right edge. Right-middle fold: ${s.gLastStyle==='cut'?'45-degree corner cut of '+fmt(p.cut)+' units':'rectangular turn'}. Top-left cut ${fmt(p.tc)}, bottom-right cut ${fmt(p.bc)} units. Overall dimensions exclude shadows.</desc>
+  <defs>
+    <linearGradient id="g-top" gradientUnits="userSpaceOnUse" x1="${nstr(LW*.85)}" y1="${nstr(T*.6)}" x2="${nstr(W)}" y2="${nstr(T*.3)}"><stop stop-color="${mix(rear,'#72000a',.45)}"/><stop offset=".20" stop-color="${rear}"/><stop offset=".57" stop-color="${mix(rear,'#ffffff',.085*gloss)}"/><stop offset="1" stop-color="${rear}"/></linearGradient>
+    <linearGradient id="g-left" gradientUnits="userSpaceOnUse" x1="${nstr(LW*.9)}" y1="0" x2="${nstr(LW*.2)}" y2="${nstr(bottomY)}"><stop stop-color="${front}"/><stop offset=".35" stop-color="${mix(front,'#ffffff',.085*gloss)}"/><stop offset=".75" stop-color="${front}"/><stop offset="1" stop-color="${mix(front,'#df000c',.12)}"/></linearGradient>
+    <linearGradient id="g-bottom" gradientUnits="userSpaceOnUse" x1="0" y1="${nstr(bottomY+B*.50)}" x2="${nstr(W)}" y2="${nstr(bottomY+B*.45)}"><stop stop-color="${mix(rear,'#780006',.48)}"/><stop offset=".23" stop-color="${rear}"/><stop offset=".58" stop-color="${mix(rear,'#ffffff',.10*gloss)}"/><stop offset="1" stop-color="${mix(rear,'#91000a',.30)}"/></linearGradient>
+    <linearGradient id="g-right" gradientUnits="userSpaceOnUse" x1="${nstr(innerRight)}" y1="${nstr(Y+M)}" x2="${nstr(W)}" y2="${nstr(H)}"><stop stop-color="${mix(front,'#780008',.48)}"/><stop offset=".24" stop-color="${front}"/><stop offset=".68" stop-color="${mix(front,'#ff0018',.12)}"/><stop offset="1" stop-color="${mix(front,'#ffffff',.05*gloss)}"/></linearGradient>
+    <linearGradient id="g-middle" gradientUnits="userSpaceOnUse" x1="${nstr(X)}" y1="${nstr(Y+M*.7)}" x2="${nstr(W)}" y2="${nstr(Y+M*.2)}"><stop stop-color="${front}"/><stop offset=".46" stop-color="${mix(front,'#ffffff',.10*gloss)}"/><stop offset="1" stop-color="${front}"/></linearGradient>
+    <radialGradient id="g-nose-glow" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(${nstr(LW*.03)} ${nstr(bottomY-.04*material)}) scale(${nstr(LW*.76)} ${nstr(Math.min(LW,B)*.44)})"><stop stop-color="#fff4ec" stop-opacity="${nstr(gloss*.75)}"/><stop offset=".28" stop-color="#ffe5db" stop-opacity="${nstr(gloss*.34)}"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+    <linearGradient id="g-edge" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${nstr(W)}" y2="${nstr(H)}"><stop stop-color="#fff4ef" stop-opacity="${nstr(gloss*.42)}"/><stop offset=".55" stop-color="#ffffff" stop-opacity="${nstr(gloss*.62)}"/><stop offset="1" stop-color="#ffe2d9" stop-opacity="${nstr(gloss*.72)}"/></linearGradient>
+    <filter id="g-drop" x="-30%" y="-20%" width="160%" height="155%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="${nstr(.07*material)}" stdDeviation="${nstr(.085*material)}" flood-color="#260701" flood-opacity=".24"/></filter>
+    <filter id="g-fold-shadow" filterUnits="userSpaceOnUse" x="-1" y="-1" width="${nstr(W+2)}" height="${nstr(H+2)}" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${nstr(p.minTape*.04)}"/></filter>
+    <clipPath id="g-body-clip"><path d="${p.d}"/></clipPath><clipPath id="g-left-clip"><path d="${p.leftFace}"/></clipPath><clipPath id="g-right-clip"><path d="${p.rightFace}"/></clipPath>
+    <pattern id="g-unit-grid" width="1" height="1" patternUnits="userSpaceOnUse"><path d="M1 0H0V1" fill="none" stroke="${gridColor}" stroke-opacity=".18" stroke-width=".6" vector-effect="non-scaling-stroke"/><circle r="${nstr(u)}" fill="${gridColor}" fill-opacity=".20"/></pattern>
+  </defs>`;
+  if(bg)content+=rect(bg);if(grid)content+=rect('url(#g-unit-grid)');
+  content+=`<g id="g-artwork" transform="translate(0 ${nstr(-H)})">`;
+  if(shadow)content+=`<path d="${p.d}" fill="${front}" filter="url(#g-drop)"/>`;
+  content+=`<path id="g-silhouette" d="${p.d}" fill="${s.flat?rear:'url(#g-top)'}"/><g clip-path="url(#g-body-clip)">`;
+  if(shadow)content+=`<path d="${p.topSeam}" fill="none" stroke="#56000a" stroke-opacity=".24" stroke-width="${nstr(Math.min(T,LW)*.16)}" transform="translate(${nstr(.025*LW)} ${nstr(.02*T)})" filter="url(#g-fold-shadow)"/>`;
+  content+=`<path id="g-left-ribbon" d="${p.leftFace}" fill="${s.flat?front:'url(#g-left)'}"/>`;
+  if(!s.flat)content+=`<g clip-path="url(#g-left-clip)"><path d="${p.d}" fill="url(#g-nose-glow)"/></g>`;
+  if(shadow)content+=`<path d="${p.lowerSeam}" fill="none" stroke="#540008" stroke-opacity=".25" stroke-width="${nstr(p.minTape*.09)}" filter="url(#g-fold-shadow)"/>`;
+  content+=`<path id="g-bottom-ribbon" d="${p.bottomFace}" fill="${s.flat?rear:'url(#g-bottom)'}"/>`;
+  if(shadow)content+=`<path d="${p.rightSeam}" fill="none" stroke="#540008" stroke-opacity=".24" stroke-width="${nstr(p.minTape*.13)}" transform="translate(${nstr(-.02*R)} 0)" filter="url(#g-fold-shadow)"/>`;
+  content+=`<path id="g-right-ribbon" d="${p.rightFace}" fill="${s.flat?front:'url(#g-right)'}"/>`;
+  if(shadow)content+=`<g clip-path="url(#g-right-clip)"><path d="${p.midSeam}" fill="none" stroke="#4e0008" stroke-opacity=".32" stroke-width="${nstr(Math.min(M,R)*.13)}" transform="translate(0 ${nstr(.03*M)})" filter="url(#g-fold-shadow)"/></g>`;
+  content+=`<path id="g-middle-ribbon" d="${p.midFace}" fill="${s.flat?front:'url(#g-middle)'}"/>`;
+  if(!s.flat){
+    for(const path of [p.topSeam,p.lowerVisibleSeam,p.rightSeam,p.midSeam])content+=`<path d="${path}" fill="none" stroke="url(#g-edge)" stroke-width="${nstr(thin)}"/>`;
+    content+=`<path d="${p.d}" fill="none" stroke="#fff0eb" stroke-opacity="${nstr(gloss*.55)}" stroke-width="${nstr(thin*1.7)}"/>`;
+  }
+  content+='</g></g>';
+  if(measures)content+=gRulers(s,p,u);
+  if(handles){
+    const ly=(T+bottomY)/2,ry=(Y+M+bottomY)/2;
+    const list=[['gHeight',(LW+W)/2,-H],['gWidth',W,ry-H],['gTopWidth',(LW+W)/2,T-H],['gLeftWidth',LW,ly-H],['gBottomWidth',(LW+innerRight)/2,-B],['gRightWidth',innerRight,ry-H],['gMiddleWidth',X+(innerRight-X)*.45,Y+M-H],['gReach',X,Y+M/2-H],['gMid',(X+W-p.cut)/2,Y-H]];
+    if(s.gLastStyle==='cut')list.push(['gLastCut',W-p.cut,Y-H]);
+    content+='<g id="g-sizing-handles">'+list.map(([k,x,y])=>`<g data-handle="${k}" role="button" aria-label="Drag to change ${k}"><title>Drag to change ${k}</title><circle cx="${nstr(x)}" cy="${nstr(y)}" r="${nstr(15*u)}" fill="transparent"/><circle cx="${nstr(x)}" cy="${nstr(y)}" r="${nstr(4.5*u)}" fill="#fff" stroke="${k==='gLastCut'?'#a77722':'#477760'}" stroke-width="1.6" vector-effect="non-scaling-stroke"/></g>`).join('')+'</g>';
+  }
+  return content;
+}
+function syncGControls(){
+  const p=gDimensions(state),cutStyle=state.gLastStyle==='cut';
+  for(const k of G_KEYS){
+    const {num,range}=gInputMap[k],[min,max]=gLimits(k);
+    num.min=nstr(min);num.max=nstr(max);range.min=nstr(min);
+    range.max=nstr(k==='gWidth'?Math.min(max,Math.max(min,16,state.gWidth)):k==='gHeight'?Math.min(max,Math.max(min,20,state.gHeight)):max);
+    range.value=state[k];if(document.activeElement!==num)num.value=fmt(state[k]);paintRange(range);
+  }
+  $('g-link-widths').setAttribute('aria-pressed',state.linkWidths);$('g-link-widths').querySelector('span').textContent=state.linkWidths?'All linked':'Independent';
+  for(const [id,key] of [['measure-toggle','showMeasures'],['grid-toggle','showGrid'],['handles-toggle','showHandles']])$(id).setAttribute('aria-pressed',state[key]);
+  for(const k of ['gFoldBend','gLowerFold','gLastBend','radius','gloss']){$(k).value=state[k];paintRange($(k));$(k+'-output').textContent=k==='radius'?fmt(state[k])+' u':Math.round(state[k]*100)+'%';}
+  for(const k of ['front','back','canvas'])$(k+'-color').value=state[k];
+  $('flat').checked=state.flat;$('shadows').checked=state.shadows;
+  document.querySelectorAll('[data-g-last-style]').forEach(el=>el.setAttribute('aria-pressed',el.dataset.gLastStyle===state.gLastStyle));
+  $('g-cut-fields').classList.toggle('g-paused',!cutStyle);
+  gInputMap.gLastCut.num.disabled=!cutStyle;gInputMap.gLastCut.range.disabled=!cutStyle;
+  $('g-match-cut').disabled=!cutStyle;
+  $('g-last-note').textContent=cutStyle?'An actual 45° corner cut, like the top-left turn. The cut trims only the corner; width, height and straight tape thickness stay fixed.':'Original rectangular turn. The cut size is remembered while paused. Corner rounding and bend softness remain editable.';
+  const captions=document.querySelectorAll('.summary-card .caption');captions[0].textContent=state.linkWidths?'Tape · all five equal':'Tape · min / max';captions[1].textContent='Right-middle fold';
+  $('stat-peel').innerHTML=state.linkWidths?`${fmt(p.T)} <small>u</small>`:`${fmt(Math.min(...G_TAPES.map(k=>state[k])))} / ${fmt(Math.max(...G_TAPES.map(k=>state[k])))} <small>u</small>`;
+  $('stat-width').innerHTML=cutStyle?`Cut · ${fmt(state.gLastCut)} <small>u</small>`:'Rectangular';
+  $('stat-bounds').innerHTML=`${fmt(p.W)} × ${fmt(p.H)} <small>u</small>`;
+  $('stage-help').textContent=state.showHandles?'Drag a point to resize · Drag canvas to pan':'Drag to pan · Double-click to fit';
+}
+const gInputMap=Object.fromEntries(G_KEYS.map(k=>[k,{num:document.querySelector(`[data-g-number="${k}"]`),range:document.querySelector(`[data-g-range="${k}"]`)}]));
+for(const k of G_KEYS){
+  const {num,range}=gInputMap[k];
+  range.addEventListener('input',()=>setGDimension(k,range.valueAsNumber));range.addEventListener('change',commit);
+  num.addEventListener('input',()=>{if(Number.isFinite(num.valueAsNumber))setGDimension(k,num.valueAsNumber);});
+  const finish=()=>{num.value=fmt(state[k]);commit();};
+  num.addEventListener('change',finish);num.addEventListener('blur',finish);
+  num.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();num.blur();}});
+}
+for(const k of ['gFoldBend','gLowerFold','gLastBend']){
+  $(k).addEventListener('input',()=>{state[k]=clamp($(k).valueAsNumber,0,1);queueRender(true);persist();});$(k).addEventListener('change',commit);
+}
+document.querySelectorAll('[data-g-last-style]').forEach(button=>button.addEventListener('click',()=>{
+  commitPending();state.gLastStyle=button.dataset.gLastStyle;queueRender(true);commit();
+}));
+$('g-match-cut').addEventListener('click',()=>{
+  commitPending();setGDimension('gLastCut',state.gTopCut);commit();
+  tell(state.gLastCut<state.gTopCut-.001?'Matched as far as the middle and right tape widths allow.':'Right-middle cut now matches the top-left cut.');
+});
+$('g-link-widths').addEventListener('click',()=>{
+  commitPending();state.linkWidths=!state.linkWidths;
+  if(state.linkWidths)setGDimension('gTopWidth',state.gTopWidth);
+  queueRender(true);commit();
+});
+$('g-reference-preset').addEventListener('click',()=>{
+  commitPending();for(const k of [...G_KEYS,'gFoldBend','gLowerFold','gLastBend'])state[k]=G_DEFAULTS[k];
+  state.linkWidths=true;state.gLastStyle='rect';syncControls();fitCamera();commit();notice('');
+  tell('Reference G proportions restored, with the original rectangular last turn.');
+});
+
+
+// ---------------------------------------------------------------------------
+// Shared studio shell: switching never converts or rescales an existing logo.
+// ---------------------------------------------------------------------------
+function currentGeometry(s=state){return activeLogo==='g'?gGeometry(s):activeLogo==='z'?zGeometry(s):activeLogo==='a'?aGeometry(s):geometry(s);}
+function currentScene(s,options){return activeLogo==='g'?gScene(s,options):activeLogo==='z'?zScene(s,options):activeLogo==='a'?aScene(s,options):scene(s,options);}
+function syncControls(){if(activeLogo==='g')syncGControls();else if(activeLogo==='z')syncZControls();else if(activeLogo==='a')syncAControls();else syncLControls();}
 function syncAControls(){
   const p=aGeometry();
   for(const k of A_KEYS){
@@ -1042,10 +1368,10 @@ function scopeSvg(markup,prefix){
 }
 function refreshCards(){
   for(const mode of LOGO_MODES){
-    const s=models[mode],g=mode==='z'?zGeometry(s):mode==='l'?geometry(s):aGeometry(s),margin=Math.max(g.L,g.totalH)*.14;
+    const s=models[mode],g=mode==='g'?gGeometry(s):mode==='z'?zGeometry(s):mode==='l'?geometry(s):aGeometry(s),margin=Math.max(g.L,g.totalH)*.14;
     const view={x:-margin,y:g.top-margin,w:g.L+margin*2,h:g.totalH+margin*2};
     const el=$('home-preview-'+mode);el.setAttribute('viewBox',`${nstr(view.x)} ${nstr(view.y)} ${nstr(view.w)} ${nstr(view.h)}`);
-    const draw=mode==='z'?zScene:mode==='l'?scene:aScene;
+    const draw=mode==='g'?gScene:mode==='z'?zScene:mode==='l'?scene:aScene;
     el.innerHTML=scopeSvg(draw(s,{u:Math.max(view.w,view.h)/380,view,measures:false,grid:false,handles:false,bg:null}),'home-'+mode+'-');
     el.parentElement.style.background=s.canvas;
   }
@@ -1065,14 +1391,14 @@ function enterLogo(mode){
   screen='editor';document.body.dataset.screen='editor';document.body.dataset.logo=mode;
   $('home-screen').hidden=true;$('editor-workspace').hidden=false;$('back-home').hidden=false;$('open-export').hidden=false;
   for(const item of LOGO_MODES)$(item+'-controls').hidden=mode!==item;
-  $('fold').closest('.measure-row').hidden=mode==='z';
-  $('active-logo-name').textContent=mode==='z'?'Folded Z':mode==='l'?'Original L':'Folded A';
+  $('fold').closest('.measure-row').hidden=mode==='z'||mode==='g';
+  $('active-logo-name').textContent=mode==='g'?'Folded G':mode==='z'?'Folded Z':mode==='l'?'Original L':'Folded A';
   document.querySelector('label[for="fold"]').textContent=mode==='l'?'Lower fold':'Top fold bend';
   $('back-color-label').textContent=mode==='l'?'Back':'Rear face';
   $('back-color').setAttribute('aria-label',mode==='l'?'Peeled back color':'Rear ribbon face color');
-  $('sidebar-description').innerHTML=mode==='z'?'<strong>A Z made from three tapes.</strong> Width and height describe the finished silhouette. Top, diagonal and bottom tapes keep their specified thicknesses. Linked widths are measured perpendicular to each tape. The two folds are red; no yellow peel is added.':mode==='l'?L_DESCRIPTION:'<strong>Parallel edges. Consistent tape.</strong> Both straight legs retain their exact perpendicular thickness. Overall width changes their opening angle; height changes their length. The upper fold joins the two legs. No horizontal crossbar or yellow peel.';
-  const captions=document.querySelectorAll('.summary-card .caption');captions[0].textContent=mode==='z'?'Tape · all equal':mode==='l'?'Peel · x × y':'Tape · left / right';captions[1].textContent=mode==='z'?'Diagonal angle · θ':mode==='l'?'Stroke · v / h':'Opening angle · θ';
-  svg.setAttribute('aria-label',mode==='z'?'Editable folded ribbon Z logo with three constant-width tapes':mode==='l'?'Editable red ribbon L logo with a yellow peeled corner':'Editable folded ribbon A logo with constant-width sides');
+  $('sidebar-description').innerHTML=mode==='g'?'<strong>Five tapes. Four folded turns.</strong> Width and height measure the finished face. Tape widths stay constant along straight runs. The right-middle turn can be rectangular or have a 45° cut like the top-left corner. Bar reach, bar position and folds are editable independently.':mode==='z'?'<strong>A Z made from three tapes.</strong> Width and height describe the finished silhouette. Top, diagonal and bottom tapes keep their specified thicknesses. Linked widths are measured perpendicular to each tape. The two folds are red; no yellow peel is added.':mode==='l'?L_DESCRIPTION:'<strong>Parallel edges. Consistent tape.</strong> Both straight legs retain their exact perpendicular thickness. Overall width changes their opening angle; height changes their length. The upper fold joins the two legs. No horizontal crossbar or yellow peel.';
+  const captions=document.querySelectorAll('.summary-card .caption');captions[0].textContent=mode==='g'?'Tape · all five equal':mode==='z'?'Tape · all equal':mode==='l'?'Peel · x × y':'Tape · left / right';captions[1].textContent=mode==='g'?'Right-middle fold':mode==='z'?'Diagonal angle · θ':mode==='l'?'Stroke · v / h':'Opening angle · θ';
+  svg.setAttribute('aria-label',mode==='g'?'Editable folded ribbon G logo with an adjustable corner-cut or rectangular right-middle fold':mode==='z'?'Editable folded ribbon Z logo with three constant-width tapes':mode==='l'?'Editable red ribbon L logo with a yellow peeled corner':'Editable folded ribbon A logo with constant-width sides');
   notice('');syncControls();syncHistory();
   document.querySelector('.controls-scroll').scrollTop=scrollByMode[mode];
   requestAnimationFrame(()=>{
