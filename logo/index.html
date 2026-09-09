@@ -50,7 +50,7 @@ html:has(body[data-screen="home"]){height:auto;overflow:auto}
 .home-intro h2{font-size:clamp(30px,4vw,43px);font-weight:630;line-height:1.12;letter-spacing:-1.8px;margin:13px 0 12px}
 .home-intro p{font-size:13px;line-height:1.7;color:#7b817d;max-width:500px;margin:0}
 .home-count{font:11px var(--mono);color:#778276;border:1px solid #dfe5da;padding:9px 11px;border-radius:8px;white-space:nowrap}
-.logo-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.logo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
 .logo-choice{display:block;text-align:left;padding:0;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 5px 20px #35462a06;transition:transform .16s,box-shadow .16s,border-color .16s}
 .logo-choice:hover{transform:translateY(-3px);border-color:#a6b8a5;box-shadow:0 12px 30px #35462a12}
 .logo-choice:focus-visible{outline:3px solid #8ead9d;outline-offset:5px}
@@ -107,7 +107,7 @@ html:has(body[data-screen="home"]){height:auto;overflow:auto}
 <section class="home-screen" id="home-screen" aria-labelledby="home-title">
   <div class="home-intro">
     <div><span class="eyebrow">YOUR RIBBON COLLECTION</span><h2 id="home-title">Choose your ribbon.</h2><p>Two characters. Their own proportions.<br>Pick a logo to shape, measure and export.</p></div>
-    <span class="home-count">02 / EDITABLE LOGOS</span>
+    <span class="home-count">03 / EDITABLE LOGOS</span>
   </div>
   <div class="logo-grid">
     <button class="logo-choice" data-open-logo="l" aria-label="Open original L logo editor">
@@ -118,8 +118,12 @@ html:has(body[data-screen="home"]){height:auto;overflow:auto}
       <div class="logo-preview dark"><svg id="home-preview-a" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div>
       <div class="logo-meta"><div class="logo-name-row"><h3>Folded A</h3><span class="logo-badge">New</span></div><span class="logo-description">A continuous-looking folded ribbon.<br>Constant-width sides. No crossbar.</span><span class="logo-cta">Edit A<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div>
     </button>
+    <button class="logo-choice" data-open-logo="z" aria-label="Open folded Z logo editor">
+      <div class="logo-preview dark"><svg id="home-preview-z" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div>
+      <div class="logo-meta"><div class="logo-name-row"><h3>Folded Z</h3><span class="logo-badge">New</span></div><span class="logo-description">Top, diagonal and bottom ribbon bars.<br>Linked constant-width tape by default.</span><span class="logo-cta">Edit Z<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div>
+    </button>
   </div>
-  <div class="home-footer"><span><i class="status-dot"></i>Separate settings and undo history for each logo.</span><span>Works offline · Save HTML keeps both designs.</span></div>
+  <div class="home-footer"><span><i class="status-dot"></i>Separate settings and undo history for each logo.</span><span>Works offline · Save HTML keeps all designs.</span></div>
 </section>
 <main class="workspace" id="editor-workspace" hidden>
   <section class="preview-column" aria-label="Live logo preview">
@@ -198,6 +202,17 @@ html:has(body[data-screen="home"]){height:auto;overflow:auto}
 <section class="control-section"><div class="section-heading"><h3>Tape widths</h3><button class="link-control" id="a-link-widths" aria-pressed="true" title="Keep both side widths exactly equal"><svg viewBox="0 0 24 24"><path d="m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 1 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0" transform="translate(1 1)"/></svg><span>Linked</span></button></div>
 <div class="measure-row "><div class="control-label"><label for="num-leftWidth"><span class="symbol">WL</span>Left side</label><div class="number-wrap"><input id="num-leftWidth" type="number" step="0.001" inputmode="decimal" data-a-number="leftWidth" value="1.750" min=".1" max="3"><span>u</span></div></div><div class="range-wrap"><input aria-label="Left side" type="range" data-a-range="leftWidth" min=".1" max="3" step="0.001" value="1.750"></div></div><div class="measure-row "><div class="control-label"><label for="num-rightWidth"><span class="symbol">WR</span>Right side</label><div class="number-wrap"><input id="num-rightWidth" type="number" step="0.001" inputmode="decimal" data-a-number="rightWidth" value="1.750" min=".1" max="3"><span>u</span></div></div><div class="range-wrap"><input aria-label="Right side" type="range" data-a-range="rightWidth" min=".1" max="3" step="0.001" value="1.750"></div></div><p class="tiny-note">Each side has parallel straight edges and a constant width measured perpendicular to them. Linked makes both sides exactly equal; unlink to size them separately.</p><p class="reference-note">The rounded ends and curved top fold are transitions, not tapered straight tape. No horizontal bar or yellow corner is added.</p></section>
 </div>
+<div class="mode-controls" id="z-controls" hidden>
+<section class="control-section"><div class="section-heading"><h3>Character proportions</h3><button class="preset-button a-preset" id="z-reference-preset" title="Restore the reference Z width, height and ribbon widths">Reference preset</button></div>
+<div class="measure-row"><div class="control-label"><label for="num-zWidth"><span class="symbol">W</span>Overall width</label><div class="number-wrap"><input id="num-zWidth" type="number" step="0.001" inputmode="decimal" data-z-number="zWidth" value="6.854" min=".8" max="20"><span>u</span></div></div><div class="range-wrap"><input aria-label="Overall width" type="range" data-z-range="zWidth" min=".8" max="20" step="0.001" value="6.854"></div></div>
+<div class="measure-row"><div class="control-label"><label for="num-zHeight"><span class="symbol">H</span>Character height</label><div class="number-wrap"><input id="num-zHeight" type="number" step="0.001" inputmode="decimal" data-z-number="zHeight" value="8.472" min="1" max="24"><span>u</span></div></div><div class="range-wrap"><input aria-label="Character height" type="range" data-z-range="zHeight" min="1" max="24" step="0.001" value="8.472"></div></div>
+<p class="reference-note">The top and bottom bars stay level while the diagonal connects them. Width and height together set the diagonal angle.</p><p class="notice" id="z-limit-notice" aria-live="polite"></p></section>
+<section class="control-section"><div class="section-heading"><h3>Ribbon widths</h3><button class="link-control" id="z-link-widths" aria-pressed="true" title="Keep the top, diagonal and bottom ribbon widths equal"><svg viewBox="0 0 24 24"><path d="m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 1 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0" transform="translate(1 1)"/></svg><span>Linked</span></button></div>
+<div class="measure-row"><div class="control-label"><label for="num-topWidth"><span class="symbol">WT</span>Top bar</label><div class="number-wrap"><input id="num-topWidth" type="number" step="0.001" inputmode="decimal" data-z-number="topWidth" value="1.550" min=".1" max="4"><span>u</span></div></div><div class="range-wrap"><input aria-label="Top bar width" type="range" data-z-range="topWidth" min=".1" max="4" step="0.001" value="1.550"></div></div>
+<div class="measure-row"><div class="control-label"><label for="num-diagWidth"><span class="symbol">WD</span>Diagonal</label><div class="number-wrap"><input id="num-diagWidth" type="number" step="0.001" inputmode="decimal" data-z-number="diagWidth" value="1.550" min=".1" max="4"><span>u</span></div></div><div class="range-wrap"><input aria-label="Diagonal width" type="range" data-z-range="diagWidth" min=".1" max="4" step="0.001" value="1.550"></div></div>
+<div class="measure-row"><div class="control-label"><label for="num-bottomWidth"><span class="symbol">WB</span>Bottom bar</label><div class="number-wrap"><input id="num-bottomWidth" type="number" step="0.001" inputmode="decimal" data-z-number="bottomWidth" value="1.550" min=".1" max="4"><span>u</span></div></div><div class="range-wrap"><input aria-label="Bottom bar width" type="range" data-z-range="bottomWidth" min=".1" max="4" step="0.001" value="1.550"></div></div>
+<p class="tiny-note">Linked keeps the top, diagonal and bottom ribbon widths exactly equal. Unlink to tune any segment independently.</p><p class="reference-note">The diagonal width is measured perpendicular to the diagonal centerline, not by its horizontal projection.</p></section>
+</div>
       <details class="control-section details" id="finish-details"><summary>Material & finish</summary><div class="details-content">
         <div class="color-row"><label class="color-control"><input type="color" id="front-color" value="#ff1424" aria-label="Front color">Front</label><label class="color-control"><input type="color" id="back-color" value="#ffdc32" aria-label="Peeled back color"><span id="back-color-label">Back</span></label><label class="color-control"><input type="color" id="canvas-color" value="#ffffff" aria-label="Canvas color">Canvas</label></div>
         <div class="measure-row"><div class="control-label"><label for="fold">Lower fold</label><output class="percent-value" id="fold-output">70%</output></div><div class="range-wrap"><input id="fold" type="range" min=".2" max=".95" step=".01" data-finish="fold" value=".7"></div></div>
@@ -233,7 +248,9 @@ html:has(body[data-screen="home"]){height:auto;overflow:auto}
 const DEFAULTS = Object.freeze({length:4.236,height:6.854,stemWidth:2.618,armWidth:2.618,peelX:1.618,peelY:1.618,lengthRef:'full',heightRef:'overall',linkWidths:true,linkPeel:true,peelShape:0,curl:.62,fold:.70,radius:.18,gloss:.80,front:'#ff1424',back:'#ffdc32',canvas:'#ffffff',shadows:true,flat:false,showMeasures:true,showGrid:false,showHandles:false});
 
 const A_DEFAULTS=Object.freeze({...DEFAULTS,aWidth:6.854,aHeight:6.854,leftWidth:1.750,rightWidth:1.750,linkWidths:true,front:'#ff1424',back:'#f00c1d',canvas:'#080909',radius:.28,fold:.70,gloss:.80});
+const Z_DEFAULTS=Object.freeze({...DEFAULTS,zWidth:6.854,zHeight:8.472,topWidth:1.550,diagWidth:1.550,bottomWidth:1.550,linkWidths:true,front:'#ff1424',back:'#d40015',canvas:'#080909',radius:.28,fold:.70,gloss:.80});
 const A_KEYS=['aWidth','aHeight','leftWidth','rightWidth','aAngle'];
+const Z_KEYS=['zWidth','zHeight','topWidth','diagWidth','bottomWidth'];
 const A_GAP=.15;
 const KEYS = ['length','height','stemWidth','armWidth','peelX','peelY'];
 const $ = id => document.getElementById(id);
@@ -296,10 +313,12 @@ function limits(key,s=state){
 let activeLogo='l',screen='home';
 let savedA=cleanAModel(boot.models?.a);
 try{const saved=localStorage.getItem(STORAGE_KEY+':a');if(saved)savedA=cleanAModel(JSON.parse(saved));}catch(_){storageOK=false;}
-const models={l:clone(state),a:clone(savedA)};
-const modeHistory={l:{history:[clone(state)],future:[]},a:{history:[clone(savedA)],future:[]}};
-const scrollByMode={l:0,a:0};
-const saveTimers={l:null,a:null};
+let savedZ=cleanZModel(boot.models?.z);
+try{const saved=localStorage.getItem(STORAGE_KEY+':z');if(saved)savedZ=cleanZModel(JSON.parse(saved));}catch(_){storageOK=false;}
+const models={l:clone(state),a:clone(savedA),z:clone(savedZ)};
+const modeHistory={l:{history:[clone(state)],future:[]},a:{history:[clone(savedA)],future:[]},z:{history:[clone(savedZ)],future:[]}};
+const scrollByMode={l:0,a:0,z:0};
+const saveTimers={l:null,a:null,z:null};
 const L_DESCRIPTION=$('sidebar-description').innerHTML;
 
 let history=[clone(state)],future=[],saveTimer,noticeTimer,toastTimer;
@@ -308,18 +327,19 @@ let activePointer=null,raf=0,renderNeedsControls=false;
 const svg=$('stage');
 const inputMap=Object.fromEntries(KEYS.map(k=>[k,{num:document.querySelector(`[data-number="${k}"]`),range:document.querySelector(`[data-range="${k}"]`)}]));
 function tell(message){$('toast').textContent=message;$('toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),2600)}
-function notice(message){const el=$(activeLogo==='a'?'a-limit-notice':'limit-notice');el.textContent=message;clearTimeout(noticeTimer);if(message)noticeTimer=setTimeout(()=>el.textContent='',5000)}
+function modeStorageSuffix(mode){return mode==='l'?'':':'+mode;}
+function notice(message){const el=$(activeLogo==='a'?'a-limit-notice':activeLogo==='z'?'z-limit-notice':'limit-notice');el.textContent=message;clearTimeout(noticeTimer);if(message)noticeTimer=setTimeout(()=>el.textContent='',5000)}
 function persist(){
   const mode=activeLogo,snapshot=clone(state);models[mode]=snapshot;
   clearTimeout(saveTimers[mode]);
   saveTimers[mode]=setTimeout(()=>{
-    try{localStorage.setItem(STORAGE_KEY+(mode==='a'?':a':''),serialize(snapshot));storageOK=true;$('save-status').innerHTML='<i class="status-dot"></i>Saved locally · No account needed';}
+    try{localStorage.setItem(STORAGE_KEY+modeStorageSuffix(mode),serialize(snapshot));storageOK=true;$('save-status').innerHTML='<i class="status-dot"></i>Saved locally · No account needed';}
     catch(_){storageOK=false;$('save-status').textContent='Use Save HTML to keep your settings';}
   },250);
 }
 function flushModels(){
   models[activeLogo]=clone(state);
-  for(const mode of ['l','a']){clearTimeout(saveTimers[mode]);try{localStorage.setItem(STORAGE_KEY+(mode==='a'?':a':''),serialize(models[mode]));}catch(_){storageOK=false;}}
+  for(const mode of ['l','a','z']){clearTimeout(saveTimers[mode]);try{localStorage.setItem(STORAGE_KEY+modeStorageSuffix(mode),serialize(models[mode]));}catch(_){storageOK=false;}}
 }
 window.addEventListener('pagehide',flushModels);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushModels();});
@@ -354,7 +374,7 @@ function mix(hex,target,t){const a=hex.slice(1).match(/../g).map(x=>parseInt(x,1
 function fitCamera(){
   const g=currentGeometry(),w=size.w,h=size.h;
   // These gutters are in screen pixels; dimensions remain legible on phones.
-  const margin=state.showMeasures?(activeLogo==='a'?{l:64,r:34,t:72,b:112}:{l:65,r:67,t:111,b:61}):{l:40,r:40,t:73,b:58};
+  const margin=state.showMeasures?(activeLogo==='a'?{l:64,r:34,t:72,b:112}:activeLogo==='z'?{l:58,r:36,t:62,b:86}:{l:65,r:67,t:111,b:61}):{l:40,r:40,t:73,b:58};
   const scale=Math.max(.01,Math.min((w-margin.l-margin.r)/g.L,(h-margin.t-margin.b)/g.totalH));
   camera.w=w/scale;camera.h=h/scale;
   camera.x=-margin.l/scale-Math.max(0,(w-margin.l-margin.r)/scale-g.L)/2;
@@ -602,7 +622,7 @@ function pointerUnit(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clie
 svg.addEventListener('pointerdown',e=>{
   if(e.button!==0||activePointer)return;
   const handle=e.target.closest('[data-handle]'),dim=e.target.closest('[data-dimension]');
-  if(dim&&!handle){const key=dim.dataset.dimension;const el=(activeLogo==='a'?aInputMap:inputMap)[key]?.num;if(el){el.scrollIntoView({behavior:'smooth',block:'nearest'});el.focus({preventScroll:true});el.select()}return;}
+  if(dim&&!handle){const key=dim.dataset.dimension;const el=(activeLogo==='a'?aInputMap:activeLogo==='z'?zInputMap:inputMap)[key]?.num;if(el){el.scrollIntoView({behavior:'smooth',block:'nearest'});el.focus({preventScroll:true});el.select()}return;}
   commitPending();const point=pointerUnit(e);
   activePointer={id:e.pointerId,key:handle?.dataset.handle||null,start:point,startClient:{x:e.clientX,y:e.clientY},camera:{...camera},model:clone(state)};
   svg.setPointerCapture(e.pointerId);e.preventDefault();if(!handle)svg.classList.add('panning');
@@ -621,6 +641,16 @@ svg.addEventListener('pointermove',e=>{
       val+=dx*normal.x+dy*normal.y;
     }
     setADimension(a.key,val,{quiet:true});return;
+  }
+  if(activeLogo==='z'){
+    let val=a.model[a.key];
+    if(a.key==='zHeight')val-=dy;
+    else if(a.key==='zWidth')val+=dx;
+    else{
+      const g=zGeometry(a.model),normal=zThicknessSegment(g,a.key,a.model).normal;
+      val+=dx*normal.x+dy*normal.y;
+    }
+    setZDimension(a.key,val,{quiet:true});return;
   }
   const g=geometry(a.model);
   let val=a.model[a.key];
@@ -649,7 +679,7 @@ resizeObserver.observe($('stage-card'));
 function artworkSvg({measures=false,transparent=true,longest=2048}={}){
   const g=currentGeometry(),max=Math.max(g.L,g.totalH);
   const u=max/560; // Consistent label size independent of current canvas zoom.
-  const margin=measures?(activeLogo==='a'?{l:65*u,r:35*u,t:30*u,b:70*u}:{l:65*u,r:67*u,t:75*u,b:24*u}):{l:.48,r:.48,t:.30,b:.53};
+  const margin=measures?(activeLogo==='a'?{l:65*u,r:35*u,t:30*u,b:70*u}:activeLogo==='z'?{l:56*u,r:34*u,t:32*u,b:54*u}:{l:65*u,r:67*u,t:75*u,b:24*u}):{l:.48,r:.48,t:.30,b:.53};
   const view={x:-margin.l,y:g.top-margin.t,w:g.L+margin.l+margin.r,h:g.totalH+margin.t+margin.b};
   const width=Math.max(1,Math.round(longest*view.w/Math.max(view.w,view.h))),height=Math.max(1,Math.round(longest*view.h/Math.max(view.w,view.h)));
   let body=currentScene(state,{u,view,measures,grid:false,handles:false,bg:transparent?null:state.canvas});
@@ -924,12 +954,129 @@ function aScene(s,{u,view,measures=true,grid=false,handles=false,bg=null}){
   }
   return content;
 }
+
+function cleanZModel(candidate){
+  const s={...Z_DEFAULTS};
+  if(candidate&&typeof candidate==='object'){
+    for(const k of Object.keys(s)){
+      if(typeof s[k]==='number'&&candidate[k]!==null&&candidate[k]!==''&&Number.isFinite(Number(candidate[k])))s[k]=Number(candidate[k]);
+      else if(typeof s[k]==='boolean'&&typeof candidate[k]==='boolean')s[k]=candidate[k];
+      else if(['front','back','canvas'].includes(k)&&/^#[0-9a-f]{6}$/i.test(candidate[k]||''))s[k]=candidate[k];
+    }
+  }
+  s.zWidth=round(clamp(s.zWidth,.8,40));s.zHeight=round(clamp(s.zHeight,1,45));
+  const cap=floor3(Math.min(12,s.zWidth*.45,s.zHeight*.45));
+  s.topWidth=round(clamp(s.topWidth,.1,cap));s.diagWidth=round(clamp(s.diagWidth,.1,cap));s.bottomWidth=round(clamp(s.bottomWidth,.1,cap));
+  if(s.linkWidths){const v=floor3(Math.min(s.topWidth,s.diagWidth,s.bottomWidth));s.topWidth=s.diagWidth=s.bottomWidth=v;}
+  s.fold=clamp(s.fold,.2,.95);s.radius=clamp(s.radius,0,.6);s.gloss=clamp(s.gloss,0,1);
+  return s;
+}
+function zLimits(key,s=state){
+  const cap=floor3(Math.min(12,s.zWidth*.45,s.zHeight*.45));
+  if(key==='zWidth')return [.8,40];
+  if(key==='zHeight')return [1,45];
+  if(['topWidth','diagWidth','bottomWidth'].includes(key))return [.1,Math.max(.1,cap)];
+  return [0,1];
+}
+function setZDimension(key,value,{quiet=false}={}){
+  if(!Z_KEYS.includes(key)||!Number.isFinite(value))return;
+  const [min,max]=zLimits(key),v=clamp(value,min,max);
+  state[key]=round(v);
+  if(state.linkWidths&&['topWidth','diagWidth','bottomWidth'].includes(key))state.topWidth=state.diagWidth=state.bottomWidth=state[key];
+  state=cleanZModel(state);
+  if(!quiet){
+    if(Math.abs(v-value)>.001)notice(`Available range: ${fmt(min)}–${fmt(max)} ${key.startsWith('z')?'u':'u'}. The limit keeps the Z valid.`);
+    else notice('');
+  }
+  queueRender(true);persist();
+}
+function zGeometry(s=state){
+  const W=s.zWidth,H=s.zHeight,t=s.topWidth,d=s.diagWidth,b=s.bottomWidth;
+  const x1=W-Math.max(t,d)*.52,y1=t*.50;
+  const x2=Math.max(b,d)*.52,y2=H-b*.50;
+  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1;
+  const ux=dx/len,uy=dy/len,nx=-dy/len,ny=dx/len;
+  const angle=Math.atan2(Math.abs(dy),Math.abs(dx))*180/Math.PI;
+  return {L:W,W,top:-H,bottom:0,totalH:H,stemH:H,H,t,d,b,x1,y1,x2,y2,dx,dy,len,ux,uy,nx,ny,angle};
+}
+function zThicknessSegment(p,key,s=state){
+  if(key==='topWidth'){
+    const x=Math.max(.6,Math.min(p.L*.14,p.L-1));
+    return {start:{x,y:-p.H},end:{x,y:-p.H+s.topWidth},normal:{x:0,y:1}};
+  }
+  if(key==='bottomWidth'){
+    const x=Math.max(.6,Math.min(p.L*.14,p.L-1));
+    return {start:{x,y:-s.bottomWidth},end:{x,y:0},normal:{x:0,y:1}};
+  }
+  const mx=(p.x1+p.x2)/2,my=(p.y1+p.y2)/2-p.H;
+  return {start:{x:mx-p.nx*s.diagWidth*.5,y:my-p.ny*s.diagWidth*.5},end:{x:mx+p.nx*s.diagWidth*.5,y:my+p.ny*s.diagWidth*.5},normal:{x:p.nx,y:p.ny}};
+}
+function zRulers(s,p,u){
+  const dark=parseInt(s.canvas.slice(1,3),16)*.2126+parseInt(s.canvas.slice(3,5),16)*.7152+parseInt(s.canvas.slice(5,7),16)*.0722<110;
+  const lineColor=dark?'#a9bdb4':'#60766a',strokeColor=dark?'#c7dfd2':'#3f7b71';
+  const line=(a,b,color=lineColor,opacity=1)=>`<path d="M ${pointText(a)} L ${pointText(b)}" fill="none" stroke="${color}" stroke-opacity="${opacity}" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+  function label(x,y,text,rotation=0){
+    const width=(text.length*6.15+13)*u;
+    return `<g transform="translate(${nstr(x)} ${nstr(y)}) rotate(${nstr(rotation)})"><rect class="dimension-label" x="${nstr(-width/2)}" y="${nstr(-10.5*u)}" width="${nstr(width)}" height="${nstr(21*u)}" rx="${nstr(4*u)}" fill="#fff" fill-opacity=".97"/><text x="0" y="0" dy=".34em" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="${nstr(11.4*u)}" font-weight="500" fill="#3c6151">${text}</text></g>`;
+  }
+  function arrows(a,b,color){
+    const d=unitDirection(a,b),len=Math.hypot(b.x-a.x,b.y-a.y),q=Math.min(4.6*u,Math.max(len*.2,2*u)),v={x:-d.y,y:d.x};
+    const point=(p,k,sign)=>({x:p.x+d.x*k+v.x*q*.48*sign,y:p.y+d.y*k+v.y*q*.48*sign});
+    return line(a,b,color)+`<path d="M ${pointText(point(a,q,-1))} L ${pointText(a)} L ${pointText(point(a,q,1))} M ${pointText(point(b,-q,-1))} L ${pointText(b)} L ${pointText(point(b,-q,1))}" fill="none" stroke="${color}" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+  }
+  function group(key,content,text){return `<g data-dimension="${key}" role="button" aria-label="Edit ${text}"><title>${text}. Select to edit.</title>${content}</g>`;}
+  const dimensionY=25*u,heightX=-28*u;
+  let content=group('zWidth',line({x:0,y:-p.H},{x:0,y:dimensionY+3*u},lineColor,.45)+line({x:p.L,y:-p.H},{x:p.L,y:dimensionY+3*u},lineColor,.45)+arrows({x:0,y:dimensionY},{x:p.L,y:dimensionY},lineColor)+label(p.L/2,dimensionY+13*u,'W '+fmt(s.zWidth)),`overall width ${fmt(s.zWidth)} units`);
+  content+=group('zHeight',line({x:0,y:-p.H},{x:heightX-3*u,y:-p.H},lineColor,.45)+line({x:0,y:0},{x:heightX-3*u,y:0},lineColor,.45)+arrows({x:heightX,y:-p.H},{x:heightX,y:0},lineColor)+label(heightX-12*u,-p.H/2,'H '+fmt(s.zHeight),-90),`overall height ${fmt(s.zHeight)} units`);
+  const topSeg=zThicknessSegment(p,'topWidth',s),diagSeg=zThicknessSegment(p,'diagWidth',s),bottomSeg=zThicknessSegment(p,'bottomWidth',s);
+  content+=group('topWidth',arrows(topSeg.start,topSeg.end,strokeColor)+label(topSeg.end.x+13*u,(topSeg.start.y+topSeg.end.y)/2,'WT '+fmt(s.topWidth),-90),`top ribbon width ${fmt(s.topWidth)} units`);
+  content+=group('diagWidth',arrows(diagSeg.start,diagSeg.end,strokeColor)+label((diagSeg.start.x+diagSeg.end.x)/2+11*u,(diagSeg.start.y+diagSeg.end.y)/2-12*u,'WD '+fmt(s.diagWidth),0),`diagonal ribbon width ${fmt(s.diagWidth)} units`);
+  content+=group('bottomWidth',arrows(bottomSeg.start,bottomSeg.end,strokeColor)+label(bottomSeg.end.x+13*u,(bottomSeg.start.y+bottomSeg.end.y)/2,'WB '+fmt(s.bottomWidth),-90),`bottom ribbon width ${fmt(s.bottomWidth)} units`);
+  return `<g id="z-measurements">${content}</g>`;
+}
+function zScene(s,{u,view,measures=true,grid=false,handles=false,bg=null}){
+  const p=zGeometry(s),{H}=p,gloss=s.gloss;
+  const front=s.front,rear=s.back,shadow=s.shadows&&!s.flat;
+  const darkCanvas=parseInt(s.canvas.slice(1,3),16)*.2126+parseInt(s.canvas.slice(3,5),16)*.7152+parseInt(s.canvas.slice(5,7),16)*.0722<110;
+  const gridColor=darkCanvas?'#c4e0cb':'#526454';
+  const topR=Math.min(s.radius,s.topWidth*.5),bottomR=Math.min(s.radius,s.bottomWidth*.5);
+  const rect=(fill)=>`<rect x="${nstr(view.x)}" y="${nstr(view.y)}" width="${nstr(view.w)}" height="${nstr(view.h)}" fill="${fill}"/>`;
+  const topRect=`<rect id="z-top" x="0" y="0" width="${nstr(s.zWidth)}" height="${nstr(s.topWidth)}" rx="${nstr(topR)}" ry="${nstr(topR)}" fill="${s.flat?rear:'url(#z-rear-top)'}"/>`;
+  const bottomRect=`<rect id="z-bottom" x="0" y="${nstr(H-s.bottomWidth)}" width="${nstr(s.zWidth)}" height="${nstr(s.bottomWidth)}" rx="${nstr(bottomR)}" ry="${nstr(bottomR)}" fill="${s.flat?rear:'url(#z-rear-bottom)'}"/>`;
+  let content=`<title>Parametric folded ribbon Z logo</title><desc>Ribbon Z with top, diagonal and bottom bars. Overall width ${fmt(s.zWidth)} and height ${fmt(H)} units. Top width ${fmt(s.topWidth)}, diagonal width ${fmt(s.diagWidth)} and bottom width ${fmt(s.bottomWidth)} units. Linked widths ${s.linkWidths?'on':'off'}. Diagonal angle ${p.angle.toFixed(3)} degrees.</desc><defs>
+    <linearGradient id="z-rear-top" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${nstr(s.zWidth)}" y2="${nstr(s.topWidth)}"><stop stop-color="${mix(rear,'#a00010',.48)}"/><stop offset=".28" stop-color="${mix(rear,'#ffffff',.04)}"/><stop offset="1" stop-color="${rear}"/></linearGradient>
+    <linearGradient id="z-rear-bottom" gradientUnits="userSpaceOnUse" x1="0" y1="${nstr(H-s.bottomWidth)}" x2="${nstr(s.zWidth)}" y2="${nstr(H)}"><stop stop-color="${mix(rear,'#8f000f',.34)}"/><stop offset=".30" stop-color="${mix(rear,'#ffffff',.04)}"/><stop offset="1" stop-color="${rear}"/></linearGradient>
+    <linearGradient id="z-front" gradientUnits="userSpaceOnUse" x1="${nstr(p.x1)}" y1="${nstr(p.y1)}" x2="${nstr(p.x2)}" y2="${nstr(p.y2)}"><stop stop-color="${mix(front,'#ffffff',.10*gloss)}"/><stop offset=".28" stop-color="${mix(front,'#ffffff',.05*gloss)}"/><stop offset=".72" stop-color="${front}"/><stop offset="1" stop-color="${mix(front,'#e20000',.10)}"/></linearGradient>
+    <filter id="z-drop" x="-30%" y="-20%" width="160%" height="160%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="${nstr(Math.min(s.topWidth,s.diagWidth,s.bottomWidth)*.08)}" stdDeviation="${nstr(Math.min(s.topWidth,s.diagWidth,s.bottomWidth)*.10)}" flood-color="#290600" flood-opacity=".28"/></filter>
+    <pattern id="z-unit-grid" width="1" height="1" patternUnits="userSpaceOnUse"><path d="M1 0H0V1" fill="none" stroke="${gridColor}" stroke-opacity=".18" stroke-width=".6" vector-effect="non-scaling-stroke"/><circle r="${nstr(u)}" fill="${gridColor}" fill-opacity=".2"/></pattern>
+  </defs>`;
+  if(bg)content+=rect(bg);
+  if(grid)content+=rect('url(#z-unit-grid)');
+  content+=`<g id="z-artwork" transform="translate(0 ${nstr(-H)})">`;
+  if(shadow){
+    content+=`<g filter="url(#z-drop)" opacity=".55">${topRect}${bottomRect}<path d="M ${nstr(p.x1)} ${nstr(p.y1)} L ${nstr(p.x2)} ${nstr(p.y2)}" fill="none" stroke="${mix(front,'#470700',.62)}" stroke-width="${nstr(s.diagWidth)}" stroke-linecap="round"/></g>`;
+  }
+  content+=`${topRect}${bottomRect}<path id="z-diagonal" d="M ${nstr(p.x1)} ${nstr(p.y1)} L ${nstr(p.x2)} ${nstr(p.y2)}" fill="none" stroke="${s.flat?front:'url(#z-front)'}" stroke-width="${nstr(s.diagWidth)}" stroke-linecap="round"/>`;
+  if(!s.flat){
+    content+=`<path d="M 0 ${nstr(s.topWidth*.16)} H ${nstr(s.zWidth)}" fill="none" stroke="#fff0e8" stroke-opacity="${nstr(.45*gloss)}" stroke-width="${nstr(Math.max(.02,s.topWidth*.018))}"/>`;
+    content+=`<path d="M 0 ${nstr(H-s.bottomWidth*.84)} H ${nstr(s.zWidth)}" fill="none" stroke="#fff0e8" stroke-opacity="${nstr(.38*gloss)}" stroke-width="${nstr(Math.max(.02,s.bottomWidth*.018))}"/>`;
+    content+=`<path d="M ${nstr(p.x1)} ${nstr(p.y1)} L ${nstr(p.x2)} ${nstr(p.y2)}" fill="none" stroke="#fff2ec" stroke-opacity="${nstr(.35*gloss)}" stroke-width="${nstr(Math.max(.02,s.diagWidth*.10))}" stroke-linecap="round"/>`;
+  }
+  content+='</g>';
+  if(measures)content+=zRulers(s,p,u);
+  if(handles){
+    const diag=zThicknessSegment(p,'diagWidth',s);
+    const list=[['zHeight',p.L*.5,-H],['zWidth',p.L,-H+Math.max(s.topWidth*.5,.2)],['topWidth',topR+.35,-H+s.topWidth],['diagWidth',diag.end.x,diag.end.y],['bottomWidth',bottomR+.35,0]];
+    content+='<g id="z-sizing-handles">'+list.map(([key,x,y])=>`<g data-handle="${key}" role="button" aria-label="Drag to change ${key}"><title>Drag to change ${key}</title><circle cx="${nstr(x)}" cy="${nstr(y)}" r="${nstr(16*u)}" fill="transparent"/><circle cx="${nstr(x)}" cy="${nstr(y)}" r="${nstr(4.5*u)}" fill="#fff" stroke="#477760" stroke-width="1.6" vector-effect="non-scaling-stroke"/></g>`).join('')+'</g>';
+  }
+  return content;
+}
 // ---------------------------------------------------------------------------
 // Shared studio shell: switching never converts or rescales either logo.
 // ---------------------------------------------------------------------------
-function currentGeometry(s=state){return activeLogo==='a'?aGeometry(s):geometry(s);}
-function currentScene(s,options){return activeLogo==='a'?aScene(s,options):scene(s,options);}
-function syncControls(){if(activeLogo==='a')syncAControls();else syncLControls();}
+function currentGeometry(s=state){return activeLogo==='a'?aGeometry(s):activeLogo==='z'?zGeometry(s):geometry(s);}
+function currentScene(s,options){return activeLogo==='a'?aScene(s,options):activeLogo==='z'?zScene(s,options):scene(s,options);}
+function syncControls(){if(activeLogo==='a')syncAControls();else if(activeLogo==='z')syncZControls();else syncLControls();}
 function syncAControls(){
   const p=aGeometry();
   for(const k of A_KEYS){
@@ -948,16 +1095,34 @@ function syncAControls(){
   $('stat-bounds').innerHTML=`${fmt(state.aWidth)} × ${fmt(state.aHeight)} <small>u</small>`;
   $('stage-help').textContent=state.showHandles?'Drag a point to resize · Drag canvas to pan':'Drag to pan · Double-click to fit';
 }
+function syncZControls(){
+  const p=zGeometry();
+  for(const k of Z_KEYS){
+    const {num,range}=zInputMap[k],[min,max]=zLimits(k),value=state[k];
+    num.min=nstr(min);num.max=nstr(max);range.min=nstr(min);
+    range.max=nstr(k==='zWidth'?Math.min(max,Math.max(min,16,state.zWidth)):k==='zHeight'?Math.min(max,Math.max(min,20,state.zHeight)):max);
+    range.value=value;if(document.activeElement!==num)num.value=fmt(value);paintRange(range);
+  }
+  $('z-link-widths').setAttribute('aria-pressed',state.linkWidths);$('z-link-widths').querySelector('span').textContent=state.linkWidths?'Linked':'Independent';
+  for(const [id,key] of [['measure-toggle','showMeasures'],['grid-toggle','showGrid'],['handles-toggle','showHandles']])$(id).setAttribute('aria-pressed',state[key]);
+  for(const k of ['fold','radius','gloss']){$(k).value=state[k];paintRange($(k));$(k+'-output').textContent=k==='radius'?fmt(state[k])+' u':Math.round(state[k]*100)+'%';}
+  for(const k of ['front','back','canvas'])$(k+'-color').value=state[k];
+  $('flat').checked=state.flat;$('shadows').checked=state.shadows;
+  $('stat-peel').innerHTML=`${fmt(state.topWidth)} / ${fmt(state.diagWidth)} / ${fmt(state.bottomWidth)} <small>u</small>`;
+  $('stat-width').innerHTML=`${p.angle.toFixed(2)}<small>°</small>`;
+  $('stat-bounds').innerHTML=`${fmt(state.zWidth)} × ${fmt(state.zHeight)} <small>u</small>`;
+  $('stage-help').textContent=state.showHandles?'Drag a point to resize · Drag canvas to pan':'Drag to pan · Double-click to fit';
+}
 function scopeSvg(markup,prefix){
   // SVG fragment IDs are document-global, even inside separate SVG elements.
   return markup.replace(/id="([^"]+)"/g,(_,id)=>`id="${prefix}${id}"`).replace(/url\(#([^)]+)\)/g,(_,id)=>`url(#${prefix}${id})`);
 }
 function refreshCards(){
-  for(const mode of ['l','a']){
-    const s=models[mode],g=mode==='l'?geometry(s):aGeometry(s),margin=Math.max(g.L,g.totalH)*.14;
+  for(const mode of ['l','a','z']){
+    const s=models[mode],g=mode==='l'?geometry(s):mode==='a'?aGeometry(s):zGeometry(s),margin=Math.max(g.L,g.totalH)*.14;
     const view={x:-margin,y:g.top-margin,w:g.L+margin*2,h:g.totalH+margin*2};
     const el=$('home-preview-'+mode);el.setAttribute('viewBox',`${nstr(view.x)} ${nstr(view.y)} ${nstr(view.w)} ${nstr(view.h)}`);
-    const draw=mode==='l'?scene:aScene;
+    const draw=mode==='l'?scene:mode==='a'?aScene:zScene;
     el.innerHTML=scopeSvg(draw(s,{u:Math.max(view.w,view.h)/380,view,measures:false,grid:false,handles:false,bg:null}),'home-'+mode+'-');
     el.parentElement.style.background=s.canvas;
   }
@@ -971,19 +1136,19 @@ function cancelCanvasPointer(){
   if(activePointer){const id=activePointer.id;activePointer=null;try{svg.releasePointerCapture(id)}catch(_){}svg.classList.remove('panning');}
 }
 function enterLogo(mode){
-  if(!['l','a'].includes(mode))return;
+  if(!['l','a','z'].includes(mode))return;
   cancelCanvasPointer();stashEditor();
   activeLogo=mode;state=clone(models[mode]);history=modeHistory[mode].history;future=modeHistory[mode].future;
   screen='editor';document.body.dataset.screen='editor';document.body.dataset.logo=mode;
   $('home-screen').hidden=true;$('editor-workspace').hidden=false;$('back-home').hidden=false;$('open-export').hidden=false;
-  $('l-controls').hidden=mode!=='l';$('a-controls').hidden=mode!=='a';
-  $('active-logo-name').textContent=mode==='l'?'Original L':'Folded A';
-  document.querySelector('label[for="fold"]').textContent=mode==='l'?'Lower fold':'Top fold bend';
+  $('l-controls').hidden=mode!=='l';$('a-controls').hidden=mode!=='a';$('z-controls').hidden=mode!=='z';
+  $('active-logo-name').textContent=mode==='l'?'Original L':mode==='a'?'Folded A':'Folded Z';
+  document.querySelector('label[for="fold"]').textContent=mode==='l'?'Lower fold':mode==='a'?'Top fold bend':'Overlap shading';
   $('back-color-label').textContent=mode==='l'?'Back':'Rear face';
   $('back-color').setAttribute('aria-label',mode==='l'?'Peeled back color':'Rear ribbon face color');
-  $('sidebar-description').innerHTML=mode==='l'?L_DESCRIPTION:'<strong>Parallel edges. Consistent tape.</strong> Both straight legs retain their exact perpendicular thickness. Overall width changes their opening angle; height changes their length. The upper fold joins the two legs. No horizontal crossbar or yellow peel.';
-  const captions=document.querySelectorAll('.summary-card .caption');captions[0].textContent=mode==='l'?'Peel · x × y':'Tape · left / right';captions[1].textContent=mode==='l'?'Stroke · v / h':'Opening angle · θ';
-  svg.setAttribute('aria-label',mode==='l'?'Editable red ribbon L logo with a yellow peeled corner':'Editable folded ribbon A logo with constant-width sides');
+  $('sidebar-description').innerHTML=mode==='l'?L_DESCRIPTION:mode==='a'?'<strong>Parallel edges. Consistent tape.</strong> Both straight legs retain their exact perpendicular thickness. Overall width changes their opening angle; height changes their length. The upper fold joins the two legs. No horizontal crossbar or yellow peel.':'<strong>Three segments. Ribbon Z.</strong> The top, diagonal and bottom bars are linked by default so the whole Z keeps a consistent tape width. Width and height set the diagonal angle. The diagonal width is measured perpendicular to the slant.';
+  const captions=document.querySelectorAll('.summary-card .caption');captions[0].textContent=mode==='l'?'Peel · x × y':mode==='a'?'Tape · left / right':'Tape · top / diag / bottom';captions[1].textContent=mode==='l'?'Stroke · v / h':'Diagonal angle · θ';
+  svg.setAttribute('aria-label',mode==='l'?'Editable red ribbon L logo with a yellow peeled corner':mode==='a'?'Editable folded ribbon A logo with constant-width sides':'Editable folded ribbon Z logo with linked ribbon widths');
   notice('');syncControls();syncHistory();
   document.querySelector('.controls-scroll').scrollTop=scrollByMode[mode];
   requestAnimationFrame(()=>{
@@ -997,6 +1162,7 @@ function showHome(){
   refreshCards();
 }
 const aInputMap=Object.fromEntries(A_KEYS.map(k=>[k,{num:document.querySelector(`[data-a-number="${k}"]`),range:document.querySelector(`[data-a-range="${k}"]`)}]));
+const zInputMap=Object.fromEntries(Z_KEYS.map(k=>[k,{num:document.querySelector(`[data-z-number="${k}"]`),range:document.querySelector(`[data-z-range="${k}"]`)}]));
 for(const k of A_KEYS){
   const {num,range}=aInputMap[k];
   range.addEventListener('input',()=>setADimension(k,range.valueAsNumber));range.addEventListener('change',commit);
@@ -1013,6 +1179,23 @@ $('a-link-widths').addEventListener('click',()=>{
 $('a-reference-preset').addEventListener('click',()=>{
   commitPending();Object.assign(state,{aWidth:A_DEFAULTS.aWidth,aHeight:A_DEFAULTS.aHeight,leftWidth:A_DEFAULTS.leftWidth,rightWidth:A_DEFAULTS.rightWidth,linkWidths:true});
   syncControls();fitCamera();commit();notice('');tell('Reference A proportions restored.');
+});
+for(const k of Z_KEYS){
+  const {num,range}=zInputMap[k];
+  range.addEventListener('input',()=>setZDimension(k,range.valueAsNumber));range.addEventListener('change',commit);
+  num.addEventListener('input',()=>{if(Number.isFinite(num.valueAsNumber))setZDimension(k,num.valueAsNumber);});
+  const finish=()=>{num.value=fmt(state[k]);commit();};
+  num.addEventListener('change',finish);num.addEventListener('blur',finish);
+  num.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();num.blur();}});
+}
+$('z-link-widths').addEventListener('click',()=>{
+  commitPending();state.linkWidths=!state.linkWidths;
+  if(state.linkWidths)setZDimension('topWidth',state.topWidth);
+  queueRender(true);commit();
+});
+$('z-reference-preset').addEventListener('click',()=>{
+  commitPending();Object.assign(state,{zWidth:Z_DEFAULTS.zWidth,zHeight:Z_DEFAULTS.zHeight,topWidth:Z_DEFAULTS.topWidth,diagWidth:Z_DEFAULTS.diagWidth,bottomWidth:Z_DEFAULTS.bottomWidth,linkWidths:true});
+  syncControls();fitCamera();commit();notice('');tell('Reference Z proportions restored.');
 });
 $('back-home').addEventListener('click',()=>{showHome();document.querySelector(`[data-open-logo="${activeLogo}"]`).focus({preventScroll:true});});
 document.querySelectorAll('[data-open-logo]').forEach(button=>button.addEventListener('click',()=>enterLogo(button.dataset.openLogo)));
