@@ -69,16 +69,19 @@
 .g-tape-limit-row button{flex-shrink:0;min-height:38px;border:1px solid #d3dfca;background:#fff;border-radius:7px;font-size:11px;font-weight:650;padding:8px 10px;color:#42663b}
 @media(max-width:580px){.g-tape-limit-row button{min-height:44px}.g-tape-limit-row>span{font-size:11px}}
 
+
+.assembly-add-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}.assembly-add{min-height:44px;border:1px solid var(--line);border-radius:12px;background:#f7f8f4;font:600 12px/1.1 Inter,system-ui,sans-serif;color:#2a3631;display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .14s,border-color .14s,background .14s}.assembly-add:hover{transform:translateY(-1px);border-color:#aebaa7;background:#fff}.assembly-add strong{font-size:15px;letter-spacing:-.3px}.assembly-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.assembly-actions button{min-height:42px;border-radius:11px;border:1px solid var(--line);background:#fff;font:600 11px/1 Inter,system-ui,sans-serif;color:#33413b;padding:0 9px}.assembly-actions button:hover:not(:disabled){border-color:#aebaa7;background:#f6f8f3}.assembly-actions button:disabled{opacity:.45;cursor:not-allowed}.assembly-selected-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 10px}.assembly-selected-grid .measure-row{margin:0}.assembly-selected-grid .measure-row .control-label{width:100%}.assembly-selected-grid .number-wrap{max-width:100%}.assembly-selected-grid .measure-row>.control-label>label,.assembly-selected-grid .measure-row .control-label label{flex:1}.assembly-select{width:100%;min-height:42px;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:#fff;color:#2c3733;font:600 12px/1 Inter,system-ui,sans-serif}.assembly-color-row{margin-top:17px}.assembly-note-strong{display:block;margin-top:8px}.logo-choice[data-open-logo="assembly"] .logo-preview{padding:24px 22px}.stage [data-assembly-item]{cursor:grab}.stage [data-assembly-item][data-selected="true"]{cursor:grab}.stage [data-assembly-handle="scale"]{cursor:nwse-resize}.stage [data-assembly-handle="scale"] *{pointer-events:none}.stage [data-assembly-reference]{pointer-events:none}.stage [data-assembly-guide]{pointer-events:none}.stage [data-assembly-selection]{pointer-events:none}@media(max-width:760px){.assembly-add-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.assembly-actions{grid-template-columns:1fr}.logo-choice[data-open-logo="assembly"]{grid-column:1 / -1}}@media(max-width:580px){.assembly-selected-grid{grid-template-columns:1fr}.assembly-add{min-height:40px}.assembly-actions button{min-height:40px}.logo-choice[data-open-logo="assembly"] .logo-preview{padding:18px 14px}}
 </style>
 </head>
 <body data-screen="home" data-logo="l">
 <header class="header"><div class="brand"><svg class="brand-mark" viewBox="0 0 42 48" aria-hidden="true"><path d="M6 3Q6 0 9 0H24L32 9V30H40Q42 30 42 32V44Q42 47 39 47H19Q16 47 14 44L6 30Z" fill="#ff2633"/><path d="M24 0Q28 1 32 9Q26 9 25 6Z" fill="#ffdc4a"/><path d="M6 30H32" stroke="#fff" stroke-opacity=".7" stroke-width=".6"/></svg><div><h1>Ribbon Logo Studio</h1><p>Shape. Measure. Refine.</p></div></div><div class="header-actions"><button class="button" id="save-html" title="Save this complete editor with the current settings"><svg viewBox="0 0 24 24"><path d="M14 3H5v18h14V8Z"/><path d="M14 3v5h5M8 13l-2 2 2 2m8-4 2 2-2 2m-3-5-2 6"/></svg><span><span class="desktop-word">Save </span>HTML</span></button><button class="button primary" id="open-export" hidden><svg viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 15v5h16v-5"/></svg>Export</button></div></header>
-<section class="home-screen" id="home-screen" aria-labelledby="home-title"><div class="home-intro"><div><span class="eyebrow">YOUR RIBBON COLLECTION</span><h2 id="home-title">Choose your ribbon.</h2><p>Four characters. Their own proportions.<br>Pick a logo to shape, measure and export.</p></div><span class="home-count">04 / EDITABLE LOGOS</span></div><div class="logo-grid">
+<section class="home-screen" id="home-screen" aria-labelledby="home-title"><div class="home-intro"><div><span class="eyebrow">YOUR RIBBON COLLECTION</span><h2 id="home-title">Choose your ribbon.</h2><p>Four characters plus an assembly board.<br>Pick a logo to shape, or place several together to build a word.</p></div><span class="home-count">05 / EDITABLE AREAS</span></div><div class="logo-grid">
 <button class="logo-choice" data-open-logo="l" aria-label="Open original L logo editor"><div class="logo-preview"><svg id="home-preview-l" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Original L</h3><span class="logo-badge">Original</span></div><span class="logo-description">Your original ribbon and yellow peel.<br>The same geometry and controls.</span><span class="logo-cta">Edit L<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button>
 <button class="logo-choice" data-open-logo="a" aria-label="Open folded A logo editor"><div class="logo-preview dark"><svg id="home-preview-a" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Folded A</h3><span class="logo-badge">New</span></div><span class="logo-description">A continuous-looking folded ribbon.<br>Constant-width sides. No crossbar.</span><span class="logo-cta">Edit A<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button>
 <button class="logo-choice" data-open-logo="z" aria-label="Open folded Z logo editor"><div class="logo-preview dark"><svg id="home-preview-z" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Folded Z</h3><span class="logo-badge">New</span></div><span class="logo-description">Two folds. Three constant-width tapes.<br>Shape the width, height and diagonal.</span><span class="logo-cta">Edit Z<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button>
 <button class="logo-choice" data-open-logo="g" aria-label="Open folded G logo editor"><div class="logo-preview dark"><svg id="home-preview-g" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Folded G</h3><span class="logo-badge">New</span></div><span class="logo-description">Five tape runs. Four folded turns.<br>Cut or rectangular right-middle fold.</span><span class="logo-cta">Edit G<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button>
-</div><div class="home-footer"><span><i class="status-dot"></i>Separate settings and undo history for each logo.</span><span>Works offline · Save HTML keeps all four designs.</span></div></section>
+
+<button class="logo-choice" data-open-logo="assembly" aria-label="Open assembly board"><div class="logo-preview"><svg id="home-preview-assembly" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Assembly board</h3><span class="logo-badge">New</span></div><span class="logo-description">Place copies of your edited logos together.<br>Snap to edges, centers and equal spacing guides.</span><span class="logo-cta">Open assembly<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button></div><div class="home-footer"><span><i class="status-dot"></i>Separate settings and undo history for each logo and the assembly board.</span><span>Works offline · Save HTML keeps all four logos plus assembly.</span></div></section>
 <main class="workspace" id="editor-workspace" hidden><section class="preview-column" aria-label="Live logo preview">
 <div class="preview-head"><div class="logo-navigation"><button class="back-home" id="back-home" hidden aria-label="Back to logo selection"><svg viewBox="0 0 24 24"><path d="m13 5-7 7 7 7M6 12h14"/></svg>Logos</button><span class="active-logo-name" id="active-logo-name">Original L</span></div><span class="eyebrow"><i class="live-dot"></i>Live canvas</span><span class="preview-subtitle">A real vector. Every dimension is editable.</span></div>
 <div class="stage-card" id="stage-card"><svg id="stage" class="stage" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Editable red ribbon L logo with a yellow peeled corner" tabindex="0"></svg><div class="stage-toolbar"><span class="stage-unit">UNITS · u</span><div class="toggle-bar" aria-label="Canvas overlays"><button class="tool-toggle" id="measure-toggle" aria-pressed="true" title="Show or hide measurements (M)"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 5v4m4-4v6m4-6v4"/></svg>Measures</button><button class="tool-toggle" id="grid-toggle" aria-pressed="false" title="Show or hide a one-unit grid (G)"><svg viewBox="0 0 24 24"><path d="M8 3v18M16 3v18M3 8h18M3 16h18"/></svg><span class="optional-label">Grid</span></button><button class="tool-toggle" id="handles-toggle" aria-pressed="false" title="Show draggable sizing handles"><svg viewBox="0 0 24 24"><path d="M7 5h10M19 7v10M17 19H7M5 17V7"/><path d="M3 3h4v4H3zM17 3h4v4h-4zM3 17h4v4H3zM17 17h4v4h-4z"/></svg><span class="optional-label">Handles</span></button></div></div><button class="out-of-view" id="out-of-view" hidden>Logo extends beyond the view — Fit</button><div class="stage-footer"><div class="view-controls" aria-label="Zoom controls"><button id="zoom-out" aria-label="Zoom out">−</button><span class="zoom-label" id="zoom-label">100%</span><button id="zoom-in" aria-label="Zoom in">+</button><span class="view-separator"></span><button class="fit" id="fit-view" title="Fit the logo (F)">Fit</button></div><span class="stage-help" id="stage-help">Drag to pan · Double-click to fit</span></div></div>
@@ -135,6 +138,12 @@
 <div class="measure-row"><div class="control-label"><label for="num-gBottomCut"><span class="symbol">C3</span>Bottom-right cut</label><div class="number-wrap"><input id="num-gBottomCut" type="number" step=".001" inputmode="decimal" data-g-number="gBottomCut" value="1.350"><span>u</span></div></div><div class="range-wrap"><input aria-label="Bottom-right cut" type="range" data-g-range="gBottomCut" min="0" max="45" step=".001" value="1.350"></div></div><div class="measure-row"><div class="control-label"><label for="gLowerFold">Lower-left roll</label><output class="percent-value" id="gLowerFold-output">70%</output></div><div class="range-wrap"><input id="gLowerFold" type="range" min="0" max="1" step=".01" value="0.70" aria-label="Lower-left roll"></div></div><div class="measure-row"><div class="control-label"><label for="gFoldBend">Upper & lower bend softness</label><output class="percent-value" id="gFoldBend-output">70%</output></div><div class="range-wrap"><input id="gFoldBend" type="range" min="0" max="1" step=".01" value="0.70" aria-label="Upper & lower bend softness"></div></div>
 <p class="tiny-note">Cut sizes are 45° diagonal trims, limited to the adjacent tape widths. The lower-left roll keeps a rounded outer corner. None of these controls changes the character’s overall size.</p></section>
 </div>
+
+<div class="mode-controls" id="assembly-controls" hidden>
+<section class="control-section"><div class="section-heading"><h3>Assembly board</h3><button class="preset-button a-preset" id="assembly-starter-row" title="Create a clean starter row using your current L, A, Z and G logos">Starter row</button></div><div class="assembly-add-grid" role="group" aria-label="Add logo to assembly"><button class="assembly-add" data-assembly-add="l"><strong>L</strong><span>Add</span></button><button class="assembly-add" data-assembly-add="a"><strong>A</strong><span>Add</span></button><button class="assembly-add" data-assembly-add="z"><strong>Z</strong><span>Add</span></button><button class="assembly-add" data-assembly-add="g"><strong>G</strong><span>Add</span></button></div><div class="assembly-actions"><button id="assembly-duplicate">Duplicate</button><button id="assembly-delete">Delete</button><button id="assembly-clear">Clear board</button></div><p class="reference-note" id="assembly-reference-note">The first item on the board is the reference logo. Drag other logos to snap to its edges, centers and matching spacing, similar to presentation smart guides.</p><p class="notice" id="assembly-limit-notice" aria-live="polite"></p></section>
+<section class="control-section"><div class="section-heading"><h3>Selected logo</h3><span class="percent-value" id="assembly-selected-label">L #1</span></div><div class="assembly-selected-grid"><div class="measure-row"><div class="control-label"><label for="assembly-logo-type"><span class="symbol">T</span>Logo type</label><select id="assembly-logo-type" class="assembly-select" aria-label="Selected logo type"><option value="l">L</option><option value="a">A</option><option value="z">Z</option><option value="g">G</option></select></div></div><div class="measure-row"><div class="control-label"><label for="assembly-scale"><span class="symbol">S</span>Scale</label><div class="number-wrap"><input id="assembly-scale" type="number" min="0.1" max="8" step="0.001" inputmode="decimal" value="1.000"><span>×</span></div></div></div><div class="measure-row"><div class="control-label"><label for="assembly-x"><span class="symbol">X</span>X position</label><div class="number-wrap"><input id="assembly-x" type="number" step="0.001" inputmode="decimal" value="0.000"><span>u</span></div></div></div><div class="measure-row"><div class="control-label"><label for="assembly-y"><span class="symbol">Y</span>Y position</label><div class="number-wrap"><input id="assembly-y" type="number" step="0.001" inputmode="decimal" value="0.000"><span>u</span></div></div></div></div><p class="tiny-note">Drag a logo on the stage to move it. Turn on handles to get a scale handle on the selected logo.</p></section>
+<section class="control-section"><div class="section-heading"><h3>Snapping & canvas</h3><span class="percent-value">Layout aids</span></div><label class="check-line">Snap to other logos<span class="switch"><input id="assembly-snap" type="checkbox" checked><i></i></span></label><label class="check-line">Equal spacing guides<span class="switch"><input id="assembly-spacing" type="checkbox" checked><i></i></span></label><label class="check-line">Show guide overlays<span class="switch"><input id="assembly-guide-toggle" type="checkbox" checked><i></i></span></label><div class="measure-row assembly-color-row"><div class="control-label"><label for="assembly-canvas"><span class="symbol">BG</span>Canvas color</label><label class="color-control"><input type="color" id="assembly-canvas" value="#ffffff" aria-label="Assembly canvas color">Canvas</label></div></div><p class="tiny-note">Guides snap to top, middle and bottom alignment, left/right and center alignment, plus matching gaps like PowerPoint smart guides.</p><p class="tiny-note assembly-note-strong"><strong>Tip:</strong> keep the first item in place as your reference, then drag the rest until the guide lines appear.</p></section>
+</div>
 <details class="control-section details" id="finish-details"><summary>Material & finish</summary><div class="details-content"><div class="color-row"><label class="color-control"><input type="color" id="front-color" value="#ff1424" aria-label="Front color">Front</label><label class="color-control"><input type="color" id="back-color" value="#ffdc32" aria-label="Peeled back color"><span id="back-color-label">Back</span></label><label class="color-control"><input type="color" id="canvas-color" value="#ffffff" aria-label="Canvas color">Canvas</label></div><div class="measure-row"><div class="control-label"><label for="fold">Lower fold</label><output class="percent-value" id="fold-output">70%</output></div><div class="range-wrap"><input id="fold" type="range" min=".2" max=".95" step=".01" data-finish="fold" value=".7"></div></div><div class="measure-row"><div class="control-label"><label for="radius">Corner rounding</label><output class="percent-value" id="radius-output">0.180 u</output></div><div class="range-wrap"><input id="radius" type="range" min="0" max=".6" step=".01" data-finish="radius" value=".18"></div></div><div class="measure-row"><div class="control-label"><label for="gloss">Gloss</label><output class="percent-value" id="gloss-output">80%</output></div><div class="range-wrap"><input id="gloss" type="range" min="0" max="1" step=".01" data-finish="gloss" value=".8"></div></div><label class="check-line">Soft shadows<span class="switch"><input id="shadows" type="checkbox" checked><i></i></span></label><label class="check-line">Flat vector style<span class="switch"><input id="flat" type="checkbox"><i></i></span></label></div></details>
 <div class="sidebar-bottom" id="sidebar-description"><strong>Built to your proportions.</strong> The golden preset uses peel 1.618, both widths 2.618, length 4.236 and height 6.854. It respects the two selected measurement references. Measurements are straight, projected dimensions.</div></div></aside></main>
 <dialog class="dialog" id="export-dialog" aria-labelledby="export-heading"><div class="dialog-head"><h2 id="export-heading">Make it yours.</h2><button class="icon-button" id="close-export" aria-label="Close export"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><p>Export the artwork, with or without dimensions. The HTML button saves the complete editable studio.</p><div class="format-options"><label class="format-option"><input type="radio" name="export-format" value="svg" checked><strong>SVG</strong><small>Scalable vector</small></label><label class="format-option"><input type="radio" name="export-format" value="png"><strong>PNG</strong><small>High-resolution image</small></label></div><label class="export-option"><input id="export-measures" type="checkbox">Include measurement numbers</label><label class="export-option"><input id="export-transparent" type="checkbox" checked>Transparent background</label><label class="export-resolution" id="resolution-row" hidden>Longest edge<select id="export-size"><option value="1024">1024 px</option><option value="2048" selected>2048 px</option><option value="4096">4096 px</option></select></label><button class="button primary download" id="download-artwork"><svg viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 15v5h16v-5"/></svg><span>Download SVG</span></button><p class="dialog-note">No grid or editing handles are included.</p><div class="dialog-error" id="export-error" role="alert"></div><div class="export-fallback" id="export-fallback" hidden>Export ready. <a id="export-link" target="_blank" rel="noopener">Open or save the file</a>.</div></dialog>
@@ -158,14 +167,16 @@ const G_TAPES=['gTopWidth','gLeftWidth','gBottomWidth','gRightWidth','gMiddleWid
 const G_CUTS=['gTopCut','gTopRightCut','gBottomCut','gLastCut'];
 const G_KEYS=['gWidth','gHeight','gTopLength','gReach','gMid',...G_TAPES,...G_CUTS];
 const G_GAP=.15;
-const LOGO_MODES=['l','a','z','g'];
+const ASSEMBLY_LOGOS=['l','a','z','g'];
+const ASSEMBLY_DEFAULTS=Object.freeze({canvas:'#ffffff',showMeasures:true,showGrid:false,showHandles:true,snap:true,snapSpacing:true,nextId:5,selectedId:1,items:[{id:1,logo:'l',x:0,y:0,scale:1},{id:2,logo:'a',x:6.95,y:0,scale:1},{id:3,logo:'z',x:14.45,y:0,scale:1},{id:4,logo:'g',x:21.35,y:0,scale:1}]});
+const LOGO_MODES=['l','a','z','g','assembly'];
 const KEYS = ['length','height','stemWidth','armWidth','peelX','peelY'];
 const $ = id => document.getElementById(id);
 const clamp = (n,a,b) => Math.min(b,Math.max(a,n));
 const round = n => Math.round((n + Number.EPSILON)*1000)/1000;
 const fmt = n => (Math.abs(n)<.0005?0:n).toFixed(3);
 const nstr = n => String(Math.round(n*100000)/100000);
-const clone = s => ({...s});
+const clone = s => typeof structuredClone==='function'?structuredClone(s):JSON.parse(JSON.stringify(s));
 const serialize = s => JSON.stringify(s);
 let boot = {};try{boot=JSON.parse($('initial-state').textContent)}catch(_){}
 const STORAGE_KEY='ribbon-logo-studio-v1:'+String(boot.saveId||'original')+':'+location.pathname;
@@ -187,6 +198,35 @@ function cleanModel(candidate){
   if(s.linkWidths)s.stemWidth=s.armWidth=Math.min(s.stemWidth,s.armWidth);
   s.peelShape=clamp(s.peelShape,0,1);s.curl=clamp(s.curl,0,1);s.fold=clamp(s.fold,.2,.95);s.radius=clamp(s.radius,0,.6);s.gloss=clamp(s.gloss,0,1);
   constrainPeel(s);return s;
+}
+function cleanAssemblyModel(candidate){
+  const base=clone(ASSEMBLY_DEFAULTS),s={...base,items:clone(base.items)};
+  if(candidate&&typeof candidate==='object'){
+    for(const k of ['showMeasures','showGrid','showHandles','snap','snapSpacing'])if(typeof candidate[k]==='boolean')s[k]=candidate[k];
+    if(/^#[0-9a-f]{6}$/i.test(candidate.canvas||''))s.canvas=candidate.canvas;
+    if(Number.isFinite(Number(candidate.nextId)))s.nextId=Math.max(1,Math.floor(Number(candidate.nextId)));
+    if(candidate.selectedId===null)s.selectedId=null;
+    else if(Number.isFinite(Number(candidate.selectedId)))s.selectedId=Math.floor(Number(candidate.selectedId));
+    if(Array.isArray(candidate.items)){
+      const cleaned=[];
+      for(const raw of candidate.items.slice(0,120)){
+        if(!raw||typeof raw!=='object')continue;
+        const logo=ASSEMBLY_LOGOS.includes(raw.logo)?raw.logo:'l';
+        const id=Number.isFinite(Number(raw.id))?Math.max(1,Math.floor(Number(raw.id))):null;
+        if(id===null)continue;
+        const x=round(Number.isFinite(Number(raw.x))?Number(raw.x):0);
+        const y=round(Number.isFinite(Number(raw.y))?Number(raw.y):0);
+        const scale=round(clamp(Number.isFinite(Number(raw.scale))?Number(raw.scale):1,.1,8));
+        cleaned.push({id,logo,x,y,scale});
+      }
+      if(cleaned.length)s.items=cleaned;
+    }
+  }
+  if(!s.items.length)s.items=clone(base.items);
+  const ids=s.items.map(item=>item.id);
+  if(!s.items.some(item=>item.id===s.selectedId))s.selectedId=s.items[0]?.id??null;
+  s.nextId=Math.max(s.nextId,(ids.length?Math.max(...ids):0)+1);
+  return s;
 }
 let state=cleanModel(boot.models?.l||boot.model);
 try{const saved=localStorage.getItem(STORAGE_KEY);if(saved)state=cleanModel(JSON.parse(saved));}catch(_){storageOK=false;}
@@ -223,12 +263,14 @@ let savedZ=cleanZModel(boot.models?.z);
 try{const saved=localStorage.getItem(STORAGE_KEY+':z');if(saved)savedZ=cleanZModel(JSON.parse(saved));}catch(_){storageOK=false;}
 let savedG=cleanGModel(boot.models?.g);
 try{const saved=localStorage.getItem(STORAGE_KEY+':g');if(saved)savedG=cleanGModel(JSON.parse(saved));}catch(_){storageOK=false;}
-const models={l:clone(state),a:clone(savedA),z:clone(savedZ),g:clone(savedG)};
-const modeHistory={l:{history:[clone(state)],future:[]},a:{history:[clone(savedA)],future:[]},z:{history:[clone(savedZ)],future:[]},g:{history:[clone(savedG)],future:[]}};
-const scrollByMode={l:0,a:0,z:0,g:0};
-const saveTimers={l:null,a:null,z:null,g:null};
+let savedAssembly=cleanAssemblyModel(boot.models?.assembly);
+try{const saved=localStorage.getItem(STORAGE_KEY+':assembly');if(saved)savedAssembly=cleanAssemblyModel(JSON.parse(saved));}catch(_){storageOK=false;}
+const models={l:clone(state),a:clone(savedA),z:clone(savedZ),g:clone(savedG),assembly:clone(savedAssembly)};
+const modeHistory={l:{history:[clone(state)],future:[]},a:{history:[clone(savedA)],future:[]},z:{history:[clone(savedZ)],future:[]},g:{history:[clone(savedG)],future:[]},assembly:{history:[clone(savedAssembly)],future:[]}};
+const scrollByMode={l:0,a:0,z:0,g:0,assembly:0};
+const saveTimers={l:null,a:null,z:null,g:null,assembly:null};
 const L_DESCRIPTION=$('sidebar-description').innerHTML;
-let history=[clone(state)],future=[],saveTimer,noticeTimer,toastTimer;
+let history=[clone(state)],future=[],saveTimer,noticeTimer,toastTimer,assemblyGuides=[];
 let camera={x:0,y:0,w:10,h:10},fitScale=1,size={w:700,h:680},ready=false;
 let activePointer=null,raf=0,renderNeedsControls=false;
 const svg=$('stage');
@@ -478,7 +520,7 @@ function render(){
   if(!ready||screen!=='editor')return;
   const u=camera.w/size.w;
   svg.setAttribute('viewBox',`${nstr(camera.x)} ${nstr(camera.y)} ${nstr(camera.w)} ${nstr(camera.h)}`);
-  svg.innerHTML=currentScene(state,{u,view:camera,measures:state.showMeasures,grid:state.showGrid,handles:state.showHandles,bg:state.canvas});
+  svg.innerHTML=currentScene(state,{u,view:camera,measures:state.showMeasures,grid:state.showGrid,handles:state.showHandles,bg:state.canvas,interactive:true});
   $('stage-card').style.backgroundColor=state.canvas;
   $('zoom-label').textContent=Math.round((1/u)/fitScale*100)+'%';
   const g=currentGeometry(),gap=5*u;
@@ -522,15 +564,38 @@ svg.addEventListener('dblclick',e=>{if(!e.target.closest('[data-handle]'))fitCam
 function pointerUnit(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const matrix=svg.getScreenCTM();return matrix?pt.matrixTransform(matrix.inverse()):{x:0,y:0}}
 svg.addEventListener('pointerdown',e=>{
   if(e.button!==0||activePointer)return;
+  if(activeLogo==='assembly'){
+    const scaleHandle=e.target.closest('[data-assembly-handle="scale"]');
+    const itemEl=e.target.closest('[data-assembly-item]');
+    commitPending();const point=pointerUnit(e);
+    if(scaleHandle||itemEl){
+      const itemId=Number((scaleHandle||itemEl).dataset.assemblyItem);
+      const item=state.items.find(entry=>entry.id===itemId);
+      if(!item)return;
+      state.selectedId=itemId;queueRender(true);persist();
+      activePointer={id:e.pointerId,key:scaleHandle?'assembly-scale':'assembly-drag',start:point,startClient:{x:e.clientX,y:e.clientY},camera:{...camera},model:clone(state),itemId,item:clone(item),moved:false};
+      svg.setPointerCapture(e.pointerId);e.preventDefault();return;
+    }
+  }
   const handle=e.target.closest('[data-handle]'),dim=e.target.closest('[data-dimension]');
-  if(dim&&!handle){e.preventDefault();const key=dim.dataset.dimension;const el=(activeLogo==='g'?gInputMap:activeLogo==='z'?zInputMap:activeLogo==='a'?aInputMap:inputMap)[key]?.num;if(el){el.scrollIntoView({behavior:'smooth',block:'nearest'});el.focus({preventScroll:true});el.select()}return;}
+  if(dim&&!handle){e.preventDefault();const map=activeLogo==='g'?gInputMap:activeLogo==='z'?zInputMap:activeLogo==='a'?aInputMap:inputMap;const key=dim.dataset.dimension;const el=map[key]?.num;if(el){el.scrollIntoView({behavior:'smooth',block:'nearest'});el.focus({preventScroll:true});el.select()}return;}
   commitPending();const point=pointerUnit(e);
-  activePointer={id:e.pointerId,key:handle?.dataset.handle||null,start:point,startClient:{x:e.clientX,y:e.clientY},camera:{...camera},model:clone(state)};
+  activePointer={id:e.pointerId,key:handle?.dataset.handle||null,start:point,startClient:{x:e.clientX,y:e.clientY},camera:{...camera},model:clone(state),moved:false};
   svg.setPointerCapture(e.pointerId);e.preventDefault();if(!handle)svg.classList.add('panning');
 });
 svg.addEventListener('pointermove',e=>{
   if(!activePointer||activePointer.id!==e.pointerId)return;
   const a=activePointer;
+  if(activeLogo==='assembly'){
+    const p=pointerUnit(e),dx=p.x-a.start.x,dy=p.y-a.start.y;
+    if(a.key==='assembly-drag'){
+      let x=a.item.x+dx,y=a.item.y+dy;const snapped=state.snap?assemblySnapCandidates(a.itemId,x,y):{x:round(x),y:round(y),guides:[]};assemblyGuides=snapped.guides;assemblyReplaceItem(a.itemId,{x:snapped.x,y:snapped.y},{quiet:true});a.moved=true;return;
+    }
+    if(a.key==='assembly-scale'){
+      const startBounds=assemblyItemBounds(a.item,a.model),dw=(p.x-a.start.x)/Math.max(startBounds.base.width,.001),dh=(p.y-a.start.y)/Math.max(startBounds.base.height,.001);const scale=round(clamp(a.item.scale+Math.max(dw,dh),.1,8));assemblyGuides=[];assemblyReplaceItem(a.itemId,{scale},{quiet:true});a.moved=true;return;
+    }
+    camera.x=a.camera.x-(e.clientX-a.startClient.x)*a.camera.w/size.w;camera.y=a.camera.y-(e.clientY-a.startClient.y)*a.camera.h/size.h;queueRender(false);return;
+  }
   if(!a.key){camera.x=a.camera.x-(e.clientX-a.startClient.x)*a.camera.w/size.w;camera.y=a.camera.y-(e.clientY-a.startClient.y)*a.camera.h/size.h;queueRender(false);return;}
   const p=pointerUnit(e),dx=p.x-a.start.x,dy=p.y-a.start.y;
   if(activeLogo==='a'){
@@ -561,7 +626,6 @@ svg.addEventListener('pointermove',e=>{
     else if(a.key==='diagonalWidth'){const normal=zGeometry(a.model).normal;val+=dx*normal.x+dy*normal.y;}
     setZDimension(a.key,val,{quiet:true});return;
   }
-  const g=geometry(a.model);
   let val=a.model[a.key];
   if(a.key==='height')val-=dy;
   else if(a.key==='length'||a.key==='stemWidth')val+=dx;
@@ -570,7 +634,7 @@ svg.addEventListener('pointermove',e=>{
   else if(a.key==='peelY')val+=dy;
   setDimension(a.key,val,{quiet:true});
 });
-function endPointer(e){if(!activePointer||activePointer.id!==e.pointerId)return;const resized=!!activePointer.key;activePointer=null;svg.classList.remove('panning');try{svg.releasePointerCapture(e.pointerId)}catch(_){}if(resized)commit();}
+function endPointer(e){if(!activePointer||activePointer.id!==e.pointerId)return;const resized=!!activePointer.key;const moved=!!activePointer.moved;if(activeLogo==='assembly')assemblyGuides=[];activePointer=null;svg.classList.remove('panning');try{svg.releasePointerCapture(e.pointerId)}catch(_){}if(activeLogo==='assembly'){queueRender(false);if(moved)commit();return;}if(resized)commit();}
 svg.addEventListener('pointerup',endPointer);svg.addEventListener('pointercancel',endPointer);svg.addEventListener('lostpointercapture',endPointer);
 svg.addEventListener('wheel',e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();zoom(e.deltaY<0?1.08:1/1.08)}},{passive:false});
 document.addEventListener('keydown',e=>{
@@ -579,7 +643,7 @@ document.addEventListener('keydown',e=>{
   const key=e.key.toLowerCase();
   if((e.ctrlKey||e.metaKey)&&key==='z'){e.preventDefault();e.shiftKey?redo():undo();}
   else if((e.ctrlKey||e.metaKey)&&key==='y'){e.preventDefault();redo();}
-  else if(!e.ctrlKey&&!e.metaKey&&!e.altKey){if(key==='f'){e.preventDefault();fitCamera()}else if(key==='m')$('measure-toggle').click();else if(key==='g')$('grid-toggle').click();else if(key==='+'||key==='=')zoom(1.18);else if(key==='-')zoom(1/1.18)}
+  else if(!e.ctrlKey&&!e.metaKey&&!e.altKey){if(activeLogo==='assembly'&&(key==='delete'||key==='backspace')){e.preventDefault();deleteAssemblySelected();return;}if(activeLogo==='assembly'&&['arrowleft','arrowright','arrowup','arrowdown'].includes(key)){e.preventDefault();const step=e.shiftKey?1:.2;nudgeAssembly(key==='arrowleft'?-step:key==='arrowright'?step:0,key==='arrowup'?-step:key==='arrowdown'?step:0);return;}if(key==='f'){e.preventDefault();fitCamera()}else if(key==='m')$('measure-toggle').click();else if(key==='g')$('grid-toggle').click();else if(key==='+'||key==='=')zoom(1.18);else if(key==='-')zoom(1/1.18)}
 });
 // Resize the viewport, not the logo. A manual Fit always includes all dimensions.
 const resizeObserver=new ResizeObserver(entries=>{const r=entries[0].contentRect;if(r.width<=0||r.height<=0)return;size={w:r.width,h:r.height};fitCamera();});
@@ -588,8 +652,8 @@ resizeObserver.observe($('stage-card'));
 function artworkSvg({measures=false,transparent=true,longest=2048}={}){
   const g=currentGeometry(),max=Math.max(g.L,g.totalH);
   const u=max/560;
-  const margin=measures?(activeLogo==='g'?{l:65*u,r:35*u,t:58*u,b:70*u}:activeLogo==='z'||activeLogo==='a'?{l:65*u,r:35*u,t:30*u,b:70*u}:{l:65*u,r:67*u,t:75*u,b:24*u}):{l:.48,r:.48,t:.30,b:.53};
-  const view={x:-margin.l,y:g.top-margin.t,w:g.L+margin.l+margin.r,h:g.totalH+margin.t+margin.b};
+  const margin=measures?(activeLogo==='g'?{l:65*u,r:35*u,t:58*u,b:70*u}:activeLogo==='z'||activeLogo==='a'?{l:65*u,r:35*u,t:30*u,b:70*u}:activeLogo==='assembly'?{l:36*u,r:36*u,t:36*u,b:36*u}:{l:65*u,r:67*u,t:75*u,b:24*u}):{l:.48,r:.48,t:.30,b:.53};
+  const view=activeLogo==='assembly'?{x:g.minX-margin.l,y:g.top-margin.t,w:g.L+margin.l+margin.r,h:g.totalH+margin.t+margin.b}:{x:-margin.l,y:g.top-margin.t,w:g.L+margin.l+margin.r,h:g.totalH+margin.t+margin.b};
   const width=Math.max(1,Math.round(longest*view.w/Math.max(view.w,view.h))),height=Math.max(1,Math.round(longest*view.h/Math.max(view.w,view.h)));
   let body=currentScene(state,{u,view,measures,grid:false,handles:false,bg:transparent?null:state.canvas});
   body=body.replace(/ data-dimension="[^"]*"/g,'').replace(/ role="button"/g,'');
@@ -612,7 +676,7 @@ $('save-html').addEventListener('click',()=>{
     root.querySelector('#export-link').removeAttribute('href');root.querySelector('#stage').innerHTML='';root.querySelector('#stage').classList.remove('panning');root.querySelector('#toast').classList.remove('visible');
     root.querySelector('body').dataset.screen='home';root.querySelector('#home-screen').hidden=false;root.querySelector('#editor-workspace').hidden=true;root.querySelector('#back-home').hidden=true;root.querySelector('#open-export').hidden=true;
     root.querySelectorAll('input,button,select').forEach(el=>el.removeAttribute('autofocus'));
-    createDownload(new Blob(['<!DOCTYPE html>\n'+root.outerHTML],{type:'text/html;charset=utf-8'}),'ribbon-logo-studio-l-a-z-g.html');tell('Editable HTML created with your current settings.');
+    createDownload(new Blob(['<!DOCTYPE html>\n'+root.outerHTML],{type:'text/html;charset=utf-8'}),'ribbon-logo-studio-l-a-z-g-assembly.html');tell('Editable HTML created with your current settings.');
   }catch(err){tell('The editor could not be saved: '+err.message)}
 });
 function exportFormat(){return document.querySelector('input[name="export-format"]:checked').value}
@@ -1447,12 +1511,32 @@ $('g-reference-preset').addEventListener('click',()=>{
 });
 
 
+
+function geometryForMode(mode,s){return mode==='g'?gGeometry(s):mode==='z'?zGeometry(s):mode==='a'?aGeometry(s):geometry(s);}
+function sceneForMode(mode,s,options){return mode==='g'?gScene(s,options):mode==='z'?zScene(s,options):mode==='a'?aScene(s,options):scene(s,options);}
+function logoBoundsForMode(mode,s){const g=geometryForMode(mode,s),width=Number.isFinite(g.L)?g.L:g.W;return {left:0,top:g.top,right:width,bottom:g.bottom,width,height:g.totalH};}
+function assemblySelectedItem(s=state){return s.items?.find(item=>item.id===s.selectedId)||null;}
+function assemblyItemBounds(item,s=state){const base=logoBoundsForMode(item.logo,models[item.logo]);const width=base.width*item.scale,height=base.height*item.scale;return {left:item.x,top:item.y,right:item.x+width,bottom:item.y+height,width,height,centerX:item.x+width/2,centerY:item.y+height/2,base};}
+function assemblyGeometry(s=state){if(!s.items?.length)return {L:15,totalH:8,top:-6,bottom:2,minX:0,maxX:15,minY:-6,maxY:2};let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;for(const item of s.items){const b=assemblyItemBounds(item,s);minX=Math.min(minX,b.left);maxX=Math.max(maxX,b.right);minY=Math.min(minY,b.top);maxY=Math.max(maxY,b.bottom);}return {L:Math.max(.5,maxX-minX),totalH:Math.max(.5,maxY-minY),top:minY,bottom:maxY,minX,maxX,minY,maxY};}
+function assemblyGuideMarkup(u,enabled){if(!(enabled||assemblyGuides.length))return '';let markup='';for(const guide of assemblyGuides){if(guide.type==='v')markup+=line({x:guide.x,y:guide.y1},{x:guide.x,y:guide.y2},'#8db99f',.55*u,`${dash(1.8*u,1.4*u)} data-assembly-guide="1"`);else if(guide.type==='h')markup+=line({x:guide.x1,y:guide.y},{x:guide.x2,y:guide.y},'#8db99f',.55*u,`${dash(1.8*u,1.4*u)} data-assembly-guide="1"`);else if(guide.type==='gapH'){const col='#d7aa54';markup+=line({x:guide.x1,y:guide.y},{x:guide.x2,y:guide.y},col,.52*u,`data-assembly-guide="1"`)+line({x:guide.x3,y:guide.y},{x:guide.x4,y:guide.y},col,.52*u,`data-assembly-guide="1"`)+line({x:guide.x1,y:guide.y-2.2*u},{x:guide.x1,y:guide.y+2.2*u},col,.42*u,`data-assembly-guide="1"`)+line({x:guide.x2,y:guide.y-2.2*u},{x:guide.x2,y:guide.y+2.2*u},col,.42*u,`data-assembly-guide="1"`)+line({x:guide.x3,y:guide.y-2.2*u},{x:guide.x3,y:guide.y+2.2*u},col,.42*u,`data-assembly-guide="1"`)+line({x:guide.x4,y:guide.y-2.2*u},{x:guide.x4,y:guide.y+2.2*u},col,.42*u,`data-assembly-guide="1"`);}else if(guide.type==='gapV'){const col='#d7aa54';markup+=line({x:guide.x,y:guide.y1},{x:guide.x,y:guide.y2},col,.52*u,`data-assembly-guide="1"`)+line({x:guide.x,y:guide.y3},{x:guide.x,y:guide.y4},col,.52*u,`data-assembly-guide="1"`)+line({x:guide.x-2.2*u,y:guide.y1},{x:guide.x+2.2*u,y:guide.y1},col,.42*u,`data-assembly-guide="1"`)+line({x:guide.x-2.2*u,y:guide.y2},{x:guide.x+2.2*u,y:guide.y2},col,.42*u,`data-assembly-guide="1"`)+line({x:guide.x-2.2*u,y:guide.y3},{x:guide.x+2.2*u,y:guide.y3},col,.42*u,`data-assembly-guide="1"`)+line({x:guide.x-2.2*u,y:guide.y4},{x:guide.x+2.2*u,y:guide.y4},col,.42*u,`data-assembly-guide="1"`);}}return markup;}
+function assemblyScene(s,{u,view,measures,grid,handles,bg,interactive=false}){let markup=`<title>Assembly board</title><desc>Compose several ribbon logos together.</desc><defs>${gridPattern(u)}</defs>${bg?`<rect x="${nstr(view.x)}" y="${nstr(view.y)}" width="${nstr(view.w)}" height="${nstr(view.h)}" fill="${bg}"/>`:''}${grid?`<rect x="${nstr(view.x)}" y="${nstr(view.y)}" width="${nstr(view.w)}" height="${nstr(view.h)}" fill="url(#grid-pattern)" opacity=".6"/>`:''}`;if(!s.items.length){markup+=`<g opacity=".72"><text x="${nstr(view.x+view.w/2)}" y="${nstr(view.y+view.h/2-12*u)}" fill="#607168" font-size="${nstr(12*u)}" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="620">Add L, A, Z or G to start assembling a word.</text><text x="${nstr(view.x+view.w/2)}" y="${nstr(view.y+view.h/2+6*u)}" fill="#8a948b" font-size="${nstr(8*u)}" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">Drag logos to snap by edge, center and equal spacing.</text></g>`;}for(const item of s.items){const source=models[item.logo],base=logoBoundsForMode(item.logo,source),translateY=item.y-base.top*item.scale;const localView={x:0,y:base.top,w:base.width,h:base.height};markup+=`<g data-assembly-item="${item.id}" data-selected="${item.id===s.selectedId}" transform="translate(${nstr(item.x)} ${nstr(translateY)}) scale(${nstr(item.scale)})">${scopeSvg(sceneForMode(item.logo,source,{u:Math.max(base.width,base.height)/420,view:localView,measures:false,grid:false,handles:false,bg:null}),`assembly-${item.id}-`)}</g>`;}if(interactive&&(s.showMeasures||assemblyGuides.length))markup+=assemblyGuideMarkup(u,s.showMeasures);const reference=s.items[0]||null;if(interactive&&reference){const b=assemblyItemBounds(reference,s);markup+=`<g data-assembly-reference="1"><rect x="${nstr(b.left-.16)}" y="${nstr(b.top-.16)}" width="${nstr(b.width+.32)}" height="${nstr(b.height+.32)}" fill="none" stroke="#7aa190" stroke-width="${nstr(.16*u)}" opacity=".4" rx="${nstr(4*u)}"/><g transform="translate(${nstr(b.left)} ${nstr(b.top-8*u)})"><rect width="${nstr(22*u)}" height="${nstr(9*u)}" rx="${nstr(4.5*u)}" fill="#eef6f0" stroke="#c6d8cb" stroke-width="${nstr(.35*u)}"/><text x="${nstr(11*u)}" y="${nstr(6.1*u)}" text-anchor="middle" fill="#5b7467" font-size="${nstr(5*u)}" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-weight="700">REF</text></g></g>`;}const selected=assemblySelectedItem(s);if(interactive&&selected){const b=assemblyItemBounds(selected,s),pad=.18;markup+=`<g data-assembly-selection="1"><rect x="${nstr(b.left-pad)}" y="${nstr(b.top-pad)}" width="${nstr(b.width+pad*2)}" height="${nstr(b.height+pad*2)}" fill="none" stroke="#4d8f77" stroke-width="${nstr(.18*u)}" rx="${nstr(4*u)}"/><g transform="translate(${nstr(b.left)} ${nstr(b.top-10*u)})"><rect width="${nstr(28*u)}" height="${nstr(9*u)}" rx="${nstr(4.5*u)}" fill="#356e64" opacity=".95"/><text x="${nstr(14*u)}" y="${nstr(6.1*u)}" text-anchor="middle" fill="#fff" font-size="${nstr(5*u)}" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-weight="700">${selected.logo.toUpperCase()} #${selected.id}</text></g>${handles?`<g data-assembly-handle="scale" data-assembly-item="${selected.id}" transform="translate(${nstr(b.right)} ${nstr(b.bottom)})"><circle r="${nstr(4.6*u)}" fill="#fff" stroke="#356e64" stroke-width="${nstr(.6*u)}"/><path d="M${nstr(-1.8*u)} ${nstr(2*u)} 0 ${nstr(.2*u)} ${nstr(2*u)} ${nstr(-1.8*u)}" fill="none" stroke="#356e64" stroke-width="${nstr(.55*u)}" stroke-linecap="round" stroke-linejoin="round"/></g>`:''}</g>`;}return markup;}
+function assemblyReplaceItem(id,patch,{quiet=false}={}){const index=state.items.findIndex(item=>item.id===id);if(index<0)return;state.items[index]={...state.items[index],...patch};queueRender(true);if(!quiet)persist();}
+function assemblySelect(id,{quiet=false}={}){state.selectedId=id;queueRender(true);if(!quiet)persist();}
+function assemblySnapCandidates(movingId,x,y){const current=state.items.find(item=>item.id===movingId);if(!current)return {x,y,guides:[]};const moving={...current,x:round(x),y:round(y)};const b=assemblyItemBounds(moving);const others=state.items.filter(item=>item.id!==movingId);const threshold=Math.max(.14,camera.w/Math.max(size.w,1)*10);let bestX=null,bestY=null,guides=[];const considerX=(value,dist,guide)=>{if(dist>threshold)return;if(!bestX||dist<bestX.dist)bestX={value:round(value),dist,guide};};const considerY=(value,dist,guide)=>{if(dist>threshold)return;if(!bestY||dist<bestY.dist)bestY={value:round(value),dist,guide};};for(const other of others){const ob=assemblyItemBounds(other);const y1=Math.min(b.top,ob.top)-.7,y2=Math.max(b.bottom,ob.bottom)+.7,x1=Math.min(b.left,ob.left)-.7,x2=Math.max(b.right,ob.right)+.7;considerX(ob.left,Math.abs(b.left-ob.left),{type:'v',x:ob.left,y1,y2});considerX(ob.centerX-b.width/2,Math.abs(b.centerX-ob.centerX),{type:'v',x:ob.centerX,y1,y2});considerX(ob.right-b.width,Math.abs(b.right-ob.right),{type:'v',x:ob.right,y1,y2});considerY(ob.top,Math.abs(b.top-ob.top),{type:'h',y:ob.top,x1,x2});considerY(ob.centerY-b.height/2,Math.abs(b.centerY-ob.centerY),{type:'h',y:ob.centerY,x1,x2});considerY(ob.bottom-b.height,Math.abs(b.bottom-ob.bottom),{type:'h',y:ob.bottom,x1,x2});}
+  if(state.snapSpacing&&others.length>=2){const stationary=others.map(item=>({item,b:assemblyItemBounds(item)}));for(let i=0;i<stationary.length;i++)for(let j=i+1;j<stationary.length;j++){const a=stationary[i].b,bb=stationary[j].b,rowY=(a.centerY+bb.centerY)/2,colX=(a.centerX+bb.centerX)/2;if(Math.abs(a.centerY-bb.centerY)<=threshold*2.2){const pair=[a,bb].sort((m,n)=>m.left-n.left),left=pair[0],right=pair[1],gap=right.left-left.right;if(gap>threshold*.4&&Math.abs(b.centerY-rowY)<=Math.max(threshold*2,b.height*.45)){const between=(left.right+right.left-b.width)/2,after=right.right+gap,before=left.left-gap-b.width;considerX(between,Math.abs(b.left-between),{type:'gapH',y:rowY,x1:left.right,x2:between,x3:between+b.width,x4:right.left});considerY(rowY-b.height/2,Math.abs(b.centerY-rowY),{type:'h',y:rowY,x1:Math.min(left.left,b.left)-.7,x2:Math.max(right.right,b.right)+.7});considerX(after,Math.abs(b.left-after),{type:'gapH',y:rowY,x1:left.right,x2:right.left,x3:right.right,x4:after});considerY(rowY-b.height/2,Math.abs(b.centerY-rowY),{type:'h',y:rowY,x1:Math.min(left.left,b.left)-.7,x2:Math.max(after+b.width,right.right)+.7});considerX(before,Math.abs(b.left-before),{type:'gapH',y:rowY,x1:before+b.width,x2:left.left,x3:left.right,x4:right.left});considerY(rowY-b.height/2,Math.abs(b.centerY-rowY),{type:'h',y:rowY,x1:Math.min(before,left.left)-.7,x2:Math.max(right.right,b.right)+.7});}}if(Math.abs(a.centerX-bb.centerX)<=threshold*2.2){const pair=[a,bb].sort((m,n)=>m.top-n.top),top=pair[0],bottom=pair[1],gap=bottom.top-top.bottom;if(gap>threshold*.4&&Math.abs(b.centerX-colX)<=Math.max(threshold*2,b.width*.45)){const between=(top.bottom+bottom.top-b.height)/2,after=bottom.bottom+gap,before=top.top-gap-b.height;considerY(between,Math.abs(b.top-between),{type:'gapV',x:colX,y1:top.bottom,y2:between,y3:between+b.height,y4:bottom.top});considerX(colX-b.width/2,Math.abs(b.centerX-colX),{type:'v',x:colX,y1:Math.min(top.top,b.top)-.7,y2:Math.max(bottom.bottom,b.bottom)+.7});considerY(after,Math.abs(b.top-after),{type:'gapV',x:colX,y1:top.bottom,y2:bottom.top,y3:bottom.bottom,y4:after});considerX(colX-b.width/2,Math.abs(b.centerX-colX),{type:'v',x:colX,y1:Math.min(top.top,b.top)-.7,y2:Math.max(after+b.height,bottom.bottom)+.7});considerY(before,Math.abs(b.top-before),{type:'gapV',x:colX,y1:before+b.height,y2:top.top,y3:top.bottom,y4:bottom.top});considerX(colX-b.width/2,Math.abs(b.centerX-colX),{type:'v',x:colX,y1:Math.min(before,top.top)-.7,y2:Math.max(bottom.bottom,b.bottom)+.7});}}}}
+  if(bestX){x=bestX.value;guides.push(bestX.guide);}if(bestY){y=bestY.value;guides.push(bestY.guide);}return {x,y,guides};}
+function addAssemblyItem(logo,{x=null,y=null,scale=1,select=true}={}){if(!ASSEMBLY_LOGOS.includes(logo))logo='l';const items=state.items||[];let nextX=0,nextY=0;if(items.length){const last=assemblySelectedItem()||items[items.length-1],b=assemblyItemBounds(last);nextX=b.right+1.1;nextY=last.y;}const item={id:state.nextId,logo,x:round(x??nextX),y:round(y??nextY),scale:round(clamp(scale,.1,8))};state.nextId++;state.items.push(item);if(select)state.selectedId=item.id;queueRender(true);persist();return item;}
+function duplicateAssemblySelected(){const item=assemblySelectedItem();if(!item)return;const dup=addAssemblyItem(item.logo,{x:item.x+.9,y:item.y+.9,scale:item.scale,select:true});notice('');commit();return dup;}
+function deleteAssemblySelected(){const item=assemblySelectedItem();if(!item)return;state.items=state.items.filter(entry=>entry.id!==item.id);state.selectedId=state.items[0]?.id??null;assemblyGuides=[];queueRender(true);commit();}
+function starterAssemblyRow(){const items=[];let x=0;for(const logo of ASSEMBLY_LOGOS){const base=logoBoundsForMode(logo,models[logo]);items.push({id:items.length+1,logo,x:round(x),y:0,scale:1});x+=base.width+1.15;}state.items=items;state.selectedId=items[0]?.id??null;state.nextId=items.length+1;assemblyGuides=[];queueRender(true);fitCamera();commit();notice('');tell('Assembly starter row created from your current logo designs.');}
+function syncAssemblyControls(){const selected=assemblySelectedItem(),g=assemblyGeometry();$('assembly-reference-note').innerHTML=state.items.length?`Reference logo · <strong>${state.items[0].logo.toUpperCase()} #${state.items[0].id}</strong>. Other logos snap to it and to the rest of the board.`:'Add a logo to begin assembling.';$('assembly-selected-label').textContent=selected?`${selected.logo.toUpperCase()} #${selected.id}`:'No selection';$('assembly-snap').checked=!!state.snap;$('assembly-spacing').checked=!!state.snapSpacing;$('assembly-guide-toggle').checked=!!state.showMeasures;$('assembly-canvas').value=state.canvas;for(const [id,key] of [['measure-toggle','showMeasures'],['grid-toggle','showGrid'],['handles-toggle','showHandles']])$(id).setAttribute('aria-pressed',state[key]);$('stat-peel').innerHTML=`${state.items.length}<small>items</small>`;$('stat-width').innerHTML=`${state.snap?'Snap':'Free'}<small>${state.snapSpacing?'gap on':'gap off'}</small>`;$('stat-bounds').innerHTML=`${fmt(g.L)} × ${fmt(g.totalH)} <small>u</small>`;$('stage-help').textContent=state.showHandles?'Drag a logo to move · Drag the corner handle to scale · Drag canvas to pan':'Drag a logo to move · Drag canvas to pan · Double-click to fit';const disabled=!selected;for(const id of ['assembly-logo-type','assembly-x','assembly-y','assembly-scale','assembly-duplicate','assembly-delete'])$(id).disabled=disabled;if(selected){$('assembly-logo-type').value=selected.logo;if(document.activeElement!==$('assembly-x'))$('assembly-x').value=fmt(selected.x);if(document.activeElement!==$('assembly-y'))$('assembly-y').value=fmt(selected.y);if(document.activeElement!==$('assembly-scale'))$('assembly-scale').value=fmt(selected.scale);}else{$('assembly-x').value='';$('assembly-y').value='';$('assembly-scale').value='';}}
+function nudgeAssembly(dx,dy){const item=assemblySelectedItem();if(!item)return;assemblyReplaceItem(item.id,{x:round(item.x+dx),y:round(item.y+dy)},{quiet:true});assemblyGuides=[];commit();}
 // ---------------------------------------------------------------------------
 // Shared studio shell: switching never converts or rescales an existing logo.
 // ---------------------------------------------------------------------------
-function currentGeometry(s=state){return activeLogo==='g'?gGeometry(s):activeLogo==='z'?zGeometry(s):activeLogo==='a'?aGeometry(s):geometry(s);}
-function currentScene(s,options){return activeLogo==='g'?gScene(s,options):activeLogo==='z'?zScene(s,options):activeLogo==='a'?aScene(s,options):scene(s,options);}
-function syncControls(){if(activeLogo==='g')syncGControls();else if(activeLogo==='z')syncZControls();else if(activeLogo==='a')syncAControls();else syncLControls();}
+function currentGeometry(s=state){return activeLogo==='assembly'?assemblyGeometry(s):activeLogo==='g'?gGeometry(s):activeLogo==='z'?zGeometry(s):activeLogo==='a'?aGeometry(s):geometry(s);}
+function currentScene(s,options){return activeLogo==='assembly'?assemblyScene(s,options):activeLogo==='g'?gScene(s,options):activeLogo==='z'?zScene(s,options):activeLogo==='a'?aScene(s,options):scene(s,options);}
+function syncControls(){if(activeLogo==='assembly')syncAssemblyControls();else if(activeLogo==='g')syncGControls();else if(activeLogo==='z')syncZControls();else if(activeLogo==='a')syncAControls();else syncLControls();}
 function syncAControls(){
   const p=aGeometry();
   for(const k of A_KEYS){
@@ -1476,14 +1560,17 @@ function scopeSvg(markup,prefix){
   return markup.replace(/id="([^"]+)"/g,(_,id)=>`id="${prefix}${id}"`).replace(/url\(#([^)]+)\)/g,(_,id)=>`url(#${prefix}${id})`);
 }
 function refreshCards(){
-  for(const mode of LOGO_MODES){
-    const s=models[mode],g=mode==='g'?gGeometry(s):mode==='z'?zGeometry(s):mode==='l'?geometry(s):aGeometry(s),margin=Math.max(g.L,g.totalH)*.14;
+  for(const mode of ASSEMBLY_LOGOS){
+    const s=models[mode],g=geometryForMode(mode,s),margin=Math.max(g.L,g.totalH)*.14;
     const view={x:-margin,y:g.top-margin,w:g.L+margin*2,h:g.totalH+margin*2};
     const el=$('home-preview-'+mode);el.setAttribute('viewBox',`${nstr(view.x)} ${nstr(view.y)} ${nstr(view.w)} ${nstr(view.h)}`);
-    const draw=mode==='g'?gScene:mode==='z'?zScene:mode==='l'?scene:aScene;
-    el.innerHTML=scopeSvg(draw(s,{u:Math.max(view.w,view.h)/380,view,measures:false,grid:false,handles:false,bg:null}),'home-'+mode+'-');
+    el.innerHTML=scopeSvg(sceneForMode(mode,s,{u:Math.max(view.w,view.h)/380,view,measures:false,grid:false,handles:false,bg:null}),'home-'+mode+'-');
     el.parentElement.style.background=s.canvas;
   }
+  const a=models.assembly,ag=assemblyGeometry(a),margin=Math.max(ag.L,ag.totalH)*.12||1,view={x:ag.minX-margin,y:ag.top-margin,w:ag.L+margin*2,h:ag.totalH+margin*2};
+  const el=$('home-preview-assembly');el.setAttribute('viewBox',`${nstr(view.x)} ${nstr(view.y)} ${nstr(view.w)} ${nstr(view.h)}`);
+  el.innerHTML=scopeSvg(assemblyScene(a,{u:Math.max(view.w,view.h)/380,view,measures:false,grid:false,handles:false,bg:null}),'home-assembly-');
+  el.parentElement.style.background=a.canvas;
 }
 function stashEditor(){
   commitPending();models[activeLogo]=clone(state);
@@ -1496,18 +1583,19 @@ function cancelCanvasPointer(){
 function enterLogo(mode){
   if(!LOGO_MODES.includes(mode))return;
   cancelCanvasPointer();stashEditor();
-  activeLogo=mode;state=clone(models[mode]);history=modeHistory[mode].history;future=modeHistory[mode].future;
+  activeLogo=mode;state=clone(models[mode]);history=modeHistory[mode].history;future=modeHistory[mode].future;assemblyGuides=[];
   screen='editor';document.body.dataset.screen='editor';document.body.dataset.logo=mode;
   $('home-screen').hidden=true;$('editor-workspace').hidden=false;$('back-home').hidden=false;$('open-export').hidden=false;
   for(const item of LOGO_MODES)$(item+'-controls').hidden=mode!==item;
-  $('fold').closest('.measure-row').hidden=mode==='z'||mode==='g';
-  $('active-logo-name').textContent=mode==='g'?'Folded G':mode==='z'?'Folded Z':mode==='l'?'Original L':'Folded A';
+  $('finish-details').hidden=mode==='assembly';
+  $('fold').closest('.measure-row').hidden=mode==='z'||mode==='g'||mode==='assembly';
+  $('active-logo-name').textContent=mode==='assembly'?'Assembly board':mode==='g'?'Folded G':mode==='z'?'Folded Z':mode==='l'?'Original L':'Folded A';
   document.querySelector('label[for="fold"]').textContent=mode==='l'?'Lower fold':'Top fold bend';
   $('back-color-label').textContent=mode==='l'?'Back':'Rear face';
   $('back-color').setAttribute('aria-label',mode==='l'?'Peeled back color':'Rear ribbon face color');
-  $('sidebar-description').innerHTML=mode==='g'?'<strong>Five tapes. Four folded turns.</strong> Overall width measures the widest part. Its control moves both right edges together; Top horizontal length moves only the upper tip. Tape widths stay constant along straight runs. The middle bar shifts only when thicker tape needs room. Both right-side corner cuts remain editable.':mode==='z'?'<strong>A Z made from three tapes.</strong> Width and height describe the finished silhouette. Top, diagonal and bottom tapes keep their specified thicknesses. Linked widths are measured perpendicular to each tape. The two folds are red; no yellow peel is added.':mode==='l'?L_DESCRIPTION:'<strong>Parallel edges. Consistent tape.</strong> Both straight legs retain their exact perpendicular thickness. Overall width changes their opening angle; height changes their length. The upper fold joins the two legs. No horizontal crossbar or yellow peel.';
-  const captions=document.querySelectorAll('.summary-card .caption');captions[0].textContent=mode==='g'?'Tape · all five equal':mode==='z'?'Tape · all equal':mode==='l'?'Peel · x × y':'Tape · left / right';captions[1].textContent=mode==='g'?'Right-middle fold':mode==='z'?'Diagonal angle · θ':mode==='l'?'Stroke · v / h':'Opening angle · θ';
-  svg.setAttribute('aria-label',mode==='g'?'Editable folded ribbon G logo with an adjustable corner-cut or rectangular right-middle fold':mode==='z'?'Editable folded ribbon Z logo with three constant-width tapes':mode==='l'?'Editable red ribbon L logo with a yellow peeled corner':'Editable folded ribbon A logo with constant-width sides');
+  $('sidebar-description').innerHTML=mode==='assembly'?'<strong>Build words from your ribbon logos.</strong> Add copies of your current L, A, Z and G designs, then drag them on one board. The first item acts as the reference marker. Smart guides help align edges, centers and equal spacing, similar to presentation software.':mode==='g'?'<strong>Five tapes. Four folded turns.</strong> Overall width measures the widest part. Its control moves both right edges together; Top horizontal length moves only the upper tip. Tape widths stay constant along straight runs. The middle bar shifts only when thicker tape needs room. Both right-side corner cuts remain editable.':mode==='z'?'<strong>A Z made from three tapes.</strong> Width and height describe the finished silhouette. Top, diagonal and bottom tapes keep their specified thicknesses. Linked widths are measured perpendicular to each tape. The two folds are red; no yellow peel is added.':mode==='l'?L_DESCRIPTION:'<strong>Parallel edges. Consistent tape.</strong> Both straight legs retain their exact perpendicular thickness. Overall width changes their opening angle; height changes their length. The upper fold joins the two legs. No horizontal crossbar or yellow peel.';
+  const captions=document.querySelectorAll('.summary-card .caption');captions[0].textContent=mode==='assembly'?'Board contents':mode==='g'?'Tape · all five equal':mode==='z'?'Tape · all equal':mode==='l'?'Peel · x × y':'Tape · left / right';captions[1].textContent=mode==='assembly'?'Snap status':mode==='g'?'Right-middle fold':mode==='z'?'Diagonal angle · θ':mode==='l'?'Stroke · v / h':'Opening angle · θ';captions[2].textContent=mode==='assembly'?'Board bounds':captions[2].textContent;
+  svg.setAttribute('aria-label',mode==='assembly'?'Assembly board for placing multiple ribbon logos together with snapping guides':mode==='g'?'Editable folded ribbon G logo with an adjustable corner-cut or rectangular right-middle fold':mode==='z'?'Editable folded ribbon Z logo with three constant-width tapes':mode==='l'?'Editable red ribbon L logo with a yellow peeled corner':'Editable folded ribbon A logo with constant-width sides');
   notice('');syncControls();syncHistory();
   document.querySelector('.controls-scroll').scrollTop=scrollByMode[mode];
   requestAnimationFrame(()=>{
@@ -1516,7 +1604,7 @@ function enterLogo(mode){
   });
 }
 function showHome(){
-  cancelCanvasPointer();stashEditor();screen='home';document.body.dataset.screen='home';
+  cancelCanvasPointer();stashEditor();screen='home';document.body.dataset.screen='home';assemblyGuides=[];
   $('editor-workspace').hidden=true;$('home-screen').hidden=false;$('back-home').hidden=true;$('open-export').hidden=true;
   refreshCards();
 }
@@ -1538,6 +1626,18 @@ $('a-reference-preset').addEventListener('click',()=>{
   commitPending();Object.assign(state,{aWidth:A_DEFAULTS.aWidth,aHeight:A_DEFAULTS.aHeight,leftWidth:A_DEFAULTS.leftWidth,rightWidth:A_DEFAULTS.rightWidth,linkWidths:true});
   syncControls();fitCamera();commit();notice('');tell('Reference A proportions restored.');
 });
+document.querySelectorAll('[data-assembly-add]').forEach(button=>button.addEventListener('click',()=>{commitPending();addAssemblyItem(button.dataset.assemblyAdd);fitCamera();commit();notice('');}));
+$('assembly-starter-row').addEventListener('click',()=>{commitPending();starterAssemblyRow();});
+$('assembly-duplicate').addEventListener('click',()=>{commitPending();duplicateAssemblySelected();});
+$('assembly-delete').addEventListener('click',()=>{commitPending();deleteAssemblySelected();});
+$('assembly-clear').addEventListener('click',()=>{commitPending();state.items=[];state.selectedId=null;state.nextId=1;assemblyGuides=[];queueRender(true);fitCamera();commit();notice('Assembly board cleared.');});
+$('assembly-logo-type').addEventListener('change',()=>{const item=assemblySelectedItem();if(!item)return;commitPending();assemblyReplaceItem(item.id,{logo:$('assembly-logo-type').value},{quiet:true});queueRender(true);fitCamera();commit();});
+for(const [id,key,min,max] of [['assembly-x','x',-9999,9999],['assembly-y','y',-9999,9999],['assembly-scale','scale',.1,8]]){const el=$(id);const apply=quiet=>{const item=assemblySelectedItem();if(!item||!Number.isFinite(el.valueAsNumber))return;const value=round(clamp(el.valueAsNumber,min,max));assemblyReplaceItem(item.id,{[key]:value},{quiet});if(key==='scale')fitCamera();};el.addEventListener('input',()=>apply(true));el.addEventListener('change',()=>{apply(true);commit();});el.addEventListener('blur',()=>{if(activeLogo==='assembly'){syncAssemblyControls();}});el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur();commit();}});}
+$('assembly-snap').addEventListener('change',()=>{commitPending();state.snap=$('assembly-snap').checked;assemblyGuides=[];queueRender(true);commit();});
+$('assembly-spacing').addEventListener('change',()=>{commitPending();state.snapSpacing=$('assembly-spacing').checked;assemblyGuides=[];queueRender(true);commit();});
+$('assembly-guide-toggle').addEventListener('change',()=>{commitPending();state.showMeasures=$('assembly-guide-toggle').checked;queueRender(true);commit();});
+$('assembly-canvas').addEventListener('input',()=>{commitPending();state.canvas=$('assembly-canvas').value;queueRender(true);persist();});
+$('assembly-canvas').addEventListener('change',commit);
 $('back-home').addEventListener('click',()=>{showHome();document.querySelector(`[data-open-logo="${activeLogo}"]`).focus({preventScroll:true});});
 document.querySelectorAll('[data-open-logo]').forEach(button=>button.addEventListener('click',()=>enterLogo(button.dataset.openLogo)));
 syncControls();syncHistory();showHome();if(!storageOK)$('save-status').textContent='Use Save HTML to keep your settings';
