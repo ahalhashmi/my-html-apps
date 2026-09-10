@@ -6,6 +6,7 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#f6f5f1">
 <title>Ribbon Logo Studio</title>
+<meta name="application-version" content="5.0-assembly-repair">
 <style>
 :root{--page:#f6f5f1;--paper:#fff;--ink:#252b2a;--muted:#7b817d;--line:#e5e7e1;--soft:#f4f5f1;--accent:#ff2331;--green:#356e64;--gold:#a77722;--radius:18px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--page);-webkit-font-smoothing:antialiased}button,input,select{font:inherit}button,select{cursor:pointer}button{color:inherit;-webkit-tap-highlight-color:transparent}button:disabled{opacity:.32;cursor:not-allowed}button:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #94bdb4;outline-offset:3px}button svg{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}button{display:inline-flex;justify-content:center;align-items:center;gap:8px}a{color:var(--green)}
@@ -71,6 +72,19 @@
 
 
 .assembly-add-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}.assembly-add{min-height:44px;border:1px solid var(--line);border-radius:12px;background:#f7f8f4;font:600 12px/1.1 Inter,system-ui,sans-serif;color:#2a3631;display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .14s,border-color .14s,background .14s}.assembly-add:hover{transform:translateY(-1px);border-color:#aebaa7;background:#fff}.assembly-add strong{font-size:15px;letter-spacing:-.3px}.assembly-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.assembly-actions button{min-height:42px;border-radius:11px;border:1px solid var(--line);background:#fff;font:600 11px/1 Inter,system-ui,sans-serif;color:#33413b;padding:0 9px}.assembly-actions button:hover:not(:disabled){border-color:#aebaa7;background:#f6f8f3}.assembly-actions button:disabled{opacity:.45;cursor:not-allowed}.assembly-selected-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 10px}.assembly-selected-grid .measure-row{margin:0}.assembly-selected-grid .measure-row .control-label{width:100%}.assembly-selected-grid .number-wrap{max-width:100%}.assembly-selected-grid .measure-row>.control-label>label,.assembly-selected-grid .measure-row .control-label label{flex:1}.assembly-select{width:100%;min-height:42px;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:#fff;color:#2c3733;font:600 12px/1 Inter,system-ui,sans-serif}.assembly-color-row{margin-top:17px}.assembly-note-strong{display:block;margin-top:8px}.logo-choice[data-open-logo="assembly"] .logo-preview{padding:24px 22px}.stage [data-assembly-item]{cursor:grab}.stage [data-assembly-item][data-selected="true"]{cursor:grab}.stage [data-assembly-handle="scale"]{cursor:nwse-resize}.stage [data-assembly-handle="scale"] *{pointer-events:none}.stage [data-assembly-reference]{pointer-events:none}.stage [data-assembly-guide]{pointer-events:none}.stage [data-assembly-selection]{pointer-events:none}@media(max-width:760px){.assembly-add-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.assembly-actions{grid-template-columns:1fr}.logo-choice[data-open-logo="assembly"]{grid-column:1 / -1}}@media(max-width:580px){.assembly-selected-grid{grid-template-columns:1fr}.assembly-add{min-height:40px}.assembly-actions button{min-height:40px}.logo-choice[data-open-logo="assembly"] .logo-preview{padding:18px 14px}}
+
+/* v5 assembly rendering and interaction repair */
+.assembly-selected-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+.assembly-selected-grid .control-label{margin-bottom:0;min-width:0;gap:12px}
+.assembly-selected-grid .assembly-select{width:128px;flex:0 0 128px}
+.assembly-selected-grid .number-wrap{flex-shrink:0}
+.assembly-add-grid,.assembly-actions{gap:8px}
+.assembly-add,.assembly-actions button{min-height:44px}
+.stage [data-assembly-handle="scale"],.stage [data-assembly-handle="scale"] *{pointer-events:all}
+body[data-logo="assembly"] .controls-scroll{overflow-x:hidden}
+@media(max-width:760px){.assembly-actions{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:580px){.assembly-add-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.assembly-actions button{font-size:10px}.assembly-add{font-size:11px}.assembly-selected-grid .assembly-select{font-size:16px}}
+
 </style>
 </head>
 <body data-screen="home" data-logo="l">
@@ -200,32 +214,28 @@ function cleanModel(candidate){
   constrainPeel(s);return s;
 }
 function cleanAssemblyModel(candidate){
-  const base=clone(ASSEMBLY_DEFAULTS),s={...base,items:clone(base.items)};
+  const s=clone(ASSEMBLY_DEFAULTS);
   if(candidate&&typeof candidate==='object'){
     for(const k of ['showMeasures','showGrid','showHandles','snap','snapSpacing'])if(typeof candidate[k]==='boolean')s[k]=candidate[k];
     if(/^#[0-9a-f]{6}$/i.test(candidate.canvas||''))s.canvas=candidate.canvas;
-    if(Number.isFinite(Number(candidate.nextId)))s.nextId=Math.max(1,Math.floor(Number(candidate.nextId)));
-    if(candidate.selectedId===null)s.selectedId=null;
-    else if(Number.isFinite(Number(candidate.selectedId)))s.selectedId=Math.floor(Number(candidate.selectedId));
+    if(Number.isSafeInteger(candidate.nextId)&&candidate.nextId>0)s.nextId=candidate.nextId;
+    s.selectedId=Number.isSafeInteger(candidate.selectedId)?candidate.selectedId:null;
     if(Array.isArray(candidate.items)){
-      const cleaned=[];
-      for(const raw of candidate.items.slice(0,120)){
-        if(!raw||typeof raw!=='object')continue;
-        const logo=ASSEMBLY_LOGOS.includes(raw.logo)?raw.logo:'l';
-        const id=Number.isFinite(Number(raw.id))?Math.max(1,Math.floor(Number(raw.id))):null;
-        if(id===null)continue;
-        const x=round(Number.isFinite(Number(raw.x))?Number(raw.x):0);
-        const y=round(Number.isFinite(Number(raw.y))?Number(raw.y):0);
-        const scale=round(clamp(Number.isFinite(Number(raw.scale))?Number(raw.scale):1,.1,8));
-        cleaned.push({id,logo,x,y,scale});
+      const ids=new Set();s.items=[];
+      for(const raw of candidate.items){
+        if(!raw||!ASSEMBLY_LOGOS.includes(raw.logo))continue;
+        let id=raw.id;
+        if(!Number.isSafeInteger(id)||id<1||ids.has(id)){
+          id=Math.max(1,s.nextId);while(ids.has(id))id++;
+        }
+        ids.add(id);s.nextId=Math.max(s.nextId,id+1);
+        const validNumber=(value,fallback)=>value!==null&&value!==''&&Number.isFinite(Number(value))?Number(value):fallback;
+        s.items.push({id,logo:raw.logo,x:round(validNumber(raw.x,0)),y:round(validNumber(raw.y,0)),scale:round(clamp(validNumber(raw.scale,1),.1,8))});
       }
-      if(cleaned.length)s.items=cleaned;
     }
   }
-  if(!s.items.length)s.items=clone(base.items);
-  const ids=s.items.map(item=>item.id);
   if(!s.items.some(item=>item.id===s.selectedId))s.selectedId=s.items[0]?.id??null;
-  s.nextId=Math.max(s.nextId,(ids.length?Math.max(...ids):0)+1);
+  s.nextId=Math.max(s.nextId,...s.items.map(item=>item.id+1));
   return s;
 }
 let state=cleanModel(boot.models?.l||boot.model);
@@ -321,19 +331,19 @@ function mix(hex,target,t){const a=hex.slice(1).match(/../g).map(x=>parseInt(x,1
 function fitCamera(){
   const g=currentGeometry(),w=size.w,h=size.h;
   // These gutters are in screen pixels; dimensions remain legible on phones.
-  const margin=state.showMeasures?(activeLogo==='g'?{l:64,r:34,t:98,b:102}:activeLogo==='z'?{l:64,r:34,t:72,b:102}:activeLogo==='a'?{l:64,r:34,t:72,b:112}:{l:65,r:67,t:111,b:61}):{l:40,r:40,t:73,b:58};
-  const scale=Math.max(.01,Math.min((w-margin.l-margin.r)/g.L,(h-margin.t-margin.b)/g.totalH));
+  const margin=activeLogo==='assembly'?{l:45,r:45,t:98,b:80}:state.showMeasures?(activeLogo==='g'?{l:64,r:34,t:98,b:102}:activeLogo==='z'?{l:64,r:34,t:72,b:102}:activeLogo==='a'?{l:64,r:34,t:72,b:112}:{l:65,r:67,t:111,b:61}):{l:40,r:40,t:73,b:58};
+  const scale=Math.max(activeLogo==='assembly'?1e-9:.01,Math.min(Math.max(1,w-margin.l-margin.r)/g.L,Math.max(1,h-margin.t-margin.b)/g.totalH));
   camera.w=w/scale;camera.h=h/scale;
-  camera.x=-margin.l/scale-Math.max(0,(w-margin.l-margin.r)/scale-g.L)/2;
+  camera.x=(activeLogo==='assembly'?g.minX:0)-margin.l/scale-Math.max(0,(w-margin.l-margin.r)/scale-g.L)/2;
   camera.y=g.top-margin.t/scale-Math.max(0,(h-margin.t-margin.b)/scale-g.totalH)/2;
   fitScale=scale;ready=true;queueRender(false);
 }
 function zoom(factor){
-  const old=camera.w,newW=clamp(old/factor,.15,1000),real=old/newW;
+  const old=camera.w,newW=clamp(old/factor,.15,activeLogo==='assembly'?1e9:1000),real=old/newW;
   const cx=camera.x+old/2,cy=camera.y+camera.h/2;
   camera.w=newW;camera.h/=real;camera.x=cx-camera.w/2;camera.y=cy-camera.h/2;queueRender(false);
 }
-function queueRender(controls=false){renderNeedsControls=renderNeedsControls||controls;if(raf)return;raf=requestAnimationFrame(()=>{raf=0;render();if(renderNeedsControls){syncControls();renderNeedsControls=false;}})}
+function queueRender(controls=false){renderNeedsControls=renderNeedsControls||controls;if(raf)return;raf=requestAnimationFrame(()=>{raf=0;try{render();}finally{if(renderNeedsControls){renderNeedsControls=false;syncControls();}}})}
 function paintRange(el){const min=Number(el.min),max=Number(el.max);const pct=max===min?0:clamp((Number(el.value)-min)/(max-min)*100,0,100);el.style.setProperty('--pct',pct+'%')}
 function syncLControls(){
   for(const k of KEYS){const {num,range}=inputMap[k],[min,max]=limits(k);range.min=nstr(min);const sliderMax=['length','height'].includes(k)?Math.min(max,Math.max(k==='length'?20:25,state[k])):max;range.max=nstr(sliderMax);range.value=state[k];num.min=nstr(min);num.max=nstr(max);if(document.activeElement!==num)num.value=fmt(state[k]);paintRange(range);}
@@ -524,7 +534,8 @@ function render(){
   $('stage-card').style.backgroundColor=state.canvas;
   $('zoom-label').textContent=Math.round((1/u)/fitScale*100)+'%';
   const g=currentGeometry(),gap=5*u;
-  $('out-of-view').hidden=!(0<camera.x-gap||g.L>camera.x+camera.w+gap||g.top<camera.y-gap||g.bottom>camera.y+camera.h+gap);
+  const minX=activeLogo==='assembly'?g.minX:0,maxX=activeLogo==='assembly'?g.maxX:g.L;
+  $('out-of-view').hidden=!(minX<camera.x-gap||maxX>camera.x+camera.w+gap||g.top<camera.y-gap||g.bottom>camera.y+camera.h+gap);
 }
 // Inputs: preserve the active text field while typing, including incomplete decimals.
 for(const k of KEYS){
@@ -560,7 +571,7 @@ $('golden-preset').addEventListener('click',()=>{
 $('undo').addEventListener('click',undo);$('redo').addEventListener('click',redo);
 $('fit-view').addEventListener('click',fitCamera);$('out-of-view').addEventListener('click',fitCamera);
 $('zoom-in').addEventListener('click',()=>zoom(1.18));$('zoom-out').addEventListener('click',()=>zoom(1/1.18));
-svg.addEventListener('dblclick',e=>{if(!e.target.closest('[data-handle]'))fitCamera()});
+svg.addEventListener('dblclick',e=>{if(!e.target.closest('[data-handle],[data-assembly-handle]'))fitCamera()});
 function pointerUnit(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const matrix=svg.getScreenCTM();return matrix?pt.matrixTransform(matrix.inverse()):{x:0,y:0}}
 svg.addEventListener('pointerdown',e=>{
   if(e.button!==0||activePointer)return;
@@ -589,10 +600,10 @@ svg.addEventListener('pointermove',e=>{
   if(activeLogo==='assembly'){
     const p=pointerUnit(e),dx=p.x-a.start.x,dy=p.y-a.start.y;
     if(a.key==='assembly-drag'){
-      let x=a.item.x+dx,y=a.item.y+dy;const snapped=state.snap?assemblySnapCandidates(a.itemId,x,y):{x:round(x),y:round(y),guides:[]};assemblyGuides=snapped.guides;assemblyReplaceItem(a.itemId,{x:snapped.x,y:snapped.y},{quiet:true});a.moved=true;return;
+      let x=a.item.x+dx,y=a.item.y+dy;const snapped=state.snap&&!e.altKey?assemblySnapCandidates(a.itemId,x,y):{x:round(x),y:round(y),guides:[]};assemblyGuides=snapped.guides;assemblyReplaceItem(a.itemId,{x:snapped.x,y:snapped.y},{quiet:true});a.moved=true;return;
     }
     if(a.key==='assembly-scale'){
-      const startBounds=assemblyItemBounds(a.item,a.model),dw=(p.x-a.start.x)/Math.max(startBounds.base.width,.001),dh=(p.y-a.start.y)/Math.max(startBounds.base.height,.001);const scale=round(clamp(a.item.scale+Math.max(dw,dh),.1,8));assemblyGuides=[];assemblyReplaceItem(a.itemId,{scale},{quiet:true});a.moved=true;return;
+      const base=assemblyItemBounds(a.item,a.model).base;const delta=((p.x-a.start.x)*base.width+(p.y-a.start.y)*base.height)/(base.width*base.width+base.height*base.height);const scale=round(clamp(a.item.scale+delta,.1,8));assemblyGuides=[];assemblyReplaceItem(a.itemId,{scale},{quiet:true});a.moved=true;return;
     }
     camera.x=a.camera.x-(e.clientX-a.startClient.x)*a.camera.w/size.w;camera.y=a.camera.y-(e.clientY-a.startClient.y)*a.camera.h/size.h;queueRender(false);return;
   }
@@ -650,9 +661,11 @@ const resizeObserver=new ResizeObserver(entries=>{const r=entries[0].contentRect
 resizeObserver.observe($('stage-card'));
 // Artwork exports are created from geometry, never from a screenshot of the UI.
 function artworkSvg({measures=false,transparent=true,longest=2048}={}){
+  if(activeLogo==='assembly'&&!state.items.length)throw new Error('The assembly is empty. Add a logo before exporting.');
   const g=currentGeometry(),max=Math.max(g.L,g.totalH);
   const u=max/560;
-  const margin=measures?(activeLogo==='g'?{l:65*u,r:35*u,t:58*u,b:70*u}:activeLogo==='z'||activeLogo==='a'?{l:65*u,r:35*u,t:30*u,b:70*u}:activeLogo==='assembly'?{l:36*u,r:36*u,t:36*u,b:36*u}:{l:65*u,r:67*u,t:75*u,b:24*u}):{l:.48,r:.48,t:.30,b:.53};
+  const margin=measures?(activeLogo==='g'?{l:65*u,r:35*u,t:58*u,b:70*u}:activeLogo==='z'||activeLogo==='a'?{l:65*u,r:35*u,t:30*u,b:70*u}:activeLogo==='assembly'?{l:75*u,r:36*u,t:36*u,b:65*u}:{l:65*u,r:67*u,t:75*u,b:24*u}):{l:.48,r:.48,t:.30,b:.53};
+  if(activeLogo==='assembly'){const shadowPad=Math.max(.5,...state.items.map(item=>item.scale*.5));for(const k of ['l','r','t','b'])margin[k]=Math.max(margin[k],shadowPad);}
   const view=activeLogo==='assembly'?{x:g.minX-margin.l,y:g.top-margin.t,w:g.L+margin.l+margin.r,h:g.totalH+margin.t+margin.b}:{x:-margin.l,y:g.top-margin.t,w:g.L+margin.l+margin.r,h:g.totalH+margin.t+margin.b};
   const width=Math.max(1,Math.round(longest*view.w/Math.max(view.w,view.h))),height=Math.max(1,Math.round(longest*view.h/Math.max(view.w,view.h)));
   let body=currentScene(state,{u,view,measures,grid:false,handles:false,bg:transparent?null:state.canvas});
@@ -676,7 +689,7 @@ $('save-html').addEventListener('click',()=>{
     root.querySelector('#export-link').removeAttribute('href');root.querySelector('#stage').innerHTML='';root.querySelector('#stage').classList.remove('panning');root.querySelector('#toast').classList.remove('visible');
     root.querySelector('body').dataset.screen='home';root.querySelector('#home-screen').hidden=false;root.querySelector('#editor-workspace').hidden=true;root.querySelector('#back-home').hidden=true;root.querySelector('#open-export').hidden=true;
     root.querySelectorAll('input,button,select').forEach(el=>el.removeAttribute('autofocus'));
-    createDownload(new Blob(['<!DOCTYPE html>\n'+root.outerHTML],{type:'text/html;charset=utf-8'}),'ribbon-logo-studio-l-a-z-g-assembly.html');tell('Editable HTML created with your current settings.');
+    createDownload(new Blob(['<!DOCTYPE html>\n'+root.outerHTML],{type:'text/html;charset=utf-8'}),'ribbon-logo-studio-l-a-z-g-v5.html');tell('Editable HTML created with your current settings.');
   }catch(err){tell('The editor could not be saved: '+err.message)}
 });
 function exportFormat(){return document.querySelector('input[name="export-format"]:checked').value}
@@ -1515,22 +1528,247 @@ $('g-reference-preset').addEventListener('click',()=>{
 function geometryForMode(mode,s){return mode==='g'?gGeometry(s):mode==='z'?zGeometry(s):mode==='a'?aGeometry(s):geometry(s);}
 function sceneForMode(mode,s,options){return mode==='g'?gScene(s,options):mode==='z'?zScene(s,options):mode==='a'?aScene(s,options):scene(s,options);}
 function logoBoundsForMode(mode,s){const g=geometryForMode(mode,s),width=Number.isFinite(g.L)?g.L:g.W;return {left:0,top:g.top,right:width,bottom:g.bottom,width,height:g.totalH};}
-function assemblySelectedItem(s=state){return s.items?.find(item=>item.id===s.selectedId)||null;}
-function assemblyItemBounds(item,s=state){const base=logoBoundsForMode(item.logo,models[item.logo]);const width=base.width*item.scale,height=base.height*item.scale;return {left:item.x,top:item.y,right:item.x+width,bottom:item.y+height,width,height,centerX:item.x+width/2,centerY:item.y+height/2,base};}
-function assemblyGeometry(s=state){if(!s.items?.length)return {L:15,totalH:8,top:-6,bottom:2,minX:0,maxX:15,minY:-6,maxY:2};let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;for(const item of s.items){const b=assemblyItemBounds(item,s);minX=Math.min(minX,b.left);maxX=Math.max(maxX,b.right);minY=Math.min(minY,b.top);maxY=Math.max(maxY,b.bottom);}return {L:Math.max(.5,maxX-minX),totalH:Math.max(.5,maxY-minY),top:minY,bottom:maxY,minX,maxX,minY,maxY};}
-function assemblyGuideMarkup(u,enabled){if(!(enabled||assemblyGuides.length))return '';let markup='';for(const guide of assemblyGuides){if(guide.type==='v')markup+=line({x:guide.x,y:guide.y1},{x:guide.x,y:guide.y2},'#8db99f',.55*u,`${dash(1.8*u,1.4*u)} data-assembly-guide="1"`);else if(guide.type==='h')markup+=line({x:guide.x1,y:guide.y},{x:guide.x2,y:guide.y},'#8db99f',.55*u,`${dash(1.8*u,1.4*u)} data-assembly-guide="1"`);else if(guide.type==='gapH'){const col='#d7aa54';markup+=line({x:guide.x1,y:guide.y},{x:guide.x2,y:guide.y},col,.52*u,`data-assembly-guide="1"`)+line({x:guide.x3,y:guide.y},{x:guide.x4,y:guide.y},col,.52*u,`data-assembly-guide="1"`)+line({x:guide.x1,y:guide.y-2.2*u},{x:guide.x1,y:guide.y+2.2*u},col,.42*u,`data-assembly-guide="1"`)+line({x:guide.x2,y:guide.y-2.2*u},{x:guide.x2,y:guide.y+2.2*u},col,.42*u,`data-assembly-guide="1"`)+line({x:guide.x3,y:guide.y-2.2*u},{x:guide.x3,y:guide.y+2.2*u},col,.42*u,`data-assembly-guide="1"`)+line({x:guide.x4,y:guide.y-2.2*u},{x:guide.x4,y:guide.y+2.2*u},col,.42*u,`data-assembly-guide="1"`);}else if(guide.type==='gapV'){const col='#d7aa54';markup+=line({x:guide.x,y:guide.y1},{x:guide.x,y:guide.y2},col,.52*u,`data-assembly-guide="1"`)+line({x:guide.x,y:guide.y3},{x:guide.x,y:guide.y4},col,.52*u,`data-assembly-guide="1"`)+line({x:guide.x-2.2*u,y:guide.y1},{x:guide.x+2.2*u,y:guide.y1},col,.42*u,`data-assembly-guide="1"`)+line({x:guide.x-2.2*u,y:guide.y2},{x:guide.x+2.2*u,y:guide.y2},col,.42*u,`data-assembly-guide="1"`)+line({x:guide.x-2.2*u,y:guide.y3},{x:guide.x+2.2*u,y:guide.y3},col,.42*u,`data-assembly-guide="1"`)+line({x:guide.x-2.2*u,y:guide.y4},{x:guide.x+2.2*u,y:guide.y4},col,.42*u,`data-assembly-guide="1"`);}}return markup;}
-function assemblyScene(s,{u,view,measures,grid,handles,bg,interactive=false}){let markup=`<title>Assembly board</title><desc>Compose several ribbon logos together.</desc><defs>${gridPattern(u)}</defs>${bg?`<rect x="${nstr(view.x)}" y="${nstr(view.y)}" width="${nstr(view.w)}" height="${nstr(view.h)}" fill="${bg}"/>`:''}${grid?`<rect x="${nstr(view.x)}" y="${nstr(view.y)}" width="${nstr(view.w)}" height="${nstr(view.h)}" fill="url(#grid-pattern)" opacity=".6"/>`:''}`;if(!s.items.length){markup+=`<g opacity=".72"><text x="${nstr(view.x+view.w/2)}" y="${nstr(view.y+view.h/2-12*u)}" fill="#607168" font-size="${nstr(12*u)}" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="620">Add L, A, Z or G to start assembling a word.</text><text x="${nstr(view.x+view.w/2)}" y="${nstr(view.y+view.h/2+6*u)}" fill="#8a948b" font-size="${nstr(8*u)}" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">Drag logos to snap by edge, center and equal spacing.</text></g>`;}for(const item of s.items){const source=models[item.logo],base=logoBoundsForMode(item.logo,source),translateY=item.y-base.top*item.scale;const localView={x:0,y:base.top,w:base.width,h:base.height};markup+=`<g data-assembly-item="${item.id}" data-selected="${item.id===s.selectedId}" transform="translate(${nstr(item.x)} ${nstr(translateY)}) scale(${nstr(item.scale)})">${scopeSvg(sceneForMode(item.logo,source,{u:Math.max(base.width,base.height)/420,view:localView,measures:false,grid:false,handles:false,bg:null}),`assembly-${item.id}-`)}</g>`;}if(interactive&&(s.showMeasures||assemblyGuides.length))markup+=assemblyGuideMarkup(u,s.showMeasures);const reference=s.items[0]||null;if(interactive&&reference){const b=assemblyItemBounds(reference,s);markup+=`<g data-assembly-reference="1"><rect x="${nstr(b.left-.16)}" y="${nstr(b.top-.16)}" width="${nstr(b.width+.32)}" height="${nstr(b.height+.32)}" fill="none" stroke="#7aa190" stroke-width="${nstr(.16*u)}" opacity=".4" rx="${nstr(4*u)}"/><g transform="translate(${nstr(b.left)} ${nstr(b.top-8*u)})"><rect width="${nstr(22*u)}" height="${nstr(9*u)}" rx="${nstr(4.5*u)}" fill="#eef6f0" stroke="#c6d8cb" stroke-width="${nstr(.35*u)}"/><text x="${nstr(11*u)}" y="${nstr(6.1*u)}" text-anchor="middle" fill="#5b7467" font-size="${nstr(5*u)}" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-weight="700">REF</text></g></g>`;}const selected=assemblySelectedItem(s);if(interactive&&selected){const b=assemblyItemBounds(selected,s),pad=.18;markup+=`<g data-assembly-selection="1"><rect x="${nstr(b.left-pad)}" y="${nstr(b.top-pad)}" width="${nstr(b.width+pad*2)}" height="${nstr(b.height+pad*2)}" fill="none" stroke="#4d8f77" stroke-width="${nstr(.18*u)}" rx="${nstr(4*u)}"/><g transform="translate(${nstr(b.left)} ${nstr(b.top-10*u)})"><rect width="${nstr(28*u)}" height="${nstr(9*u)}" rx="${nstr(4.5*u)}" fill="#356e64" opacity=".95"/><text x="${nstr(14*u)}" y="${nstr(6.1*u)}" text-anchor="middle" fill="#fff" font-size="${nstr(5*u)}" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-weight="700">${selected.logo.toUpperCase()} #${selected.id}</text></g>${handles?`<g data-assembly-handle="scale" data-assembly-item="${selected.id}" transform="translate(${nstr(b.right)} ${nstr(b.bottom)})"><circle r="${nstr(4.6*u)}" fill="#fff" stroke="#356e64" stroke-width="${nstr(.6*u)}"/><path d="M${nstr(-1.8*u)} ${nstr(2*u)} 0 ${nstr(.2*u)} ${nstr(2*u)} ${nstr(-1.8*u)}" fill="none" stroke="#356e64" stroke-width="${nstr(.55*u)}" stroke-linecap="round" stroke-linejoin="round"/></g>`:''}</g>`;}return markup;}
-function assemblyReplaceItem(id,patch,{quiet=false}={}){const index=state.items.findIndex(item=>item.id===id);if(index<0)return;state.items[index]={...state.items[index],...patch};queueRender(true);if(!quiet)persist();}
+// Assembly scenes use their own SVG helpers. They must not depend on helpers
+// local to any single-letter renderer. Preview/export differ only by overlays.
+function assemblySelectedItem(s=state){
+  return s.items?.find(item=>item.id===s.selectedId)||null;
+}
+function assemblyItemBounds(item,s=state){
+  const base=logoBoundsForMode(item.logo,models[item.logo]);
+  const width=base.width*item.scale,height=base.height*item.scale;
+  return {left:item.x,top:item.y,right:item.x+width,bottom:item.y+height,
+    width,height,centerX:item.x+width/2,centerY:item.y+height/2,base};
+}
+function assemblyGeometry(s=state){
+  if(!s.items?.length)return {L:15,totalH:8,top:0,bottom:8,minX:0,maxX:15,minY:0,maxY:8};
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  for(const item of s.items){
+    const b=assemblyItemBounds(item,s);
+    minX=Math.min(minX,b.left);maxX=Math.max(maxX,b.right);
+    minY=Math.min(minY,b.top);maxY=Math.max(maxY,b.bottom);
+  }
+  return {L:Math.max(.001,maxX-minX),totalH:Math.max(.001,maxY-minY),
+    top:minY,bottom:maxY,minX,maxX,minY,maxY};
+}
+function assemblyLine(x1,y1,x2,y2,color='#538b75',width=1,extra=''){
+  return `<line x1="${nstr(x1)}" y1="${nstr(y1)}" x2="${nstr(x2)}" y2="${nstr(y2)}" fill="none" stroke="${color}" stroke-width="${width}" vector-effect="non-scaling-stroke" ${extra}/>`;
+}
+function assemblyLabel(x,y,text,u,{fill='#ffffff',color='#3d6554',align='center'}={}){
+  const w=(text.length*6+16)*u,h=21*u,left=align==='left'?0:-w/2;
+  return `<g transform="translate(${nstr(x)} ${nstr(y)})" pointer-events="none"><rect x="${nstr(left)}" y="${nstr(-h/2)}" width="${nstr(w)}" height="${nstr(h)}" rx="${nstr(5*u)}" fill="${fill}" fill-opacity=".97"/><text x="${nstr(left+w/2)}" y="0" dy=".34em" text-anchor="middle" font-size="${nstr(10.5*u)}" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-weight="600" fill="${color}">${text}</text></g>`;
+}
+function assemblyGridDefinition(u,canvas){
+  // Increase grid intervals as the view zooms out, instead of drawing millions
+  // of subpixel cells on a large wordmark. Units remain unchanged.
+  const desired=Math.max(1,24*u),power=10**Math.floor(Math.log10(desired));
+  const step=([1,2,5,10].find(n=>n*power>=desired)||10)*power;
+  const light=parseInt(canvas.slice(1,3),16)*.2126+parseInt(canvas.slice(3,5),16)*.7152+parseInt(canvas.slice(5,7),16)*.0722>120;
+  return `<pattern id="assembly-unit-grid" width="${nstr(step)}" height="${nstr(step)}" patternUnits="userSpaceOnUse"><path d="M ${nstr(step)} 0 H 0 V ${nstr(step)}" fill="none" stroke="${light?'#63796b':'#c7dacf'}" stroke-opacity=".19" stroke-width=".7" vector-effect="non-scaling-stroke"/></pattern>`;
+}
+function assemblyGuideMarkup(u,guides=assemblyGuides){
+  let markup='';
+  const green='#5d9b7d',gold='#b18737';
+  for(const guide of guides){
+    if(guide.type==='v')markup+=assemblyLine(guide.x,guide.y1,guide.x,guide.y2,green,1.25,'stroke-dasharray="5 4"');
+    else if(guide.type==='h')markup+=assemblyLine(guide.x1,guide.y,guide.x2,guide.y,green,1.25,'stroke-dasharray="5 4"');
+    else if(guide.type==='gapH'){
+      const pairs=[[guide.x1,guide.x2],[guide.x3,guide.x4]];
+      for(const [a,b] of pairs){
+        markup+=assemblyLine(a,guide.y,b,guide.y,gold,1.2);
+        markup+=assemblyLine(a,guide.y-4*u,a,guide.y+4*u,gold,1.2);
+        markup+=assemblyLine(b,guide.y-4*u,b,guide.y+4*u,gold,1.2);
+        markup+=assemblyLabel((a+b)/2,guide.y-12*u,fmt(Math.max(0,b-a))+' u',u,{fill:'#fff9eb',color:'#8a651f'});
+      }
+    }else if(guide.type==='gapV'){
+      for(const [a,b] of [[guide.y1,guide.y2],[guide.y3,guide.y4]]){
+        markup+=assemblyLine(guide.x,a,guide.x,b,gold,1.2);
+        markup+=assemblyLine(guide.x-4*u,a,guide.x+4*u,a,gold,1.2);
+        markup+=assemblyLine(guide.x-4*u,b,guide.x+4*u,b,gold,1.2);
+        markup+=assemblyLabel(guide.x+36*u,(a+b)/2,fmt(Math.max(0,b-a))+' u',u,{fill:'#fff9eb',color:'#8a651f'});
+      }
+    }
+  }
+  return `<g data-assembly-guide="1" pointer-events="none">${markup}</g>`;
+}
+function assemblyRulers(s,u){
+  if(!s.items.length)return '';
+  const g=assemblyGeometry(s),bottom=g.bottom+25*u,left=g.minX-25*u,col='#56806c';
+  let m=assemblyLine(g.minX,bottom,g.maxX,bottom,col);
+  m+=assemblyLine(g.minX,g.bottom,g.minX,bottom+4*u,col,.8,'opacity=".6"');
+  m+=assemblyLine(g.maxX,g.bottom,g.maxX,bottom+4*u,col,.8,'opacity=".6"');
+  m+=assemblyLabel((g.minX+g.maxX)/2,bottom+15*u,'W '+fmt(g.L)+' u',u);
+  m+=assemblyLine(left,g.top,left,g.bottom,col);
+  m+=assemblyLine(left-4*u,g.top,g.minX,g.top,col,.8,'opacity=".6"');
+  m+=assemblyLine(left-4*u,g.bottom,g.minX,g.bottom,col,.8,'opacity=".6"');
+  m+=`<g transform="translate(${nstr(left-15*u)} ${nstr((g.top+g.bottom)/2)}) rotate(-90)">${assemblyLabel(0,0,'H '+fmt(g.totalH)+' u',u)}</g>`;
+  return `<g id="assembly-measurements" pointer-events="none">${m}</g>`;
+}
+const assemblySourceCache=new Map();
+function assemblySourceMarkup(logo){
+  const source=models[logo],key=serialize(source),cached=assemblySourceCache.get(logo);
+  if(cached?.key===key)return cached.markup;
+  const base=logoBoundsForMode(logo,source),view={x:0,y:base.top,w:base.width,h:base.height};
+  const markup=sceneForMode(logo,source,{u:Math.max(base.width,base.height)/420,view,measures:false,grid:false,handles:false,bg:null});
+  assemblySourceCache.set(logo,{key,markup});return markup;
+}
+function assemblyScene(s,{u,view,measures=false,grid=false,handles=false,bg=null,interactive=false}){
+  let markup='<title>Ribbon logo assembly</title><desc>Wordmark assembled from the current edited L, A, Z and G vector designs.</desc>';
+  if(grid)markup+=`<defs>${assemblyGridDefinition(u,s.canvas)}</defs>`;
+  const rect=fill=>`<rect x="${nstr(view.x)}" y="${nstr(view.y)}" width="${nstr(view.w)}" height="${nstr(view.h)}" fill="${fill}"/>`;
+  if(bg)markup+=rect(bg);
+  if(grid)markup+=rect('url(#assembly-unit-grid)');
+  if(!s.items.length&&interactive){
+    const cx=view.x+view.w/2,cy=view.y+view.h/2;
+    markup+=`<g pointer-events="none" fill="#718377" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"><text x="${nstr(cx)}" y="${nstr(cy-10*u)}" font-size="${nstr(15*u)}" font-weight="600">Your assembly is empty.</text><text x="${nstr(cx)}" y="${nstr(cy+15*u)}" font-size="${nstr(11*u)}">Use Add L, A, Z or G to place a logo.</text></g>`;
+  }
+  markup+='<g id="assembly-artwork">';
+  for(const item of s.items){
+    const base=logoBoundsForMode(item.logo,models[item.logo]);
+    const translateY=item.y-base.top*item.scale;
+    // A separate prefix per instance avoids SVG gradient/clip collisions when
+    // the same letter appears twice, or also appears on a hidden home card.
+    markup+=`<g ${interactive?`data-assembly-item="${item.id}" data-selected="${item.id===s.selectedId}"`:''} transform="translate(${nstr(item.x)} ${nstr(translateY)}) scale(${nstr(item.scale)})">`;
+    if(interactive)markup+=`<rect x="0" y="${nstr(base.top)}" width="${nstr(base.width)}" height="${nstr(base.height)}" fill="transparent" pointer-events="all"/>`;
+    markup+=scopeSvg(assemblySourceMarkup(item.logo),`assembly-${item.id}-`)+'</g>';
+  }
+  markup+='</g>';
+  if(!interactive){if(measures)markup+=assemblyRulers(s,u);return markup;}
+  const reference=s.items[0]||null,selected=assemblySelectedItem(s),pad=4*u;
+  // Badges and outlines are overlays only, never included in artwork exports.
+  if(measures&&reference&&reference.id!==selected?.id){
+    const b=assemblyItemBounds(reference,s);
+    markup+=`<g data-assembly-reference="1" pointer-events="none"><rect x="${nstr(b.left-pad)}" y="${nstr(b.top-pad)}" width="${nstr(b.width+2*pad)}" height="${nstr(b.height+2*pad)}" fill="none" stroke="#70a38d" stroke-width="1" vector-effect="non-scaling-stroke" stroke-dasharray="4 4"/>${assemblyLabel(b.left,b.top-18*u,reference.logo.toUpperCase()+' #'+reference.id+' · REF',u,{align:'left',fill:'#edf5ee'})}</g>`;
+  }
+  if(selected){
+    const b=assemblyItemBounds(selected,s),tag=selected.logo.toUpperCase()+' #'+selected.id+(selected.id===reference?.id?' · REF':'');
+    markup+=`<g data-assembly-selection="1" pointer-events="none"><rect x="${nstr(b.left-pad)}" y="${nstr(b.top-pad)}" width="${nstr(b.width+2*pad)}" height="${nstr(b.height+2*pad)}" fill="none" stroke="#437f68" stroke-width="1.3" vector-effect="non-scaling-stroke"/>${assemblyLabel(b.left,b.top-18*u,tag,u,{align:'left',fill:'#356e64',color:'#ffffff'})}</g>`;
+    // Keep the handle outside pointer-events:none selection overlays.
+    if(handles)markup+=`<g data-assembly-handle="scale" data-assembly-item="${selected.id}" transform="translate(${nstr(b.right)} ${nstr(b.bottom)})" role="button" aria-label="Drag to scale selected logo" pointer-events="all"><title>Drag to scale ${selected.logo.toUpperCase()} #${selected.id}</title><circle r="${nstr(20*u)}" fill="transparent" pointer-events="all"/><circle r="${nstr(5.5*u)}" fill="#ffffff" stroke="#356e64" stroke-width="1.8" vector-effect="non-scaling-stroke" pointer-events="all"/></g>`;
+  }
+  if(measures&&assemblyGuides.length)markup+=assemblyGuideMarkup(u);
+  return markup;
+}
+function assemblyReplaceItem(id,patch,{quiet=false}={}){
+  const index=state.items.findIndex(item=>item.id===id);if(index<0)return;
+  state.items[index]={...state.items[index],...patch};queueRender(true);if(!quiet)persist();
+}
 function assemblySelect(id,{quiet=false}={}){state.selectedId=id;queueRender(true);if(!quiet)persist();}
-function assemblySnapCandidates(movingId,x,y){const current=state.items.find(item=>item.id===movingId);if(!current)return {x,y,guides:[]};const moving={...current,x:round(x),y:round(y)};const b=assemblyItemBounds(moving);const others=state.items.filter(item=>item.id!==movingId);const threshold=Math.max(.14,camera.w/Math.max(size.w,1)*10);let bestX=null,bestY=null,guides=[];const considerX=(value,dist,guide)=>{if(dist>threshold)return;if(!bestX||dist<bestX.dist)bestX={value:round(value),dist,guide};};const considerY=(value,dist,guide)=>{if(dist>threshold)return;if(!bestY||dist<bestY.dist)bestY={value:round(value),dist,guide};};for(const other of others){const ob=assemblyItemBounds(other);const y1=Math.min(b.top,ob.top)-.7,y2=Math.max(b.bottom,ob.bottom)+.7,x1=Math.min(b.left,ob.left)-.7,x2=Math.max(b.right,ob.right)+.7;considerX(ob.left,Math.abs(b.left-ob.left),{type:'v',x:ob.left,y1,y2});considerX(ob.centerX-b.width/2,Math.abs(b.centerX-ob.centerX),{type:'v',x:ob.centerX,y1,y2});considerX(ob.right-b.width,Math.abs(b.right-ob.right),{type:'v',x:ob.right,y1,y2});considerY(ob.top,Math.abs(b.top-ob.top),{type:'h',y:ob.top,x1,x2});considerY(ob.centerY-b.height/2,Math.abs(b.centerY-ob.centerY),{type:'h',y:ob.centerY,x1,x2});considerY(ob.bottom-b.height,Math.abs(b.bottom-ob.bottom),{type:'h',y:ob.bottom,x1,x2});}
-  if(state.snapSpacing&&others.length>=2){const stationary=others.map(item=>({item,b:assemblyItemBounds(item)}));for(let i=0;i<stationary.length;i++)for(let j=i+1;j<stationary.length;j++){const a=stationary[i].b,bb=stationary[j].b,rowY=(a.centerY+bb.centerY)/2,colX=(a.centerX+bb.centerX)/2;if(Math.abs(a.centerY-bb.centerY)<=threshold*2.2){const pair=[a,bb].sort((m,n)=>m.left-n.left),left=pair[0],right=pair[1],gap=right.left-left.right;if(gap>threshold*.4&&Math.abs(b.centerY-rowY)<=Math.max(threshold*2,b.height*.45)){const between=(left.right+right.left-b.width)/2,after=right.right+gap,before=left.left-gap-b.width;considerX(between,Math.abs(b.left-between),{type:'gapH',y:rowY,x1:left.right,x2:between,x3:between+b.width,x4:right.left});considerY(rowY-b.height/2,Math.abs(b.centerY-rowY),{type:'h',y:rowY,x1:Math.min(left.left,b.left)-.7,x2:Math.max(right.right,b.right)+.7});considerX(after,Math.abs(b.left-after),{type:'gapH',y:rowY,x1:left.right,x2:right.left,x3:right.right,x4:after});considerY(rowY-b.height/2,Math.abs(b.centerY-rowY),{type:'h',y:rowY,x1:Math.min(left.left,b.left)-.7,x2:Math.max(after+b.width,right.right)+.7});considerX(before,Math.abs(b.left-before),{type:'gapH',y:rowY,x1:before+b.width,x2:left.left,x3:left.right,x4:right.left});considerY(rowY-b.height/2,Math.abs(b.centerY-rowY),{type:'h',y:rowY,x1:Math.min(before,left.left)-.7,x2:Math.max(right.right,b.right)+.7});}}if(Math.abs(a.centerX-bb.centerX)<=threshold*2.2){const pair=[a,bb].sort((m,n)=>m.top-n.top),top=pair[0],bottom=pair[1],gap=bottom.top-top.bottom;if(gap>threshold*.4&&Math.abs(b.centerX-colX)<=Math.max(threshold*2,b.width*.45)){const between=(top.bottom+bottom.top-b.height)/2,after=bottom.bottom+gap,before=top.top-gap-b.height;considerY(between,Math.abs(b.top-between),{type:'gapV',x:colX,y1:top.bottom,y2:between,y3:between+b.height,y4:bottom.top});considerX(colX-b.width/2,Math.abs(b.centerX-colX),{type:'v',x:colX,y1:Math.min(top.top,b.top)-.7,y2:Math.max(bottom.bottom,b.bottom)+.7});considerY(after,Math.abs(b.top-after),{type:'gapV',x:colX,y1:top.bottom,y2:bottom.top,y3:bottom.bottom,y4:after});considerX(colX-b.width/2,Math.abs(b.centerX-colX),{type:'v',x:colX,y1:Math.min(top.top,b.top)-.7,y2:Math.max(after+b.height,bottom.bottom)+.7});considerY(before,Math.abs(b.top-before),{type:'gapV',x:colX,y1:before+b.height,y2:top.top,y3:top.bottom,y4:bottom.top});considerX(colX-b.width/2,Math.abs(b.centerX-colX),{type:'v',x:colX,y1:Math.min(before,top.top)-.7,y2:Math.max(bottom.bottom,b.bottom)+.7});}}}}
-  if(bestX){x=bestX.value;guides.push(bestX.guide);}if(bestY){y=bestY.value;guides.push(bestY.guide);}return {x,y,guides};}
-function addAssemblyItem(logo,{x=null,y=null,scale=1,select=true}={}){if(!ASSEMBLY_LOGOS.includes(logo))logo='l';const items=state.items||[];let nextX=0,nextY=0;if(items.length){const last=assemblySelectedItem()||items[items.length-1],b=assemblyItemBounds(last);nextX=b.right+1.1;nextY=last.y;}const item={id:state.nextId,logo,x:round(x??nextX),y:round(y??nextY),scale:round(clamp(scale,.1,8))};state.nextId++;state.items.push(item);if(select)state.selectedId=item.id;queueRender(true);persist();return item;}
-function duplicateAssemblySelected(){const item=assemblySelectedItem();if(!item)return;const dup=addAssemblyItem(item.logo,{x:item.x+.9,y:item.y+.9,scale:item.scale,select:true});notice('');commit();return dup;}
-function deleteAssemblySelected(){const item=assemblySelectedItem();if(!item)return;state.items=state.items.filter(entry=>entry.id!==item.id);state.selectedId=state.items[0]?.id??null;assemblyGuides=[];queueRender(true);commit();}
-function starterAssemblyRow(){const items=[];let x=0;for(const logo of ASSEMBLY_LOGOS){const base=logoBoundsForMode(logo,models[logo]);items.push({id:items.length+1,logo,x:round(x),y:0,scale:1});x+=base.width+1.15;}state.items=items;state.selectedId=items[0]?.id??null;state.nextId=items.length+1;assemblyGuides=[];queueRender(true);fitCamera();commit();notice('');tell('Assembly starter row created from your current logo designs.');}
-function syncAssemblyControls(){const selected=assemblySelectedItem(),g=assemblyGeometry();$('assembly-reference-note').innerHTML=state.items.length?`Reference logo · <strong>${state.items[0].logo.toUpperCase()} #${state.items[0].id}</strong>. Other logos snap to it and to the rest of the board.`:'Add a logo to begin assembling.';$('assembly-selected-label').textContent=selected?`${selected.logo.toUpperCase()} #${selected.id}`:'No selection';$('assembly-snap').checked=!!state.snap;$('assembly-spacing').checked=!!state.snapSpacing;$('assembly-guide-toggle').checked=!!state.showMeasures;$('assembly-canvas').value=state.canvas;for(const [id,key] of [['measure-toggle','showMeasures'],['grid-toggle','showGrid'],['handles-toggle','showHandles']])$(id).setAttribute('aria-pressed',state[key]);$('stat-peel').innerHTML=`${state.items.length}<small>items</small>`;$('stat-width').innerHTML=`${state.snap?'Snap':'Free'}<small>${state.snapSpacing?'gap on':'gap off'}</small>`;$('stat-bounds').innerHTML=`${fmt(g.L)} × ${fmt(g.totalH)} <small>u</small>`;$('stage-help').textContent=state.showHandles?'Drag a logo to move · Drag the corner handle to scale · Drag canvas to pan':'Drag a logo to move · Drag canvas to pan · Double-click to fit';const disabled=!selected;for(const id of ['assembly-logo-type','assembly-x','assembly-y','assembly-scale','assembly-duplicate','assembly-delete'])$(id).disabled=disabled;if(selected){$('assembly-logo-type').value=selected.logo;if(document.activeElement!==$('assembly-x'))$('assembly-x').value=fmt(selected.x);if(document.activeElement!==$('assembly-y'))$('assembly-y').value=fmt(selected.y);if(document.activeElement!==$('assembly-scale'))$('assembly-scale').value=fmt(selected.scale);}else{$('assembly-x').value='';$('assembly-y').value='';$('assembly-scale').value='';}}
-function nudgeAssembly(dx,dy){const item=assemblySelectedItem();if(!item)return;assemblyReplaceItem(item.id,{x:round(item.x+dx),y:round(item.y+dy)},{quiet:true});assemblyGuides=[];commit();}
+function assemblySnapCandidates(movingId,x,y){
+  const current=state.items.find(item=>item.id===movingId);if(!current)return {x,y,guides:[]};
+  const moving={...current,x,y},b=assemblyItemBounds(moving);
+  const others=state.items.filter(item=>item.id!==movingId),threshold=camera.w/Math.max(1,size.w)*9;
+  let bestX=null,bestY=null;
+  const consider=(axis,value,guide,priority=0)=>{
+    const distance=Math.abs((axis==='x'?x:y)-value);if(distance>threshold)return;
+    const previous=axis==='x'?bestX:bestY;
+    if(!previous||distance<previous.distance-1e-9||(Math.abs(distance-previous.distance)<1e-9&&priority>previous.priority)){
+      const candidate={value:round(value),guide,distance,priority};
+      if(axis==='x')bestX=candidate;else bestY=candidate;
+    }
+  };
+  const all=others.map(item=>({item,b:assemblyItemBounds(item)}));
+  // The first placed letter wins equally close alignment matches. Other
+  // letters remain valid targets, as in presentation software's smart guides.
+  for(const {item,b:ob} of all){
+    const priority=item.id===state.items[0]?.id?2:1;
+    const y1=Math.min(b.top,ob.top)-.5,y2=Math.max(b.bottom,ob.bottom)+.5;
+    const x1=Math.min(b.left,ob.left)-.5,x2=Math.max(b.right,ob.right)+.5;
+    for(const [value,lineX] of [[ob.left,ob.left],[ob.centerX-b.width/2,ob.centerX],[ob.right-b.width,ob.right]])
+      consider('x',value,{type:'v',x:lineX,y1,y2},priority);
+    for(const [value,lineY] of [[ob.top,ob.top],[ob.centerY-b.height/2,ob.centerY],[ob.bottom-b.height,ob.bottom]])
+      consider('y',value,{type:'h',y:lineY,x1,x2},priority);
+  }
+  if(state.snapSpacing&&all.length>=2){
+    const overlaps=(a1,a2,b1,b2)=>Math.min(a2,b2)-Math.max(a1,b1)>=-threshold;
+    for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length;j++){
+      const a=all[i].b,c=all[j].b;
+      if(overlaps(a.top,a.bottom,c.top,c.bottom)&&overlaps(b.top,b.bottom,Math.min(a.top,c.top),Math.max(a.bottom,c.bottom))){
+        const [left,right]=[a,c].sort((m,n)=>m.left-n.left),gap=right.left-left.right;
+        // Only use neighboring stationary letters. Unrelated gaps or hidden
+        // intervening objects should not pull the moving item into overlaps.
+        const intervening=all.some(({b:d})=>d!==a&&d!==c&&d.left>=left.right&&d.right<=right.left&&overlaps(d.top,d.bottom,left.top,left.bottom));
+        if(gap>=0&&!intervening){
+          const gy=Math.max(a.bottom,c.bottom,b.bottom)+22*camera.w/size.w;
+          const after=right.right+gap,before=left.left-gap-b.width;
+          consider('x',after,{type:'gapH',y:gy,x1:left.right,x2:right.left,x3:right.right,x4:after});
+          consider('x',before,{type:'gapH',y:gy,x1:before+b.width,x2:left.left,x3:left.right,x4:right.left});
+          if(gap>=b.width){
+            const between=(left.right+right.left-b.width)/2;
+            consider('x',between,{type:'gapH',y:gy,x1:left.right,x2:between,x3:between+b.width,x4:right.left});
+          }
+        }
+      }
+      if(overlaps(a.left,a.right,c.left,c.right)&&overlaps(b.left,b.right,Math.min(a.left,c.left),Math.max(a.right,c.right))){
+        const [top,bottom]=[a,c].sort((m,n)=>m.top-n.top),gap=bottom.top-top.bottom;
+        const intervening=all.some(({b:d})=>d!==a&&d!==c&&d.top>=top.bottom&&d.bottom<=bottom.top&&overlaps(d.left,d.right,top.left,top.right));
+        if(gap>=0&&!intervening){
+          const gx=Math.max(a.right,c.right,b.right)+20*camera.w/size.w;
+          const after=bottom.bottom+gap,before=top.top-gap-b.height;
+          consider('y',after,{type:'gapV',x:gx,y1:top.bottom,y2:bottom.top,y3:bottom.bottom,y4:after});
+          consider('y',before,{type:'gapV',x:gx,y1:before+b.height,y2:top.top,y3:top.bottom,y4:bottom.top});
+          if(gap>=b.height){
+            const between=(top.bottom+bottom.top-b.height)/2;
+            consider('y',between,{type:'gapV',x:gx,y1:top.bottom,y2:between,y3:between+b.height,y4:bottom.top});
+          }
+        }
+      }
+    }
+  }
+  return {x:bestX?.value??round(x),y:bestY?.value??round(y),guides:[bestX?.guide,bestY?.guide].filter(Boolean)};
+}
+function addAssemblyItem(logo,{x=null,y=null,scale=1,select=true}={}){
+  if(!ASSEMBLY_LOGOS.includes(logo))return null;
+  const items=state.items||[],reference=items[0];
+  // Place at the board's rightmost edge, not on top of a letter to the right of
+  // the current selection. A user can then move it to any desired position.
+  const nextX=items.length?Math.max(...items.map(item=>assemblyItemBounds(item).right))+1.1:0;
+  const nextY=reference?.y??0;
+  const item={id:state.nextId++,logo,x:round(x??nextX),y:round(y??nextY),scale:round(clamp(scale,.1,8))};
+  state.items.push(item);if(select)state.selectedId=item.id;
+  queueRender(true);persist();return item;
+}
+function duplicateAssemblySelected(){
+  const item=assemblySelectedItem();if(!item)return;
+  const dup=addAssemblyItem(item.logo,{x:item.x+.9,y:item.y+.9,scale:item.scale});
+  notice('');fitCamera();commit();return dup;
+}
+function deleteAssemblySelected(){
+  const item=assemblySelectedItem();if(!item)return;
+  state.items=state.items.filter(entry=>entry.id!==item.id);state.selectedId=state.items[0]?.id??null;
+  assemblyGuides=[];queueRender(true);commit();
+}
+function starterAssemblyRow(){
+  const items=[];let x=0;
+  for(const logo of ASSEMBLY_LOGOS){
+    const base=logoBoundsForMode(logo,models[logo]);
+    items.push({id:items.length+1,logo,x:round(x),y:0,scale:1});x+=base.width+1.15;
+  }
+  state.items=items;state.selectedId=items[0]?.id??null;state.nextId=items.length+1;
+  assemblyGuides=[];queueRender(true);fitCamera();commit();notice('');
+  tell('Assembly starter row created from your current logo designs.');
+}
+function syncAssemblyControls(){
+  const selected=assemblySelectedItem(),g=assemblyGeometry();
+  $('assembly-reference-note').innerHTML=state.items.length?`Reference logo · <strong>${state.items[0].logo.toUpperCase()} #${state.items[0].id}</strong>. Other logos snap to it and to the rest of the board.`:'Add a logo to begin assembling.';
+  $('assembly-selected-label').textContent=selected?`${selected.logo.toUpperCase()} #${selected.id}`:'No selection';
+  $('assembly-snap').checked=!!state.snap;$('assembly-spacing').checked=!!state.snapSpacing;
+  $('assembly-guide-toggle').checked=!!state.showMeasures;$('assembly-canvas').value=state.canvas;
+  for(const [id,key] of [['measure-toggle','showMeasures'],['grid-toggle','showGrid'],['handles-toggle','showHandles']])$(id).setAttribute('aria-pressed',state[key]);
+  $('stat-peel').innerHTML=`${state.items.length} <small>items</small>`;
+  $('stat-width').innerHTML=`${state.snap?'Snap':'Free'} <small>${state.snapSpacing?'gaps on':'gaps off'}</small>`;
+  $('stat-bounds').innerHTML=`${fmt(g.L)} × ${fmt(g.totalH)} <small>u</small>`;
+  $('stage-help').textContent=state.showHandles?'Drag logos · Corner to scale · Empty canvas to pan':'Drag logos · Empty canvas to pan · Double-click to fit';
+  for(const id of ['assembly-logo-type','assembly-x','assembly-y','assembly-scale','assembly-duplicate','assembly-delete'])$(id).disabled=!selected;
+  if(selected){
+    $('assembly-logo-type').value=selected.logo;
+    for(const k of ['x','y','scale'])if(document.activeElement!==$('assembly-'+k))$('assembly-'+k).value=fmt(selected[k]);
+  }else for(const k of ['x','y','scale'])$('assembly-'+k).value='';
+}
+function nudgeAssembly(dx,dy){
+  const item=assemblySelectedItem();if(!item)return;
+  assemblyReplaceItem(item.id,{x:round(item.x+dx),y:round(item.y+dy)},{quiet:true});assemblyGuides=[];commit();
+}
+
 // ---------------------------------------------------------------------------
 // Shared studio shell: switching never converts or rescales an existing logo.
 // ---------------------------------------------------------------------------
@@ -1588,13 +1826,16 @@ function enterLogo(mode){
   $('home-screen').hidden=true;$('editor-workspace').hidden=false;$('back-home').hidden=false;$('open-export').hidden=false;
   for(const item of LOGO_MODES)$(item+'-controls').hidden=mode!==item;
   $('finish-details').hidden=mode==='assembly';
+  const measureButton=$('measure-toggle');
+  for(const node of measureButton.childNodes)if(node.nodeType===Node.TEXT_NODE&&node.textContent.trim())node.textContent=mode==='assembly'?'Guides':'Measures';
+  measureButton.title=mode==='assembly'?'Show or hide snapping guide overlays (M)':'Show or hide measurements (M)';
   $('fold').closest('.measure-row').hidden=mode==='z'||mode==='g'||mode==='assembly';
   $('active-logo-name').textContent=mode==='assembly'?'Assembly board':mode==='g'?'Folded G':mode==='z'?'Folded Z':mode==='l'?'Original L':'Folded A';
   document.querySelector('label[for="fold"]').textContent=mode==='l'?'Lower fold':'Top fold bend';
   $('back-color-label').textContent=mode==='l'?'Back':'Rear face';
   $('back-color').setAttribute('aria-label',mode==='l'?'Peeled back color':'Rear ribbon face color');
   $('sidebar-description').innerHTML=mode==='assembly'?'<strong>Build words from your ribbon logos.</strong> Add copies of your current L, A, Z and G designs, then drag them on one board. The first item acts as the reference marker. Smart guides help align edges, centers and equal spacing, similar to presentation software.':mode==='g'?'<strong>Five tapes. Four folded turns.</strong> Overall width measures the widest part. Its control moves both right edges together; Top horizontal length moves only the upper tip. Tape widths stay constant along straight runs. The middle bar shifts only when thicker tape needs room. Both right-side corner cuts remain editable.':mode==='z'?'<strong>A Z made from three tapes.</strong> Width and height describe the finished silhouette. Top, diagonal and bottom tapes keep their specified thicknesses. Linked widths are measured perpendicular to each tape. The two folds are red; no yellow peel is added.':mode==='l'?L_DESCRIPTION:'<strong>Parallel edges. Consistent tape.</strong> Both straight legs retain their exact perpendicular thickness. Overall width changes their opening angle; height changes their length. The upper fold joins the two legs. No horizontal crossbar or yellow peel.';
-  const captions=document.querySelectorAll('.summary-card .caption');captions[0].textContent=mode==='assembly'?'Board contents':mode==='g'?'Tape · all five equal':mode==='z'?'Tape · all equal':mode==='l'?'Peel · x × y':'Tape · left / right';captions[1].textContent=mode==='assembly'?'Snap status':mode==='g'?'Right-middle fold':mode==='z'?'Diagonal angle · θ':mode==='l'?'Stroke · v / h':'Opening angle · θ';captions[2].textContent=mode==='assembly'?'Board bounds':captions[2].textContent;
+  const captions=document.querySelectorAll('.summary-card .caption');captions[0].textContent=mode==='assembly'?'Board contents':mode==='g'?'Tape · all five equal':mode==='z'?'Tape · all equal':mode==='l'?'Peel · x × y':'Tape · left / right';captions[1].textContent=mode==='assembly'?'Snap status':mode==='g'?'Right-middle fold':mode==='z'?'Diagonal angle · θ':mode==='l'?'Stroke · v / h':'Opening angle · θ';captions[2].textContent=mode==='assembly'?'Board bounds':'Overall · w × h';
   svg.setAttribute('aria-label',mode==='assembly'?'Assembly board for placing multiple ribbon logos together with snapping guides':mode==='g'?'Editable folded ribbon G logo with an adjustable corner-cut or rectangular right-middle fold':mode==='z'?'Editable folded ribbon Z logo with three constant-width tapes':mode==='l'?'Editable red ribbon L logo with a yellow peeled corner':'Editable folded ribbon A logo with constant-width sides');
   notice('');syncControls();syncHistory();
   document.querySelector('.controls-scroll').scrollTop=scrollByMode[mode];
@@ -1632,7 +1873,7 @@ $('assembly-duplicate').addEventListener('click',()=>{commitPending();duplicateA
 $('assembly-delete').addEventListener('click',()=>{commitPending();deleteAssemblySelected();});
 $('assembly-clear').addEventListener('click',()=>{commitPending();state.items=[];state.selectedId=null;state.nextId=1;assemblyGuides=[];queueRender(true);fitCamera();commit();notice('Assembly board cleared.');});
 $('assembly-logo-type').addEventListener('change',()=>{const item=assemblySelectedItem();if(!item)return;commitPending();assemblyReplaceItem(item.id,{logo:$('assembly-logo-type').value},{quiet:true});queueRender(true);fitCamera();commit();});
-for(const [id,key,min,max] of [['assembly-x','x',-9999,9999],['assembly-y','y',-9999,9999],['assembly-scale','scale',.1,8]]){const el=$(id);const apply=quiet=>{const item=assemblySelectedItem();if(!item||!Number.isFinite(el.valueAsNumber))return;const value=round(clamp(el.valueAsNumber,min,max));assemblyReplaceItem(item.id,{[key]:value},{quiet});if(key==='scale')fitCamera();};el.addEventListener('input',()=>apply(true));el.addEventListener('change',()=>{apply(true);commit();});el.addEventListener('blur',()=>{if(activeLogo==='assembly'){syncAssemblyControls();}});el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur();commit();}});}
+for(const [id,key,min,max] of [['assembly-x','x',-9999,9999],['assembly-y','y',-9999,9999],['assembly-scale','scale',.1,8]]){const el=$(id);const apply=quiet=>{const item=assemblySelectedItem();if(!item||!Number.isFinite(el.valueAsNumber))return;const value=round(clamp(el.valueAsNumber,min,max));assemblyReplaceItem(item.id,{[key]:value},{quiet});if(key==='scale')fitCamera();};el.addEventListener('input',()=>apply(true));el.addEventListener('change',()=>{apply(true);commit();});el.addEventListener('blur',()=>{if(activeLogo==='assembly'){apply(true);const item=assemblySelectedItem();if(item)el.value=fmt(item[key]);commit();syncAssemblyControls();}});el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur();commit();}});}
 $('assembly-snap').addEventListener('change',()=>{commitPending();state.snap=$('assembly-snap').checked;assemblyGuides=[];queueRender(true);commit();});
 $('assembly-spacing').addEventListener('change',()=>{commitPending();state.snapSpacing=$('assembly-spacing').checked;assemblyGuides=[];queueRender(true);commit();});
 $('assembly-guide-toggle').addEventListener('change',()=>{commitPending();state.showMeasures=$('assembly-guide-toggle').checked;queueRender(true);commit();});
