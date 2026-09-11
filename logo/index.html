@@ -45,7 +45,7 @@
 @media(max-width:359px){.z-triple{font-size:7px;gap:0}.z-triple>span+span{padding-left:1px}}
 
 /* Folded G. Existing L, A and Z artwork code remains untouched. */
-.home-screen{max-width:1440px}.logo-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.home-screen{max-width:1440px}.logo-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
 .logo-preview{height:280px;padding:25px 23px}
 .stage [data-handle="gHeight"],.stage [data-handle="gTopWidth"],.stage [data-handle="gBottomWidth"],.stage [data-handle="gMiddleWidth"],.stage [data-handle="gMid"]{cursor:ns-resize}
 .g-fold-presets{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
@@ -64,6 +64,8 @@
 
 /* G v3: the upper span and the tape thickness are independent dimensions. */
 .stage [data-handle="gTopLength"],.stage [data-handle="gTopRightCut"]{cursor:ew-resize}
+.stage [data-handle="fHeight"],.stage [data-handle="fTopWidth"],.stage [data-handle="fMiddleWidth"],.stage [data-handle="fMidY"]{cursor:ns-resize}
+.stage [data-handle="fWidth"],.stage [data-handle="fMidLength"],.stage [data-handle="fStemWidth"],.stage [data-handle="fTopCut"],.stage [data-handle="fMidCut"]{cursor:ew-resize}
 .g-tape-limit-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;padding:10px;border:1px solid #e2e9dd;border-radius:8px;background:#f5f8f1}
 .g-tape-limit-row>span{font-size:10px;line-height:1.6;color:#697965}
 .g-tape-limit-row output{font:11px var(--mono);display:block;color:#375b46}
@@ -83,19 +85,20 @@
 .stage [data-assembly-handle="scale"],.stage [data-assembly-handle="scale"] *{pointer-events:all}
 body[data-logo="assembly"] .controls-scroll{overflow-x:hidden}
 @media(max-width:760px){.assembly-actions{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:580px){.assembly-add-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.assembly-actions button{font-size:10px}.assembly-add{font-size:11px}.assembly-selected-grid .assembly-select{font-size:16px}}
+@media(max-width:580px){.assembly-add-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.assembly-actions button{font-size:10px}.assembly-add{font-size:11px}.assembly-selected-grid .assembly-select{font-size:16px}}
 
 </style>
 </head>
 <body data-screen="home" data-logo="l">
 <header class="header"><div class="brand"><svg class="brand-mark" viewBox="0 0 42 48" aria-hidden="true"><path d="M6 3Q6 0 9 0H24L32 9V30H40Q42 30 42 32V44Q42 47 39 47H19Q16 47 14 44L6 30Z" fill="#ff2633"/><path d="M24 0Q28 1 32 9Q26 9 25 6Z" fill="#ffdc4a"/><path d="M6 30H32" stroke="#fff" stroke-opacity=".7" stroke-width=".6"/></svg><div><h1>Ribbon Logo Studio</h1><p>Shape. Measure. Refine.</p></div></div><div class="header-actions"><button class="button" id="save-html" title="Save this complete editor with the current settings"><svg viewBox="0 0 24 24"><path d="M14 3H5v18h14V8Z"/><path d="M14 3v5h5M8 13l-2 2 2 2m8-4 2 2-2 2m-3-5-2 6"/></svg><span><span class="desktop-word">Save </span>HTML</span></button><button class="button primary" id="open-export" hidden><svg viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 15v5h16v-5"/></svg>Export</button></div></header>
-<section class="home-screen" id="home-screen" aria-labelledby="home-title"><div class="home-intro"><div><span class="eyebrow">YOUR RIBBON COLLECTION</span><h2 id="home-title">Choose your ribbon.</h2><p>Four characters plus an assembly board.<br>Pick a logo to shape, or place several together to build a word.</p></div><span class="home-count">05 / EDITABLE AREAS</span></div><div class="logo-grid">
+<section class="home-screen" id="home-screen" aria-labelledby="home-title"><div class="home-intro"><div><span class="eyebrow">YOUR RIBBON COLLECTION</span><h2 id="home-title">Choose your ribbon.</h2><p>Five characters plus an assembly board.<br>Pick a logo to shape, or place several together to build a word.</p></div><span class="home-count">06 / EDITABLE AREAS</span></div><div class="logo-grid">
 <button class="logo-choice" data-open-logo="l" aria-label="Open original L logo editor"><div class="logo-preview"><svg id="home-preview-l" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Original L</h3><span class="logo-badge">Original</span></div><span class="logo-description">Your original ribbon and yellow peel.<br>The same geometry and controls.</span><span class="logo-cta">Edit L<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button>
 <button class="logo-choice" data-open-logo="a" aria-label="Open folded A logo editor"><div class="logo-preview dark"><svg id="home-preview-a" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Folded A</h3><span class="logo-badge">New</span></div><span class="logo-description">A continuous-looking folded ribbon.<br>Constant-width sides. No crossbar.</span><span class="logo-cta">Edit A<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button>
 <button class="logo-choice" data-open-logo="z" aria-label="Open folded Z logo editor"><div class="logo-preview dark"><svg id="home-preview-z" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Folded Z</h3><span class="logo-badge">New</span></div><span class="logo-description">Two folds. Three constant-width tapes.<br>Shape the width, height and diagonal.</span><span class="logo-cta">Edit Z<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button>
 <button class="logo-choice" data-open-logo="g" aria-label="Open folded G logo editor"><div class="logo-preview dark"><svg id="home-preview-g" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Folded G</h3><span class="logo-badge">New</span></div><span class="logo-description">Five tape runs. Four folded turns.<br>Cut or rectangular right-middle fold.</span><span class="logo-cta">Edit G<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button>
+<button class="logo-choice" data-open-logo="f" aria-label="Open folded F logo editor"><div class="logo-preview dark"><svg id="home-preview-f" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Folded F</h3><span class="logo-badge">New</span></div><span class="logo-description">Independent middle bar length and height.<br>Top-left cut and right tip stay editable.</span><span class="logo-cta">Edit F<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button>
 
-<button class="logo-choice" data-open-logo="assembly" aria-label="Open assembly board"><div class="logo-preview"><svg id="home-preview-assembly" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Assembly board</h3><span class="logo-badge">New</span></div><span class="logo-description">Place copies of your edited logos together.<br>Snap to edges, centers and equal spacing guides.</span><span class="logo-cta">Open assembly<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button></div><div class="home-footer"><span><i class="status-dot"></i>Separate settings and undo history for each logo and the assembly board.</span><span>Works offline · Save HTML keeps all four logos plus assembly.</span></div></section>
+<button class="logo-choice" data-open-logo="assembly" aria-label="Open assembly board"><div class="logo-preview"><svg id="home-preview-assembly" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg></div><div class="logo-meta"><div class="logo-name-row"><h3>Assembly board</h3><span class="logo-badge">New</span></div><span class="logo-description">Place copies of your edited logos together.<br>Snap to edges, centers and equal spacing guides.</span><span class="logo-cta">Open assembly<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div></button></div><div class="home-footer"><span><i class="status-dot"></i>Separate settings and undo history for each logo and the assembly board.</span><span>Works offline · Save HTML keeps all five logos plus assembly.</span></div></section>
 <main class="workspace" id="editor-workspace" hidden><section class="preview-column" aria-label="Live logo preview">
 <div class="preview-head"><div class="logo-navigation"><button class="back-home" id="back-home" hidden aria-label="Back to logo selection"><svg viewBox="0 0 24 24"><path d="m13 5-7 7 7 7M6 12h14"/></svg>Logos</button><span class="active-logo-name" id="active-logo-name">Original L</span></div><span class="eyebrow"><i class="live-dot"></i>Live canvas</span><span class="preview-subtitle">A real vector. Every dimension is editable.</span></div>
 <div class="stage-card" id="stage-card"><svg id="stage" class="stage" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Editable red ribbon L logo with a yellow peeled corner" tabindex="0"></svg><div class="stage-toolbar"><span class="stage-unit">UNITS · u</span><div class="toggle-bar" aria-label="Canvas overlays"><button class="tool-toggle" id="measure-toggle" aria-pressed="true" title="Show or hide measurements (M)"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 5v4m4-4v6m4-6v4"/></svg>Measures</button><button class="tool-toggle" id="grid-toggle" aria-pressed="false" title="Show or hide a one-unit grid (G)"><svg viewBox="0 0 24 24"><path d="M8 3v18M16 3v18M3 8h18M3 16h18"/></svg><span class="optional-label">Grid</span></button><button class="tool-toggle" id="handles-toggle" aria-pressed="false" title="Show draggable sizing handles"><svg viewBox="0 0 24 24"><path d="M7 5h10M19 7v10M17 19H7M5 17V7"/><path d="M3 3h4v4H3zM17 3h4v4h-4zM3 17h4v4H3zM17 17h4v4h-4z"/></svg><span class="optional-label">Handles</span></button></div></div><button class="out-of-view" id="out-of-view" hidden>Logo extends beyond the view — Fit</button><div class="stage-footer"><div class="view-controls" aria-label="Zoom controls"><button id="zoom-out" aria-label="Zoom out">−</button><span class="zoom-label" id="zoom-label">100%</span><button id="zoom-in" aria-label="Zoom in">+</button><span class="view-separator"></span><button class="fit" id="fit-view" title="Fit the logo (F)">Fit</button></div><span class="stage-help" id="stage-help">Drag to pan · Double-click to fit</span></div></div>
@@ -153,9 +156,30 @@ body[data-logo="assembly"] .controls-scroll{overflow-x:hidden}
 <p class="tiny-note">Cut sizes are 45° diagonal trims, limited to the adjacent tape widths. The lower-left roll keeps a rounded outer corner. None of these controls changes the character’s overall size.</p></section>
 </div>
 
+
+<div class="mode-controls" id="f-controls" hidden>
+<section class="control-section"><div class="section-heading"><h3>Size</h3><button class="preset-button a-preset" id="f-reference-preset" title="Restore the reference F proportions">Reference F</button></div>
+<div class="measure-row"><div class="control-label"><label for="num-fWidth"><span class="symbol">W</span>Overall width</label><div class="number-wrap"><input id="num-fWidth" type="number" step=".001" inputmode="decimal" data-f-number="fWidth" value="5.400"><span>u</span></div></div><div class="range-wrap"><input aria-label="Overall width" type="range" data-f-range="fWidth" min="1" max="16" step=".001" value="5.400"></div></div>
+<div class="measure-row"><div class="control-label"><label for="num-fHeight"><span class="symbol">H</span>Overall height</label><div class="number-wrap"><input id="num-fHeight" type="number" step=".001" inputmode="decimal" data-f-number="fHeight" value="6.854"><span>u</span></div></div><div class="range-wrap"><input aria-label="Overall height" type="range" data-f-range="fHeight" min="1" max="20" step=".001" value="6.854"></div></div>
+<p class="tiny-note">Overall width follows the top bar. Overall height follows the full stem.</p><p class="notice" id="f-limit-notice" aria-live="polite"></p></section>
+<section class="control-section"><div class="section-heading"><h3>Tape widths</h3><button class="link-control" id="f-link-widths" aria-pressed="true" title="Keep stem, top and middle tape widths equal"><svg viewBox="0 0 24 24"><path d="m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 1 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0" transform="translate(1 1)"/></svg><span>Linked</span></button></div>
+<div class="measure-row"><div class="control-label"><label for="num-fStemWidth"><span class="symbol">S</span>Stem width</label><div class="number-wrap"><input id="num-fStemWidth" type="number" step=".001" inputmode="decimal" data-f-number="fStemWidth" value="1.350"><span>u</span></div></div><div class="range-wrap"><input aria-label="Stem width" type="range" data-f-range="fStemWidth" min=".1" max="4" step=".001" value="1.350"></div></div>
+<div class="measure-row"><div class="control-label"><label for="num-fTopWidth"><span class="symbol">T</span>Top bar thickness</label><div class="number-wrap"><input id="num-fTopWidth" type="number" step=".001" inputmode="decimal" data-f-number="fTopWidth" value="1.350"><span>u</span></div></div><div class="range-wrap"><input aria-label="Top bar thickness" type="range" data-f-range="fTopWidth" min=".1" max="4" step=".001" value="1.350"></div></div>
+<div class="measure-row"><div class="control-label"><label for="num-fMiddleWidth"><span class="symbol">M</span>Middle bar thickness</label><div class="number-wrap"><input id="num-fMiddleWidth" type="number" step=".001" inputmode="decimal" data-f-number="fMiddleWidth" value="1.350"><span>u</span></div></div><div class="range-wrap"><input aria-label="Middle bar thickness" type="range" data-f-range="fMiddleWidth" min=".1" max="4" step=".001" value="1.350"></div></div>
+<p class="tiny-note" id="f-width-note">Linked keeps the stem, top bar and middle bar at exactly the same thickness. Unlink them to tune each one separately.</p></section>
+<section class="control-section"><div class="section-heading"><h3>Middle bar</h3><span class="percent-value">Independent</span></div>
+<div class="measure-row"><div class="control-label"><label for="num-fMidLength"><span class="symbol">L2</span>Middle bar length</label><div class="number-wrap"><input id="num-fMidLength" type="number" step=".001" inputmode="decimal" data-f-number="fMidLength" value="5.000"><span>u</span></div></div><div class="range-wrap"><input aria-label="Middle bar length" type="range" data-f-range="fMidLength" min="1" max="16" step=".001" value="5.000"></div></div>
+<div class="measure-row"><div class="control-label"><label for="num-fMidY"><span class="symbol">Y</span>Middle bar top position</label><div class="number-wrap"><input id="num-fMidY" type="number" step=".001" inputmode="decimal" data-f-number="fMidY" value="2.900"><span>u</span></div></div><div class="range-wrap"><input aria-label="Middle bar top position" type="range" data-f-range="fMidY" min=".2" max="10" step=".001" value="2.900"></div></div>
+<p class="tiny-note">The middle bar length is measured side to side from the left outer edge to the right tip. Its top position is measured downward from the top edge of the F.</p></section>
+<section class="control-section"><div class="section-heading"><h3>Cuts & corners</h3><span class="percent-value">Ribbon tips</span></div>
+<div class="measure-row"><div class="control-label"><label for="num-fTopCut"><span class="symbol">C1</span>Top-left cut</label><div class="number-wrap"><input id="num-fTopCut" type="number" step=".001" inputmode="decimal" data-f-number="fTopCut" value="1.350"><span>u</span></div></div><div class="range-wrap"><input aria-label="Top-left cut" type="range" data-f-range="fTopCut" min="0" max="4" step=".001" value="1.350"></div></div>
+<div class="measure-row"><div class="control-label"><label for="num-fMidCut"><span class="symbol">C2</span>Middle tip cut</label><div class="number-wrap"><input id="num-fMidCut" type="number" step=".001" inputmode="decimal" data-f-number="fMidCut" value="1.000"><span>u</span></div></div><div class="range-wrap"><input aria-label="Middle tip cut" type="range" data-f-range="fMidCut" min="0" max="4" step=".001" value="1.000"></div></div>
+<p class="tiny-note">The top-left cut trims the stem corner. The middle tip cut trims only the upper-right corner of the middle bar while keeping its bottom-right corner rounded.</p></section>
+</div>
+
 <div class="mode-controls" id="assembly-controls" hidden>
-<section class="control-section"><div class="section-heading"><h3>Assembly board</h3><button class="preset-button a-preset" id="assembly-starter-row" title="Create a clean starter row using your current L, A, Z and G logos">Starter row</button></div><div class="assembly-add-grid" role="group" aria-label="Add logo to assembly"><button class="assembly-add" data-assembly-add="l"><strong>L</strong><span>Add</span></button><button class="assembly-add" data-assembly-add="a"><strong>A</strong><span>Add</span></button><button class="assembly-add" data-assembly-add="z"><strong>Z</strong><span>Add</span></button><button class="assembly-add" data-assembly-add="g"><strong>G</strong><span>Add</span></button></div><div class="assembly-actions"><button id="assembly-duplicate">Duplicate</button><button id="assembly-delete">Delete</button><button id="assembly-clear">Clear board</button></div><p class="reference-note" id="assembly-reference-note">The first item on the board is the reference logo. Drag other logos to snap to its edges, centers and matching spacing, similar to presentation smart guides.</p><p class="notice" id="assembly-limit-notice" aria-live="polite"></p></section>
-<section class="control-section"><div class="section-heading"><h3>Selected logo</h3><span class="percent-value" id="assembly-selected-label">L #1</span></div><div class="assembly-selected-grid"><div class="measure-row"><div class="control-label"><label for="assembly-logo-type"><span class="symbol">T</span>Logo type</label><select id="assembly-logo-type" class="assembly-select" aria-label="Selected logo type"><option value="l">L</option><option value="a">A</option><option value="z">Z</option><option value="g">G</option></select></div></div><div class="measure-row"><div class="control-label"><label for="assembly-scale"><span class="symbol">S</span>Scale</label><div class="number-wrap"><input id="assembly-scale" type="number" min="0.1" max="8" step="0.001" inputmode="decimal" value="1.000"><span>×</span></div></div></div><div class="measure-row"><div class="control-label"><label for="assembly-x"><span class="symbol">X</span>X position</label><div class="number-wrap"><input id="assembly-x" type="number" step="0.001" inputmode="decimal" value="0.000"><span>u</span></div></div></div><div class="measure-row"><div class="control-label"><label for="assembly-y"><span class="symbol">Y</span>Y position</label><div class="number-wrap"><input id="assembly-y" type="number" step="0.001" inputmode="decimal" value="0.000"><span>u</span></div></div></div></div><p class="tiny-note">Drag a logo on the stage to move it. Turn on handles to get a scale handle on the selected logo.</p></section>
+<section class="control-section"><div class="section-heading"><h3>Assembly board</h3><button class="preset-button a-preset" id="assembly-starter-row" title="Create a clean starter row using your current L, A, Z, G and F logos">Starter row</button></div><div class="assembly-add-grid" role="group" aria-label="Add logo to assembly"><button class="assembly-add" data-assembly-add="l"><strong>L</strong><span>Add</span></button><button class="assembly-add" data-assembly-add="a"><strong>A</strong><span>Add</span></button><button class="assembly-add" data-assembly-add="z"><strong>Z</strong><span>Add</span></button><button class="assembly-add" data-assembly-add="g"><strong>G</strong><span>Add</span></button><button class="assembly-add" data-assembly-add="f"><strong>F</strong><span>Add</span></button></div><div class="assembly-actions"><button id="assembly-duplicate">Duplicate</button><button id="assembly-delete">Delete</button><button id="assembly-clear">Clear board</button></div><p class="reference-note" id="assembly-reference-note">The first item on the board is the reference logo. Drag other logos to snap to its edges, centers and matching spacing, similar to presentation smart guides.</p><p class="notice" id="assembly-limit-notice" aria-live="polite"></p></section>
+<section class="control-section"><div class="section-heading"><h3>Selected logo</h3><span class="percent-value" id="assembly-selected-label">L #1</span></div><div class="assembly-selected-grid"><div class="measure-row"><div class="control-label"><label for="assembly-logo-type"><span class="symbol">T</span>Logo type</label><select id="assembly-logo-type" class="assembly-select" aria-label="Selected logo type"><option value="l">L</option><option value="a">A</option><option value="z">Z</option><option value="g">G</option><option value="f">F</option></select></div></div><div class="measure-row"><div class="control-label"><label for="assembly-scale"><span class="symbol">S</span>Scale</label><div class="number-wrap"><input id="assembly-scale" type="number" min="0.1" max="8" step="0.001" inputmode="decimal" value="1.000"><span>×</span></div></div></div><div class="measure-row"><div class="control-label"><label for="assembly-x"><span class="symbol">X</span>X position</label><div class="number-wrap"><input id="assembly-x" type="number" step="0.001" inputmode="decimal" value="0.000"><span>u</span></div></div></div><div class="measure-row"><div class="control-label"><label for="assembly-y"><span class="symbol">Y</span>Y position</label><div class="number-wrap"><input id="assembly-y" type="number" step="0.001" inputmode="decimal" value="0.000"><span>u</span></div></div></div></div><p class="tiny-note">Drag a logo on the stage to move it. Turn on handles to get a scale handle on the selected logo.</p></section>
 <section class="control-section"><div class="section-heading"><h3>Snapping & canvas</h3><span class="percent-value">Layout aids</span></div><label class="check-line">Snap to other logos<span class="switch"><input id="assembly-snap" type="checkbox" checked><i></i></span></label><label class="check-line">Equal spacing guides<span class="switch"><input id="assembly-spacing" type="checkbox" checked><i></i></span></label><label class="check-line">Show guide overlays<span class="switch"><input id="assembly-guide-toggle" type="checkbox" checked><i></i></span></label><div class="measure-row assembly-color-row"><div class="control-label"><label for="assembly-canvas"><span class="symbol">BG</span>Canvas color</label><label class="color-control"><input type="color" id="assembly-canvas" value="#ffffff" aria-label="Assembly canvas color">Canvas</label></div></div><p class="tiny-note">Guides snap to top, middle and bottom alignment, left/right and center alignment, plus matching gaps like PowerPoint smart guides.</p><p class="tiny-note assembly-note-strong"><strong>Tip:</strong> keep the first item in place as your reference, then drag the rest until the guide lines appear.</p></section>
 </div>
 <details class="control-section details" id="finish-details"><summary>Material & finish</summary><div class="details-content"><div class="color-row"><label class="color-control"><input type="color" id="front-color" value="#ff1424" aria-label="Front color">Front</label><label class="color-control"><input type="color" id="back-color" value="#ffdc32" aria-label="Peeled back color"><span id="back-color-label">Back</span></label><label class="color-control"><input type="color" id="canvas-color" value="#ffffff" aria-label="Canvas color">Canvas</label></div><div class="measure-row"><div class="control-label"><label for="fold">Lower fold</label><output class="percent-value" id="fold-output">70%</output></div><div class="range-wrap"><input id="fold" type="range" min=".2" max=".95" step=".01" data-finish="fold" value=".7"></div></div><div class="measure-row"><div class="control-label"><label for="radius">Corner rounding</label><output class="percent-value" id="radius-output">0.180 u</output></div><div class="range-wrap"><input id="radius" type="range" min="0" max=".6" step=".01" data-finish="radius" value=".18"></div></div><div class="measure-row"><div class="control-label"><label for="gloss">Gloss</label><output class="percent-value" id="gloss-output">80%</output></div><div class="range-wrap"><input id="gloss" type="range" min="0" max="1" step=".01" data-finish="gloss" value=".8"></div></div><label class="check-line">Soft shadows<span class="switch"><input id="shadows" type="checkbox" checked><i></i></span></label><label class="check-line">Flat vector style<span class="switch"><input id="flat" type="checkbox"><i></i></span></label></div></details>
@@ -181,9 +205,13 @@ const G_TAPES=['gTopWidth','gLeftWidth','gBottomWidth','gRightWidth','gMiddleWid
 const G_CUTS=['gTopCut','gTopRightCut','gBottomCut','gLastCut'];
 const G_KEYS=['gWidth','gHeight','gTopLength','gReach','gMid',...G_TAPES,...G_CUTS];
 const G_GAP=.15;
-const ASSEMBLY_LOGOS=['l','a','z','g'];
-const ASSEMBLY_DEFAULTS=Object.freeze({canvas:'#ffffff',showMeasures:true,showGrid:false,showHandles:true,snap:true,snapSpacing:true,nextId:5,selectedId:1,items:[{id:1,logo:'l',x:0,y:0,scale:1},{id:2,logo:'a',x:6.95,y:0,scale:1},{id:3,logo:'z',x:14.45,y:0,scale:1},{id:4,logo:'g',x:21.35,y:0,scale:1}]});
-const LOGO_MODES=['l','a','z','g','assembly'];
+const F_DEFAULTS=Object.freeze({...DEFAULTS,fWidth:5.400,fHeight:6.854,fStemWidth:1.350,fTopWidth:1.350,fMiddleWidth:1.350,fMidLength:5.000,fMidY:2.900,fTopCut:1.350,fMidCut:1.000,linkWidths:true,front:'#ff1424',back:'#ff1424',canvas:'#000000',radius:.28,gloss:.80});
+const F_TAPES=['fStemWidth','fTopWidth','fMiddleWidth'];
+const F_KEYS=['fWidth','fHeight','fMidLength','fMidY',...F_TAPES,'fTopCut','fMidCut'];
+const F_GAP=.15;
+const ASSEMBLY_LOGOS=['l','a','z','g','f'];
+const ASSEMBLY_DEFAULTS=Object.freeze({canvas:'#ffffff',showMeasures:true,showGrid:false,showHandles:true,snap:true,snapSpacing:true,nextId:6,selectedId:1,items:[{id:1,logo:'l',x:0,y:0,scale:1},{id:2,logo:'a',x:6.95,y:0,scale:1},{id:3,logo:'z',x:14.45,y:0,scale:1},{id:4,logo:'g',x:21.35,y:0,scale:1},{id:5,logo:'f',x:28.90,y:0,scale:1}]});
+const LOGO_MODES=['l','a','z','g','f','assembly'];
 const KEYS = ['length','height','stemWidth','armWidth','peelX','peelY'];
 const $ = id => document.getElementById(id);
 const clamp = (n,a,b) => Math.min(b,Math.max(a,n));
@@ -273,12 +301,14 @@ let savedZ=cleanZModel(boot.models?.z);
 try{const saved=localStorage.getItem(STORAGE_KEY+':z');if(saved)savedZ=cleanZModel(JSON.parse(saved));}catch(_){storageOK=false;}
 let savedG=cleanGModel(boot.models?.g);
 try{const saved=localStorage.getItem(STORAGE_KEY+':g');if(saved)savedG=cleanGModel(JSON.parse(saved));}catch(_){storageOK=false;}
+let savedF=cleanFModel(boot.models?.f);
+try{const saved=localStorage.getItem(STORAGE_KEY+':f');if(saved)savedF=cleanFModel(JSON.parse(saved));}catch(_){storageOK=false;}
 let savedAssembly=cleanAssemblyModel(boot.models?.assembly);
 try{const saved=localStorage.getItem(STORAGE_KEY+':assembly');if(saved)savedAssembly=cleanAssemblyModel(JSON.parse(saved));}catch(_){storageOK=false;}
-const models={l:clone(state),a:clone(savedA),z:clone(savedZ),g:clone(savedG),assembly:clone(savedAssembly)};
-const modeHistory={l:{history:[clone(state)],future:[]},a:{history:[clone(savedA)],future:[]},z:{history:[clone(savedZ)],future:[]},g:{history:[clone(savedG)],future:[]},assembly:{history:[clone(savedAssembly)],future:[]}};
-const scrollByMode={l:0,a:0,z:0,g:0,assembly:0};
-const saveTimers={l:null,a:null,z:null,g:null,assembly:null};
+const models={l:clone(state),a:clone(savedA),z:clone(savedZ),g:clone(savedG),f:clone(savedF),assembly:clone(savedAssembly)};
+const modeHistory={l:{history:[clone(state)],future:[]},a:{history:[clone(savedA)],future:[]},z:{history:[clone(savedZ)],future:[]},g:{history:[clone(savedG)],future:[]},f:{history:[clone(savedF)],future:[]},assembly:{history:[clone(savedAssembly)],future:[]}};
+const scrollByMode={l:0,a:0,z:0,g:0,f:0,assembly:0};
+const saveTimers={l:null,a:null,z:null,g:null,f:null,assembly:null};
 const L_DESCRIPTION=$('sidebar-description').innerHTML;
 let history=[clone(state)],future=[],saveTimer,noticeTimer,toastTimer,assemblyGuides=[];
 let camera={x:0,y:0,w:10,h:10},fitScale=1,size={w:700,h:680},ready=false;
@@ -331,7 +361,7 @@ function mix(hex,target,t){const a=hex.slice(1).match(/../g).map(x=>parseInt(x,1
 function fitCamera(){
   const g=currentGeometry(),w=size.w,h=size.h;
   // These gutters are in screen pixels; dimensions remain legible on phones.
-  const margin=activeLogo==='assembly'?{l:45,r:45,t:98,b:80}:state.showMeasures?(activeLogo==='g'?{l:64,r:34,t:98,b:102}:activeLogo==='z'?{l:64,r:34,t:72,b:102}:activeLogo==='a'?{l:64,r:34,t:72,b:112}:{l:65,r:67,t:111,b:61}):{l:40,r:40,t:73,b:58};
+  const margin=activeLogo==='assembly'?{l:45,r:45,t:98,b:80}:state.showMeasures?(activeLogo==='g'?{l:64,r:34,t:98,b:102}:activeLogo==='f'?{l:64,r:34,t:86,b:102}:activeLogo==='z'?{l:64,r:34,t:72,b:102}:activeLogo==='a'?{l:64,r:34,t:72,b:112}:{l:65,r:67,t:111,b:61}):{l:40,r:40,t:73,b:58};
   const scale=Math.max(activeLogo==='assembly'?1e-9:.01,Math.min(Math.max(1,w-margin.l-margin.r)/g.L,Math.max(1,h-margin.t-margin.b)/g.totalH));
   camera.w=w/scale;camera.h=h/scale;
   camera.x=(activeLogo==='assembly'?g.minX:0)-margin.l/scale-Math.max(0,(w-margin.l-margin.r)/scale-g.L)/2;
@@ -589,7 +619,7 @@ svg.addEventListener('pointerdown',e=>{
     }
   }
   const handle=e.target.closest('[data-handle]'),dim=e.target.closest('[data-dimension]');
-  if(dim&&!handle){e.preventDefault();const map=activeLogo==='g'?gInputMap:activeLogo==='z'?zInputMap:activeLogo==='a'?aInputMap:inputMap;const key=dim.dataset.dimension;const el=map[key]?.num;if(el){el.scrollIntoView({behavior:'smooth',block:'nearest'});el.focus({preventScroll:true});el.select()}return;}
+  if(dim&&!handle){e.preventDefault();const map=activeLogo==='g'?gInputMap:activeLogo==='f'?fInputMap:activeLogo==='z'?zInputMap:activeLogo==='a'?aInputMap:inputMap;const key=dim.dataset.dimension;const el=map[key]?.num;if(el){el.scrollIntoView({behavior:'smooth',block:'nearest'});el.focus({preventScroll:true});el.select()}return;}
   commitPending();const point=pointerUnit(e);
   activePointer={id:e.pointerId,key:handle?.dataset.handle||null,start:point,startClient:{x:e.clientX,y:e.clientY},camera:{...camera},model:clone(state),moved:false};
   svg.setPointerCapture(e.pointerId);e.preventDefault();if(!handle)svg.classList.add('panning');
@@ -628,6 +658,13 @@ svg.addEventListener('pointermove',e=>{
     else if(['gTopWidth','gMiddleWidth','gMid'].includes(a.key))val+=dy;
     setGDimension(a.key,val,{quiet:true});return;
   }
+  if(activeLogo==='f'){
+    let val=a.model[a.key];
+    if(a.key==='fHeight')val-=dy;
+    else if(a.key==='fWidth'||a.key==='fMidLength'||a.key==='fStemWidth'||a.key==='fTopCut'||a.key==='fMidCut')val+=dx;
+    else if(['fTopWidth','fMiddleWidth','fMidY'].includes(a.key))val+=dy;
+    setFDimension(a.key,val,{quiet:true});return;
+  }
   if(activeLogo==='z'){
     let val=a.model[a.key];
     if(a.key==='zHeight')val-=dy;
@@ -664,7 +701,7 @@ function artworkSvg({measures=false,transparent=true,longest=2048}={}){
   if(activeLogo==='assembly'&&!state.items.length)throw new Error('The assembly is empty. Add a logo before exporting.');
   const g=currentGeometry(),max=Math.max(g.L,g.totalH);
   const u=max/560;
-  const margin=measures?(activeLogo==='g'?{l:65*u,r:35*u,t:58*u,b:70*u}:activeLogo==='z'||activeLogo==='a'?{l:65*u,r:35*u,t:30*u,b:70*u}:activeLogo==='assembly'?{l:75*u,r:36*u,t:36*u,b:65*u}:{l:65*u,r:67*u,t:75*u,b:24*u}):{l:.48,r:.48,t:.30,b:.53};
+  const margin=measures?(activeLogo==='g'?{l:65*u,r:35*u,t:58*u,b:70*u}:activeLogo==='f'?{l:65*u,r:35*u,t:42*u,b:70*u}:activeLogo==='z'||activeLogo==='a'?{l:65*u,r:35*u,t:30*u,b:70*u}:activeLogo==='assembly'?{l:75*u,r:36*u,t:36*u,b:65*u}:{l:65*u,r:67*u,t:75*u,b:24*u}):{l:.48,r:.48,t:.30,b:.53};
   if(activeLogo==='assembly'){const shadowPad=Math.max(.5,...state.items.map(item=>item.scale*.5));for(const k of ['l','r','t','b'])margin[k]=Math.max(margin[k],shadowPad);}
   const view=activeLogo==='assembly'?{x:g.minX-margin.l,y:g.top-margin.t,w:g.L+margin.l+margin.r,h:g.totalH+margin.t+margin.b}:{x:-margin.l,y:g.top-margin.t,w:g.L+margin.l+margin.r,h:g.totalH+margin.t+margin.b};
   const width=Math.max(1,Math.round(longest*view.w/Math.max(view.w,view.h))),height=Math.max(1,Math.round(longest*view.h/Math.max(view.w,view.h)));
@@ -689,7 +726,7 @@ $('save-html').addEventListener('click',()=>{
     root.querySelector('#export-link').removeAttribute('href');root.querySelector('#stage').innerHTML='';root.querySelector('#stage').classList.remove('panning');root.querySelector('#toast').classList.remove('visible');
     root.querySelector('body').dataset.screen='home';root.querySelector('#home-screen').hidden=false;root.querySelector('#editor-workspace').hidden=true;root.querySelector('#back-home').hidden=true;root.querySelector('#open-export').hidden=true;
     root.querySelectorAll('input,button,select').forEach(el=>el.removeAttribute('autofocus'));
-    createDownload(new Blob(['<!DOCTYPE html>\n'+root.outerHTML],{type:'text/html;charset=utf-8'}),'ribbon-logo-studio-l-a-z-g-v5.html');tell('Editable HTML created with your current settings.');
+    createDownload(new Blob(['<!DOCTYPE html>\n'+root.outerHTML],{type:'text/html;charset=utf-8'}),'ribbon-logo-studio-l-a-z-g-f-v6.html');tell('Editable HTML created with your current settings.');
   }catch(err){tell('The editor could not be saved: '+err.message)}
 });
 function exportFormat(){return document.querySelector('input[name="export-format"]:checked').value}
@@ -1524,9 +1561,165 @@ $('g-reference-preset').addEventListener('click',()=>{
 });
 
 
+function fLinkedMax(s){return floor3(Math.min(12,Math.max(.1,s.fWidth-F_GAP),Math.max(.1,s.fHeight-F_GAP),Math.max(.1,s.fMidLength-F_GAP),Math.max(.1,s.fMidY-F_GAP),Math.max(.1,s.fHeight-s.fMidY-F_GAP)));}
+function cleanFModel(candidate){
+  const s={...F_DEFAULTS};
+  if(candidate&&typeof candidate==='object'){
+    for(const k of Object.keys(s)){
+      if(typeof s[k]==='number'&&Number.isFinite(Number(candidate[k])))s[k]=Number(candidate[k]);
+      else if(typeof s[k]==='boolean'&&typeof candidate[k]==='boolean')s[k]=candidate[k];
+      else if(['front','back','canvas'].includes(k)&&/^#[0-9a-f]{6}$/i.test(candidate[k]||''))s[k]=candidate[k];
+    }
+  }
+  s.fWidth=round(clamp(s.fWidth,1,25));s.fHeight=round(clamp(s.fHeight,1,30));
+  for(const k of F_TAPES)s[k]=round(clamp(s[k],.1,12));
+  s.fMidLength=round(clamp(s.fMidLength,.3,s.fWidth));
+  s.fMidY=round(clamp(s.fMidY,.2,s.fHeight-.2));
+  if(s.linkWidths){const w=Math.min(s.fStemWidth,s.fTopWidth,s.fMiddleWidth,fLinkedMax(s));s.fStemWidth=s.fTopWidth=s.fMiddleWidth=round(w);}
+  s.fStemWidth=round(clamp(s.fStemWidth,.1,Math.min(12,s.fWidth-F_GAP,s.fHeight-F_GAP,s.fMidLength-F_GAP)));
+  s.fTopWidth=round(clamp(s.fTopWidth,.1,Math.min(12,s.fMidY-F_GAP,s.fHeight-F_GAP)));
+  s.fMiddleWidth=round(clamp(s.fMiddleWidth,.1,Math.min(12,s.fHeight-s.fMidY-F_GAP)));
+  if(s.linkWidths){const w=Math.min(s.fStemWidth,s.fTopWidth,s.fMiddleWidth);s.fStemWidth=s.fTopWidth=s.fMiddleWidth=round(w);}
+  s.fMidLength=round(clamp(s.fMidLength,s.fStemWidth+F_GAP,s.fWidth));
+  s.fMidY=round(clamp(s.fMidY,s.fTopWidth+F_GAP,s.fHeight-s.fMiddleWidth-F_GAP));
+  s.fTopCut=round(clamp(s.fTopCut,0,Math.min(s.fStemWidth,s.fTopWidth)));
+  s.fMidCut=round(clamp(s.fMidCut,0,Math.min(s.fMiddleWidth,Math.max(0,s.fMidLength-s.fStemWidth-F_GAP))));
+  s.radius=clamp(s.radius,0,.6);s.gloss=clamp(s.gloss,0,1);
+  return s;
+}
+function fLimits(key,s=state){
+  switch(key){
+    case 'fWidth':return [Math.max(s.fStemWidth+.35,s.fMidLength,s.fTopCut+.05),25];
+    case 'fHeight':return [Math.max(s.fMidY+s.fMiddleWidth+F_GAP,s.fTopWidth+.35,s.fStemWidth+.35),30];
+    case 'fMidLength':return [s.fStemWidth+F_GAP,s.fWidth];
+    case 'fMidY':return [s.fTopWidth+F_GAP,s.fHeight-s.fMiddleWidth-F_GAP];
+    case 'fStemWidth':return [.1,s.linkWidths?fLinkedMax(s):floor3(Math.min(12,s.fWidth-F_GAP,s.fHeight-F_GAP,s.fMidLength-F_GAP))];
+    case 'fTopWidth':return [.1,s.linkWidths?fLinkedMax(s):floor3(Math.min(12,s.fMidY-F_GAP,s.fHeight-F_GAP))];
+    case 'fMiddleWidth':return [.1,s.linkWidths?fLinkedMax(s):floor3(Math.min(12,s.fHeight-s.fMidY-F_GAP))];
+    case 'fTopCut':return [0,floor3(Math.min(s.fStemWidth,s.fTopWidth))];
+    case 'fMidCut':return [0,floor3(Math.min(s.fMiddleWidth,Math.max(0,s.fMidLength-s.fStemWidth-F_GAP)))];
+    default:return [0,1];
+  }
+}
+function setFDimension(key,value,{quiet=false}={}){
+  if(!F_KEYS.includes(key)||!Number.isFinite(value))return;
+  const [min,max]=fLimits(key),v=round(clamp(value,min,max));
+  const next=clone(state);next[key]=v;
+  if(next.linkWidths&&F_TAPES.includes(key))for(const tape of F_TAPES)next[tape]=v;
+  Object.assign(state,cleanFModel(next));
+  if(!quiet){
+    if(Math.abs(v-value)>.001)notice(`Available range: ${fmt(min)}–${fmt(max)} u. The limit keeps the bars separated and the silhouette valid.`);
+    else notice('');
+  }
+  queueRender(true);persist();
+}
+const fGeometryCache=new Map();
+function fGeometry(s=state){
+  const key=[...F_KEYS.map(k=>s[k]),s.radius].join('|');
+  if(fGeometryCache.has(key))return fGeometryCache.get(key);
+  const W=s.fWidth,H=s.fHeight,SW=s.fStemWidth,TT=s.fTopWidth,MT=s.fMiddleWidth,Y=s.fMidY,ML=Math.min(s.fMidLength,s.fWidth),TC=Math.min(s.fTopCut,s.fStemWidth,s.fTopWidth),MC=Math.min(s.fMidCut,s.fMiddleWidth,Math.max(0,Math.min(s.fMidLength,s.fWidth)-s.fStemWidth));
+  const r=s.radius,pad=Math.max(W,H)+1,minTape=Math.min(SW,TT,MT);
+  let points,radii;
+  if(MC>1e-8){
+    points=[{x:TC,y:0},{x:W,y:0},{x:W,y:TT},{x:SW,y:TT},{x:SW,y:Y},{x:ML-MC,y:Y},{x:ML,y:Y+MC},{x:ML,y:Y+MT},{x:SW,y:Y+MT},{x:SW,y:H},{x:0,y:H},{x:0,y:TC}];
+    radii=[r,r,r,0,0,0,0,r,0,r,r,0];
+  }else{
+    points=[{x:TC,y:0},{x:W,y:0},{x:W,y:TT},{x:SW,y:TT},{x:SW,y:Y},{x:ML,y:Y},{x:ML,y:Y+MT},{x:SW,y:Y+MT},{x:SW,y:H},{x:0,y:H},{x:0,y:TC}];
+    radii=[r,r,r,0,0,0,r,0,r,r,0];
+  }
+  const poly=aRoundedPolygon(points,radii,true);
+  const stemFace=aRoundedPolygon([{x:TC,y:0},{x:SW,y:0},{x:SW,y:H},{x:0,y:H},{x:0,y:TC}],[r,r,r,r,0],true).d;
+  const topFace=aRoundedPolygon([{x:SW,y:0},{x:W,y:0},{x:W,y:TT},{x:SW,y:TT}],[0,r,r,0],true).d;
+  const midFace=(MC>1e-8?
+    aRoundedPolygon([{x:SW,y:Y},{x:ML-MC,y:Y},{x:ML,y:Y+MC},{x:ML,y:Y+MT},{x:SW,y:Y+MT}],[0,0,0,r,0],true):
+    aRoundedPolygon([{x:SW,y:Y},{x:ML,y:Y},{x:ML,y:Y+MT},{x:SW,y:Y+MT}],[0,0,r,0],true)).d;
+  const result={W,H,SW,TT,MT,Y,ML,TC,MC,pad,minTape,d:poly.d,topFace,stemFace,midFace,topSeam:`M ${nstr(SW)} 0 V ${nstr(TT)}`,midSeam:`M ${nstr(SW)} ${nstr(Y)} V ${nstr(Y+MT)}`,L:W,top:-H,bottom:0,totalH:H,stemH:H};
+  fGeometryCache.set(key,result);if(fGeometryCache.size>48)fGeometryCache.delete(fGeometryCache.keys().next().value);
+  return result;
+}
+function fRulers(s,p,u){
+  const dark=parseInt(s.canvas.slice(1,3),16)*.2126+parseInt(s.canvas.slice(3,5),16)*.7152+parseInt(s.canvas.slice(5,7),16)*.0722<110;
+  const color=dark?'#b8c8bf':'#566b5e',tape=dark?'#d7e7dc':'#3f7b71',cut='#a77722';
+  const line=(a,b,c=color,opacity=1)=>`<path d="M ${pointText(a)} L ${pointText(b)}" fill="none" stroke="${c}" stroke-opacity="${opacity}" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+  function label(x,y,text,angle=0){const w=(text.length*6.15+13)*u;return `<g transform="translate(${nstr(x)} ${nstr(y)}) rotate(${angle})"><rect class="dimension-label" x="${nstr(-w/2)}" y="${nstr(-10.5*u)}" width="${nstr(w)}" height="${nstr(21*u)}" rx="${nstr(4*u)}" fill="#fff" fill-opacity=".97"/><text x="0" y="0" dy=".34em" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="${nstr(11.4*u)}" font-weight="500" fill="#3c6151">${text}</text></g>`;}
+  function arrows(a,b,c=color){const dir=unitDirection(a,b),n={x:-dir.y,y:dir.x},length=Math.hypot(b.x-a.x,b.y-a.y),r=Math.min(4.6*u,length*.2);const pt=(p0,k,t)=>({x:p0.x+dir.x*k+n.x*r*.48*t,y:p0.y+dir.y*k+n.y*r*.48*t});return line(a,b,c)+`<path d="M ${pointText(pt(a,r,-1))} L ${pointText(a)} L ${pointText(pt(a,r,1))} M ${pointText(pt(b,-r,-1))} L ${pointText(b)} L ${pointText(pt(b,-r,1))}" fill="none" stroke="${c}" stroke-width="1" vector-effect="non-scaling-stroke"/>`; }
+  const group=(key,text,content)=>`<g data-dimension="${key}" role="button" aria-label="Edit ${text}"><title>${text}. Select to edit.</title>${content}</g>`;
+  const hy=-30*u,wy=26*u,stemY=(p.Y+p.MT-p.H)/2,midX=p.SW+(p.ML-p.SW)*.55,midLabelY=p.Y+p.MT+18*u-p.H;
+  let m=group('fWidth',`overall width ${fmt(p.W)} units`,line({x:0,y:0},{x:0,y:wy+3*u},color,.42)+line({x:p.W,y:0},{x:p.W,y:wy+3*u},color,.42)+arrows({x:0,y:wy},{x:p.W,y:wy})+label(p.W/2,wy+13*u,'W '+fmt(p.W)));
+  m+=group('fHeight',`overall height ${fmt(p.H)} units`,line({x:p.TC,y:-p.H},{x:hy-3*u,y:-p.H},color,.42)+line({x:p.SW,y:0},{x:hy-3*u,y:0},color,.42)+arrows({x:hy,y:-p.H},{x:hy,y:0})+label(hy-12*u,-p.H/2,'H '+fmt(p.H),-90));
+  m+=group('fStemWidth',`stem width ${fmt(p.SW)} units`,arrows({x:0,y:stemY},{x:p.SW,y:stemY},tape)+label(p.SW/2,stemY-14*u,'S '+fmt(p.SW)));
+  m+=group('fTopWidth',`top bar thickness ${fmt(p.TT)} units`,arrows({x:(p.SW+p.W)/2,y:-p.H},{x:(p.SW+p.W)/2,y:-p.H+p.TT},tape)+label((p.SW+p.W)/2+13*u,-p.H+p.TT/2,'T '+fmt(p.TT),-90));
+  m+=group('fMiddleWidth',`middle bar thickness ${fmt(p.MT)} units`,arrows({x:midX,y:p.Y-p.H},{x:midX,y:p.Y+p.MT-p.H},tape)+label(midX+13*u,p.Y+p.MT/2-p.H,'M '+fmt(p.MT),-90));
+  m+=group('fMidLength',`middle bar length ${fmt(p.ML)} units`,line({x:0,y:p.Y+p.MT-p.H},{x:0,y:midLabelY-3*u},color,.42)+line({x:p.ML,y:p.Y+p.MT-p.H},{x:p.ML,y:midLabelY-3*u},color,.42)+arrows({x:0,y:midLabelY},{x:p.ML,y:midLabelY})+label(p.ML/2,midLabelY+13*u,'L2 '+fmt(p.ML)));
+  m+=group('fMidY',`middle bar top position ${fmt(p.Y)} units`,arrows({x:p.SW+17*u,y:-p.H},{x:p.SW+17*u,y:p.Y-p.H},tape)+label(p.SW+30*u,p.Y/2-p.H,'Y '+fmt(p.Y),-90));
+  m+=group('fTopCut',`top-left cut ${fmt(p.TC)} units`,line({x:0,y:-p.H+p.TC},{x:p.TC,y:-p.H},cut)+label(p.TC*.44+11*u,-p.H+p.TC*.44,'C1 '+fmt(p.TC),-45));
+  if(p.MC>1e-8)m+=group('fMidCut',`middle tip cut ${fmt(p.MC)} units`,line({x:p.ML-p.MC,y:p.Y-p.H},{x:p.ML,y:p.Y+p.MC-p.H},cut)+label(p.ML-p.MC*.50+12*u,p.Y+p.MC*.50-p.H-8*u,'C2 '+fmt(p.MC),-45));
+  return `<g id="f-measurements">${m}</g>`;
+}
+function fScene(s,{u,view,measures=true,grid=false,handles=false,bg=null}){
+  const p=fGeometry(s),gloss=s.gloss,front=s.front,rear=s.back,shadow=s.shadows&&!s.flat,material=Math.min(1,p.minTape/1.35,p.H/6.854),thin=p.minTape*.006;
+  const dark=parseInt(s.canvas.slice(1,3),16)*.2126+parseInt(s.canvas.slice(3,5),16)*.7152+parseInt(s.canvas.slice(5,7),16)*.0722<110,gridColor=dark?'#c4e0cb':'#526454';
+  const rect=fill=>`<rect x="${nstr(view.x)}" y="${nstr(view.y)}" width="${nstr(view.w)}" height="${nstr(view.h)}" fill="${fill}"/>`;
+  let content=`<title>Parametric folded ribbon F logo</title><desc>Finished face width ${fmt(p.W)} and height ${fmt(p.H)} units. Stem width ${fmt(p.SW)}, top bar thickness ${fmt(p.TT)} and middle bar thickness ${fmt(p.MT)} units. Middle bar length ${fmt(p.ML)} units side to side and top position ${fmt(p.Y)} units below the top. Top-left cut ${fmt(p.TC)} and middle tip cut ${fmt(p.MC)} units. Overall dimensions exclude shadows.</desc>
+  <defs>
+    <linearGradient id="f-stem" gradientUnits="userSpaceOnUse" x1="${nstr(p.SW*.78)}" y1="0" x2="${nstr(p.SW*.12)}" y2="${nstr(p.H)}"><stop stop-color="${front}"/><stop offset=".35" stop-color="${mix(front,'#ffffff',.09*gloss)}"/><stop offset=".76" stop-color="${front}"/><stop offset="1" stop-color="${mix(front,'#df000c',.12)}"/></linearGradient>
+    <linearGradient id="f-top" gradientUnits="userSpaceOnUse" x1="${nstr(p.SW*.90)}" y1="${nstr(p.TT*.62)}" x2="${nstr(p.W)}" y2="${nstr(p.TT*.28)}"><stop stop-color="${mix(rear,'#72000a',.45)}"/><stop offset=".20" stop-color="${rear}"/><stop offset=".57" stop-color="${mix(rear,'#ffffff',.085*gloss)}"/><stop offset="1" stop-color="${rear}"/></linearGradient>
+    <linearGradient id="f-middle" gradientUnits="userSpaceOnUse" x1="${nstr(p.SW)}" y1="${nstr(p.Y+p.MT*.7)}" x2="${nstr(p.ML)}" y2="${nstr(p.Y+p.MT*.25)}"><stop stop-color="${front}"/><stop offset=".46" stop-color="${mix(front,'#ffffff',.10*gloss)}"/><stop offset="1" stop-color="${front}"/></linearGradient>
+    <linearGradient id="f-edge" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${nstr(p.W)}" y2="${nstr(p.H)}"><stop stop-color="#fff4ef" stop-opacity="${nstr(gloss*.42)}"/><stop offset=".55" stop-color="#ffffff" stop-opacity="${nstr(gloss*.62)}"/><stop offset="1" stop-color="#ffe2d9" stop-opacity="${nstr(gloss*.72)}"/></linearGradient>
+    <filter id="f-drop" x="-30%" y="-20%" width="160%" height="155%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="${nstr(.07*material)}" stdDeviation="${nstr(.085*material)}" flood-color="#260701" flood-opacity=".24"/></filter>
+    <filter id="f-fold-shadow" filterUnits="userSpaceOnUse" x="-1" y="-1" width="${nstr(p.W+2)}" height="${nstr(p.H+2)}" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${nstr(p.minTape*.04)}"/></filter>
+    <clipPath id="f-body-clip"><path d="${p.d}"/></clipPath>
+    <pattern id="f-unit-grid" width="1" height="1" patternUnits="userSpaceOnUse"><path d="M1 0H0V1" fill="none" stroke="${gridColor}" stroke-opacity=".18" stroke-width=".6" vector-effect="non-scaling-stroke"/><circle r="${nstr(u)}" fill="${gridColor}" fill-opacity=".20"/></pattern>
+  </defs>`;
+  if(bg)content+=rect(bg);if(grid)content+=rect('url(#f-unit-grid)');
+  content+=`<g id="f-artwork" transform="translate(0 ${nstr(-p.H)})">`;
+  if(shadow)content+=`<path d="${p.d}" fill="${front}" filter="url(#f-drop)"/>`;
+  content+=`<path id="f-silhouette" d="${p.d}" fill="${s.flat?rear:'url(#f-top)'}"/><g clip-path="url(#f-body-clip)">`;
+  if(shadow)content+=`<path d="${p.topSeam}" fill="none" stroke="#56000a" stroke-opacity=".24" stroke-width="${nstr(Math.min(p.TT,p.SW)*.16)}" transform="translate(${nstr(.025*p.SW)} ${nstr(.02*p.TT)})" filter="url(#f-fold-shadow)"/><path d="${p.midSeam}" fill="none" stroke="#4e0008" stroke-opacity=".28" stroke-width="${nstr(Math.min(p.MT,p.SW)*.15)}" transform="translate(${nstr(.022*p.SW)} 0)" filter="url(#f-fold-shadow)"/>`;
+  content+=`<path id="f-stem-face" d="${p.stemFace}" fill="${s.flat?front:'url(#f-stem)'}"/><path id="f-top-face" d="${p.topFace}" fill="${s.flat?rear:'url(#f-top)'}"/><path id="f-middle-face" d="${p.midFace}" fill="${s.flat?front:'url(#f-middle)'}"/>`;
+  if(!s.flat){content+=`<path d="${p.topSeam}" fill="none" stroke="url(#f-edge)" stroke-width="${nstr(thin)}"/><path d="${p.midSeam}" fill="none" stroke="url(#f-edge)" stroke-width="${nstr(thin)}"/><path d="${p.d}" fill="none" stroke="#fff0eb" stroke-opacity="${nstr(gloss*.55)}" stroke-width="${nstr(thin*1.7)}"/>`; }
+  content+='</g></g>';
+  if(measures)content+=fRulers(s,p,u);
+  if(handles){
+    const list=[['fHeight',(p.SW+p.W)*.5,-p.H],['fWidth',p.W,(p.Y+p.MT+p.H)*.5-p.H],['fStemWidth',p.SW,(p.Y+p.MT+p.H)*.5-p.H],['fTopWidth',(p.SW+p.W)*.5,p.TT-p.H],['fMiddleWidth',p.SW+(p.ML-p.SW)*.60,p.Y+p.MT-p.H],['fMidLength',p.ML,p.Y+p.MT*.5-p.H],['fMidY',p.SW+(p.ML-p.SW)*.23,p.Y-p.H],['fTopCut',p.TC,-p.H],['fMidCut',p.MC>1e-8?p.ML:Math.min(p.ML,p.W),p.MC>1e-8?p.Y+p.MC-p.H:p.Y-p.H]];
+    content+='<g id="f-sizing-handles">'+list.map(([k,x,y])=>`<g data-handle="${k}" role="button" aria-label="Drag to change ${k}"><title>Drag to change ${k}</title><circle cx="${nstr(x)}" cy="${nstr(y)}" r="${nstr(15*u)}" fill="transparent"/><circle cx="${nstr(x)}" cy="${nstr(y)}" r="${nstr(4.5*u)}" fill="#fff" stroke="${k==='fTopCut'||k==='fMidCut'?'#a77722':'#477760'}" stroke-width="1.6" vector-effect="non-scaling-stroke"/></g>`).join('')+'</g>';
+  }
+  return content;
+}
+function syncFControls(){
+  const p=fGeometry(state);
+  for(const k of F_KEYS){
+    const {num,range}=fInputMap[k],[min,max]=fLimits(k),value=state[k];
+    num.min=nstr(min);num.max=nstr(max);range.min=nstr(min);
+    range.max=nstr(k==='fWidth'?Math.min(max,Math.max(min,16,value)):k==='fHeight'?Math.min(max,Math.max(min,20,value)):max);
+    range.value=value;if(document.activeElement!==num)num.value=fmt(value);paintRange(range);
+  }
+  $('f-link-widths').setAttribute('aria-pressed',state.linkWidths);$('f-link-widths').querySelector('span').textContent=state.linkWidths?'Linked':'Independent';
+  $('f-width-note').textContent=state.linkWidths?'Linked keeps the stem, top bar and middle bar exactly equal. Unlink them to tune each one separately.':'Each width can be edited independently. The middle bar still keeps its own side-to-side length and vertical position.';
+  for(const [id,key] of [['measure-toggle','showMeasures'],['grid-toggle','showGrid'],['handles-toggle','showHandles']])$(id).setAttribute('aria-pressed',state[key]);
+  for(const k of ['radius','gloss']){$(k).value=state[k];paintRange($(k));$(k+'-output').textContent=k==='radius'?fmt(state[k])+' u':Math.round(state[k]*100)+'%';}
+  for(const k of ['front','back','canvas'])$(k+'-color').value=state[k];
+  $('flat').checked=state.flat;$('shadows').checked=state.shadows;
+  const captions=document.querySelectorAll('.summary-card .caption');captions[0].textContent=state.linkWidths?'Tape · all linked':'Tape · min / max';captions[1].textContent='Middle bar';
+  $('stat-peel').innerHTML=state.linkWidths?`${fmt(p.SW)} <small>u</small>`:`${fmt(Math.min(state.fStemWidth,state.fTopWidth,state.fMiddleWidth))} / ${fmt(Math.max(state.fStemWidth,state.fTopWidth,state.fMiddleWidth))} <small>u</small>`;
+  $('stat-width').innerHTML=`Y ${fmt(p.Y)} · L ${fmt(p.ML)} <small>u</small>`;
+  $('stat-bounds').innerHTML=`${fmt(p.W)} × ${fmt(p.H)} <small>u</small>`;
+  $('stage-help').textContent=state.showHandles?'Drag a point to resize · Drag canvas to pan':'Drag to pan · Double-click to fit';
+}
+const fInputMap=Object.fromEntries(F_KEYS.map(k=>[k,{num:document.querySelector(`[data-f-number="${k}"]`),range:document.querySelector(`[data-f-range="${k}"]`)}]));
+for(const k of F_KEYS){
+  const {num,range}=fInputMap[k];
+  range.addEventListener('input',()=>setFDimension(k,range.valueAsNumber));range.addEventListener('change',commit);
+  num.addEventListener('input',()=>{if(Number.isFinite(num.valueAsNumber))setFDimension(k,num.valueAsNumber);});
+  const finish=()=>{num.value=fmt(state[k]);commit();};
+  num.addEventListener('change',finish);num.addEventListener('blur',finish);
+  num.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();num.blur();}});
+}
+$('f-link-widths').addEventListener('click',()=>{commitPending();state.linkWidths=!state.linkWidths;if(state.linkWidths)setFDimension('fStemWidth',state.fStemWidth);queueRender(true);commit();});
+$('f-reference-preset').addEventListener('click',()=>{commitPending();for(const k of [...F_KEYS,'radius','gloss'])state[k]=F_DEFAULTS[k];state.linkWidths=true;syncControls();fitCamera();commit();notice('');tell('Reference F proportions restored.');});
 
-function geometryForMode(mode,s){return mode==='g'?gGeometry(s):mode==='z'?zGeometry(s):mode==='a'?aGeometry(s):geometry(s);}
-function sceneForMode(mode,s,options){return mode==='g'?gScene(s,options):mode==='z'?zScene(s,options):mode==='a'?aScene(s,options):scene(s,options);}
+function geometryForMode(mode,s){return mode==='g'?gGeometry(s):mode==='f'?fGeometry(s):mode==='z'?zGeometry(s):mode==='a'?aGeometry(s):geometry(s);}
+function sceneForMode(mode,s,options){return mode==='g'?gScene(s,options):mode==='f'?fScene(s,options):mode==='z'?zScene(s,options):mode==='a'?aScene(s,options):scene(s,options);}
 function logoBoundsForMode(mode,s){const g=geometryForMode(mode,s),width=Number.isFinite(g.L)?g.L:g.W;return {left:0,top:g.top,right:width,bottom:g.bottom,width,height:g.totalH};}
 // Assembly scenes use their own SVG helpers. They must not depend on helpers
 // local to any single-letter renderer. Preview/export differ only by overlays.
@@ -1612,7 +1805,7 @@ function assemblySourceMarkup(logo){
   assemblySourceCache.set(logo,{key,markup});return markup;
 }
 function assemblyScene(s,{u,view,measures=false,grid=false,handles=false,bg=null,interactive=false}){
-  let markup='<title>Ribbon logo assembly</title><desc>Wordmark assembled from the current edited L, A, Z and G vector designs.</desc>';
+  let markup='<title>Ribbon logo assembly</title><desc>Wordmark assembled from the current edited L, A, Z, G and F vector designs.</desc>';
   if(grid)markup+=`<defs>${assemblyGridDefinition(u,s.canvas)}</defs>`;
   const rect=fill=>`<rect x="${nstr(view.x)}" y="${nstr(view.y)}" width="${nstr(view.w)}" height="${nstr(view.h)}" fill="${fill}"/>`;
   if(bg)markup+=rect(bg);
@@ -1772,9 +1965,9 @@ function nudgeAssembly(dx,dy){
 // ---------------------------------------------------------------------------
 // Shared studio shell: switching never converts or rescales an existing logo.
 // ---------------------------------------------------------------------------
-function currentGeometry(s=state){return activeLogo==='assembly'?assemblyGeometry(s):activeLogo==='g'?gGeometry(s):activeLogo==='z'?zGeometry(s):activeLogo==='a'?aGeometry(s):geometry(s);}
-function currentScene(s,options){return activeLogo==='assembly'?assemblyScene(s,options):activeLogo==='g'?gScene(s,options):activeLogo==='z'?zScene(s,options):activeLogo==='a'?aScene(s,options):scene(s,options);}
-function syncControls(){if(activeLogo==='assembly')syncAssemblyControls();else if(activeLogo==='g')syncGControls();else if(activeLogo==='z')syncZControls();else if(activeLogo==='a')syncAControls();else syncLControls();}
+function currentGeometry(s=state){return activeLogo==='assembly'?assemblyGeometry(s):activeLogo==='g'?gGeometry(s):activeLogo==='f'?fGeometry(s):activeLogo==='z'?zGeometry(s):activeLogo==='a'?aGeometry(s):geometry(s);}
+function currentScene(s,options){return activeLogo==='assembly'?assemblyScene(s,options):activeLogo==='g'?gScene(s,options):activeLogo==='f'?fScene(s,options):activeLogo==='z'?zScene(s,options):activeLogo==='a'?aScene(s,options):scene(s,options);}
+function syncControls(){if(activeLogo==='assembly')syncAssemblyControls();else if(activeLogo==='g')syncGControls();else if(activeLogo==='f')syncFControls();else if(activeLogo==='z')syncZControls();else if(activeLogo==='a')syncAControls();else syncLControls();}
 function syncAControls(){
   const p=aGeometry();
   for(const k of A_KEYS){
@@ -1830,11 +2023,11 @@ function enterLogo(mode){
   for(const node of measureButton.childNodes)if(node.nodeType===Node.TEXT_NODE&&node.textContent.trim())node.textContent=mode==='assembly'?'Guides':'Measures';
   measureButton.title=mode==='assembly'?'Show or hide snapping guide overlays (M)':'Show or hide measurements (M)';
   $('fold').closest('.measure-row').hidden=mode==='z'||mode==='g'||mode==='assembly';
-  $('active-logo-name').textContent=mode==='assembly'?'Assembly board':mode==='g'?'Folded G':mode==='z'?'Folded Z':mode==='l'?'Original L':'Folded A';
+  $('active-logo-name').textContent=mode==='assembly'?'Assembly board':mode==='g'?'Folded G':mode==='f'?'Folded F':mode==='z'?'Folded Z':mode==='l'?'Original L':'Folded A';
   document.querySelector('label[for="fold"]').textContent=mode==='l'?'Lower fold':'Top fold bend';
   $('back-color-label').textContent=mode==='l'?'Back':'Rear face';
   $('back-color').setAttribute('aria-label',mode==='l'?'Peeled back color':'Rear ribbon face color');
-  $('sidebar-description').innerHTML=mode==='assembly'?'<strong>Build words from your ribbon logos.</strong> Add copies of your current L, A, Z and G designs, then drag them on one board. The first item acts as the reference marker. Smart guides help align edges, centers and equal spacing, similar to presentation software.':mode==='g'?'<strong>Five tapes. Four folded turns.</strong> Overall width measures the widest part. Its control moves both right edges together; Top horizontal length moves only the upper tip. Tape widths stay constant along straight runs. The middle bar shifts only when thicker tape needs room. Both right-side corner cuts remain editable.':mode==='z'?'<strong>A Z made from three tapes.</strong> Width and height describe the finished silhouette. Top, diagonal and bottom tapes keep their specified thicknesses. Linked widths are measured perpendicular to each tape. The two folds are red; no yellow peel is added.':mode==='l'?L_DESCRIPTION:'<strong>Parallel edges. Consistent tape.</strong> Both straight legs retain their exact perpendicular thickness. Overall width changes their opening angle; height changes their length. The upper fold joins the two legs. No horizontal crossbar or yellow peel.';
+  $('sidebar-description').innerHTML=mode==='assembly'?'<strong>Build words from your ribbon logos.</strong> Add copies of your current L, A, Z, G and F designs, then drag them on one board. The first item acts as the reference marker. Smart guides help align edges, centers and equal spacing, similar to presentation software.':mode==='g'?'<strong>Five tapes. Four folded turns.</strong> Overall width measures the widest part. Its control moves both right edges together; Top horizontal length moves only the upper tip. Tape widths stay constant along straight runs. The middle bar shifts only when thicker tape needs room. Both right-side corner cuts remain editable.':mode==='f'?'<strong>An F with an independent middle bar.</strong> Overall width follows the top bar while the middle bar has its own side-to-side length and top position. Stem, top and middle widths can stay linked or be edited independently. The top-left corner cut and the middle tip cut remain adjustable.':mode==='z'?'<strong>A Z made from three tapes.</strong> Width and height describe the finished silhouette. Top, diagonal and bottom tapes keep their specified thicknesses. Linked widths are measured perpendicular to each tape. The two folds are red; no yellow peel is added.':mode==='l'?L_DESCRIPTION:'<strong>Parallel edges. Consistent tape.</strong> Both straight legs retain their exact perpendicular thickness. Overall width changes their opening angle; height changes their length. The upper fold joins the two legs. No horizontal crossbar or yellow peel.';
   const captions=document.querySelectorAll('.summary-card .caption');captions[0].textContent=mode==='assembly'?'Board contents':mode==='g'?'Tape · all five equal':mode==='z'?'Tape · all equal':mode==='l'?'Peel · x × y':'Tape · left / right';captions[1].textContent=mode==='assembly'?'Snap status':mode==='g'?'Right-middle fold':mode==='z'?'Diagonal angle · θ':mode==='l'?'Stroke · v / h':'Opening angle · θ';captions[2].textContent=mode==='assembly'?'Board bounds':'Overall · w × h';
   svg.setAttribute('aria-label',mode==='assembly'?'Assembly board for placing multiple ribbon logos together with snapping guides':mode==='g'?'Editable folded ribbon G logo with an adjustable corner-cut or rectangular right-middle fold':mode==='z'?'Editable folded ribbon Z logo with three constant-width tapes':mode==='l'?'Editable red ribbon L logo with a yellow peeled corner':'Editable folded ribbon A logo with constant-width sides');
   notice('');syncControls();syncHistory();
