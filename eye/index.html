@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f4ef">
+<meta name="color-scheme" content="light">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Eye Draw — look, wink, draw</title>
+<style>
+:root{--page:#f5f4ef;--paper:#fffefa;--ink:#20332f;--muted:#697772;--line:#dfe5dc;--green:#176c55;--light:#e6f1e8;--lime:#d7f19a;--orange:#b45c28;--red:#c44143;--shadow:0 16px 64px #153d2922;--safe-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--page);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overscroll-behavior:none}
+button,input,select{font:inherit}button{cursor:pointer}button,select{touch-action:manipulation}button:disabled{opacity:.4;cursor:default}button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #91b96c;outline-offset:3px}
+button{min-height:44px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);font-weight:650;padding:0 15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+button svg{width:20px;height:20px;flex-shrink:0}button:active:not(:disabled){transform:translateY(1px)}.primary{background:var(--green);color:white;border-color:var(--green)}.quiet{background:transparent}.danger{color:var(--red)}.icon{width:46px;padding:0}.hide{display:none!important}[hidden]{display:none!important}
+svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#app{height:100%;height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px);max-width:1700px;margin:auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px 10px;flex-shrink:0;min-height:62px}
+.brand{display:flex;align-items:center;gap:9px;font-size:20px;letter-spacing:-.8px;font-weight:800;line-height:1.05}.brand svg{width:31px;height:31px;color:var(--green);stroke-width:1.7}.brand small{display:block;font-size:9px;letter-spacing:1.65px;font-weight:600;color:var(--muted);margin-top:5px}.header-right{display:flex;gap:8px;align-items:center}.pill{display:inline-flex;gap:7px;align-items:center;padding:7px 10px;border:1px solid var(--line);border-radius:99px;font-size:11px;font-weight:650;white-space:nowrap}.led{width:7px;height:7px;border-radius:50%;background:#a4ada3}.led.on{background:#29986b}.led.warn{background:#dc944c}.led.off{background:#c54c4d}
+#stage{flex:1;min-height:120px;position:relative;margin:0 12px;background:var(--paper);border:1px solid var(--line);border-radius:22px;overflow:hidden;isolation:isolate;touch-action:auto}
+#stage.grid{background-image:radial-gradient(#c3cec2 0.7px,transparent .7px);background-size:24px 24px}
+#ink{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+#pointer{position:absolute;width:28px;height:28px;border:2px solid var(--green);border-radius:50%;left:0;top:0;margin:-14px 0 0 -14px;pointer-events:none;z-index:7;box-shadow:0 0 0 3px #fffefaee,0 2px 10px #17473730;transition:background .12s,opacity .12s;opacity:0}
+#pointer::before{content:"";position:absolute;width:4px;height:4px;background:var(--green);border-radius:50%;left:10px;top:10px}#pointer.drawing{border-color:#e56339;background:#ed804c24}#pointer.drawing::before{background:#e56339}#pointer.pending{border-style:dashed}#pointer.touch{border-color:#697772}
+#canvasMessage{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);max-width:calc(100% - 32px);border-radius:99px;padding:7px 13px;font-size:11px;text-align:center;background:#fffefaeb;border:1px solid var(--line);color:var(--muted);pointer-events:none;z-index:3;white-space:normal}
+#preview{position:absolute;top:12px;right:12px;width:116px;aspect-ratio:4/3;border-radius:14px;overflow:hidden;background:#1d2925;z-index:4;box-shadow:0 2px 8px #1c41291a;pointer-events:none}
+#preview video,#preview canvas{position:absolute;width:100%;height:100%;object-fit:contain;transform:scaleX(-1)}#preview small{position:absolute;bottom:4px;left:5px;color:white;font-size:9px;background:#12332799;border-radius:6px;padding:1px 5px}#preview.off{opacity:0;pointer-events:none;width:1px;height:1px;top:0;right:0}
+#welcome{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--paper);padding:24px;z-index:10;overflow:auto;touch-action:pan-y}.welcome-inner{max-width:480px;text-align:center;margin:auto}.hero-icon{display:flex;align-items:center;justify-content:center;width:74px;height:74px;border-radius:24px;background:var(--light);color:var(--green);margin:0 auto 20px}.hero-icon svg{width:45px;height:45px;stroke-width:1.4}h1{font-size:clamp(28px,5vw,43px);font-weight:750;line-height:1.06;letter-spacing:-1.6px;margin:0 0 13px}.intro{color:var(--muted);font-size:14px;max-width:380px;margin:0 auto 22px}.steps{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px}.step{padding:14px 5px 11px;border:1px solid var(--line);border-radius:16px;background:#f7f8f1}.step svg{width:42px;height:24px;color:var(--green)}.step strong{display:block;font-size:12px;margin:8px 0 3px}.step span{font-size:10px;color:var(--muted);display:block}.startrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.startrow button{min-height:48px}.privacy{font-size:10px;line-height:1.6;color:var(--muted);margin:16px auto 0;max-width:390px}.text-button{border:0;min-height:38px;font-size:11px;color:var(--green);background:none;padding:0 8px}.eyebrow{color:var(--green);font-weight:750;font-size:10px;letter-spacing:1.7px;text-transform:uppercase;margin-bottom:8px}
+#livebar{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:31px;padding:5px 19px 0;font-size:10px;color:var(--muted);flex-shrink:0}#liveState{font-weight:650;color:var(--green);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#eyeStates{display:flex;gap:10px;font-variant-numeric:tabular-nums;white-space:nowrap}#eyeStates b{font-weight:600}
+#tools{flex-shrink:0;padding:8px 14px max(10px,var(--safe-bottom));display:flex;flex-direction:column;gap:8px}.brushbar{display:flex;align-items:center;gap:10px;justify-content:space-between}.colors{display:flex;align-items:center;gap:2px}.swatch{padding:0;width:38px;height:44px;min-height:44px;border:0;background:none;border-radius:12px}.swatch i{display:block;width:24px;height:24px;border-radius:50%;background:var(--swatch);border:2px solid #ffffff}.swatch.selected i{box-shadow:0 0 0 2px var(--ink)}.sizegroup{display:flex;align-items:center;gap:6px;min-width:55px;flex:1;max-width:150px}.sizegroup svg{width:16px;height:16px;flex-shrink:0}.sizegroup input{width:100%;min-width:40px;accent-color:var(--green);height:40px;margin:0}.sizegroup output{font-size:10px;min-width:20px;color:var(--muted);font-variant-numeric:tabular-nums}.toolbuttons{display:flex;gap:6px}.toolbuttons .icon{width:43px}.toolbuttons .active{background:var(--light);border-color:#96bca5;color:var(--green)}.actionbar{display:flex;gap:7px;align-items:center;justify-content:space-between}.actionbar button{flex:1;font-size:12px;padding:0 10px}.actionbar .icon{flex:0 0 46px;padding:0}.status-detail{font-size:10px;font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+#calibration{position:absolute;inset:0;z-index:12;background:var(--paper);touch-action:auto}.cal-head{position:absolute;left:12px;right:12px;top:12px;text-align:center;pointer-events:none}.cal-head.bottom{top:auto;bottom:14px}#calTitle{font-size:13px;font-weight:750}#calHint{font-size:11px;color:var(--muted);margin-top:4px}#calCounter{font-size:10px;color:var(--green);margin-top:3px;font-variant-numeric:tabular-nums}#calCancel{position:absolute;top:10px;right:10px;z-index:2;min-height:40px;width:40px;background:var(--paper);border-radius:50%;padding:0}#target{position:absolute;width:50px;height:50px;border-radius:50%;transform:translate(-50%,-50%);background:conic-gradient(var(--green) var(--progress,0%),#dfeadc 0);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 8px #e6f1e855}#target::before{content:"";display:block;width:40px;height:40px;background:var(--paper);border-radius:50%;position:absolute}#target::after{content:"";display:block;width:8px;height:8px;background:var(--green);border-radius:50%;position:relative}#calActions{position:absolute;left:14px;right:14px;bottom:16px;display:flex;justify-content:center;gap:9px}#calResult{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:28px;max-width:500px;margin:auto}#calResult h2{font-size:26px;letter-spacing:-.6px;line-height:1.12;margin:0 0 12px}#calResult p{font-size:13px;color:var(--muted);margin:0 0 18px}#calResult .result-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+#toast{position:fixed;z-index:60;top:max(75px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);max-width:calc(100vw - 30px);width:max-content;background:var(--ink);color:white;padding:12px 16px;font-size:12px;border-radius:14px;box-shadow:var(--shadow);pointer-events:none}
+#sheetBackdrop{position:fixed;inset:0;z-index:30;background:#17291f55;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}#sheet{width:100%;max-width:540px;max-height:89%;max-height:89dvh;overflow:auto;overscroll-behavior:contain;background:var(--paper);border-radius:26px 26px 0 0;padding:18px 22px max(22px,var(--safe-bottom));touch-action:pan-y;box-shadow:var(--shadow)}.sheet-top{position:sticky;top:0;z-index:2;background:var(--paper);padding-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}.sheet-top h2{margin:0;font-size:23px;letter-spacing:-.5px}.section-label{font-size:10px;letter-spacing:1.25px;font-weight:750;color:var(--green);text-transform:uppercase;margin:24px 0 12px}.setting{margin-bottom:17px}.setting label{font-size:13px;font-weight:650;display:flex;align-items:center;justify-content:space-between;gap:8px}.setting p,.helptext{margin:5px 0 0;font-size:11px;color:var(--muted);line-height:1.55}.setting input[type=range]{width:100%;accent-color:var(--green);height:32px;margin:4px 0 0}.setting output{font-weight:500;color:var(--muted);font-size:12px}.setting select{width:100%;height:46px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:#f4f6ef;color:var(--ink);margin-top:8px}.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}.toggle input{accent-color:var(--green);width:22px;height:22px}.meter-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.meter-card{background:#f1f5ed;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:11px}.meter-card b{float:right}.meter{height:6px;background:#d9e2d5;border-radius:9px;overflow:hidden;margin-top:9px}.meter i{height:100%;width:0%;display:block;background:var(--green);transition:width .07s}.wide{width:100%;margin:0 0 8px}.row{display:flex;gap:8px}.row button{flex:1}.note{font-size:11px;padding:12px 14px;background:#f5edda;border:1px solid #e4d6b7;border-radius:13px;color:#76603b;line-height:1.55;margin:14px 0}.help-block{margin:0 0 19px}.help-block h3{font-size:14px;margin:0 0 7px}.help-block p{font-size:12px;color:var(--muted);margin:0;line-height:1.6}.help-block code{font-size:11px;background:#edf1e8;border-radius:4px;padding:2px 4px}#exportImage{display:block;max-width:100%;max-height:50dvh;margin:0 auto 16px;border:1px solid var(--line);border-radius:10px;background:white;user-select:auto;-webkit-user-select:auto}#errorText{white-space:pre-wrap;overflow-wrap:anywhere}.loadspin{width:16px;height:16px;border:2px solid #ffffff55;border-top-color:white;border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+@media(min-width:1000px){header{padding:15px 26px 13px}#stage{margin:0 20px;border-radius:26px}#tools{flex-direction:row;align-items:center;justify-content:space-between;padding:12px 24px max(14px,var(--safe-bottom));gap:18px}.brushbar{flex:1;justify-content:flex-start;gap:20px}.actionbar{flex:1;justify-content:flex-end;max-width:560px}.actionbar button{flex:0 1 auto;min-width:85px}.actionbar .icon{min-width:46px}.sizegroup{max-width:145px}#livebar{padding:7px 27px 0}.welcome-inner{max-width:500px}#preview{width:145px}.swatch{width:40px}}
+@media(min-width:366px) and (max-width:430px){.swatch{width:33px}.brushbar{gap:8px}}
+@media(max-width:365px){header{padding-left:13px;padding-right:13px}.brand{font-size:18px}.pill{padding:6px 8px}.brushbar{gap:5px}.swatch{width:32px}.swatch i{width:21px;height:21px}.toolbuttons{gap:3px}.toolbuttons .icon{width:39px}#tools{padding-left:10px;padding-right:10px}.sizegroup output{display:none}.actionbar button{font-size:11px;padding:0 6px}.steps{gap:6px}#welcome{padding:20px 15px}.hero-icon{margin-bottom:13px}}
+@media(max-height:590px){#calResult{justify-content:flex-start;overflow:auto;touch-action:pan-y;padding:18px}#calResult>*{flex-shrink:0}header{min-height:49px;padding-top:6px;padding-bottom:6px}.brand small{display:none}#tools{padding-top:5px;gap:4px}#livebar{min-height:25px}.welcome-inner{max-width:590px}.hero-icon{display:none}h1{font-size:28px}.intro{margin-bottom:12px}.steps{margin-bottom:12px}.step{padding:7px 4px}.privacy{margin-top:8px;font-size:9px}.step svg{height:17px}.step strong{margin-top:3px}#preview{width:92px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"><defs>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-pen" viewBox="0 0 24 24"><path d="m4 16-1 5 5-1L20 8a2.1 2.1 0 0 0-4-4L4 16Zm10-10 4 4M4 16l4 4"/></symbol>
+<symbol id="i-eraser" viewBox="0 0 24 24"><path d="m3 13 9-9a2 2 0 0 1 3 0l6 6a2 2 0 0 1 0 3l-7 7H9l-6-4a2 2 0 0 1 0-3Zm5-5 9 9M14 20h8"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="M8 4 3 9l5 5M3 9h11a6 6 0 0 1 0 12h-3"/></symbol>
+<symbol id="i-redo" viewBox="0 0 24 24"><path d="m16 4 5 5-5 5m5-5H10a6 6 0 0 0 0 12h3"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7Z"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M5 3v8m0 4v6m7-18v3m0 4v11m7-18v12m0 4v2M2 11h6m1-5h6m1 9h6"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+<symbol id="i-camera" viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v14H3Z"/><circle cx="12" cy="13" r="4"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></symbol>
+</defs></svg>
+<div id="app">
+<header><div class="brand"><svg><use href="#i-eye"/></svg><div>eye draw<small>LOOK · WINK · CREATE</small></div></div><div class="header-right"><div class="pill"><i id="cameraLed" class="led"></i><span id="cameraStatus">Camera off</span></div><button class="icon quiet" id="settingsBtn" aria-label="Open settings"><svg><use href="#i-sliders"/></svg></button></div></header>
+<main id="stage" class="grid" aria-label="Drawing canvas">
+<canvas id="ink" aria-label="Draw using your gaze after calibration, or use your finger"></canvas>
+<div id="pointer" aria-hidden="true"></div>
+<div id="preview" class="off" aria-hidden="true"><video id="video" autoplay muted playsinline webkit-playsinline></video><canvas id="faceOverlay"></canvas><small>Mirrored preview</small></div>
+<div id="canvasMessage" hidden>Both eyes open = move · Hold your left eye closed = draw</div>
+<section id="welcome"><div class="welcome-inner">
+<div class="hero-icon"><svg><use href="#i-eye"/></svg></div><div class="eyebrow">A camera-powered experiment</div><h1>Your eyes.<br>Your next brushstroke.</h1><p class="intro">Look to move the pointer. Hold one eye closed to draw. Open both eyes to lift the pen.</p>
+<div class="steps">
+<div class="step"><svg viewBox="0 0 46 24"><path d="M2 12q8-11 16 0-8 11-16 0Zm26 0q8-11 16 0-8 11-16 0Z"/><circle cx="10" cy="12" r="2"/><circle cx="36" cy="12" r="2"/></svg><strong>Look</strong><span>Both eyes open</span></div>
+<div class="step"><svg viewBox="0 0 46 24"><path d="M2 10q8 9 16 0m10 2q8-11 16 0-8 11-16 0Z"/><circle cx="36" cy="12" r="2"/></svg><strong>Hold a wink</strong><span>Move the open eye</span></div>
+<div class="step"><svg viewBox="0 0 46 24"><path d="M2 12q8-11 16 0-8 11-16 0Zm26 0q8-11 16 0-8 11-16 0Z"/><circle cx="10" cy="12" r="2"/><circle cx="36" cy="12" r="2"/></svg><strong>Release</strong><span>Open both eyes</span></div>
+</div>
+<div class="startrow"><button class="primary" id="startBtn"><svg><use href="#i-camera"/></svg>Start camera</button><button id="touchBtn">Try with touch</button></div>
+<p class="privacy">Frames are processed in this page; this app does not upload them. Internet is needed to load the tracking engine. Experimental gaze estimation, not precision eye-tracking hardware.</p><button class="text-button" id="helpBtn">How to run on iPhone / iPad</button>
+</div></section>
+<section id="calibration" hidden aria-label="Eye calibration"><button id="calCancel" aria-label="Cancel calibration"><svg><use href="#i-x"/></svg></button><div class="cal-head" id="calHead"><div id="calTitle">Look at the dot</div><div id="calHint">Keep your head and device still.</div><div id="calCounter"></div></div><div id="target"></div><div id="calResult" hidden></div></section>
+</main>
+<div id="livebar"><span id="liveState" role="status" aria-live="polite">Ready when you are</span><span id="eyeStates"><span>L <b id="leftState">—</b></span><span>R <b id="rightState">—</b></span><span id="fps">— fps</span></span></div>
+<footer id="tools">
+<div class="brushbar"><div class="colors" aria-label="Brush color">
+<button class="swatch selected" style="--swatch:#20332f" data-color="#20332f" aria-label="Ink" aria-pressed="true"><i></i></button><button class="swatch" style="--swatch:#227e68" data-color="#227e68" aria-label="Green" aria-pressed="false"><i></i></button><button class="swatch" style="--swatch:#ef744b" data-color="#ef744b" aria-label="Orange" aria-pressed="false"><i></i></button><button class="swatch" style="--swatch:#557dc6" data-color="#557dc6" aria-label="Blue" aria-pressed="false"><i></i></button><button class="swatch" style="--swatch:#a374b8" data-color="#a374b8" aria-label="Purple" aria-pressed="false"><i></i></button>
+</div><label class="sizegroup" title="Brush size"><svg><use href="#i-pen"/></svg><input id="brushSize" type="range" min="2" max="28" value="6" aria-label="Brush size"><output id="brushOutput">6</output></label><div class="toolbuttons"><button class="icon" id="eraserBtn" aria-label="Toggle eraser" aria-pressed="false"><svg><use href="#i-eraser"/></svg></button><button class="icon" id="undoBtn" aria-label="Undo stroke" disabled><svg><use href="#i-undo"/></svg></button></div></div>
+<div class="actionbar"><button id="cameraBtn"><svg><use href="#i-camera"/></svg><span>Start</span></button><button id="calibrateBtn" disabled><svg><use href="#i-target"/></svg><span>Calibrate</span></button><button id="pauseBtn" disabled><svg><use href="#i-pause"/></svg><span>Pause</span></button><button id="saveBtn"><svg><use href="#i-save"/></svg><span>Save</span></button></div>
+</footer></div>
+<div id="toast" role="status" hidden></div>
+<div id="sheetBackdrop" hidden><section id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><div class="sheet-top"><h2 id="sheetTitle">Settings</h2><button class="icon" id="closeSheet" aria-label="Close dialog"><svg><use href="#i-x"/></svg></button></div>
+<div id="settingsContent">
+<div class="setting"><label for="drawEye">Eye to close for drawing</label><select id="drawEye"><option value="left">My left eye — aim with my right</option><option value="right">My right eye — aim with my left</option><option value="either">Either eye — aim with the open eye</option></select><p>Left and right mean your own eyes, not the screen. A fixed eye is usually steadier than switching.</p></div>
+<div class="meter-grid"><div class="meter-card">Left closure <b id="leftScore">—</b><div class="meter"><i id="leftMeter"></i></div></div><div class="meter-card">Right closure <b id="rightScore">—</b><div class="meter"><i id="rightMeter"></i></div></div></div>
+<div class="section-label">Calibration</div>
+<button class="wide" id="refineBtn" disabled>Refine aim while winking</button><p class="helptext">Optional second calibration using the open eye while your chosen drawing eye is shut. Useful when winking shifts the pointer.</p><div class="row" style="margin-top:12px"><button id="recenterBtn" disabled>Recenter aim</button><button id="recalBtn" disabled>Full calibration</button></div><p class="helptext" id="calQuality">No calibration yet. Calibration is not saved between visits.</p>
+<div class="section-label">Pointer feel</div>
+<div class="setting"><label for="smoothing">Smoothing <output id="smoothingOutput"></output></label><input id="smoothing" type="range" min="40" max="350" step="10"><p>Higher is steadier but slower. Start around 140 ms.</p></div>
+<div class="setting"><label for="deadzone">Small-movement filter <output id="deadzoneOutput"></output></label><input id="deadzone" type="range" min="0" max="12" step="1"></div>
+<div class="setting"><label for="gainX">Horizontal reach <output id="gainXOutput"></output></label><input id="gainX" type="range" min="0.6" max="2" step="0.05"></div>
+<div class="setting"><label for="gainY">Vertical reach <output id="gainYOutput"></output></label><input id="gainY" type="range" min="0.6" max="2" step="0.05"></div>
+<div class="setting"><label for="offsetX">Horizontal offset <output id="offsetXOutput"></output></label><input id="offsetX" type="range" min="-0.3" max="0.3" step="0.01"></div>
+<div class="setting"><label for="offsetY">Vertical offset <output id="offsetYOutput"></output></label><input id="offsetY" type="range" min="-0.3" max="0.3" step="0.01"></div>
+<div class="section-label">Wink detection</div>
+<div class="setting"><label for="threshold">Closed-eye threshold <output id="thresholdOutput"></output></label><input id="threshold" type="range" min="0.35" max="0.85" step="0.01"><p>Lower if intentional winks are missed. Raise if you draw accidentally. The meters show measured closure.</p></div>
+<div class="setting"><label for="holdDelay">Hold before drawing <output id="holdDelayOutput"></output></label><input id="holdDelay" type="range" min="140" max="600" step="20"><p>Helps distinguish a deliberate wink from a normal blink.</p></div>
+<label class="toggle"><span>Short deliberate wink makes a dot</span><input id="tapDots" type="checkbox"></label>
+<div class="section-label">Canvas & camera</div>
+<label class="toggle"><span>Show camera preview</span><input id="showPreview" type="checkbox"></label><label class="toggle"><span>Show paper grid</span><input id="showGrid" type="checkbox"></label>
+<div class="setting" style="margin-top:13px"><label for="maxFps">Tracking speed <output id="maxFpsOutput"></output></label><input id="maxFps" type="range" min="10" max="30" step="5"><p>Lower this if the device becomes warm or the interface slows down.</p></div>
+<div class="row"><button id="redoBtn" disabled><svg><use href="#i-redo"/></svg>Redo</button><button id="clearBtn" class="danger"><svg><use href="#i-trash"/></svg>Clear</button></div><button id="resetSettingsBtn" class="wide quiet" style="margin-top:10px">Reset tuning to defaults</button><button id="settingsHelp" class="wide quiet">Setup, privacy & limitations</button><p class="helptext">Eye Draw 1.0 · Use a stand, even front lighting, and a comfortable viewing distance. Take breaks from sustained winking.</p>
+</div>
+<div id="helpContent" hidden>
+<div class="help-block"><h3>Run as a real HTTPS webpage</h3><p>Upload this HTML file to an HTTPS website and open that page directly in Safari. A Files preview, chat attachment preview, or an HTTP address on your local network is not the intended camera environment. This file deliberately blocks camera startup on file URLs and insecure origins.</p></div>
+<div class="help-block"><h3>Allow the front camera</h3><p>Tap Start camera, then Allow. If permission was denied, change the website's Camera permission in Safari and reload. A preview embedded in another site may be blocked; open the page by itself.</p></div>
+<div class="help-block"><h3>Calibrate in your drawing position</h3><p>Place the device on a stand. Keep your head still, open both eyes normally, and look directly at each dot, not at the camera. Calibration learns each eye separately, then checks three additional targets. Recalibrate after changing orientation, distance, or posture.</p></div>
+<div class="help-block"><h3>Draw with one eye</h3><p>The default is your LEFT eye closed and your RIGHT eye looking around. Open both to stop. Closing both, losing the face, or hiding the page releases the pen. Brief ordinary two-eye blinks are rejected. A quick, deliberate single-eye wink can make a dot.</p></div>
+<div class="help-block"><h3>When aim drifts</h3><p>Use Recenter aim for a small offset. Use Refine aim while winking if the pointer shifts when an eye closes. More smoothing reduces jitter but adds delay. Eyeglass reflections, small eye images, squinting, head movement, and lighting can reduce usability.</p></div>
+<div class="help-block"><h3>What this prototype can and cannot do</h3><p>This is calibrated estimation from iris landmarks, not a hardware-grade gaze tracker. It controls a pointer only inside this drawing area, not the iPad/iPhone system cursor. Setup and toolbar controls still use touch. Accuracy needs testing with your own eyes and camera.</p></div>
+<div class="help-block"><h3>Single file, online engine</h3><p>All app code, styles, calibration, and drawing logic are here. On Start, this page downloads Google's MediaPipe JavaScript/WASM engine from jsDelivr (or unpkg as a fallback) and its face model from Google storage. No API key or processing server is used. Network access is needed; this is not a bundled offline app.</p></div>
+<div class="help-block"><h3>Privacy</h3><p>This app passes camera frames to the model locally in the browser and does not contain a frame-upload, recording, analytics, or identity-recognition feature. Dependency downloads still contact those third-party hosts. Only your tuning settings are stored locally; gaze calibration, landmarks, and strokes are held in memory. Stop camera ends the media tracks.</p></div>
+<div class="help-block"><h3>Saving your drawing</h3><p>Save opens a PNG preview. Use Share / Save where supported, Download PNG, or touch and hold the preview image. The exported picture has a plain white background without the pointer, grid, or camera preview. Leaving or reloading the page discards unsaved strokes.</p></div>
+</div>
+<div id="errorContent" hidden><div class="note" id="errorText"></div><button class="primary wide" id="retryBtn">Try camera again</button><button class="wide" id="errorHelpBtn">View setup instructions</button><button class="wide quiet" id="errorTouchBtn">Continue with touch only</button></div>
+<div id="exportContent" hidden><img id="exportImage" alt="Your drawing, ready to save"><div class="row"><button class="primary" id="shareBtn">Share / Save</button><button id="downloadBtn">Download PNG</button></div><p class="helptext" style="margin-top:12px;text-align:center">On iPhone / iPad, you can also touch and hold the image to save it.</p></div>
+</section></div>
+<script>
+'use strict';
+/*
+ EYE DRAW 1.0 — single-page experimental eye drawing app.
+ Runtime: @mediapipe/tasks-vision 0.10.35 (pinned); model: Face Landmarker float16/1.
+ Sources:
+ https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker/web_js
+ https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/python/solutions/face_mesh_connections.py
+ https://github.com/google-ai-edge/mediapipe/blob/master/docs/solutions/iris.md
+ https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+ Iris landmarks DO NOT directly report screen gaze. The affine regressions below
+ learn a screen mapping from explicit user calibration, independently per eye.
+ No frames are uploaded by this app. The dependency/model downloads are external.
+*/
+(()=>{
+const $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const mean=a=>a.reduce((s,x)=>s+x,0)/Math.max(a.length,1);
+const median=a=>{if(!a.length)return 0;const b=[...a].sort((x,y)=>x-y);const m=b.length>>1;return b.length%2?b[m]:(b[m-1]+b[m])/2;};
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const opposite=e=>e==='left'?'right':'left';
+const VERSION='0.10.35';
+const ENGINE_ROOTS=[`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${VERSION}`,`https://unpkg.com/@mediapipe/tasks-vision@${VERSION}`];
+const MODEL_URL='https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+const DEFAULTS={drawEye:'left',smoothing:140,deadzone:2,gainX:1,gainY:1,offsetX:0,offsetY:0,threshold:.60,holdDelay:220,tapDots:true,showPreview:true,showGrid:true,maxFps:20};
+const RANGES={smoothing:[40,350],deadzone:[0,12],gainX:[.6,2],gainY:[.6,2],offsetX:[-.3,.3],offsetY:[-.3,.3],threshold:[.35,.85],holdDelay:[140,600],maxFps:[10,30]};
+const cfg={...DEFAULTS};
+try{const s=JSON.parse(localStorage.getItem('eye-draw-settings-v1')||'{}');for(const[k,v]of Object.entries(s)){if(k in RANGES&&Number.isFinite(v))cfg[k]=clamp(v,...RANGES[k]);else if(typeof DEFAULTS[k]==='boolean'&&typeof v==='boolean')cfg[k]=v;else if(k==='drawEye'&&['left','right','either'].includes(v))cfg[k]=v;}}catch(_){}
+function saveSettings(){try{localStorage.setItem('eye-draw-settings-v1',JSON.stringify(cfg));}catch(_){}}
+
+// Small, pivoted linear solver: no external math dependency.
+function solve(A,b){
+ const n=b.length,M=A.map((r,i)=>[...r,b[i]]);
+ for(let c=0;c<n;c++){
+  let p=c;for(let r=c+1;r<n;r++)if(Math.abs(M[r][c])>Math.abs(M[p][c]))p=r;
+  if(Math.abs(M[p][c])<1e-10)throw new Error('Calibration matrix is singular.');
+  [M[p],M[c]]=[M[c],M[p]];const d=M[c][c];for(let j=c;j<=n;j++)M[c][j]/=d;
+  for(let r=0;r<n;r++)if(r!==c){const k=M[r][c];for(let j=c;j<=n;j++)M[r][j]-=k*M[c][j];}
+ }
+ return M.map(r=>r[n]);
+}
+function fitGaze(samples){
+ if(samples.length<5)throw new Error('Not enough calibration targets.');
+ const mu=[0,1].map(j=>mean(samples.map(s=>s.f[j])));
+ const scale=[0,1].map(j=>Math.sqrt(mean(samples.map(s=>(s.f[j]-mu[j])**2))));
+ if(scale[0]<.004||scale[1]<.002)throw new Error('Not enough iris movement was measured. Look at each dot with your eyes, keep your head still, and improve front lighting.');
+ const rows=samples.map(s=>[1,(s.f[0]-mu[0])/scale[0],(s.f[1]-mu[1])/scale[1]]);
+ const A=Array.from({length:3},()=>[0,0,0]),bx=[0,0,0],by=[0,0,0];
+ for(let n=0;n<rows.length;n++){const r=rows[n];for(let i=0;i<3;i++){bx[i]+=r[i]*samples[n].x;by[i]+=r[i]*samples[n].y;for(let j=0;j<3;j++)A[i][j]+=r[i]*r[j];}}
+ A[1][1]+=.035;A[2][2]+=.035; // Mild ridge regularization, leaving intercept unpenalized.
+ const model={mu,scale,cx:solve(A,bx),cy:solve(A,by)};
+ model.fitError=mean(samples.map(s=>dist(predictGaze(model,s.f),s)));
+ if(!Number.isFinite(model.fitError)||model.fitError>.30)throw new Error('Calibration did not find a useful relationship between eye position and the dots. Try again without moving your head.');
+ return model;
+}
+function predictGaze(m,f){const r=[1,(f[0]-m.mu[0])/m.scale[0],(f[1]-m.mu[1])/m.scale[1]];return{x:r.reduce((s,v,i)=>s+v*m.cx[i],0),y:r.reduce((s,v,i)=>s+v*m.cy[i],0)};}
+
+// Hysteresis keeps an eye from flickering between open/closed near a threshold.
+class EyeLatch{
+ constructor(){this.closed=false;}
+ update(score,threshold){if(this.closed&&score<threshold-.17)this.closed=false;else if(!this.closed&&score>=threshold)this.closed=true;return this.closed;}
+ reset(){this.closed=false;}
+}
+// Intentional wink state machine. Both-eye uncertainty, lost tracking, and blur
+// always release the pen and require a stable both-open interval before rearming.
+class WinkMachine{
+ constructor(){this.reset();}
+ reset(){this.state='blocked';this.eye=null;this.since=0;this.openSince=null;this.tapPoint=null;}
+ step({t,left,right,readyLeft,readyRight,allowed='left',delay=220,taps=true,valid=true,point=null}){
+  const events=[];const release=()=>{if(this.state==='drawing')events.push({type:'up'});};
+  if(!valid){release();this.reset();return events;}
+  const bothOpen=readyLeft&&readyRight;
+  if(bothOpen){
+   if(this.state==='drawing'){events.push({type:'up'});this.state='blocked';this.openSince=t;}
+   else if(this.state==='candidate'){
+    const held=t-this.since;
+    if(taps&&held>=110&&held<delay+80&&this.tapPoint)events.push({type:'tap',point:{...this.tapPoint}});
+    this.state='blocked';this.openSince=t;
+   }
+   if(this.openSince===null)this.openSince=t;
+   if(t-this.openSince>=180)this.state='armed';
+   this.eye=null;return events;
+  }
+  this.openSince=null;
+  const eye=left&&readyRight?'left':right&&readyLeft?'right':null;
+  const permitted=eye&&(allowed==='either'||eye===allowed);
+  if(!permitted){
+   // An intentional eyelid passes through an uncertain state on its way down.
+   // Keep an already-armed gesture armed while ONLY the allowed eye transitions;
+   // otherwise a slow wink would be canceled before crossing the close threshold.
+   const uncertainEye=!readyLeft&&readyRight?'left':!readyRight&&readyLeft?'right':null;
+   const allowedTransition=uncertainEye&&(allowed==='either'||uncertainEye===allowed);
+   if(allowedTransition&&this.state==='armed')return events;
+   // Give a short candidate time to pass the reopening hysteresis band. No ink
+   // is drawn here. Bilateral uncertainty never receives this exception.
+   if(allowedTransition&&this.state==='candidate'&&uncertainEye===this.eye&&t-this.since<delay+80)return events;
+   release();this.state='blocked';this.eye=null;return events;
+  }
+  if(this.state==='blocked')return events;
+  if(this.state==='armed'){this.state='candidate';this.eye=eye;this.since=t;this.tapPoint=point?{...point}:null;}
+  if(this.eye!==eye){release();this.reset();return events;}
+  if(this.state==='candidate'){
+   if(point)this.tapPoint={...point};
+   if(t-this.since>=delay){this.state='drawing';events.push({type:'down'});}
+  }
+  return events;
+ }
+}
+// Iris coordinates projected onto the line joining the eye corners. Pixel
+// aspect is corrected before projection, and vertical displacement is divided
+// by EYE WIDTH, not eyelid height (which collapses during a wink).
+const EYE_INDEX={
+ left:{corners:[362,263],iris:[473,474,475,476,477],upper:[385,386,387],lower:[380,374,373],blend:'eyeBlinkLeft'},
+ right:{corners:[33,133],iris:[468,469,470,471,472],upper:[160,159,158],lower:[144,145,153],blend:'eyeBlinkRight'}
+};
+function eyeGeometry(lm,name,width,height){
+ const ids=EYE_INDEX[name],p=i=>({x:lm[i].x*width,y:lm[i].y*height});
+ const a=p(ids.corners[0]),b=p(ids.corners[1]),w=dist(a,b);
+ if(w<8)return null;
+ const ex={x:(b.x-a.x)/w,y:(b.y-a.y)/w},ey={x:-ex.y,y:ex.x},mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+ const ip=ids.iris.map(p),iris={x:mean(ip.map(v=>v.x)),y:mean(ip.map(v=>v.y))};
+ const uv=[((iris.x-mid.x)*ex.x+(iris.y-mid.y)*ex.y)/w,((iris.x-mid.x)*ey.x+(iris.y-mid.y)*ey.y)/w];
+ const ear=mean(ids.upper.map((i,j)=>{const u=p(i),l=p(ids.lower[j]);return Math.abs((l.x-u.x)*ey.x+(l.y-u.y)*ey.y)/w;}));
+ if(!uv.every(Number.isFinite)||!Number.isFinite(ear)||Math.abs(uv[0])>.7||Math.abs(uv[1])>.55)return null;
+ return{f:uv,ear,width:w,iris:{x:iris.x/width,y:iris.y/height}};
+}
+function facePose(lm,width,height){
+ const a={x:lm[33].x*width,y:lm[33].y*height},b={x:lm[263].x*width,y:lm[263].y*height},n={x:lm[1].x*width,y:lm[1].y*height};
+ const w=dist(a,b),mx=(a.x+b.x)/2,my=(a.y+b.y)/2,ux=(b.x-a.x)/w,uy=(b.y-a.y)/w;
+ return{cx:mx/width,cy:my/height,scale:w/width,yaw:((n.x-mx)*ux+(n.y-my)*uy)/w,pitch:(-(n.x-mx)*uy+(n.y-my)*ux)/w,roll:Math.atan2(uy,ux)};
+}
+function averagePose(a){return Object.fromEntries(['cx','cy','scale','yaw','pitch','roll'].map(k=>[k,median(a.map(p=>p[k]))]));}
+function poseDeviation(a,b){if(!a||!b)return 0;return Math.max(Math.hypot(a.cx-b.cx,a.cy-b.cy)/.16,Math.abs(a.scale/b.scale-1)/.42,Math.abs(a.yaw-b.yaw)/.18,Math.abs(a.pitch-b.pitch)/.18,Math.abs(a.roll-b.roll)/.28);}
+
+const stage=$('stage'),canvas=$('ink'),ctx=canvas.getContext('2d',{alpha:true}),video=$('video');
+const S={
+ stream:null,engine:null,enginePromise:null,starting:false,running:false,paused:false,generation:0,
+ sheet:null,returnFocus:null,cal:null,ready:false,models:{left:null,right:null},winkModels:{left:null,right:null},
+ baseline:{left:.25,right:.25},poseRef:null,lastFace:0,lastVideoAt:0,lastVideoTime:-1,lastInference:0,
+ lastFrameAt:0,frameCount:0,fpsAt:0,fps:0,processingMs:0,lostSince:0,
+ eyes:{left:{score:0,closed:false},right:{score:0,closed:false}},latches:{left:new EyeLatch(),right:new EyeLatch()},
+ gesture:new WinkMachine(),filtered:null,rawHistory:[],lastPointerAt:0,lastSource:null,
+ w:1,h:1,dpr:1,strokes:[],redo:[],current:null,manualID:null,brush:'#20332f',eraser:false,
+ wake:null,toastTimer:null,exportUrl:null,exportBlob:null,calMessage:'',resizeTimer:null,
+ totalPoints:0,wasPortrait:innerHeight>=innerWidth,trackingErrors:0
+};
+function iconMarkup(name){return `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;}
+function toast(message){clearTimeout(S.toastTimer);$('toast').textContent=message;$('toast').hidden=false;S.toastTimer=setTimeout(()=>{$('toast').hidden=true;},4300);}
+function setLive(text){if($('liveState').textContent!==text)$('liveState').textContent=text;}
+function setCameraLabel(text,state=''){ $('cameraStatus').textContent=text;$('cameraLed').className='led'+(state?' '+state:''); }
+function showPointer(point,mode=''){if(!point){$('pointer').style.opacity=0;return;}$('pointer').style.transform=`translate(${point.x}px,${point.y}px)`;$('pointer').style.opacity=1;$('pointer').className=mode;}
+function emit(name,detail){window.dispatchEvent(new CustomEvent(`eyedraw:${name}`,{detail}));}
+function updateButtons(){
+ $('cameraBtn').innerHTML=iconMarkup('camera')+`<span>${S.starting?'Cancel':S.running?'Stop':'Start'}</span>`;
+ $('calibrateBtn').disabled=!S.running||S.starting;
+ $('pauseBtn').disabled=!S.running||!S.ready||!!S.cal;
+ $('pauseBtn').innerHTML=iconMarkup(S.paused?'play':'pause')+`<span>${S.paused?'Resume':'Pause'}</span>`;
+ $('recalBtn').disabled=!S.running;
+ $('refineBtn').disabled=!S.running||!S.ready||cfg.drawEye==='either';
+ $('recenterBtn').disabled=!S.running||!S.ready;
+ $('undoBtn').disabled=!S.strokes.length;
+ $('redoBtn').disabled=!S.redo.length;
+ $('leftState').textContent=S.running?(S.eyes.left.closed?'closed':'open'):'—';
+ $('rightState').textContent=S.running?(S.eyes.right.closed?'closed':'open'):'—';
+ $('preview').classList.toggle('off',!S.running||!cfg.showPreview||!!S.cal);
+ $('startBtn').disabled=S.starting;
+ $('startBtn').innerHTML=S.starting?'<span class="loadspin"></span>Starting…':iconMarkup('camera')+'Start camera';
+}
+function updateInstruction(){
+ const label=cfg.drawEye==='either'?'one eye':`your ${cfg.drawEye} eye`;
+ $('canvasMessage').textContent=`Both eyes open = move · Hold ${label} closed = draw`;
+}
+function syncSettings(){
+ for(const k of Object.keys(DEFAULTS)){const e=$(k);if(!e)continue;if(e.type==='checkbox')e.checked=cfg[k];else e.value=cfg[k];}
+ for(const k of Object.keys(RANGES)){
+  const o=$(k+'Output');if(!o)continue;
+  o.textContent=k==='smoothing'||k==='holdDelay'?`${cfg[k]} ms`:k==='deadzone'?`${cfg[k]} px`:k==='maxFps'?`${cfg[k]} fps`:k==='threshold'?`${Math.round(cfg[k]*100)}%`:k.startsWith('offset')?`${cfg[k]>0?'+':''}${Math.round(cfg[k]*100)}%`:`${cfg[k].toFixed(2)}×`;
+ }
+ stage.classList.toggle('grid',cfg.showGrid);updateInstruction();updateButtons();
+}
+function openSheet(kind){
+ breakPen();S.sheet=kind;S.returnFocus=document.activeElement;
+ for(const k of ['settings','help','error','export'])$(k+'Content').hidden=k!==kind;
+ $('sheetTitle').textContent={settings:'Make it feel right',help:'Getting started',error:'Camera needs attention',export:'Your drawing'}[kind];
+ $('sheetBackdrop').hidden=false;$('sheet').scrollTop=0;$('closeSheet').focus({preventScroll:true});
+ showPointer(null);updateButtons();
+}
+function closeSheet(){
+ $('sheetBackdrop').hidden=true;S.sheet=null;S.gesture.reset();
+ if(S.returnFocus?.isConnected)S.returnFocus.focus({preventScroll:true});S.returnFocus=null;
+}
+function showError(message){$('errorText').textContent=message;openSheet('error');}
+function revealCanvas(){ $('welcome').hidden=true;$('canvasMessage').hidden=false; }
+function breakPen(){endStroke();S.gesture.reset();S.rawHistory=[];S.lastSource=null;}
+function normalizedPoint(p){return{x:clamp(p.x/S.w),y:clamp(p.y/S.h)};}
+function drawPart(stroke,a,b,target=ctx,w=S.w,h=S.h){
+ target.save();target.globalCompositeOperation=stroke.erase?'destination-out':'source-over';
+ target.strokeStyle=stroke.color;target.fillStyle=stroke.color;target.lineWidth=stroke.size*Math.min(w,h);target.lineCap='round';target.lineJoin='round';
+ if(!a||dist(a,b)<.000001){target.beginPath();target.arc(b.x*w,b.y*h,target.lineWidth/2,0,Math.PI*2);target.fill();}
+ else{target.beginPath();target.moveTo(a.x*w,a.y*h);target.lineTo(b.x*w,b.y*h);target.stroke();}
+ target.restore();
+}
+function beginStroke(p,source='eye'){
+ if(S.current)endStroke();
+ if(S.totalPoints>60000){toast('This canvas is full. Save the drawing, then clear it to continue.');return;}
+ const n=normalizedPoint(p),size=(+$('brushSize').value)*(S.eraser?3:1)/Math.min(S.w,S.h);
+ S.current={color:S.brush,erase:S.eraser,size,points:[n],source};S.strokes.push(S.current);S.totalPoints++;S.redo=[];
+ drawPart(S.current,null,n);updateButtons();
+ if(source==='eye')emit('press',{x:p.x,y:p.y,normalized:n});
+}
+function appendStroke(p){
+ const s=S.current;if(!s)return;const n=normalizedPoint(p),last=s.points[s.points.length-1];
+ if(Math.hypot((n.x-last.x)*S.w,(n.y-last.y)*S.h)<.7)return;
+ if(S.totalPoints>60000){breakPen();S.paused=true;updateButtons();toast('Canvas point limit reached. Save, then clear to keep drawing.');return;}
+ s.points.push(n);S.totalPoints++;drawPart(s,last,n);
+}
+function endStroke(){if(!S.current)return;const source=S.current.source;S.current=null;updateButtons();if(source==='eye')emit('release',{});}
+function redraw(){ctx.clearRect(0,0,S.w,S.h);for(const s of S.strokes){if(s.points.length)drawPart(s,null,s.points[0]);for(let i=1;i<s.points.length;i++)drawPart(s,s.points[i-1],s.points[i]);}}
+function resizeCanvas(){
+ const r=stage.getBoundingClientRect(),w=Math.max(1,stage.clientWidth),h=Math.max(1,stage.clientHeight);
+ if(w===S.w&&h===S.h&&canvas.width)return;
+ const hadSize=S.w>10,changed=hadSize&&(Math.abs(w/S.w-1)>.18||Math.abs(h/S.h-1)>.18);
+ breakPen();S.w=w;S.h=h;S.dpr=Math.min(window.devicePixelRatio||1,2);
+ canvas.width=Math.round(w*S.dpr);canvas.height=Math.round(h*S.dpr);ctx.setTransform(S.dpr,0,0,S.dpr,0,0);redraw();S.filtered=null;
+ if(S.cal){cancelCalibration(false);toast('Canvas size changed. Start calibration again.');}
+ if(changed&&S.ready){S.ready=false;S.models={left:null,right:null};S.winkModels={left:null,right:null};S.poseRef=null;S.paused=true;S.calMessage='Layout changed. Full calibration is required.';$('calQuality').textContent=S.calMessage;setLive('Layout changed — calibrate again');showPointer(null);updateButtons();}
+}
+new ResizeObserver(()=>{clearTimeout(S.resizeTimer);S.resizeTimer=setTimeout(resizeCanvas,90);}).observe(stage);
+
+for(const btn of document.querySelectorAll('.swatch'))btn.addEventListener('click',()=>{
+ breakPen();S.brush=btn.dataset.color;S.eraser=false;$('eraserBtn').classList.remove('active');$('eraserBtn').setAttribute('aria-pressed','false');
+ document.querySelectorAll('.swatch').forEach(b=>{const chosen=b===btn;b.classList.toggle('selected',chosen);b.setAttribute('aria-pressed',String(chosen));});
+});
+$('brushSize').addEventListener('input',()=>{breakPen();$('brushOutput').value=$('brushSize').value;});
+$('eraserBtn').addEventListener('click',()=>{breakPen();S.eraser=!S.eraser;$('eraserBtn').classList.toggle('active',S.eraser);$('eraserBtn').setAttribute('aria-pressed',String(S.eraser));});
+$('undoBtn').addEventListener('click',()=>{breakPen();const s=S.strokes.pop();if(s){S.redo.push(s);S.totalPoints-=s.points.length;redraw();}updateButtons();});
+$('redoBtn').addEventListener('click',()=>{breakPen();const s=S.redo.pop();if(s){S.strokes.push(s);S.totalPoints+=s.points.length;redraw();}updateButtons();});
+$('clearBtn').addEventListener('click',()=>{breakPen();if(!S.strokes.length||confirm('Clear this canvas? Save your drawing first to keep it.')){S.strokes=[];S.redo=[];S.totalPoints=0;redraw();updateButtons();closeSheet();toast('Canvas cleared.');}});
+function localPointer(e){const r=canvas.getBoundingClientRect();return{x:clamp(e.clientX-r.left,0,S.w),y:clamp(e.clientY-r.top,0,S.h)};}
+canvas.addEventListener('pointerdown',e=>{
+ if(S.cal||S.sheet||!$('welcome').hidden||S.manualID!==null||e.button>0)return;
+ e.preventDefault();breakPen();S.manualID=e.pointerId;canvas.setPointerCapture(e.pointerId);const p=localPointer(e);beginStroke(p,'touch');showPointer(p,'touch');$('canvasMessage').hidden=true;
+});
+canvas.addEventListener('pointermove',e=>{
+ if(e.pointerId!==S.manualID)return;e.preventDefault();
+ const events=e.getCoalescedEvents?e.getCoalescedEvents():[e];
+ for(const ev of (events.length?events:[e]))appendStroke(localPointer(ev));showPointer(localPointer(e),'touch');
+});
+function finishTouch(e){if(e.pointerId!==S.manualID)return;endStroke();S.manualID=null;S.gesture.reset();S.filtered=null;showPointer(null);}
+canvas.addEventListener('pointerup',finishTouch);canvas.addEventListener('pointercancel',finishTouch);canvas.addEventListener('lostpointercapture',finishTouch);
+
+$('touchBtn').addEventListener('click',()=>{revealCanvas();setLive('Touch canvas — camera is off');});
+$('settingsBtn').addEventListener('click',()=>openSheet('settings'));
+$('closeSheet').addEventListener('click',closeSheet);
+$('sheetBackdrop').addEventListener('click',e=>{if(e.target===$('sheetBackdrop'))closeSheet();});
+$('helpBtn').addEventListener('click',()=>openSheet('help'));
+$('settingsHelp').addEventListener('click',()=>openSheet('help'));
+$('errorHelpBtn').addEventListener('click',()=>openSheet('help'));
+$('errorTouchBtn').addEventListener('click',()=>{closeSheet();revealCanvas();setLive('Touch canvas — camera is off');});
+for(const k of Object.keys(DEFAULTS)){
+ const el=$(k);if(!el)continue;
+ el.addEventListener(el.type==='range'?'input':'change',()=>{
+  cfg[k]=el.type==='checkbox'?el.checked:el.type==='range'?+el.value:el.value;saveSettings();
+  if(!['showPreview','showGrid','maxFps'].includes(k)){breakPen();S.filtered=null;}
+  if(k==='drawEye'){S.winkModels={left:null,right:null};toast('Drawing eye changed. One-eye refinement was reset.');}
+  syncSettings();
+ });
+}
+$('resetSettingsBtn').addEventListener('click',()=>{Object.assign(cfg,DEFAULTS);saveSettings();breakPen();S.filtered=null;syncSettings();toast('Pointer and gesture tuning reset.');});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'){if(S.sheet)closeSheet();else if(S.cal)cancelCalibration();else if(S.running)togglePause();}
+ if(S.sheet&&e.key==='Tab'){
+  const a=[...$('sheet').querySelectorAll('button,input,select,a[href]')].filter(x=>!x.disabled&&x.getClientRects().length),first=a[0],last=a[a.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}
+ }
+});
+
+function cameraErrorText(e){
+ const detail=e?.message||String(e);
+ if(e?.name==='NotAllowedError'||e?.name==='PermissionDeniedError')return 'Camera permission was denied or this page is not allowed to use the camera. Open the HTTPS page directly in Safari, allow Camera in its website settings, and try again. An embedded preview may block camera access.';
+ if(e?.name==='NotFoundError'||e?.name==='DevicesNotFoundError')return 'No camera was found. Use a device with a front camera and check that camera access is available.';
+ if(e?.name==='NotReadableError'||e?.name==='TrackStartError')return 'The camera could not start. Close other camera-using apps or tabs, then try again.';
+ if(e?.name==='OverconstrainedError')return 'The requested camera settings are not available on this device. Reload and try again.';
+ return `${detail}\n\nUse a current Safari browser, allow Camera, and keep internet access available for the tracking engine. If your network blocks jsDelivr, unpkg, or Google storage, try another network.`;
+}
+async function loadEngine(){
+ if(S.engine)return S.engine;if(S.enginePromise)return S.enginePromise;
+ S.enginePromise=(async()=>{
+  let lastError;
+  for(const root of ENGINE_ROOTS){
+   try{
+    const {FaceLandmarker,FilesetResolver}=await import(`${root}/vision_bundle.mjs`);
+    const fileset=await FilesetResolver.forVisionTasks(`${root}/wasm`);
+    const options={baseOptions:{modelAssetPath:MODEL_URL,delegate:'GPU'},runningMode:'VIDEO',numFaces:1,minFaceDetectionConfidence:.55,minFacePresenceConfidence:.55,minTrackingConfidence:.55,outputFaceBlendshapes:true,outputFacialTransformationMatrixes:false};
+    try{S.engine=await FaceLandmarker.createFromOptions(fileset,options);}
+    catch(gpuError){console.warn('GPU initialization failed; trying CPU.',gpuError);options.baseOptions.delegate='CPU';S.engine=await FaceLandmarker.createFromOptions(fileset,options);}
+    return S.engine;
+   }catch(e){lastError=e;console.warn('Tracking-engine load attempt failed.',e);}
+  }
+  throw new Error('Could not load the eye-tracking engine. '+(lastError?.message||''));
+ })();
+ try{return await S.enginePromise;}finally{S.enginePromise=null;}
+}
+async function wakeScreen(){try{if('wakeLock'in navigator&&!document.hidden&&!S.wake){S.wake=await navigator.wakeLock.request('screen');S.wake.addEventListener('release',()=>{S.wake=null;});}}catch(_){} }
+function releaseWake(){try{S.wake?.release();}catch(_){}S.wake=null;}
+async function startCamera(){
+ if(S.running||S.starting)return;
+ if(location.protocol==='file:'||!window.isSecureContext||!navigator.mediaDevices?.getUserMedia){showError('Camera mode needs a secure webpage. Upload this HTML file to an HTTPS website, then open its actual page directly in Safari. The local file / Files preview is not supported for camera mode. The touch canvas still works.');return;}
+ closeSheet();breakPen();const generation=++S.generation;S.starting=true;S.paused=false;S.ready=false;S.models={left:null,right:null};S.winkModels={left:null,right:null};S.poseRef=null;
+ setCameraLabel('Starting…','warn');setLive('Allow camera; loading tracking engine…');updateButtons();
+ const startVideo=async()=>{
+  let stream;
+  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'user'},width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30,max:30}},audio:false});}
+  catch(e){if(e.name!=='OverconstrainedError')throw e;stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});}
+  if(generation!==S.generation){stream.getTracks().forEach(t=>t.stop());return;}
+  S.stream=stream;video.srcObject=stream;video.muted=true;await video.play();
+  for(const track of stream.getVideoTracks())track.addEventListener('ended',()=>{if(S.running&&S.stream===stream){stopCamera();toast('Camera ended. Tap Start to reconnect.');}});
+ };
+ try{
+  await Promise.all([startVideo(),loadEngine()]);if(generation!==S.generation)return;
+  S.starting=false;S.running=true;S.paused=false;S.lastVideoTime=-1;S.lastInference=0;S.lastFace=performance.now();S.lastVideoAt=performance.now();S.fpsAt=performance.now();S.frameCount=0;S.trackingErrors=0;
+  S.latches.left.reset();S.latches.right.reset();S.filtered=null;S.baseline={left:.25,right:.25};
+  revealCanvas();setCameraLabel('Camera on','on');updateButtons();wakeScreen();startCalibration('full');
+ }catch(e){
+  if(generation!==S.generation)return;console.error(e);stopCamera(true);showError(cameraErrorText(e));
+ }
+}
+function stopCamera(silent=false){
+ ++S.generation;S.starting=false;S.running=false;S.paused=false;breakPen();
+ if(S.cal)cancelCalibration(false);
+ if(S.stream){S.stream.getTracks().forEach(t=>t.stop());S.stream=null;}video.pause();video.srcObject=null;releaseWake();
+ S.ready=false;S.models={left:null,right:null};S.winkModels={left:null,right:null};S.poseRef=null;S.filtered=null;
+ showPointer(null);setCameraLabel('Camera off');setLive('Camera off — touch drawing still works');$('fps').textContent='— fps';updateButtons();
+ if(!silent)S.calMessage='Camera stopped. Calibrate again after restarting.';
+}
+function togglePause(){
+ if(!S.running||!S.ready)return;S.paused=!S.paused;breakPen();showPointer(null);
+ if(!S.paused){video.play().catch(()=>{});wakeScreen();setLive('Open both eyes to resume');}else setLive('Paused — touch drawing still works');updateButtons();
+}
+$('startBtn').addEventListener('click',startCamera);$('retryBtn').addEventListener('click',startCamera);
+$('cameraBtn').addEventListener('click',()=>S.running||S.starting?stopCamera():startCamera());$('pauseBtn').addEventListener('click',togglePause);
+
+function calibrationPoints(){
+ const x=clamp(58/S.w,.13,.24),y=clamp(65/S.h,.14,.29);
+ return[{x:.5,y:.5},{x,y},{x:.5,y},{x:1-x,y},{x:1-x,y:.5},{x:1-x,y:1-y},{x:.5,y:1-y},{x,y:1-y},{x,y:.5}];
+}
+function placeTarget(p){
+ $('target').style.left=(p.x*100)+'%';$('target').style.top=(p.y*100)+'%';$('target').style.setProperty('--progress','0%');
+ $('calHead').classList.toggle('bottom',p.y<=.5);
+}
+function calNewStep(){
+ const c=S.cal;if(!c)return;c.started=performance.now();c.lastTick=c.started;c.goodMs=0;c.samples=[];
+ const p=c.phase==='baseline'||c.phase==='center'?{x:.5,y:.5}:c.phase==='check'?c.checks[c.index]:c.points[c.index];
+ placeTarget(p);
+ $('calTitle').textContent=c.phase==='baseline'?'Look at the dot. Open both eyes normally.':c.phase==='center'?'Look at the center. Keep both eyes open.':c.phase==='check'?'Checking your aim — look at the dot':'Look directly at the dot';
+ $('calHint').textContent=c.kind==='wink'?`Keep your ${c.closedEye} eye closed. Aim with your ${opposite(c.closedEye)} eye.`:'Keep your head and device still. Move only your eyes.';
+ $('calCounter').textContent=c.phase==='baseline'?'Measuring your open-eye baseline':c.phase==='center'?'Measuring center offset':c.phase==='check'?`Check ${c.index+1} of ${c.checks.length}`:`Point ${c.index+1} of ${c.points.length}`;
+}
+function startCalibration(kind='full'){
+ if(!S.running)return;
+ if(kind!=='full'&&!S.ready){toast('Complete full calibration first.');return;}
+ if(kind==='wink'&&cfg.drawEye==='either'){toast('Choose a specific drawing eye before one-eye refinement.');return;}
+ closeSheet();breakPen();showPointer(null);revealCanvas();
+ S.cal={kind,phase:kind==='full'?'baseline':kind==='center'?'center':'train',closedEye:cfg.drawEye,
+  points:calibrationPoints(),checks:[{x:.32,y:.36},{x:.69,y:.66},{x:.46,y:.59}],index:0,
+  samples:[],data:{left:[],right:[]},poses:[],basePoses:[],newModels:null,errors:[],
+  beforePaused:S.paused,beforeBaseline:{...S.baseline},headRef:S.poseRef,started:performance.now(),lastTick:performance.now(),goodMs:0,error:false};
+ $('calibration').hidden=false;$('calResult').hidden=true;$('target').hidden=false;$('calHead').hidden=false;
+ calNewStep();setLive(kind==='wink'?'Calibrating open-eye aim during a wink':kind==='center'?'Recentering your pointer':'Calibrating each eye');updateButtons();
+}
+function cancelCalibration(notify=true){
+ const c=S.cal;if(!c)return;
+ if(c.kind==='full'&&c.phase!=='result')S.baseline=c.beforeBaseline;
+ S.paused=c.phase==='result'&&!c.error?false:c.beforePaused;
+ S.cal=null;$('calibration').hidden=true;$('calResult').hidden=true;breakPen();S.filtered=null;showPointer(null);updateButtons();
+ if(notify)setLive(S.ready?(S.paused?'Paused':'Open both eyes, then wink to draw'):'Tap Calibrate before using eye control');
+}
+function calWait(message,now=performance.now()){
+ const c=S.cal;if(!c||c.phase==='result')return;c.lastTick=now;
+ $('calHint').textContent=message;
+}
+function summarizeFeatures(samples,eye){return[0,1].map(j=>median(samples.map(s=>s[eye].f[j])));}
+function predictOpen(frame,models=S.models){
+ const eye=cfg.drawEye==='left'?'right':cfg.drawEye==='right'?'left':null;
+ if(eye)return frame[eye]&&models[eye]?predictGaze(models[eye],frame[eye].f):null;
+ if(!frame.left||!frame.right||!models.left||!models.right)return null;
+ const a=predictGaze(models.left,frame.left.f),b=predictGaze(models.right,frame.right.f);return{x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+}
+function finishCalResult(title,text,{retry=false,refine=false}={}){
+ const c=S.cal;if(!c)return;c.phase='result';c.error=retry;
+ $('target').hidden=true;$('calHead').hidden=true;$('calResult').hidden=false;
+ $('calResult').innerHTML='<div class="eyebrow">Calibration</div><h2></h2><p></p><div class="result-actions"></div>';
+ $('calResult').querySelector('h2').textContent=title;$('calResult').querySelector('p').textContent=text;
+ const actions=$('calResult').querySelector('.result-actions');
+ const add=(text,primary,fn)=>{const b=document.createElement('button');b.textContent=text;if(primary)b.className='primary';b.onclick=fn;actions.appendChild(b);};
+ add(retry?'Try again':'Start drawing',true,()=>retry?startCalibration(c.kind):cancelCalibration());
+ if(refine)add('Refine wink aim',false,()=>startCalibration('wink'));
+ if(retry)add('Cancel',false,()=>cancelCalibration());
+ else add('Recalibrate',false,()=>startCalibration(c.kind==='wink'?'wink':'full'));
+ updateButtons();
+}
+function commitCalibration(){
+ const c=S.cal;if(!c)return;
+ if(c.kind==='full'){
+  S.models=c.newModels;S.winkModels={left:null,right:null};S.poseRef=averagePose(c.poses);
+  cfg.gainX=cfg.gainY=1;cfg.offsetX=cfg.offsetY=0;saveSettings();syncSettings();
+ }else S.winkModels[c.closedEye]=c.newModels[opposite(c.closedEye)];
+ S.ready=true;S.paused=false;S.filtered=null;S.rawHistory=[];S.gesture.reset();
+ const error=median(c.errors)*100,poor=error>12;
+ S.calMessage=`${c.kind==='wink'?'Wink':'Open-eye'} check: ${error.toFixed(1)}% of canvas diagonal (median of 3 targets; not a precision guarantee).`;
+ $('calQuality').textContent=S.calMessage;
+ const extra=poor?'The check was loose. Improve lighting, hold your head still, and recalibrate if the pointer is hard to control.':c.kind==='full'?'Open both eyes to move. Close your chosen eye to draw. If winking shifts the pointer, use the optional wink refinement.':'Your open-eye mapping has been refined while the other eye is closed. Open both eyes to release the pen.';
+ finishCalResult(poor?'Calibration needs practice':'Ready to draw',`Aim check: ${error.toFixed(1)}% of the canvas diagonal. ${extra}`,{refine:c.kind==='full'&&cfg.drawEye!=='either'});
+}
+function tickCalibration(frame,now){
+ const c=S.cal;if(!c||c.phase==='result')return;
+ const dt=clamp(now-c.lastTick,0,100);c.lastTick=now;
+ const both=frame.left&&frame.right&&frame.readyLeft&&frame.readyRight;
+ const wink=c.kind==='wink'&&frame[c.closedEye+'Closed']&&frame['ready'+(opposite(c.closedEye)==='left'?'Left':'Right')]&&frame[opposite(c.closedEye)];
+ let valid=c.kind==='wink'?!!wink:!!both;
+ if(c.phase==='baseline')valid=!!(frame.left&&frame.right&&frame.left.ear>.10&&frame.right.ear>.10&&frame.blinkLeft<.3&&frame.blinkRight<.3);
+ if(!valid){calWait(c.kind==='wink'?`Close only your ${c.closedEye} eye; keep your ${opposite(c.closedEye)} eye open.`:'Keep both eyes open naturally, with your whole face visible.',now);return;}
+ if(c.phase!=='baseline'&&c.headRef&&poseDeviation(frame.pose,c.headRef)>1.15){calWait('Your head moved. Return to your starting position.',now);return;}
+ const settle=c.phase==='baseline'?600:700;
+ if(now-c.started<settle){$('calHint').textContent=c.kind==='wink'?`Rest between dots if needed. Close your ${c.closedEye} eye to record.`:'Look at the dot, not the camera. Keep your head still.';return;}
+ $('calHint').textContent=c.kind==='wink'?`Recording from your ${opposite(c.closedEye)} eye…`:'Recording — keep looking at the dot…';
+ c.samples.push(frame);c.goodMs+=dt;
+ const required=c.phase==='baseline'?1100:900;
+ $('target').style.setProperty('--progress',`${clamp(c.goodMs/required)*100}%`);
+ if(c.goodMs<required||c.samples.length<10)return;
+ try{
+  if(c.phase==='baseline'){
+   for(const eye of ['left','right'])S.baseline[eye]=clamp(median(c.samples.map(f=>f[eye].ear)),.12,.55);
+   c.headRef=averagePose(c.samples.map(f=>f.pose));c.phase='train';c.index=0;calNewStep();return;
+  }
+  if(c.phase==='center'){
+   const predictions=c.samples.map(f=>predictOpen(f)).filter(Boolean);
+   if(!predictions.length)throw new Error('No usable gaze samples were measured.');
+   const p={x:median(predictions.map(p=>p.x)),y:median(predictions.map(p=>p.y))};
+   cfg.offsetX=clamp(-(p.x-.5)*cfg.gainX,-.3,.3);cfg.offsetY=clamp(-(p.y-.5)*cfg.gainY,-.3,.3);
+   saveSettings();syncSettings();S.filtered=null;finishCalResult('Aim recentered','The center offset was updated. For a wider positioning or distance change, use full calibration instead.');return;
+  }
+  if(c.phase==='train'){
+   const p=c.points[c.index],eyes=c.kind==='wink'?[opposite(c.closedEye)]:['left','right'];
+   for(const eye of eyes)c.data[eye].push({f:summarizeFeatures(c.samples,eye),x:p.x,y:p.y});
+   c.poses.push(averagePose(c.samples.map(f=>f.pose)));
+   if(++c.index<c.points.length){calNewStep();return;}
+   c.newModels={left:null,right:null};for(const eye of eyes)c.newModels[eye]=fitGaze(c.data[eye]);
+   c.phase='check';c.index=0;calNewStep();return;
+  }
+  if(c.phase==='check'){
+   const p=c.checks[c.index];
+   const predictions=c.samples.map(f=>c.kind==='wink'?predictGaze(c.newModels[opposite(c.closedEye)],f[opposite(c.closedEye)].f):predictOpen(f,c.newModels)).filter(Boolean);
+   const measured={x:median(predictions.map(v=>v.x)),y:median(predictions.map(v=>v.y))};
+   const error=Math.hypot((measured.x-p.x)*S.w,(measured.y-p.y)*S.h)/Math.hypot(S.w,S.h);
+   if(!Number.isFinite(error))throw new Error('The aim check did not return a usable estimate.');c.errors.push(error);
+   if(++c.index<c.checks.length){calNewStep();return;}
+   commitCalibration();
+  }
+ }catch(e){if(c.kind==='full')S.baseline=c.beforeBaseline;finishCalResult('Let’s try that again',e.message,{retry:true});}
+}
+$('calibrateBtn').addEventListener('click',()=>startCalibration('full'));$('recalBtn').addEventListener('click',()=>startCalibration('full'));
+$('refineBtn').addEventListener('click',()=>startCalibration('wink'));$('recenterBtn').addEventListener('click',()=>startCalibration('center'));
+$('calCancel').addEventListener('click',()=>cancelCalibration());
+
+function closureScore(geometry,blend,baseline){
+ const ratio=geometry?geometry.ear/baseline:0;
+ const geometric=clamp((.82-ratio)/.66);
+ return Number.isFinite(blend)?clamp(.82*blend+.18*geometric):geometric;
+}
+function drawFacePreview(frame){
+ if(!cfg.showPreview||S.cal)return;
+ const overlay=$('faceOverlay'),w=video.videoWidth,h=video.videoHeight;
+ if(overlay.width!==w||overlay.height!==h){overlay.width=w;overlay.height=h;}
+ const c=overlay.getContext('2d');c.clearRect(0,0,w,h);
+ for(const eye of ['left','right']){
+  const g=frame[eye];if(!g)continue;c.strokeStyle=frame[eye+'Closed']?'#ff966f':'#bbef7e';c.lineWidth=Math.max(2,w/380);c.beginPath();c.arc(g.iris.x*w,g.iris.y*h,Math.max(5,g.width*.1),0,Math.PI*2);c.stroke();
+ }
+}
+function frameLost(message,now){
+ if(S.manualID===null){breakPen();showPointer(null);}
+ S.filtered=null;S.lostSince=S.lostSince||now;
+ if(S.cal)calWait(message,now);else if(!S.sheet&&!S.paused)setLive(message);
+ $('leftState').textContent='—';$('rightState').textContent='—';
+}
+function estimate(frame){
+ let eye,model,source;
+ if(cfg.drawEye==='left'||cfg.drawEye==='right'){
+  eye=opposite(cfg.drawEye);if(!frame[eye]||!frame['ready'+(eye==='left'?'Left':'Right')])return null;
+  const winking=frame[cfg.drawEye+'Closed'];model=winking&&S.winkModels[cfg.drawEye]?S.winkModels[cfg.drawEye]:S.models[eye];
+  source=eye+(winking&&S.winkModels[cfg.drawEye]?'-wink':'');
+  return model?{...predictGaze(model,frame[eye].f),source}:null;
+ }
+ if(frame.leftClosed&&frame.readyRight&&frame.right){eye='right';source='right';model=S.winkModels.left||S.models.right;}
+ else if(frame.rightClosed&&frame.readyLeft&&frame.left){eye='left';source='left';model=S.winkModels.right||S.models.left;}
+ else if(frame.readyLeft&&frame.readyRight){const p=predictOpen(frame);return p?{...p,source:'both'}:null;}
+ else return null;
+ return model?{...predictGaze(model,frame[eye].f),source}:null;
+}
+function filteredPoint(raw,now){
+ if(raw.source!==S.lastSource){S.rawHistory=[];S.lastSource=raw.source;}
+ S.rawHistory.push({x:raw.x,y:raw.y});if(S.rawHistory.length>3)S.rawHistory.shift();
+ const p={x:clamp(.5+(median(S.rawHistory.map(p=>p.x))-.5)*cfg.gainX+cfg.offsetX)*S.w,y:clamp(.5+(median(S.rawHistory.map(p=>p.y))-.5)*cfg.gainY+cfg.offsetY)*S.h};
+ if(!S.filtered)S.filtered=p;
+ else{
+  const dt=clamp(now-S.lastPointerAt,8,120),d=dist(p,S.filtered);
+  if(d>cfg.deadzone){const alpha=1-Math.exp(-dt/cfg.smoothing);S.filtered={x:S.filtered.x+(p.x-S.filtered.x)*alpha,y:S.filtered.y+(p.y-S.filtered.y)*alpha};}
+ }
+ S.lastPointerAt=now;return S.filtered;
+}
+function processResult(result,now){
+ const lm=result.faceLandmarks?.[0],w=video.videoWidth,h=video.videoHeight;
+ if(!lm||lm.length<478||!w||!h){frameLost('Face not found — face the front camera',now);return;}
+ const left=eyeGeometry(lm,'left',w,h),right=eyeGeometry(lm,'right',w,h);
+ if(!left&&!right){frameLost('Move closer so the camera can see your eyes',now);return;}
+ const categories=result.faceBlendshapes?.[0]?.categories||[];
+ const blinkMap=Object.fromEntries(categories.filter(c=>c.categoryName==='eyeBlinkLeft'||c.categoryName==='eyeBlinkRight').map(c=>[c.categoryName,c.score]));
+ const blinkLeft=blinkMap.eyeBlinkLeft,blinkRight=blinkMap.eyeBlinkRight;
+ const scoreLeft=closureScore(left,blinkLeft,S.baseline.left),scoreRight=closureScore(right,blinkRight,S.baseline.right);
+ const leftClosed=S.latches.left.update(scoreLeft,cfg.threshold),rightClosed=S.latches.right.update(scoreRight,cfg.threshold);
+ const openThreshold=Math.min(.43,cfg.threshold-.17);
+ const readyLeft=!leftClosed&&scoreLeft<openThreshold&&!!left,readyRight=!rightClosed&&scoreRight<openThreshold&&!!right;
+ const frame={left,right,leftClosed,rightClosed,readyLeft,readyRight,blinkLeft:Number.isFinite(blinkLeft)?blinkLeft:scoreLeft,blinkRight:Number.isFinite(blinkRight)?blinkRight:scoreRight,pose:facePose(lm,w,h)};
+ S.eyes={left:{score:scoreLeft,closed:leftClosed},right:{score:scoreRight,closed:rightClosed}};S.lastFace=now;S.lostSince=0;
+ $('leftState').textContent=leftClosed?'closed':readyLeft?'open':'…';$('rightState').textContent=rightClosed?'closed':readyRight?'open':'…';
+ for(const eye of ['left','right']){const score=Math.round(S.eyes[eye].score*100);$(eye+'Score').textContent=score+'%';$(eye+'Meter').style.width=score+'%';}
+ drawFacePreview(frame);
+ if(S.cal){tickCalibration(frame,now);return;}
+ if(S.manualID!==null)return;
+ if(S.sheet||S.paused||!S.ready){
+  breakPen();showPointer(null);
+  if(!S.sheet)setLive(S.paused?'Paused — tap Resume':S.ready?'Ready':'Tap Calibrate to map your gaze');return;
+ }
+ if(poseDeviation(frame.pose,S.poseRef)>1.15){breakPen();showPointer(null);setLive('Head moved — return to position or recalibrate');return;}
+ const raw=estimate(frame);
+ if(!raw||![raw.x,raw.y].every(Number.isFinite)){
+  // No usable open eye: pen up immediately, and never draw using a closed iris.
+  breakPen();showPointer(null);setLive(leftClosed&&rightClosed?'Both eyes closed — pen released':'Open your aiming eye');return;
+ }
+ const adjusted={x:.5+(raw.x-.5)*cfg.gainX+cfg.offsetX,y:.5+(raw.y-.5)*cfg.gainY+cfg.offsetY};
+ if(adjusted.x<-.25||adjusted.x>1.25||adjusted.y<-.25||adjusted.y>1.25){breakPen();showPointer(null);setLive('Aim outside range — recenter or recalibrate');return;}
+ const point=filteredPoint(raw,now);
+ const events=S.gesture.step({t:now,left:leftClosed,right:rightClosed,readyLeft,readyRight,allowed:cfg.drawEye,delay:cfg.holdDelay,taps:cfg.tapDots,point,valid:true});
+ for(const e of events){
+  if(e.type==='down'){beginStroke(point);$('canvasMessage').hidden=true;}
+  else if(e.type==='up')endStroke();
+  else if(e.type==='tap'){beginStroke(e.point);endStroke();$('canvasMessage').hidden=true;emit('tap',{x:e.point.x,y:e.point.y});}
+ }
+ if(S.gesture.state==='drawing')appendStroke(point);
+ const drawing=S.gesture.state==='drawing',pending=S.gesture.state==='candidate';
+ showPointer(point,drawing?'drawing':pending?'pending':'');
+ setLive(drawing?`${S.eraser?'Erasing':'Drawing'} — open both eyes to release`:pending?'Wink detected — hold to draw':poseDeviation(frame.pose,S.poseRef)>.8?'Keep your head a little steadier':'Look to move · wink to draw');
+ const r=stage.getBoundingClientRect();emit('gaze',{x:point.x,y:point.y,clientX:r.left+point.x,clientY:r.top+point.y,normalized:normalizedPoint(point),down:drawing,source:raw.source});
+}
+function frameLoop(now){
+ requestAnimationFrame(frameLoop);
+ if(!S.running||!S.engine||document.hidden)return;
+ const wanted=(S.sheet||S.paused)&&!S.cal?Math.min(cfg.maxFps,10):cfg.maxFps;
+ const interval=Math.max(1000/wanted,S.processingMs*1.25);
+ if(now-S.lastInference<interval||video.readyState<2||video.currentTime===S.lastVideoTime)return;
+ S.lastInference=now;S.lastVideoTime=video.currentTime;S.lastVideoAt=now;
+ try{
+  const t=performance.now(),result=S.engine.detectForVideo(video,t);const ended=performance.now();
+  S.processingMs=S.processingMs?S.processingMs*.85+(ended-t)*.15:ended-t;
+  S.trackingErrors=0;S.frameCount++;
+  if(ended-S.fpsAt>=1000){S.fps=Math.round(S.frameCount*1000/(ended-S.fpsAt));S.frameCount=0;S.fpsAt=ended;$('fps').textContent=`${S.fps} fps`;}
+  processResult(result,ended);
+ }catch(e){
+  console.error('Frame processing failed.',e);frameLost('Tracking interrupted — keep your face visible',performance.now());
+  if(++S.trackingErrors>=4){stopCamera(true);showError('Eye tracking stopped after repeated processing errors. Try restarting the camera or reloading the page.\n'+(e?.message||e));}
+ }
+}
+requestAnimationFrame(frameLoop);
+setInterval(()=>{
+ if(!S.running||document.hidden)return;
+ const now=performance.now();
+ if(now-S.lastVideoAt>1200)frameLost('Camera stream paused — tap Stop, then Start',now);
+ else if(now-S.lastFace>450&&S.manualID===null){endStroke();S.gesture.reset();showPointer(null);}
+},180);
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden){breakPen();showPointer(null);releaseWake();if(S.cal)cancelCalibration(false);if(S.running){S.paused=true;updateButtons();setLive('Paused while the page was hidden — tap Resume');}}
+});
+window.addEventListener('blur',()=>{if(S.manualID===null){breakPen();showPointer(null);}});
+window.addEventListener('pagehide',()=>{stopCamera(true);});
+
+async function prepareExport(){
+ breakPen();const out=document.createElement('canvas');out.width=canvas.width;out.height=canvas.height;
+ const c=out.getContext('2d');c.fillStyle='#ffffff';c.fillRect(0,0,out.width,out.height);c.drawImage(canvas,0,0);
+ const blob=await new Promise(resolve=>out.toBlob(resolve,'image/png'));
+ if(!blob){toast('PNG export failed. Try again.');return;}
+ if(S.exportUrl)URL.revokeObjectURL(S.exportUrl);S.exportBlob=blob;S.exportUrl=URL.createObjectURL(blob);$('exportImage').src=S.exportUrl;
+ const file=new File([blob],'eye-drawing.png',{type:'image/png'});
+ let shareable=false;try{shareable=!!navigator.canShare?.({files:[file]});}catch(_){}
+ $('shareBtn').hidden=!shareable;openSheet('export');
+}
+$('saveBtn').addEventListener('click',()=>prepareExport().catch(e=>toast('Could not export: '+e.message)));
+$('shareBtn').addEventListener('click',async()=>{
+ if(!S.exportBlob)return;
+ try{await navigator.share({files:[new File([S.exportBlob],'eye-drawing.png',{type:'image/png'})],title:'Eye drawing'});}catch(e){if(e.name!=='AbortError')toast('Sharing was unavailable. Use Download PNG or hold the image.');}
+});
+$('downloadBtn').addEventListener('click',()=>{
+ if(!S.exportUrl)return;const a=document.createElement('a');a.href=S.exportUrl;a.download='eye-drawing.png';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();
+});
+
+// Small documented developer API. These custom events do not move the OS cursor.
+// Listen for eyedraw:gaze, eyedraw:press, eyedraw:release, and eyedraw:tap.
+window.EyeDraw=Object.freeze({
+ version:'1.0',
+ getStatus:()=>({running:S.running,calibrated:S.ready,paused:S.paused,gesture:S.gesture.state,strokes:S.strokes.length,fps:S.fps,drawingEye:cfg.drawEye}),
+ stop:()=>stopCamera(),
+ // Pure classes/functions are exported for unit tests and further development.
+ core:Object.freeze({WinkMachine,EyeLatch,fitGaze,predictGaze,eyeGeometry,closureScore,poseDeviation})
+});
+syncSettings();resizeCanvas();
+})();
+</script>
+</body>
+</html>
