@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-18T18:35:53.876Z",
+  "generated_at": "2026-10-28T15:34:58.359Z",
   "source": {
     "name": "UAE Pro League",
     "url": "https://www.uaepl.ae/en/fixtures"
@@ -25469,7 +25469,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://abu-dhabi.platinumlist.net/event-tickets/109426/al-dhafra-fc-vs-kalba-fc",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -25491,7 +25491,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://dubai.platinumlist.net/event-tickets/109427/hatta-fc-vs-khorfakkan-fc",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -25513,7 +25513,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://sharjah.platinumlist.net/event-tickets/109428/sharjah-fc-vs-shabab-al-ahli-fc",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -25535,7 +25535,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://dubai.platinumlist.net/event-tickets/109497/al-nasr-fc-vs-united-fc",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -25557,7 +25557,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://abu-dhabi.platinumlist.net/event-tickets/109498/al-jazira-fc-vs-al-wasl-fc",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -25579,7 +25579,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://ajman.platinumlist.net/event-tickets/109499/ajman-fc-vs-baniyas-fc",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -25601,7 +25601,7 @@
           "away_score": "0",
           "home_scorers": [],
           "away_scorers": [],
-          "highlights_url": "",
+          "highlights_url": "https://abu-dhabi.platinumlist.net/event-tickets/109520/al-wahda-fc-vs-al-ain-fc",
           "finished": "FALSE",
           "time_elapsed": "notstarted",
           "type": "group",
@@ -27185,7 +27185,7 @@
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_250542630.png"
         }
       ],
-      "liveFetchedAt": "2026-10-18T18:35:53.876Z"
+      "liveFetchedAt": "2026-10-28T15:34:58.359Z"
     }
   }
 }
