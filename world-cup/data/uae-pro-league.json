@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-05T08:05:04.798Z",
+  "generated_at": "2026-11-07T18:23:26.854Z",
   "source": {
     "name": "UAE Pro League",
     "url": "https://www.uaepl.ae/en/fixtures"
@@ -25619,18 +25619,24 @@
           "away_team_id": "kalba",
           "home_team_name_en": "Al Dhafra",
           "away_team_name_en": "Kalba",
-          "home_score": "0",
-          "away_score": "0",
-          "home_scorers": [],
-          "away_scorers": [],
-          "highlights_url": "https://abu-dhabi.platinumlist.net/event-tickets/109426/al-dhafra-fc-vs-kalba-fc",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "home_score": "1",
+          "away_score": "3",
+          "home_scorers": [
+            "S. Kaba 20'"
+          ],
+          "away_scorers": [
+            "B. Tetteh 50' (p)",
+            "A. Noorollahi 52'",
+            "Juninho 90+5'"
+          ],
+          "highlights_url": "",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "8",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f7c-7604-11f1-b32b-0289588efdb9",
@@ -25641,18 +25647,23 @@
           "away_team_id": "khorfakkan",
           "home_team_name_en": "Hatta",
           "away_team_name_en": "Khorfakkan",
-          "home_score": "0",
-          "away_score": "0",
-          "home_scorers": [],
-          "away_scorers": [],
-          "highlights_url": "https://dubai.platinumlist.net/event-tickets/109427/hatta-fc-vs-khorfakkan-fc",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "home_score": "1",
+          "away_score": "2",
+          "home_scorers": [
+            "S. Jaziri 88'"
+          ],
+          "away_scorers": [
+            "P. Pavlov 27'",
+            "T. Tissoudali 50' (p)"
+          ],
+          "highlights_url": "",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "8",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f81-7604-11f1-b32b-0289588efdb9",
@@ -25663,18 +25674,21 @@
           "away_team_id": "shabab-alahli",
           "home_team_name_en": "Sharjah",
           "away_team_name_en": "Shabab AlAhli",
-          "home_score": "0",
+          "home_score": "2",
           "away_score": "0",
-          "home_scorers": [],
+          "home_scorers": [
+            "O. Keita 70' (OG)",
+            "Harib Abdalla 86'"
+          ],
           "away_scorers": [],
-          "highlights_url": "https://sharjah.platinumlist.net/event-tickets/109428/sharjah-fc-vs-shabab-al-ahli-fc",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
+          "highlights_url": "",
+          "finished": "TRUE",
+          "time_elapsed": "finished",
           "type": "group",
           "group": "",
           "group_key": "uae-pro-league",
           "gameweek": "8",
-          "score_missing": true
+          "score_missing": false
         },
         {
           "id": "22e17f76-7604-11f1-b32b-0289588efdb9",
@@ -27159,8 +27173,21 @@
           "display_name_ar": "دوري أدنوك للمحترفين",
           "teams": [
             {
-              "team_id": "al-jazira",
+              "team_id": "sharjah",
               "position": 1,
+              "mp": 7,
+              "w": 5,
+              "d": 0,
+              "l": 2,
+              "ga": 8,
+              "gf": 15,
+              "gd": 7,
+              "pts": 15,
+              "total": 26
+            },
+            {
+              "team_id": "al-jazira",
+              "position": 2,
               "mp": 6,
               "w": 4,
               "d": 2,
@@ -27173,20 +27200,20 @@
             },
             {
               "team_id": "shabab-alahli",
-              "position": 2,
-              "mp": 6,
+              "position": 3,
+              "mp": 7,
               "w": 4,
               "d": 1,
-              "l": 1,
-              "ga": 5,
+              "l": 2,
+              "ga": 7,
               "gf": 12,
-              "gd": 7,
+              "gd": 5,
               "pts": 13,
               "total": 26
             },
             {
               "team_id": "al-wasl",
-              "position": 3,
+              "position": 4,
               "mp": 6,
               "w": 4,
               "d": 1,
@@ -27199,7 +27226,7 @@
             },
             {
               "team_id": "al-ain",
-              "position": 4,
+              "position": 5,
               "mp": 6,
               "w": 4,
               "d": 1,
@@ -27212,7 +27239,7 @@
             },
             {
               "team_id": "al-wahda",
-              "position": 5,
+              "position": 6,
               "mp": 6,
               "w": 4,
               "d": 0,
@@ -27220,19 +27247,6 @@
               "ga": 7,
               "gf": 9,
               "gd": 2,
-              "pts": 12,
-              "total": 26
-            },
-            {
-              "team_id": "sharjah",
-              "position": 6,
-              "mp": 6,
-              "w": 4,
-              "d": 0,
-              "l": 2,
-              "ga": 8,
-              "gf": 13,
-              "gd": 5,
               "pts": 12,
               "total": 26
             },
@@ -27263,8 +27277,21 @@
               "total": 26
             },
             {
-              "team_id": "united",
+              "team_id": "kalba",
               "position": 9,
+              "mp": 7,
+              "w": 2,
+              "d": 2,
+              "l": 3,
+              "ga": 16,
+              "gf": 11,
+              "gd": -5,
+              "pts": 8,
+              "total": 26
+            },
+            {
+              "team_id": "united",
+              "position": 10,
               "mp": 6,
               "w": 2,
               "d": 1,
@@ -27276,54 +27303,41 @@
               "total": 26
             },
             {
-              "team_id": "al-dhafra",
-              "position": 10,
-              "mp": 6,
-              "w": 2,
-              "d": 0,
-              "l": 4,
-              "ga": 10,
-              "gf": 8,
-              "gd": -2,
-              "pts": 6,
-              "total": 26
-            },
-            {
-              "team_id": "kalba",
-              "position": 11,
-              "mp": 6,
-              "w": 1,
-              "d": 2,
-              "l": 3,
-              "ga": 15,
-              "gf": 8,
-              "gd": -7,
-              "pts": 5,
-              "total": 26
-            },
-            {
               "team_id": "khorfakkan",
-              "position": 12,
-              "mp": 6,
-              "w": 1,
+              "position": 11,
+              "mp": 7,
+              "w": 2,
               "d": 1,
               "l": 4,
-              "ga": 15,
-              "gf": 7,
-              "gd": -8,
-              "pts": 4,
+              "ga": 16,
+              "gf": 9,
+              "gd": -7,
+              "pts": 7,
+              "total": 26
+            },
+            {
+              "team_id": "al-dhafra",
+              "position": 12,
+              "mp": 7,
+              "w": 2,
+              "d": 0,
+              "l": 5,
+              "ga": 13,
+              "gf": 9,
+              "gd": -4,
+              "pts": 6,
               "total": 26
             },
             {
               "team_id": "hatta",
               "position": 13,
-              "mp": 6,
+              "mp": 7,
               "w": 1,
               "d": 0,
-              "l": 5,
-              "ga": 13,
-              "gf": 5,
-              "gd": -8,
+              "l": 6,
+              "ga": 15,
+              "gf": 6,
+              "gd": -9,
               "pts": 3,
               "total": 26
             },
@@ -27458,339 +27472,339 @@
         },
         {
           "rank": 3,
+          "name": "Sory Kaba",
+          "goals": 3,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_868914474.png"
+        },
+        {
+          "rank": 4,
           "name": "Chris Bedia",
           "goals": 3,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_250542630.png"
         },
         {
-          "rank": 4,
+          "rank": 5,
           "name": "Youssoufou Niakate",
           "goals": 3,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_52994345.png"
         },
         {
-          "rank": 5,
+          "rank": 6,
           "name": "Nicolas Gimenez",
           "goals": 3,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1166767662.png"
         },
         {
-          "rank": 6,
+          "rank": 7,
           "name": "Renato Junior",
           "goals": 3,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1166767662.png"
         },
         {
-          "rank": 7,
+          "rank": 8,
           "name": "Saeid Ezatolahi",
           "goals": 3,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_189865615.png"
         },
         {
-          "rank": 8,
+          "rank": 9,
           "name": "Igor Coronado",
           "goals": 3,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1463264784.png"
         },
         {
-          "rank": 9,
+          "rank": 10,
           "name": "Julimar Silva",
           "goals": 3,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1463264784.png"
         },
         {
-          "rank": 10,
+          "rank": 11,
           "name": "Waleed Azaro",
           "goals": 3,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logo_1508503989.png"
         },
         {
-          "rank": 11,
+          "rank": 12,
           "name": "Victor Henrique",
           "goals": 3,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logo_1508503989.png"
         },
         {
-          "rank": 12,
+          "rank": 13,
+          "name": "Benjamin Tetteh",
+          "goals": 3,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1012842572.png"
+        },
+        {
+          "rank": 14,
           "name": "Facundo Daniel",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1537285655.png"
         },
         {
-          "rank": 13,
-          "name": "El Houssien Rahmi",
-          "goals": 2,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_188866697.png"
-        },
-        {
-          "rank": 14,
+          "rank": 15,
           "name": "Christian Benteke",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1537285655.png"
         },
         {
-          "rank": 15,
-          "name": "Abdulkarim Trawri",
+          "rank": 16,
+          "name": "El Houssien Rahmi",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_188866697.png"
         },
         {
-          "rank": 16,
+          "rank": 17,
           "name": "Bruno De Oliveira",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_456481928.png"
         },
         {
-          "rank": 17,
-          "name": "Sory Kaba",
+          "rank": 18,
+          "name": "Abdulkarim Trawri",
           "goals": 2,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_868914474.png"
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_188866697.png"
         },
         {
-          "rank": 18,
+          "rank": 19,
+          "name": "Ahmad Noorollah",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1012842572.png"
+        },
+        {
+          "rank": 20,
           "name": "Abdoulaye Toure",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_250542630.png"
         },
         {
-          "rank": 19,
+          "rank": 21,
           "name": "Dominique Mendy",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_868914474.png"
         },
         {
-          "rank": 20,
-          "name": "Junior Flemmings",
-          "goals": 2,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_146800710.png"
-        },
-        {
-          "rank": 21,
+          "rank": 22,
           "name": "Ali Saleh",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1166767662.png"
         },
         {
-          "rank": 22,
+          "rank": 23,
+          "name": "Junior Flemmings",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_146800710.png"
+        },
+        {
+          "rank": 24,
+          "name": "Tarik Tissoudali",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_146800710.png"
+        },
+        {
+          "rank": 25,
           "name": "Sergio Pereira",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1166767662.png"
         },
         {
-          "rank": 23,
+          "rank": 26,
           "name": "M. Ben Alarbi",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_137455115.png"
         },
         {
-          "rank": 24,
+          "rank": 27,
           "name": "Sardar Khalil Azmoum",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_189865615.png"
         },
         {
-          "rank": 25,
-          "name": "Guilherme Da Silva",
-          "goals": 2,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_189865615.png"
-        },
-        {
-          "rank": 26,
+          "rank": 28,
           "name": "Yuri Cesar",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_189865615.png"
         },
         {
-          "rank": 27,
+          "rank": 29,
+          "name": "Guilherme Da Silva",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_189865615.png"
+        },
+        {
+          "rank": 30,
           "name": "Aniss Karimi",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1482482210.png"
         },
         {
-          "rank": 28,
+          "rank": 31,
           "name": "Adeel Wgdan Alchadli",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1482482210.png"
         },
         {
-          "rank": 29,
+          "rank": 32,
+          "name": "Harib Abdalla Suhail",
+          "goals": 2,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1463264784.png"
+        },
+        {
+          "rank": 33,
           "name": "Shavy Babicka",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1482482210.png"
         },
         {
-          "rank": 30,
+          "rank": 34,
           "name": "Lourency Do",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logo_1508503989.png"
         },
         {
-          "rank": 31,
+          "rank": 35,
           "name": "Agner Souza",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1463264784.png"
         },
         {
-          "rank": 32,
+          "rank": 36,
           "name": "Soufian Rahimi",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_188866697.png"
         },
         {
-          "rank": 33,
+          "rank": 37,
           "name": "Saad El Hadani",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logo_1508503989.png"
         },
         {
-          "rank": 34,
+          "rank": 38,
           "name": "Malcom Olivieira",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_456481928.png"
         },
         {
-          "rank": 35,
+          "rank": 39,
           "name": "Alemhdi Maouhoub",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1482482210.png"
         },
         {
-          "rank": 36,
+          "rank": 40,
           "name": "Mehdi Taremi",
           "goals": 2,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1166767662.png"
         },
         {
-          "rank": 37,
-          "name": "Benjamin Tetteh",
-          "goals": 2,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1012842572.png"
-        },
-        {
-          "rank": 38,
-          "name": "Ala Zhir",
-          "goals": 1,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1537285655.png"
-        },
-        {
-          "rank": 39,
-          "name": "Simon Banza",
-          "goals": 1,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_456481928.png"
-        },
-        {
-          "rank": 40,
+          "rank": 41,
           "name": "Georgios Giakomakis",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_188866697.png"
         },
         {
-          "rank": 41,
+          "rank": 42,
           "name": "Igor Eduardo",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_456481928.png"
         },
         {
-          "rank": 42,
-          "name": "Mansour Saleh",
+          "rank": 43,
+          "name": "Simon Banza",
           "goals": 1,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1537285655.png"
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_456481928.png"
         },
         {
-          "rank": 43,
+          "rank": 44,
           "name": "Mohammad Rasoul",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1537285655.png"
         },
         {
-          "rank": 44,
-          "name": "Oumar Traore",
+          "rank": 45,
+          "name": "Ala Zhir",
           "goals": 1,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_146800710.png"
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1537285655.png"
         },
         {
-          "rank": 45,
+          "rank": 46,
+          "name": "Mansour Saleh",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1537285655.png"
+        },
+        {
+          "rank": 47,
           "name": "Baba Bello Ilou",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_188866697.png"
         },
         {
-          "rank": 46,
+          "rank": 48,
+          "name": "Oumar Traore",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_146800710.png"
+        },
+        {
+          "rank": 49,
           "name": "Marcus Vinicius",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_456481928.png"
         },
         {
-          "rank": 47,
-          "name": "Brahima Diarra",
-          "goals": 1,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1537285655.png"
-        },
-        {
-          "rank": 48,
+          "rank": 50,
           "name": "Ali Almemari",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_456481928.png"
         },
         {
-          "rank": 49,
+          "rank": 51,
+          "name": "Brahima Diarra",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1537285655.png"
+        },
+        {
+          "rank": 52,
           "name": "Daraman Komari",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_868914474.png"
         },
         {
-          "rank": 50,
-          "name": "Mehdi Ghayedi",
-          "goals": 1,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_250542630.png"
-        },
-        {
-          "rank": 51,
-          "name": "Ahmad Noorollah",
-          "goals": 1,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1012842572.png"
-        },
-        {
-          "rank": 52,
+          "rank": 53,
           "name": "Guilherme Sucigan",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1012842572.png"
         },
         {
-          "rank": 53,
+          "rank": 54,
           "name": "Saman Ghoddos",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1012842572.png"
         },
         {
-          "rank": 54,
+          "rank": 55,
+          "name": "Mehdi Ghayedi",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_250542630.png"
+        },
+        {
+          "rank": 56,
           "name": "Rocky Marciano",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_52994345.png"
         },
         {
-          "rank": 55,
+          "rank": 57,
           "name": "Rostand Djooh",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_868914474.png"
         },
         {
-          "rank": 56,
+          "rank": 58,
           "name": "Antonio Fialho",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1012842572.png"
-        },
-        {
-          "rank": 57,
-          "name": "Nemanja Jovic",
-          "goals": 1,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1012842572.png"
-        },
-        {
-          "rank": 58,
-          "name": "Mohamed Awad",
-          "goals": 1,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_52994345.png"
         },
         {
           "rank": 59,
@@ -27800,162 +27814,180 @@
         },
         {
           "rank": 60,
+          "name": "Mohamed Awad",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_52994345.png"
+        },
+        {
+          "rank": 61,
+          "name": "Nemanja Jovic",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1012842572.png"
+        },
+        {
+          "rank": 62,
           "name": "Carlos Filho",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1012842572.png"
         },
         {
-          "rank": 61,
+          "rank": 63,
+          "name": "antonio junior",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1012842572.png"
+        },
+        {
+          "rank": 64,
           "name": "Siaka Sidibe",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1166767662.png"
         },
         {
-          "rank": 62,
+          "rank": 65,
+          "name": "Pedro Pavlov",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_146800710.png"
+        },
+        {
+          "rank": 66,
           "name": "Aylton Filipe",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_146800710.png"
         },
         {
-          "rank": 63,
-          "name": "Tarik Tissoudali",
-          "goals": 1,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_146800710.png"
-        },
-        {
-          "rank": 64,
+          "rank": 67,
           "name": "Ahmed Abdalla Mohamad",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_146800710.png"
         },
         {
-          "rank": 65,
+          "rank": 68,
           "name": "Pedro Malheiro",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1166767662.png"
         },
         {
-          "rank": 66,
+          "rank": 69,
           "name": "Igor Gomes Silva",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_189865615.png"
         },
         {
-          "rank": 67,
+          "rank": 70,
           "name": "Ayman Rchoq",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_137455115.png"
         },
         {
-          "rank": 68,
+          "rank": 71,
           "name": "Rikelme Hernandes Rocha",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_189865615.png"
         },
         {
-          "rank": 69,
+          "rank": 72,
           "name": "Valintin Lazro",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_188866697.png"
         },
         {
-          "rank": 70,
+          "rank": 73,
           "name": "Kauan Santos Silva",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_189865615.png"
         },
         {
-          "rank": 71,
+          "rank": 74,
           "name": "Bruno Leonardo",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_137455115.png"
         },
         {
-          "rank": 72,
-          "name": "Laba Kodjo",
-          "goals": 1,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1463264784.png"
-        },
-        {
-          "rank": 73,
+          "rank": 75,
           "name": "Luan Pereira",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1463264784.png"
         },
         {
-          "rank": 74,
-          "name": "Mustapha Name",
-          "goals": 1,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1482482210.png"
-        },
-        {
-          "rank": 75,
-          "name": "Ousmane Camara",
-          "goals": 1,
-          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1463264784.png"
-        },
-        {
           "rank": 76,
-          "name": "Harib Abdalla Suhail",
+          "name": "Laba Kodjo",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1463264784.png"
         },
         {
           "rank": 77,
+          "name": "Mustapha Name",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1482482210.png"
+        },
+        {
+          "rank": 78,
+          "name": "Ousmane Camara",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1463264784.png"
+        },
+        {
+          "rank": 79,
           "name": "Ismail Moumene",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logo_1508503989.png"
         },
         {
-          "rank": 78,
+          "rank": 80,
           "name": "Alejandro Romero",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_188866697.png"
         },
         {
-          "rank": 79,
+          "rank": 81,
           "name": "Rami Rabieea",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_188866697.png"
         },
         {
-          "rank": 80,
+          "rank": 82,
           "name": "Lithierry Silva",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logo_1508503989.png"
         },
         {
-          "rank": 81,
+          "rank": 83,
+          "name": "Seifeddine Jaziri",
+          "goals": 1,
+          "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_137455115.png"
+        },
+        {
+          "rank": 84,
           "name": "Arielson Sampaio Galvao",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_868914474.png"
         },
         {
-          "rank": 82,
+          "rank": 85,
           "name": "Kristjan Asllani",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_456481928.png"
         },
         {
-          "rank": 83,
+          "rank": 86,
           "name": "Karim El Berkaoui",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_868914474.png"
         },
         {
-          "rank": 84,
+          "rank": 87,
           "name": "Cameron Puertas",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1166767662.png"
         },
         {
-          "rank": 85,
+          "rank": 88,
           "name": "Ramon Mierez",
           "goals": 1,
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_250542630.png"
         }
       ],
-      "liveFetchedAt": "2026-11-05T08:05:04.798Z"
+      "liveFetchedAt": "2026-11-07T18:23:26.854Z"
     }
   }
 }
