@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-08T18:50:59.605Z",
+  "generated_at": "2026-11-14T14:27:06.328Z",
   "source": {
     "name": "UAE Pro League",
     "url": "https://www.uaepl.ae/en/fixtures"
@@ -25457,6 +25457,28 @@
           "score_missing": false
         },
         {
+          "id": "22e17f72-7604-11f1-b32b-0289588efdb9",
+          "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f72-7604-11f1-b32b-0289588efdb9",
+          "opta_id": "czez2l5255subipvh8hfaqfbo",
+          "date_utc": "2026-11-28T14:15:00.000Z",
+          "home_team_id": "al-wasl",
+          "away_team_id": "al-dhafra",
+          "home_team_name_en": "Al Wasl",
+          "away_team_name_en": "Al Dhafra",
+          "home_score": "0",
+          "away_score": "0",
+          "home_scorers": [],
+          "away_scorers": [],
+          "highlights_url": "",
+          "finished": "FALSE",
+          "time_elapsed": "notstarted",
+          "type": "group",
+          "group": "",
+          "group_key": "uae-pro-league",
+          "gameweek": "7",
+          "score_missing": true
+        },
+        {
           "id": "22e17f6a-7604-11f1-b32b-0289588efdb9",
           "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f6a-7604-11f1-b32b-0289588efdb9",
           "opta_id": "cyzpr6zq544nrh5dz4m358w7o",
@@ -25509,28 +25531,6 @@
           "away_team_id": "ajman",
           "home_team_name_en": "Al Ain",
           "away_team_name_en": "Ajman",
-          "home_score": "0",
-          "away_score": "0",
-          "home_scorers": [],
-          "away_scorers": [],
-          "highlights_url": "",
-          "finished": "FALSE",
-          "time_elapsed": "notstarted",
-          "type": "group",
-          "group": "",
-          "group_key": "uae-pro-league",
-          "gameweek": "7",
-          "score_missing": true
-        },
-        {
-          "id": "22e17f72-7604-11f1-b32b-0289588efdb9",
-          "official_detail_url": "https://www.uaepl.ae/en/fixtures/22e17f72-7604-11f1-b32b-0289588efdb9",
-          "opta_id": "czez2l5255subipvh8hfaqfbo",
-          "date_utc": "2026-12-29T15:45:00.000Z",
-          "home_team_id": "al-wasl",
-          "away_team_id": "al-dhafra",
-          "home_team_name_en": "Al Wasl",
-          "away_team_name_en": "Al Dhafra",
           "home_score": "0",
           "away_score": "0",
           "home_scorers": [],
@@ -28021,7 +28021,7 @@
           "flag": "https://uae-proleague-web.s3.eu-central-1.amazonaws.com/uploads/team/images/logoL_1166767662.png"
         }
       ],
-      "liveFetchedAt": "2026-11-08T18:50:59.605Z"
+      "liveFetchedAt": "2026-11-14T14:27:06.328Z"
     }
   }
 }
